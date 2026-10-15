@@ -41,9 +41,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable (2026-08-01)
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable (2026-07-16)
         with:
           targets: ${{ matrix.target }}
 
@@ -91,7 +94,9 @@ jobs:
       - name: Upload package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: rhwp-native-host-${{ matrix.platform }}-${{ github.sha }}
+          # Run/head identity is checked by workflow promotion; fixed names let
+          # its policy require all three platform artifacts from that exact run.
+          name: rhwp-native-host-${{ matrix.platform }}
           path: dist/rhwp-native-host-${{ matrix.platform }}/
           if-no-files-found: error
           retention-days: 7

@@ -100,3 +100,9 @@ macOS arm64, Windows x86_64의 native-skia FFI 빌드 → capability probe → �
 패키지 headless 실행 → 7일 보관 artifact 업로드를 수행한다. PR/push 자동 CI를 추가하지
 않으며, GitHub Release·패키지 배포·코드 서명은 수행하지 않는다. 로컬에서 workflow 파일과
 mock 검사를 확인한 것과 각 OS runner의 실제 성공을 구분한다.
+
+workflow promotion policy에는 manual `direct` 증거로 등록한다. 같은 exact candidate SHA의
+`Package linux-x86_64`, `Package macos-aarch64`, `Package windows-x86_64` job 성공과
+각 플랫폼의 `rhwp-native-host-<platform>` artifact를 모두 요구한다. artifact 이름은 run 안에서
+고정하며, run/head 연결과 각 패키지 manifest의 선언 SHA를 별도로 확인한다. 기존 required check나
+배포 권한을 바꾸지 않으며, 로컬 mock 검사를 수동 workflow 실행 증거로 대체하지 않는다.
