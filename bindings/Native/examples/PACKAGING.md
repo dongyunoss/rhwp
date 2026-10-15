@@ -51,7 +51,7 @@ macOS의 라이브러리 이름은 `librhwp_native_ffi.dylib`, Windows는
 - `lib/`: 명시한 라이브러리 한 개
 - `examples/`: `native_host.py`, `native_worker.py`, `native_file_store.py`,
   `qt_native_host.py`, `qt-requirements.txt`
-- `docs/README.md`, `docs/PACKAGING.md`, 저장소의 `LICENSE`
+- `docs/README.md`, `docs/PACKAGING.md`, `docs/QT_NATIVE_HOST.md`, 저장소의 `LICENSE`
 - `run.py`: 패키지 상대 경로만 사용하는 런처
 - `manifest.json`: 플랫폼·아키텍처, 실제 capability 응답, 라이브러리 SHA-256,
   복사 파일과 런처의 SHA-256, 호출자가 선언한 `declaredSourceRevision`

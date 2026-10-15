@@ -31,6 +31,7 @@ SOURCE_FILES = {
     },
     "docs/README.md": "bindings/Native/examples/README.md",
     "docs/PACKAGING.md": "bindings/Native/examples/PACKAGING.md",
+    "docs/QT_NATIVE_HOST.md": "bindings/Native/examples/QT_NATIVE_HOST.md",
     "LICENSE": "LICENSE",
 }
 

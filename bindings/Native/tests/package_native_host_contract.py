@@ -81,6 +81,7 @@ class PackageNativeHostContracts(unittest.TestCase):
         self.assertEqual(manifest["architecture"], packager.architecture())
         expected = {*packager.SOURCE_FILES, "run.py", manifest["artifact"]["path"]}
         self.assertEqual(set(manifest["files"]), expected)
+        self.assertIn("docs/QT_NATIVE_HOST.md", manifest["files"])
         for relative, digest in manifest["files"].items():
             self.assertEqual(digest, hashlib.sha256((self.output / relative).read_bytes()).hexdigest())
         self.assertEqual(manifest["artifact"]["sha256"], packager.sha256(self.library))
