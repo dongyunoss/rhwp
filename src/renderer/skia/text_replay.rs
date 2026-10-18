@@ -711,9 +711,16 @@ impl SkiaTextReplay<'_> {
                                 })
                                 && !has_ratio;
                             if needs_halfwidth_scale {
+                                let end = *char_idx + cluster.chars().count();
+                                let advance = char_positions.get(end).copied().unwrap_or(0.0)
+                                    - char_positions.get(*char_idx).copied().unwrap_or(0.0);
+                                let scale = crate::renderer::halfwidth_punct_paint_scale(
+                                    advance,
+                                    f64::from(font.measure_str(cluster, None).0),
+                                ) as f32;
                                 if synthetic_bold {
                                     // 글자 윤곽선만 반각으로 하고 사용자 좌표 획은 유지한다.
-                                    font.set_scale_x(0.5);
+                                    font.set_scale_x(scale);
                                     if !draw_synthetic_bold_paths(
                                         canvas,
                                         cluster,
@@ -733,7 +740,7 @@ impl SkiaTextReplay<'_> {
                                 }
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
-                                canvas.scale((0.5, 1.0));
+                                canvas.scale((scale, 1.0));
                                 canvas.draw_str(cluster, (0.0, 0.0), &font, glyph_paint);
                                 canvas.restore();
                                 continue;

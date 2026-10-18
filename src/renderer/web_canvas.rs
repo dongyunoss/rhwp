@@ -2788,9 +2788,17 @@ impl Renderer for WebCanvasRenderer {
                         );
 
                     if needs_halfwidth_scale {
+                        let end = *char_idx + cluster_str.chars().count();
+                        let advance = char_positions.get(end).copied().unwrap_or(0.0)
+                            - char_positions[*char_idx];
+                        let glyph_width = self
+                            .ctx
+                            .measure_text(cluster_str)
+                            .map_or(0.0, |metrics| metrics.width());
+                        let scale = super::halfwidth_punct_paint_scale(advance, glyph_width);
                         self.ctx.save();
                         self.ctx.translate(char_x, y).unwrap_or(());
-                        self.ctx.scale(0.5, 1.0).unwrap_or(());
+                        self.ctx.scale(scale, 1.0).unwrap_or(());
                         Self::fill_positioned_text(
                             &self.ctx,
                             cluster_str,
