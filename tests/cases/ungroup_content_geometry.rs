@@ -1,4 +1,4 @@
-//! 묶음 해제는 이웃 필드와 자식의 최종 그리기 위치를 바꾸지 않아야 한다.
+//! 묶기·묶음 해제는 이웃 필드와 자식의 최종 그리기 위치를 바꾸지 않아야 한다.
 //! 공개 편집 API로 만든 HWP를 다시 연 뒤 검사하며 조판 정답 좌표를 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -9,7 +9,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::renderer::PathCommand;
 use serde_json::{json, Value};
 
-fn fixture(rotation: u16, field: bool) -> DocumentCore {
+fn shapes(rotation: u16, field: bool) -> (DocumentCore, Vec<(usize, usize)>) {
     let mut doc = DocumentCore::new_empty();
     doc.create_blank_document_native().unwrap();
     doc.insert_text_native(0, 0, 0, "앞쪽 가나다 뒤쪽").unwrap();
@@ -50,6 +50,11 @@ fn fixture(rotation: u16, field: bool) -> DocumentCore {
         .unwrap();
         targets.push((0, ci));
     }
+    (doc, targets)
+}
+
+fn fixture(rotation: u16, field: bool) -> DocumentCore {
+    let (mut doc, targets) = shapes(rotation, field);
     doc.group_shapes_native(0, &targets).unwrap();
     DocumentCore::from_bytes(&doc.export_hwp_native().unwrap()).unwrap()
 }
@@ -203,5 +208,21 @@ fn ungroup_keeps_following_field_live_and_in_both_formats() {
         [live, hwp, hwpx],
         [before.clone(), before.clone(), before],
         "그룹 하나가 자식 둘로 바뀌어도 뒤 필드의 소속·값을 보존해야 한다"
+    );
+}
+
+#[test]
+fn group_keeps_following_field_live_and_in_both_formats() {
+    let (mut doc, targets) = shapes(0, true);
+    let before = fields(&doc);
+    assert_eq!(before.len(), 1);
+    doc.group_shapes_native(0, &targets).unwrap();
+    let live = fields(&doc);
+    let hwp = fields(&DocumentCore::from_bytes(&doc.export_hwp_native().unwrap()).unwrap());
+    let hwpx = fields(&DocumentCore::from_bytes(&doc.export_hwpx_native().unwrap()).unwrap());
+    assert_eq!(
+        [live, hwp, hwpx],
+        [before.clone(), before.clone(), before],
+        "자식 둘이 묶음 하나로 바뀌어도 뒤 필드의 소속·값을 보존해야 한다"
     );
 }
