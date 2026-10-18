@@ -218,13 +218,13 @@ class NativeWindow(QMainWindow):
         self.errors.append(str(message))
         self.statusBar().showMessage(str(message))
 
-    def enqueue(self, steps, done=None, refresh=False):
+    def enqueue(self, steps, done=None, refresh=False, page_load_token=None):
         if self.closing:
             return False
         if len(self.actions) + (self.job is not None) >= self.MAX_ACTIONS:
             self.fail("입력 큐가 가득 찼습니다. 진행 중인 작업은 취소되지 않았습니다.")
             return False
-        self.actions.append([deque(steps), done, refresh, None])
+        self.actions.append([deque(steps), done, refresh, None, page_load_token])
         return True
 
     def tick(self):
@@ -275,7 +275,7 @@ class NativeWindow(QMainWindow):
         if self.job is None and self.actions:
             self.job = self.actions.popleft()
         if self.job is not None:
-            steps, done, refresh, last = self.job
+            steps, done, refresh, last, _page_load_token = self.job
             if steps:
                 request = steps.popleft()(last)
                 if request is None:
@@ -316,7 +316,8 @@ class NativeWindow(QMainWindow):
     def step_done(self, result):
         if not result.get("ok") or result.get("kind") == "skipped":
             self.fail(result.get("error", result.get("reason", "native request failed")))
-            if self.loading_pages:
+            if (self.loading_pages and self.page_load_token is not None
+                    and self.job[4] is self.page_load_token):
                 self.loading_pages = False
                 self.page_load_token = None
                 self.pages.clear()
@@ -397,7 +398,7 @@ class NativeWindow(QMainWindow):
         def request(_):
             if token is self.page_load_token and target == self.target():
                 return {"op": "pageSize", "page": page}
-        if not self.enqueue([request], loaded):
+        if not self.enqueue([request], loaded, page_load_token=token):
             self.loading_pages = False
             self.page_load_token = None
             self.pages.clear()
@@ -425,8 +426,15 @@ class NativeWindow(QMainWindow):
 
     def got_caret(self, result):
         self.caret = result["caret"]
+        self.ensure_caret_visible()
         self.canvas.update()
         QApplication.inputMethod().update(Qt.InputMethodQuery.ImCursorRectangle)
+
+    def ensure_caret_visible(self):
+        if self.caret and self.pages and self.view and not self.loading_pages:
+            self.apply_view(action="ensureCaret", page=self.caret["page"], margin=12,
+                            rect={"x": self.caret["x"], "y": self.caret["y"],
+                                  "width": self.caret.get("width", 0), "height": self.caret["height"]})
 
     def set_rects(self, rects):
         self.rects = rects
@@ -438,6 +446,7 @@ class NativeWindow(QMainWindow):
         self.state["config"].update(pages=self.pages, viewport={"width": max(1, self.canvas.width()),
             "height": max(1, self.canvas.height())}, deviceScale=self.canvas.devicePixelRatioF())
         self.apply_view(action="state")
+        self.ensure_caret_visible()
 
     def apply_view(self, **command):
         try:
@@ -511,7 +520,7 @@ class NativeWindow(QMainWindow):
                    "region": visible["pageRegion"], "scale": scale}, rendered)
 
     def click(self, point, extend):
-        if not self.info or self.preedit:
+        if not self.info or self.preedit or self.loading_pages or not self.pages or not self.view:
             return
         hit = self.worker.host.host_request(op="view", state=self.state,
             command={"action": "pageAt", "x": point.x(), "y": point.y()})["query"]
@@ -534,8 +543,10 @@ class NativeWindow(QMainWindow):
         self.enqueue([request], refresh=True)
 
     def key(self, event):
-        control = bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier)
-        shift = bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier)
+        modifiers = event.modifiers()
+        control = bool(modifiers & Qt.KeyboardModifier.ControlModifier) and not bool(
+            modifiers & (Qt.KeyboardModifier.AltModifier | Qt.KeyboardModifier.GroupSwitchModifier))
+        shift = bool(modifiers & Qt.KeyboardModifier.ShiftModifier)
         key = event.key()
         if control:
             if key == Qt.Key.Key_C:
