@@ -539,7 +539,8 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
     def test_native_host_packaging_is_manual_read_only_and_sha_pinned(self) -> None:
         workflow = (REPO_ROOT / ".github/workflows/native-host-package.yml").read_text()
         trigger = workflow.split("permissions:", 1)[0]
-        self.assertEqual(re.findall(r"^  ([a-z_]+):", trigger, re.M), ["workflow_dispatch"])
+        self.assertEqual(re.findall(r"^  ([a-z_]+):", trigger, re.M), ["workflow_dispatch", "workflow_call"])
+        self.assertIn("if: github.event_name == 'workflow_dispatch'", workflow)
         permissions = workflow.split("permissions:\n", 1)[1].split("\nconcurrency:", 1)[0]
         self.assertEqual(permissions.strip(), "contents: read")
         self.assertNotRegex(workflow, r"(?m)^\s+[a-z-]+: write$")
@@ -553,6 +554,20 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", workflow)
         self.assertIn("timeout-minutes: 60", workflow)
 
+    def test_native_host_package_has_an_explicit_manual_bootstrap_caller(self) -> None:
+        ci = (REPO_ROOT / ".github/workflows/ci.yml").read_text()
+        dispatch = ci.split("  workflow_dispatch:\n", 1)[1].split("\nenv:", 1)[0]
+        self.assertRegex(dispatch, r"(?s)native_host_package:.*?default: false.*?type: boolean")
+        caller = re.search(r"(?ms)^  native-host-package:\n.*?(?=^  [\w-]+:\n|\Z)", ci)
+        self.assertIsNotNone(caller)
+        block = caller.group(0)
+        self.assertIn("uses: ./.github/workflows/native-host-package.yml", block)
+        for condition in ("github.event_name == 'workflow_dispatch'", "inputs.native_host_package",
+                          "needs.preflight.result == 'success'"):
+            self.assertIn(condition, block)
+        self.assertIn("contents: read", block)
+        self.assertNotIn("secrets", block)
+
     def test_native_host_packaging_policy_matches_matrix_and_artifacts(self) -> None:
         path = ".github/workflows/native-host-package.yml"
         workflow = (REPO_ROOT / path).read_text()
@@ -565,7 +580,10 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         self.assertEqual(entry["executionMode"], "direct")
         self.assertEqual(entry["allowedEvents"], ["workflow_dispatch"])
         self.assertEqual(entry["allowedActors"], ["edwardkim"])
-        self.assertEqual(entry["requiredJobs"], [f"Package {platform}" for platform in platforms])
+        self.assertEqual(entry["evidencePath"], ".github/workflows/ci.yml")
+        self.assertEqual(entry["requiredJobs"], ["CI preflight", "Build & Test"] + [
+            f"native-host-package / Package {platform}" for platform in platforms
+        ])
         self.assertEqual(entry["requiredArtifacts"], [f"rhwp-native-host-{platform}" for platform in platforms])
         self.assertEqual(entry["requiredSkippedJobs"], [])
         self.assertIn("name: Package ${{ matrix.platform }}", workflow)
@@ -592,7 +610,7 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         entry = self.policy["workflows"][path]
         run = {
             "id": 42, "url": "https://github.com/edwardkim/rhwp/actions/runs/42",
-            "path": path, "event": "workflow_dispatch", "actor": "edwardkim", "executionMode": "direct",
+            "path": entry["evidencePath"], "event": "workflow_dispatch", "actor": "edwardkim", "executionMode": "direct",
             "headSha": "b" * 40, "workflowSha256": digest, "paginationComplete": True,
             "status": "completed", "conclusion": "success",
             "jobs": [{"name": name, "status": "completed", "conclusion": "success"}
@@ -616,7 +634,7 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
                 for item in run["jobs"]
             ]}
             self.assertIn(f"job-not-green:{job}:skipped", verify(failed)["errors"])
-        for changes in ({"event": "push"}, {"headSha": "c" * 40}, {"workflowSha256": "d" * 64}):
+        for changes in ({"event": "push"}, {"path": path}, {"headSha": "c" * 40}, {"workflowSha256": "d" * 64}):
             self.assertFalse(verify({**run, **changes})["ok"])
 
     def test_policy_covers_baseline_and_is_bound_to_inventory_hash(self) -> None:

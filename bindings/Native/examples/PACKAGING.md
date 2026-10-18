@@ -97,14 +97,28 @@ python3 bindings/Native/tests/package_native_host_contract.py
 worker를 쓰는 호스트는 종료 요청 후 작업 완료와 release까지 확인하고 라이브러리를
 언로드해야 한다. 창·IME·접근성의 실제 OS 통합 및 한컴 시각 비교는 별도 검증 대상이다.
 
-`Native host package` workflow는 `workflow_dispatch`로만 시작한다. Linux x86_64,
+`Native host package` workflow는 수동 실행과 기존 CI의 명시적 `workflow_call`을 지원한다. Linux x86_64,
 macOS arm64, Windows x86_64의 native-skia FFI 빌드 → capability probe → 패키징 →
 패키지 headless 실행 → 7일 보관 artifact 업로드를 수행한다. PR/push 자동 CI를 추가하지
 않으며, GitHub Release·패키지 배포·코드 서명은 수행하지 않는다. 로컬에서 workflow 파일과
 mock 검사를 확인한 것과 각 OS runner의 실제 성공을 구분한다.
 
-workflow promotion policy에는 manual `direct` 증거로 등록한다. 같은 exact candidate SHA의
-`Package linux-x86_64`, `Package macos-aarch64`, `Package windows-x86_64` job 성공과
+새 수동 workflow는 [기본 브랜치에 등록되어야 직접 실행할 수 있다](https://docs.github.com/actions/managing-workflow-runs/manually-running-a-workflow).
+등록 전의 승격 증거는 이미 등록된 CI를 통해 같은 commit의 reusable workflow를 호출해 만든다.
+메인터너가 실행을 승인한 뒤 다음 명령을 사용한다.
+
+```sh
+gh workflow run ci.yml --ref devel -f release_grade=false -f native_host_package=true
+```
+
+`native_host_package`의 기본값은 false이며 PR/push에서는 실행하지 않는다. 실행 job도 수동 이벤트를
+확인하고 `contents: read`만 받는다. [같은 저장소의 상대 경로 호출은 caller와 같은 commit](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows)을
+사용한다. run의 실제 `head_sha`를 실행하려던 candidate SHA와 다시 대조한다.
+
+workflow promotion policy에는 이 수동 CI run을 사용하는 `direct` 증거로 등록한다.
+같은 exact candidate SHA에서 `CI preflight`, `Build & Test`,
+`native-host-package / Package linux-x86_64`, `native-host-package / Package macos-aarch64`,
+`native-host-package / Package windows-x86_64` job 성공과
 각 플랫폼의 `rhwp-native-host-<platform>` artifact를 모두 요구한다. artifact 이름은 run 안에서
 고정하며, run/head 연결과 각 패키지 manifest의 선언 SHA를 별도로 확인한다. 기존 required check나
 배포 권한을 바꾸지 않으며, 로컬 mock 검사를 수동 workflow 실행 증거로 대체하지 않는다.

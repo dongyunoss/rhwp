@@ -1,8 +1,9 @@
 name: Native host package
 
-# Explicit packaging evidence only: no PR/push trigger, release, signing or deployment.
+# Manual packaging, including calls from registered CI. No release/signing/deploy.
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -14,6 +15,7 @@ concurrency:
 jobs:
   package:
     name: Package ${{ matrix.platform }}
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     strategy:

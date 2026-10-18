@@ -396,9 +396,11 @@
         "artifact"
       ],
       "requiredJobs": [
-        "Package linux-x86_64",
-        "Package macos-aarch64",
-        "Package windows-x86_64"
+        "CI preflight",
+        "Build & Test",
+        "native-host-package / Package linux-x86_64",
+        "native-host-package / Package macos-aarch64",
+        "native-host-package / Package windows-x86_64"
       ],
       "requiredSkippedJobs": [],
       "requiredArtifacts": [
@@ -411,7 +413,8 @@
       ],
       "allowedActors": [
         "edwardkim"
-      ]
+      ],
+      "evidencePath": ".github/workflows/ci.yml"
     }
   }
 }
