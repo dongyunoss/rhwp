@@ -80,11 +80,14 @@ def main():
         if len(raw) > 1024 * 1024:
             raise ValueError("package manifest exceeds 1 MiB")
         manifest = json.loads(raw)
-        if (manifest["schemaVersion"] != 1
-                or manifest["platform"] != platform.system()
+        if type(manifest.get("schemaVersion")) is not int or manifest["schemaVersion"] != 1:
+            raise ValueError("unsupported package schema version")
+        if (manifest["platform"] != platform.system()
                 or manifest["architecture"] != architecture()):
             raise ValueError("package platform/architecture does not match this host")
         files = manifest["files"]
+        if not isinstance(files, dict):
+            raise ValueError("invalid package file manifest")
         for relative, digest in files.items():
             path = checked_file(root, relative)
             if not isinstance(digest, str) or not re.fullmatch("[0-9a-f]{64}", digest):
@@ -99,6 +102,9 @@ def main():
         expected = {"Linux": "lib/librhwp_native_ffi.so",
                     "Darwin": "lib/librhwp_native_ffi.dylib",
                     "Windows": "lib/rhwp_native_ffi.dll"}[platform.system()]
+        required = {"run.py", expected, *__REQUIRED_SOURCE_FILES__}
+        if not required.issubset(files):
+            raise ValueError("incomplete package file manifest")
         if artifact["path"] != expected or artifact["sha256"] != files[expected]:
             raise ValueError("invalid packaged library entry")
         library = checked_file(root, expected)
@@ -120,7 +126,7 @@ def main():
 
 if __name__ == "__main__":
     raise SystemExit(main())
-'''
+'''.replace("__REQUIRED_SOURCE_FILES__", repr(sorted(SOURCE_FILES)))
 
 
 def architecture():

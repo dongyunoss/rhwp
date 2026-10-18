@@ -239,6 +239,28 @@ class PackageNativeHostContracts(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn(b"requires --library", result.stderr)
 
+    def test_launcher_requires_hashes_for_imported_runtime_modules(self):
+        manifest = self.build()
+        original = json.loads(json.dumps(manifest))
+        for relative in ("examples/native_worker.py", "examples/native_file_store.py", "run.py"):
+            with self.subTest(relative=relative):
+                manifest = json.loads(json.dumps(original))
+                del manifest["files"][relative]
+                (self.output / "manifest.json").write_text(json.dumps(manifest))
+                result = self.launch(None, "headless", "--output", "new.hwpx")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("incomplete package file manifest", result.stderr)
+
+    def test_launcher_rejects_noninteger_schema_versions(self):
+        manifest = self.build()
+        for version in (True, 1.0, "1", 2):
+            with self.subTest(version=version):
+                manifest["schemaVersion"] = version
+                (self.output / "manifest.json").write_text(json.dumps(manifest))
+                result = self.launch(None, "headless", "--output", "new.hwpx")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("package schema version", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
