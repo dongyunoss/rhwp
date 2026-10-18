@@ -62,6 +62,11 @@ pub(crate) fn fullwidth_onepoint_ink(style: &TextStyle, draw_font_size: f64) -> 
     })
 }
 
+/// 가운뎃점만 공통 벡터 경로를 사용한다. U+2024는 공급 글꼴과 전진 소유를 따른다.
+pub fn is_vector_middle_dot(cluster: &str) -> bool {
+    cluster == "\u{00B7}"
+}
+
 /// 이전 payload와 비정상적으로 큰 리더를 위한 점선 근사 간격.
 /// 유효한 일반 리더는 `tab_leader::dot_geometry`의 glyph 원점과 셀 배분을 쓴다.
 /// 과거 KTX의 특정 크기에서 관측한 0.248은 출력 격자가 포함된 근삿값이며
