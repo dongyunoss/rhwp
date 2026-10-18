@@ -11553,6 +11553,29 @@ impl LayoutEngine {
     }
 }
 
+/// 문단 글자 색인 `pos` 의 자동번호 placeholder(공백)를 `text` 로 바꾼다.
+/// 줄·run 의 글자 수로 위치를 찾고, 그 자리가 공백이 아니면 바꾸지 않는다.
+fn replace_placeholder_char(composed: &mut ComposedParagraph, pos: usize, text: &str) -> bool {
+    for line in &mut composed.lines {
+        let mut start = line.char_start;
+        for run in &mut line.runs {
+            if run.inserted_control_text {
+                continue;
+            }
+            let len = run.text.chars().count();
+            if pos < start + len {
+                let Some((byte, ' ')) = run.text.char_indices().nth(pos - start) else {
+                    return false;
+                };
+                run.text.replace_range(byte..byte + 1, text);
+                return true;
+            }
+            start += len;
+        }
+    }
+    false
+}
+
 /// paragraph 의 sibling controls 중 `wrap=TopAndBottom` +
 /// `treat_as_char=false` 인 개체가 차지하는 vertical 영역 (HWPUNIT) 합산.
 ///
