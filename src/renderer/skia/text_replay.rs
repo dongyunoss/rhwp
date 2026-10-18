@@ -752,21 +752,22 @@ impl SkiaTextReplay<'_> {
                                 ch.is_ascii_alphanumeric()
                                     || (style.fixed_glyph_advances && ch.is_ascii_graphic())
                             });
-                            let fit_scale = fit_positions
+                            let (fit_scale, fit_dx) = fit_positions
                                 .get(*char_idx)
                                 .and_then(|start| {
                                     let end = *char_idx + cluster.chars().count();
                                     let advance = fit_positions.get(end)? - start;
-                                    let natural_width =
-                                        f64::from(font.measure_str(cluster, None).0);
-                                    crate::renderer::canvas_cluster_fit_scale(
+                                    let (natural_width, ink) = font.measure_str(cluster, None);
+                                    crate::renderer::canvas_cluster_fit(
                                         style,
+                                        cluster,
                                         advance,
-                                        natural_width * f64::from(ratio),
+                                        f64::from(natural_width * ratio),
+                                        Some(f64::from(ink.width() * ratio)),
                                         pin_ascii_advance,
                                     )
                                 })
-                                .unwrap_or(1.0) as f32;
+                                .map_or((1.0, 0.0), |(scale, dx)| (scale as f32, dx as f32));
                             if synthetic_bold {
                                 // 글리프의 장평·원본 폭만 맞추고 합성 획의 사용자 좌표 폭은 유지한다.
                                 font.set_scale_x(ratio * fit_scale);
@@ -774,19 +775,21 @@ impl SkiaTextReplay<'_> {
                                     canvas,
                                     cluster,
                                     &font,
-                                    (char_x, char_y),
+                                    (char_x + fit_dx, char_y),
                                     glyph_paint,
                                     self.raster_target,
                                 ) {
-                                    canvas.draw_str(cluster, (char_x, char_y), &font, glyph_paint);
+                                    canvas.draw_str(cluster, (char_x + fit_dx, char_y), &font, glyph_paint);
                                 }
                                 continue;
                             }
-                            let scale = ratio * fit_scale;
-                            if has_ratio || (fit_scale - 1.0).abs() > f32::EPSILON {
+                            if has_ratio
+                                || (fit_scale - 1.0).abs() > f32::EPSILON
+                                || fit_dx.abs() > f32::EPSILON
+                            {
                                 canvas.save();
-                                canvas.translate((char_x, char_y));
-                                canvas.scale((scale, 1.0));
+                                canvas.translate((char_x + fit_dx, char_y));
+                                canvas.scale((ratio * fit_scale, 1.0));
                                 if !hft_outline.as_ref().is_some_and(|outline| {
                                     outline.draw(canvas, cluster, &font, (0.0, 0.0), glyph_paint)
                                 }) {
