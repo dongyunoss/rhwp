@@ -39,6 +39,17 @@ use crate::paint::{
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
 
+struct ImageSmoothingScope {
+    context: CanvasRenderingContext2d,
+    previous: bool,
+}
+
+impl Drop for ImageSmoothingScope {
+    fn drop(&mut self) {
+        self.context.set_image_smoothing_enabled(self.previous);
+    }
+}
+
 /// Returns a conservative replay envelope for text ops that may be culled.
 /// `None` means fail closed: replay the op and let the Canvas clip decide.
 fn partial_text_replay_bounds(op: &PaintOp) -> Option<BoundingBox> {
@@ -83,6 +94,8 @@ use super::layout::{
     forces_halfwidth_cjk_quote, forces_halfwidth_punct_paint, split_into_clusters,
 };
 
+#[cfg(target_arch = "wasm32")]
+mod hft_outline;
 #[cfg(target_arch = "wasm32")]
 mod middle_dot;
 
@@ -302,7 +315,9 @@ fn parse_image_dimensions_canvas(data: &[u8]) -> Option<(u32, u32)> {
         return Some((w, h.unsigned_abs()));
     }
 
-    None
+    // 변환된 WMF의 SVG도 명시된 원본 픽셀 좌표로 crop한다.
+    // 크기를 추측해 natural size와 viewBox를 혼용하지 않는다.
+    super::svg_fragment::svg_intrinsic_pixel_dimensions(data)
 }
 
 /// Web Canvas 2D 렌더러
@@ -384,6 +399,8 @@ pub struct WebCanvasRenderer {
     active_decoration_trim: usize,
     suppress_text_glyphs: bool,
     metric_descriptor_mismatch: std::cell::Cell<bool>,
+    hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
+    hft_outline_enabled: bool,
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -412,7 +429,13 @@ impl WebCanvasRenderer {
             active_decoration_trim: 0,
             suppress_text_glyphs: false,
             metric_descriptor_mismatch: std::cell::Cell::new(false),
+            hft_outline_fonts: None,
+            hft_outline_enabled: false,
         })
+    }
+
+    pub(crate) fn set_hft_outline_fonts(&mut self, fonts: &super::hft_outline::HftOutlineFonts) {
+        self.hft_outline_fonts = Some(fonts.clone());
     }
 
     /// 줌 스케일 설정 (1.0 = 100%, 2.0 = 200%)
@@ -478,6 +501,10 @@ impl WebCanvasRenderer {
 
     /// 레이어 트리를 Canvas에 렌더링
     pub fn render_layer_tree(&mut self, tree: &PageLayerTree) {
+        self.hft_outline_enabled = matches!(
+            tree.profile,
+            crate::paint::RenderProfile::Print | crate::paint::RenderProfile::HighQuality
+        );
         self.show_paragraph_marks = tree.output_options.show_paragraph_marks;
         self.show_control_codes = tree.output_options.show_control_codes;
         self.layer_clip_enabled = tree.output_options.clip_enabled;
@@ -835,7 +862,22 @@ impl WebCanvasRenderer {
             } else {
                 std::borrow::Cow::Borrowed(&img.data[..])
             };
-            let filter_str = if preserve_color_watermark {
+            let (brightness, contrast) = img.display_brightness_contrast();
+            let adjusted = (!preserve_color_watermark)
+                .then(|| {
+                    crate::renderer::image_resolver::adjusted_picture_bytes(
+                        &render_data,
+                        img.effect,
+                        brightness,
+                        contrast,
+                    )
+                })
+                .flatten();
+            let adjustments_baked = adjusted.is_some();
+            let render_data = adjusted.map_or(render_data, std::borrow::Cow::Owned);
+            let filter_str = if adjustments_baked {
+                None
+            } else if preserve_color_watermark {
                 if baked_color_watermark {
                     None
                 } else {
@@ -1077,7 +1119,7 @@ impl WebCanvasRenderer {
         }
         if let Some(ref data) = img.data {
             let preserve_color_watermark = img.is_real_picture_watermark_tone_preset();
-            let is_watermark_image = img.is_watermark();
+            let is_watermark_image = crate::renderer::image_resolver::is_watermark_image(img);
             let mut baked_watermark = false;
             let render_data: std::borrow::Cow<[u8]> = if preserve_color_watermark {
                 match crate::renderer::image_resolver::real_picture_watermark_fill_bytes_to_hancom_tone_png_bytes(
@@ -1104,7 +1146,25 @@ impl WebCanvasRenderer {
             } else {
                 std::borrow::Cow::Borrowed(&data[..])
             };
-            let filter_str = if baked_watermark {
+            let adjusted = (!(baked_watermark || preserve_color_watermark))
+                .then(|| {
+                    crate::renderer::image_resolver::adjusted_picture_bytes(
+                        &render_data,
+                        img.effect,
+                        img.brightness,
+                        img.contrast,
+                    )
+                })
+                .flatten();
+            let adjustments_baked = adjusted.is_some();
+            let mut render_data = adjusted.map_or(render_data, std::borrow::Cow::Owned);
+            if super::image_resolver::png_sampling::interpolation(data).is_some()
+                && super::image_resolver::png_sampling::interpolation(render_data.as_ref())
+                    .is_none()
+            {
+                super::image_resolver::png_sampling::preserve(data, render_data.to_mut());
+            }
+            let filter_str = if baked_watermark || adjustments_baked {
                 None
             } else if preserve_color_watermark {
                 Some(real_picture_watermark_tone_filter())
@@ -2326,8 +2386,10 @@ impl Renderer for WebCanvasRenderer {
                                 0.0
                             }
                         };
-                        let pin_ascii_advance =
-                            cluster_str.chars().any(|ch| ch.is_ascii_alphanumeric());
+                        let pin_ascii_advance = cluster_str.chars().any(|ch| {
+                            ch.is_ascii_alphanumeric()
+                                || (style.fixed_glyph_advances && ch.is_ascii_graphic())
+                        });
                         // Measured fallback advance already includes script size and
                         // document ratio exactly once. Do not fit it a second time.
                         let fit_scale = if measured_descriptor.is_some() {
@@ -2354,7 +2416,9 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx
                             .scale(ratio * fit_scale.unwrap_or(1.0), 1.0)
                             .unwrap_or(());
-                        let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        if !self.draw_hft_outline(cluster_str, style, font_size) {
+                            let _ = self.ctx.fill_text(cluster_str, 0.0, 0.0);
+                        }
                         self.ctx.restore();
                     }
                 }
@@ -2634,6 +2698,7 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_image(&mut self, data: &[u8], x: f64, y: f64, w: f64, h: f64) {
+        let _sampling = self.image_sampling_scope(data, None, w, h);
         let key = hash_bytes(data);
 
         let decoded = DECODED_CANVAS_CACHE.with(|cache| {
@@ -2746,6 +2811,32 @@ impl Renderer for WebCanvasRenderer {
 
 #[cfg(target_arch = "wasm32")]
 impl WebCanvasRenderer {
+    fn image_sampling_scope(
+        &self,
+        data: &[u8],
+        source: Option<(f64, f64)>,
+        w: f64,
+        h: f64,
+    ) -> Option<ImageSmoothingScope> {
+        let declared = super::image_resolver::png_sampling::interpolation(data)?;
+        let source = source.or_else(|| super::image_resolver::png_sampling::dimensions(data))?;
+        let matrix = self.ctx.get_transform().ok()?;
+        let selected = super::image_resolver::png_sampling::magnification(
+            Some(declared),
+            source,
+            (
+                w * matrix.a().hypot(matrix.b()),
+                h * matrix.c().hypot(matrix.d()),
+            ),
+        )?;
+        let previous = self.ctx.image_smoothing_enabled();
+        self.ctx.set_image_smoothing_enabled(selected);
+        Some(ImageSmoothingScope {
+            context: self.ctx.clone(),
+            previous,
+        })
+    }
+
     /// crop 영역만 표시하는 drawImage (9인자 버전)
     fn draw_image_cropped(
         &mut self,
@@ -2759,6 +2850,7 @@ impl WebCanvasRenderer {
         dw: f64,
         dh: f64,
     ) {
+        let _sampling = self.image_sampling_scope(data, Some((sw, sh)), dw, dh);
         let key = hash_bytes(data);
 
         let decoded = DECODED_CANVAS_CACHE.with(|cache| {

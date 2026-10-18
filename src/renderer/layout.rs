@@ -5821,6 +5821,7 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         footer_area: &LayoutRect,
         font_size: f64,
+        source_hft: bool,
     ) -> f64 {
         let margin_footer = (layout.page_height - (footer_area.y + footer_area.height)).max(0.0);
         let band_bottom = if margin_footer > 1e-6 {
@@ -5831,7 +5832,15 @@ impl LayoutEngine {
             footer_area.y + footer_area.height / 2.0
         };
         // 글상자 상단과 기준선을 혼용하지 않고 아래끝에서 기준선 여유를 뺀다.
-        band_bottom - font_size / 3.0
+        // 독립 한컴 Print의 HFT Type3 글상자는 em=1000, yMin=-200이다.
+        // TTF의 기존 기준선 여유를 HFT에도 쓰면 자동 번호가 약 0.133em 위에 놓인다.
+        // 글꼴 이름·표시용 대체 face가 아니라 원본 영문 슬롯의 프로그램 종류를 쓴다.
+        let descent = if source_hft {
+            font_size * 0.2
+        } else {
+            font_size / 3.0
+        };
+        band_bottom - descent
     }
 
     fn page_number_baseline_y(
@@ -5839,6 +5848,7 @@ impl LayoutEngine {
         layout: &PageLayoutInfo,
         page_border_fill: Option<&PageBorderFill>,
         font_size: f64,
+        source_hft: bool,
     ) -> Option<f64> {
         let pbf = page_border_fill.filter(|p| p.border_fill_id > 0)?;
         let paper_based = matches!(pbf.basis, PageBorderBasis::PaperBased);
@@ -5846,7 +5856,7 @@ impl LayoutEngine {
             return None;
         }
         // 쪽 테두리 경로도 같은 아래쪽 여백 기준선을 소비한다.
-        Some(self.footer_page_number_y(layout, &layout.footer_area, font_size))
+        Some(self.footer_page_number_y(layout, &layout.footer_area, font_size, source_hft))
     }
 
     fn build_page_borders(
@@ -6720,30 +6730,34 @@ impl LayoutEngine {
             // #7336 쪽번호는 HCRDotum 인데, 고정 `바탕`은 폭·획·세로 위치를
             // 모두 다르게 그렸다.
             const PAGE_NUMBER_PT: f64 = 10.0;
-            let page_number_char_style = styles
+            let page_number_style_id = styles
                 .page_number_char_style_id
-                .and_then(|id| styles.char_styles.get(id));
-            let font_size = page_number_char_style
-                .map(|style| style.font_size)
-                .filter(|size| *size > 0.0)
-                .unwrap_or(PAGE_NUMBER_PT * self.dpi / 72.0);
+                .filter(|&id| styles.char_styles.get(id).is_some());
+            // 쪽번호도 본문과 같은 글자모양을 소비한다. 굵게·장평·자간과
+            // 선언 글꼴 메트릭을 빼면 폭 측정과 실제 glyph가 원본 계약을 잃는다.
+            // 숫자·장식은 기존과 같이 영문 슬롯(1)의 스타일로 잰 뒤 그대로 칠한다.
+            let mut page_num_style = page_number_style_id
+                .map(|id| resolved_to_text_style(styles, id as u32, 1))
+                .unwrap_or_else(|| TextStyle {
+                    font_family: "바탕".to_string(),
+                    font_size: PAGE_NUMBER_PT * self.dpi / 72.0,
+                    ..Default::default()
+                });
+            if page_num_style.font_family.is_empty() {
+                page_num_style.font_family = "바탕".to_string();
+            }
+            if page_num_style.font_size <= 0.0 {
+                page_num_style.font_size = PAGE_NUMBER_PT * self.dpi / 72.0;
+            }
+            let font_size = page_num_style.font_size;
+            // 글줄 정보가 없는 HFT 자동 번호의 숫자·장식은 정렬에 쓴 원본
+            // 전진폭으로 그린다. 본문의 저장 줄·기존 글꼴 선택에는 적용하지 않는다.
+            page_num_style.fixed_glyph_advances = styles.page_number_font_is_hft;
 
             // [#3048] 폭은 실제 폰트 메트릭으로 잰다. 종전 `문자수 × 크기 × 0.6` 은
             // 장식 공백이 든 `- 1 -`(5자)을 30pt 로 과대평가해(실측 24.8pt) 가운데·
             // 오른쪽 정렬 위치를 약 2pt 왼쪽으로 밀었다. 아래 TextRunNode 가 쓰는
             // 스타일과 **같은 값**으로 재야 측정과 렌더가 어긋나지 않는다.
-            let page_num_style = TextStyle {
-                font_family: page_number_char_style
-                    .and_then(|style| style.font_families.get(1).or(style.font_families.first()))
-                    .filter(|family| !family.is_empty())
-                    .cloned()
-                    .unwrap_or_else(|| "바탕".to_string()),
-                font_size,
-                color: page_number_char_style
-                    .map(|style| style.text_color)
-                    .unwrap_or(0x000000),
-                ..Default::default()
-            };
             let text_width = estimate_text_width(&page_num_text, &page_num_style);
 
             let is_odd_page = page_content.page_number % 2 == 1;
@@ -6779,16 +6793,26 @@ impl LayoutEngine {
                 .unwrap_or(false);
             let is_footer = !matches!(pnp.position, 1..=3 | 7 | 9);
             let footer_center = if is_footer {
-                self.footer_page_number_y(layout, target_area, font_size)
+                self.footer_page_number_y(
+                    layout,
+                    target_area,
+                    font_size,
+                    styles.page_number_font_is_hft,
+                )
             } else {
                 target_area.y + target_area.height / 2.0 + font_size / 3.0
             };
             // 본문 기준 테두리 경로도 공통 쪽번호 기준선을 사용한다.
             // 종이 기준 테두리·감추기 여부로 별도의 글자 원점을 만들지 않는다.
             let y = if is_footer {
-                self.page_number_baseline_y(layout, page_border_fill, font_size)
-                    .filter(|_| border_drawn)
-                    .unwrap_or(footer_center)
+                self.page_number_baseline_y(
+                    layout,
+                    page_border_fill,
+                    font_size,
+                    styles.page_number_font_is_hft,
+                )
+                .filter(|_| border_drawn)
+                .unwrap_or(footer_center)
             } else {
                 footer_center
             };
@@ -6862,6 +6886,7 @@ impl LayoutEngine {
         // 이 zone emit 경로 하나에서 그린다.
         let mut prev_zone_layout_for_sep: Option<PageLayoutInfo> = None;
         let mut prev_zone_sep_y_start: f64 = 0.0;
+        let mut prev_zone_sep_y_end: f64 = 0.0;
         // [Task #853/#866] 직전 zone 의 "디자인 spacing"(1단 ColumnDef 의 `간격`, 다단은 0).
         // 한컴은 zone 전환 시 (이전 zone 디자인 spacing /2)+(새 zone /2) 만큼 세로 여백을
         // 둔다(shortcut.hwp 1쪽 헤더 띠 ColumnDef 간격=10mm → 제목↔헤더 5mm, 헤더↔본문 5mm).
@@ -6924,7 +6949,7 @@ impl LayoutEngine {
                         body_node,
                         &pz,
                         prev_zone_sep_y_start,
-                        prev_zone_y_end,
+                        prev_zone_sep_y_end,
                     );
                 }
                 // 새 zone 의 디자인 spacing = 이 zone 첫 paragraph 의 ColumnDef `간격`(1단 한정).
@@ -7039,6 +7064,7 @@ impl LayoutEngine {
                             .unwrap_or(false));
                 prev_zone_was_multi = zone_layout.column_areas.len() >= 2;
                 last_zone_y_offset = col_content.zone_y_offset;
+                prev_zone_sep_y_end = 0.0;
                 // 본 zone 이 다단 + 구분선 보유 시 종료 시점에 emit 하기 위해 기록.
                 // [Task #1333] zone emit(emit_zone_column_separators)이 단 구분선의 단일
                 // 경로다. zone_layout=None(초기 단정의·연속 페이지)은 unwrap_or(layout)로
@@ -7205,6 +7231,17 @@ impl LayoutEngine {
                     }
                 }
             }
+            // 다음 흐름의 원점에는 줄 뒤 간격을 포함하지만, 구분선은 수용한
+            // 줄·표·개체의 물리 끝까지만 그린다. 빈 글줄의 상자도 점유로 보존한다.
+            // Column 자체 bbox는 전체 본문 높이이므로 실제 자식의 범위를 소비한다.
+            let content_bottom = col_node
+                .children
+                .iter()
+                .map(render_subtree_bottom)
+                .reduce(f64::max);
+            if let Some(bottom) = content_bottom {
+                prev_zone_sep_y_end = prev_zone_sep_y_end.max(bottom);
+            }
             body_node.children.push(col_node);
         }
 
@@ -7215,7 +7252,7 @@ impl LayoutEngine {
                 body_node,
                 &pz,
                 prev_zone_sep_y_start,
-                prev_zone_y_end,
+                prev_zone_sep_y_end,
             );
         }
     }
@@ -10229,6 +10266,7 @@ impl LayoutEngine {
                         item,
                         PageItem::FullParagraph { .. }
                             | PageItem::Shape { .. }
+                            | PageItem::Table { .. }
                             | PageItem::PartialTable { .. }
                     )
                 {
@@ -10237,8 +10275,12 @@ impl LayoutEngine {
                         // lazy 기준이 아직 없거나 다른 기준으로 재생성될 수 있다.
                         // 그 기준으로 저장 사다리를 다시 투영하지 않는다.
                         let resolved_end = col_area.y + end;
-                        if !matches!(item, PageItem::Shape { .. } | PageItem::PartialTable { .. })
-                            || resolved_end >= new_y
+                        if !matches!(
+                            item,
+                            PageItem::Shape { .. }
+                                | PageItem::Table { .. }
+                                | PageItem::PartialTable { .. }
+                        ) || resolved_end >= new_y
                         {
                             new_y = resolved_end;
                         }
@@ -12234,6 +12276,23 @@ impl LayoutEngine {
                     _ => area_x + om_l,
                 };
                 Some(x)
+            } else if let Some(pen) = is_tac
+                .then(|| {
+                    composed.get(para_index).and_then(|composed| {
+                        self.stored_inline_control_pen(
+                            para,
+                            composed,
+                            control_index,
+                            styles,
+                            col_area,
+                        )
+                    })
+                })
+                .flatten()
+            {
+                // 호스트 본문을 그리지 않아도 저장 줄 전체의 정렬 결과를 쓴다.
+                // pen은 바깥여백 전이므로 괘선 원점으로 한 번만 전진한다.
+                Some(pen + hwpunit_to_px(t.outer_margin_left as i32, self.dpi))
             } else if is_tac {
                 // TAC 문단에 PageItem::FullParagraph 가 발행되지 않아
                 // paragraph_layout 가 호출되지 않는 케이스(선행 공백만 있는 TAC 표 등):

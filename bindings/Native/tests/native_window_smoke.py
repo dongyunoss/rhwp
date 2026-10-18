@@ -212,6 +212,69 @@ class AdapterTests(unittest.TestCase):
         window.io.shutdown(wait=True)
         window.close()
 
+    def test_opened_document_drops_previous_interaction_geometry(self):
+        window = NativeWindow(None, worker=IdleWorker())
+        window.timer.stop()
+        window.actions.clear()
+        window.refresh = lambda: None
+        window.caret = {"page": 4}
+        window.rects = [{"page": 4}]
+        window.preedit_rects = [{"page": 4}]
+        window.preedit_start = {"paragraph": 9}
+        window.drag_anchor = {"paragraph": 9}
+        window.preferred_x = 123
+        window.view = {"visible": [{"page": 4}]}
+        window.opened({})
+        self.assertIsNone(window.caret)
+        self.assertEqual(window.rects, [])
+        self.assertEqual(window.preedit_rects, [])
+        self.assertIsNone(window.preedit_start)
+        self.assertIsNone(window.drag_anchor)
+        self.assertIsNone(window.preferred_x)
+        self.assertEqual(window.view, {})
+        window.finished = True
+        window.io.shutdown(wait=True)
+        window.close()
+
+    def test_page_geometry_query_does_not_cross_an_edit_revision(self):
+        worker = IdleWorker()
+        window = NativeWindow(None, worker=worker)
+        window.timer.stop()
+        window.actions.clear()
+        window.refresh = lambda: None
+        window.info = {"documentId": 7, "revision": 0, "pageCount": 2}
+        window.loading_pages = True
+        window.load_page_size(0, 2)
+        window.pump()
+        window.enqueue([lambda _: {"op": "replace", "text": "x"}])
+        window.pending = None
+        window.step_done({"ok": True, "size": {"width": 100, "height": 200}})
+        window.pump()
+        window.pending = None
+        window.step_done({"ok": True, "outcome": {"revision": 1}})
+        window.pump()
+        self.assertEqual([request["op"] for request in worker.requests], ["pageSize", "replace"])
+        self.assertFalse(window.loading_pages)
+        self.assertEqual(window.pages, [])
+        window.finished = True
+        window.io.shutdown(wait=True)
+        window.close()
+
+    def test_page_geometry_failure_allows_a_later_reload(self):
+        window = NativeWindow(None, worker=IdleWorker())
+        window.timer.stop()
+        window.actions.clear()
+        window.info = {"documentId": 7, "revision": 0}
+        window.loading_pages = True
+        window.load_page_size(0, 2)
+        window.pump()
+        window.pending = None
+        window.step_done({"ok": False, "error": "geometry unavailable"})
+        self.assertFalse(window.loading_pages)
+        window.finished = True
+        window.io.shutdown(wait=True)
+        window.close()
+
 
 def pump(app, predicate, timeout=45):
     deadline = time.monotonic() + timeout
@@ -249,6 +312,20 @@ def actual_smoke(library, screenshot=None):
         pump(app, lambda: idle() and window.context.get("text") == "")
         window.command("redo")
         pump(app, lambda: idle() and window.context.get("text") == "각")
+        control = Qt.KeyboardModifier.ControlModifier
+        for key in (Qt.Key.Key_A, Qt.Key.Key_C):
+            QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, key, control))
+            pump(app, idle)
+        assert app.clipboard().text() == "각"
+        QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_X, control))
+        pump(app, lambda: idle() and window.context.get("text") == "")
+        QApplication.sendEvent(window.canvas, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_V, control))
+        pump(app, idle)
+        assert window.context.get("text") == "각", (window.context, window.errors, app.clipboard().mimeData().html())
+        window.command("undo")
+        pump(app, lambda: idle() and window.context.get("text") == "")
+        window.command("redo")
+        pump(app, lambda: idle() and window.context.get("text") == "각")
         window.zoom_at(1.25)
         pump(app, lambda: bool(window.frames) and idle())
         if screenshot is not None:
@@ -266,11 +343,12 @@ def actual_smoke(library, screenshot=None):
             pump(app, lambda: window.info["documentId"] != document_id and idle() and bool(window.frames))
             assert not window.info["isDirty"]
         assert not window.errors, window.errors
-        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"saveReopen":true,"osIMEVerified":false}')
+        print('{"ok":true,"qtOffscreen":true,"nativeRender":true,"syntheticKoreanIME":true,"clipboard":true,"saveReopen":true,"osIMEVerified":false}')
     finally:
         pump(app, lambda: not window.io_jobs)
         window.close()
         pump(app, lambda: window.finished)
+        app.clipboard().clear()
 
 
 if __name__ == "__main__":

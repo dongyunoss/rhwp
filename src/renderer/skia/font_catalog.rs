@@ -68,7 +68,7 @@ impl TypefaceCatalog {
                 if family.is_empty() {
                     return Err(invalid("native font face has no family name"));
                 }
-                catalog.insert_face(bytes, face_index, face, false);
+                catalog.insert_face(bytes, face_index, face);
             }
         }
         Ok(catalog)
@@ -145,12 +145,13 @@ impl TypefaceCatalog {
                         font_mgr.new_from_data(Data::new_copy(&bytes), Some(face_index))
                     {
                         retained_bytes += bytes.len() as u64;
-                        source_catalog.insert_face(&bytes, face_index, face, true);
+                        source_catalog.insert_face(&bytes, face_index, face);
                     }
                 }
             }
             // The first supplied path owns the family's complete style set.
-            // Within that directory retain distinct styles for CSS matching;
+            // Within that directory retain all bounded faces for CSS matching
+            // and P47's per-character coverage fallback;
             // later paths cannot override it with a closer style match.
             for (family, faces) in source_catalog.families {
                 catalog.families.entry(family).or_insert(faces);
@@ -162,17 +163,17 @@ impl TypefaceCatalog {
         catalog
     }
 
-    fn insert_face(&mut self, data: &[u8], face_index: u32, face: Typeface, unique_style: bool) {
+    fn insert_face(&mut self, data: &[u8], face_index: u32, face: Typeface) {
         for family in supplied_family_names(data, face_index, &face.family_name()) {
             let family = family.trim().to_lowercase();
             if family.is_empty() {
                 continue;
             }
             let faces = self.families.entry(family).or_default();
-            if !faces.iter().any(|existing| {
-                existing.unique_id() == face.unique_id()
-                    || (unique_style && existing.font_style() == face.font_style())
-            }) {
+            if !faces
+                .iter()
+                .any(|existing| existing.unique_id() == face.unique_id())
+            {
                 faces.push(face.clone());
             }
         }

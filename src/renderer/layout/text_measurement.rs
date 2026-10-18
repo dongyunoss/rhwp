@@ -540,8 +540,14 @@ impl EmbeddedTextMeasurer {
                 // (= 우측 끝 - 한컴_seg_w) 로 저장되어 있어 LEFT fallback 이 인코딩 의도와
                 // 정합. RIGHT 정확 매치 시 seg_w 이중 차감 → ≈seg_w (≈112px) 좌측 이탈
                 // (aift p4 1-1 등 23/24 라인 모두 영향). 본 LEFT fallback 동작 유지.
-                if tab_char_idx < style.inline_tabs.len() {
-                    let ext = &style.inline_tabs[tab_char_idx];
+                // [#7170] 자리표는 `compute_char_positions_walk` 와 같이 순번만 소비하고
+                // `TabDef` 기준 재계산으로 내려간다. 폭 0 탭으로 읽으면 run 폭에서 탭
+                // 전진이 빠져 다음 run 이 탭 뒤 글자 위에 겹친다.
+                let stored_ext = style
+                    .inline_tabs
+                    .get(tab_char_idx)
+                    .filter(|ext| !crate::model::paragraph::tab_ext_is_placeholder(ext));
+                if let Some(ext) = stored_ext {
                     let tab_width_px = ext[0] as f64 * 96.0 / 7200.0;
                     let tab_type = ext[2];
                     let tab_target = total + tab_width_px;
@@ -844,6 +850,8 @@ pub(crate) fn resolved_to_text_style(
 ) -> TextStyle {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
+            fixed_glyph_advances: false,
+            source_font_is_hft: cs.source_hft_for_lang(lang_index),
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
             font_metric_trusted: cs.font_metric_trusted_for_lang(lang_index),
@@ -1079,6 +1087,12 @@ pub(crate) fn kopub_declared_space_em(primary_name: &str) -> Option<f64> {
 
 fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> {
     let family = KoPubFamily::from_primary(primary_name)?;
+    // KoPub 전용 전각 표가 공통 반각 판정(#6023)을 가리지 않아야 한다.
+    // ｢｣ 등은 한컴 Print에서도 반각이며, 해당 글리프는 실제 메트릭 조회와
+    // 공통 Unicode 반각 폴백에 맡긴다. 전각 ASCII/CJK 폭 표는 그대로 쓴다.
+    if is_unicode_halfwidth_form(c) {
+        return None;
+    }
 
     // [#7390] 공백은 표가 아니라 **반각**이다. 글꼴의 `hmtx`/`/Widths` 는 KoPubDotum
     // 290 · KoPubBatang 312 이지만 한/글은 그 값으로 전진시키지 않는다. 정본
@@ -1111,6 +1125,11 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         if units > 0 {
             return Some(quantize_hwp_px(font_size * f64::from(units) / 1000.0));
         }
+    }
+    // KoPub Dotum/Batang의 세 굵기 모두 U+203B cmap+hmtx 전진폭은900/1000em이다.
+    // 한컴 Print의 장평98%·자간-3%에서도11.36px로 같으며 반각 fallback이 아니다.
+    if c == '※' {
+        return Some(quantize_hwp_px(font_size * 0.9));
     }
     if is_narrow_punctuation(c) {
         return Some(quantize_hwp_px(font_size * 0.3));

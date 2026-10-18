@@ -63,7 +63,7 @@ pub(super) struct TypefaceCandidate {
 /// Match family records only: a full face or PostScript name is not a family.
 pub(super) fn supplied_family_names(data: &[u8], face_index: u32, primary: &str) -> Vec<String> {
     let mut families = vec![primary.to_string()];
-    // Match the same collection face that the bounded catalog constructed.
+    // Read the same collection face that the bounded catalog constructed.
     if let Ok(face) = ttf_parser::Face::parse(data, face_index) {
         for name in face.names() {
             if !matches!(

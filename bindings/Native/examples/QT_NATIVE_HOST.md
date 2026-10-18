@@ -25,6 +25,8 @@ executor를 사용한다. 파일 쓰기가 실패하면 cancel하며, 이미 성
 - 화면에 보이는 region만 페이지별로 순서대로 렌더한다. native frame은 복사·release 후
   `Format_RGBA8888_Premultiplied` QImage로 다시 소유한다. 이전 revision/font generation/view의
   결과는 표시하지 않는다. GUI에서 레이아웃을 재계산하지 않는다.
+  페이지 크기 조회 도중 문서 revision이 바뀌면 이전 조회를 버리고 새 정보로 다시 시작한다.
+  조회 실패는 로딩 상태를 해제하며, 문서 교체 시 이전 문서의 선택·캐럿·조합 장식과 이동 기준을 지운다.
 - click/drag, selection/caret overlay, 좌우·상하·Home/End, Backspace/Delete, Enter, Ctrl+A/Z/Y,
   Ctrl+C/X/V를 연결한다. Home/End는 문단 경계다. 셀·inline object 편집은 native API의 거절을 표시한다.
 - Qt `QInputMethodEvent` preedit→update→commit을 native composition에 연결한다. Focus loss는 cancel이다.
@@ -49,8 +51,8 @@ QT_QPA_PLATFORM=offscreen .venv-qt/bin/python -B bindings/Native/tests/native_wi
 라이브러리를 지정하면 실제 blank→region 표시→합성 Qt 조합 ㄱ/가/각→commit→좌우 키 이동→undo/redo→HWPX 새 파일
 저장→재열기를 검사한다. 이 검사는 OS 한글 입력기·후보창, 한컴 시각 일치 또는 플랫폼 배포 패키지 검증을
 대체하지 않는다. `--screenshot`은 선택 사항이며 실행 중인 QWidget을 새 PNG 파일로 남긴다.
-실제 스모크에는 P60까지의 worker/editor/IME 문맥 ABI가 포함된 native-skia 라이브러리가 필요하다.
-창의 복사·잘라내기·붙여넣기 기능에는 P61 clipboard ABI도 필요하며 위 스모크는 그 기능을 검사하지 않는다.
+실제 스모크에는 P61까지의 worker/editor/IME 문맥·clipboard ABI가 포함된 native-skia 라이브러리가 필요하다.
+Ctrl+A/C/X/V로 Qt clipboard의 복사·잘라내기·붙여넣기와 한 번의 undo/redo도 검사한다.
 
 근거: [QInputMethodEvent](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QInputMethodEvent.html),
 [QImage](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QImage.html),

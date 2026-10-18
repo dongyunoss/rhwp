@@ -698,6 +698,28 @@
       ]
     },
     {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHftOutline.otf",
+      "sha256": "c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ]
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHftOutlineJamo.otf",
+      "sha256": "4b83808ea8cfc6f20c2c03b7259155e1aa205f4f24f5b54ce0e6137ca431c588",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ]
+    },
+    {
       "repositoryPath": "tests/fixtures/fonts/RHWPHostFixture-Italic.ttf",
       "sha256": "b6f6f576995a976e35eb4323a39633352060ad6b884fd791152a8fce1b1c1e81",
       "license": "MIT",
@@ -827,6 +849,51 @@
       ],
       "copyrightNotices": [
         "Copyright © 2022 by THE HYUNDAI. All right reserved."
+      ]
+    },
+    {
+      "repositoryPath": "vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans-Bold.ttf",
+      "sha256": "0d977336a6d5fba34eab8e3199eb218327161b5143749f802982c2bc34df0c96",
+      "license": "Bitstream-Vera AND LicenseRef-Arev-Fonts",
+      "licenseFiles": [
+        "vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-DejaVu"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved.\nCopyright (c) 2006 by Tavmjong Bah. All Rights Reserved.\nDejaVu changes are in public domain\n"
+      ]
+    },
+    {
+      "repositoryPath": "vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf",
+      "sha256": "abdc775b21b1bc470d50c97e790d276f2054b7504e56e5bd3e64f48d68582322",
+      "license": "Bitstream-Vera AND LicenseRef-Arev-Fonts",
+      "licenseFiles": [
+        "vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-DejaVu"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved.\nCopyright (c) 2006 by Tavmjong Bah. All Rights Reserved.\nDejaVu changes are in public domain\n"
+      ]
+    },
+    {
+      "repositoryPath": "vendor/rhwp-pdf-import-backend/src/fonts/assets/DroidSansFallbackFull.ttf",
+      "sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+      "license": "Apache-2.0",
+      "licenseFiles": [
+        "vendor/rhwp-pdf-import-backend/LICENSE-APACHE",
+        "vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-fallback-fonts"
+      ],
+      "copyrightNotices": [
+        "Digitized data copyright Google Corporation © 2006"
+      ]
+    },
+    {
+      "repositoryPath": "vendor/rhwp-pdf-import-backend/src/fonts/assets/NotoEmoji-Regular.ttf",
+      "sha256": "415dc6290378574135b64c808dc640c1df7531973290c4970c51fdeb849cb0c5",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "vendor/rhwp-pdf-import-backend/src/fonts/assets/LICENSE-NotoEmoji"
+      ],
+      "copyrightNotices": [
+        "Copyright 2013 Google Inc. All Rights Reserved."
       ]
     }
   ]

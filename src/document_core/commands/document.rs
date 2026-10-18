@@ -1,5 +1,7 @@
 //! 문서 생성/로딩/저장/설정 관련 native 메서드
 
+mod hft_outline_fonts;
+mod initial_fields;
 mod reflowed_table_frames;
 
 use crate::document_core::validation::{
@@ -173,6 +175,17 @@ impl DocumentCore {
         Self::from_bytes_inner(data, Some(password))
     }
 
+    /// PDF의 전체 또는 선택한 원본 쪽을 직접 IR로 가져와 공통 Core를 초기화한다.
+    #[cfg(feature = "pdf-import")]
+    pub fn from_pdf_bytes(
+        data: &[u8],
+        options: &crate::parser::pdf::PdfImportOptions,
+    ) -> Result<DocumentCore, HwpError> {
+        let parsed = crate::parser::parse_pdf_with_metadata(data, options)
+            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        Self::from_parsed_document(parsed, crate::parser::FileFormat::Pdf)
+    }
+
     fn from_bytes_inner(data: &[u8], password: Option<&[u8]>) -> Result<DocumentCore, HwpError> {
         let source_format = crate::parser::detect_format(data);
         let parsed = match password {
@@ -180,8 +193,17 @@ impl DocumentCore {
             None => crate::parser::parse_document_with_metadata(data),
         }
         .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        Self::from_parsed_document(parsed, source_format)
+    }
+
+    fn from_parsed_document(
+        parsed: crate::parser::ParsedDocument,
+        source_format: crate::parser::FileFormat,
+    ) -> Result<DocumentCore, HwpError> {
         let mut document = parsed.document;
         let hml_metadata = parsed.hml_metadata;
+        #[cfg(feature = "pdf-import")]
+        let pdf_metadata = parsed.pdf_metadata;
 
         // [#4813] 손상 입력 DoS 방어 — 파싱 직후, compose/pagination/layout 이 저장
         // line_seg 를 소비하기 전에 물리적으로 불가능한 과다 line_seg 배열을 제거한다.
@@ -287,8 +309,10 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             canvas_metrics: None,
+            hft_outline_fonts: Default::default(),
             font_environment: None,
             composed: Vec::new(),
+            body_page_field_error: None,
             render_normalization: super::super::RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
@@ -335,6 +359,8 @@ impl DocumentCore {
             para_offset: Vec::new(),
             source_format,
             hml_metadata,
+            #[cfg(feature = "pdf-import")]
+            pdf_metadata,
             validation_report,
         };
 
@@ -1879,6 +1905,10 @@ impl DocumentCore {
         self.snapshot_store.clear();
         self.next_snapshot_id = 0;
         self.source_format = crate::parser::FileFormat::Hwp;
+        #[cfg(feature = "pdf-import")]
+        {
+            self.pdf_metadata = None;
+        }
         self.validation_report = ValidationReport::new();
 
         self.convert_to_editable_native()?;
@@ -1891,6 +1921,11 @@ impl DocumentCore {
 
     /// Document IR을 HWP 5.0 CFB 바이너리로 직렬화 (네이티브 에러 타입)
     pub fn export_hwp_native(&self) -> Result<Vec<u8>, HwpError> {
+        // PDF has no original HWP wire metadata to preserve. Both public save
+        // entry points must use the same format-lowered, disposable snapshot.
+        if self.source_format == crate::parser::FileFormat::Pdf {
+            return self.export_hwp_with_adapter();
+        }
         // [#7114] 어댑터 없는 경로도 같은 저장 프레임을 낸다 — 두 진입점이 다른 조판을
         // 저장하면 «저장본을 다시 열면 배치가 달라진다» 가 경로마다 갈린다.
         // 재래핑된 표가 없으면 복제 없이 live IR 을 그대로 쓴다.
@@ -3203,163 +3238,7 @@ impl DocumentCore {
     /// start_char_idx != end_char_idx 상태가 된다.
     /// compose 전에 이 텍스트를 제거하여 빈 필드(start==end)로 정규화한다.
     fn clear_initial_field_texts(document: &mut Document) {
-        use crate::model::control::{Control, FieldType};
-        use crate::model::paragraph::Paragraph;
-
-        fn process_para(para: &mut Paragraph) {
-            // 삭제 대상 field_range 인덱스와 삭제할 문자 범위 수집
-            let mut removals: Vec<(usize, usize, usize)> = Vec::new(); // (fr_idx, start, end)
-            for (fri, fr) in para.field_ranges.iter().enumerate() {
-                if fr.start_char_idx >= fr.end_char_idx {
-                    continue;
-                }
-                if let Some(Control::Field(f)) = para.controls.get(fr.control_idx) {
-                    if f.field_type != FieldType::ClickHere {
-                        continue;
-                    }
-                    if f.properties & (1 << 15) != 0 {
-                        continue;
-                    } // 이미 수정된 상태
-                      // 필드 값이 안내문과 동일한지 확인
-                    if let Some(guide) = f.guide_text() {
-                        let chars: Vec<char> = para.text.chars().collect();
-                        if fr.end_char_idx <= chars.len() {
-                            let field_val: String =
-                                chars[fr.start_char_idx..fr.end_char_idx].iter().collect();
-                            // trailing 공백 제거 후 비교 (한컴이 안내문 뒤에 공백을 추가하는 경우)
-                            if field_val.trim_end() == guide || field_val == guide {
-                                removals.push((fri, fr.start_char_idx, fr.end_char_idx));
-                            }
-                        }
-                    }
-                }
-            }
-            // [Task #1893] 삭제 수술의 IR 불변성 완성용 스냅샷 — 삭제 전 char_offsets 는
-            // 원본 문자 인덱스→utf16 위치 매핑의 유일한 근거다. removal 좌표는 전부
-            // 수집-시점(원본) 인덱스이므로, 원본 스냅샷으로 utf16 범위를 구해
-            // char_shapes 경계를 함께 시프트해야 직렬화→재파스가 고정점이 된다.
-            // (종전엔 text/field_ranges 만 고쳐 char_offsets/char_count/char_shapes 가
-            // stale — 그 불일치 IR 을 저장하면 재파스 정준형과 조판이 갈라져
-            // 라운드트립 렌더 752px 분기·빈 줄 추가가 발생했다.)
-            let orig_offsets: Vec<u32> = para.char_offsets.clone();
-            let orig_chars: Vec<char> = para.text.chars().collect();
-            let offsets_valid = orig_offsets.len() == orig_chars.len();
-            fn utf16_width(c: char) -> u32 {
-                if c == '\t' {
-                    8
-                } else if (c as u32) > 0xFFFF {
-                    2
-                } else {
-                    1
-                }
-            }
-            let mut any_removed = false;
-
-            // 뒤에서부터 삭제 (인덱스 안정성 유지)
-            for &(fri, start, end) in removals.iter().rev() {
-                let chars: Vec<char> = para.text.chars().collect();
-                // [Task #1620] 다중 removal 처리 중 앞선 removal 이 para.text 를 축소하면(특히
-                // 같은 범위를 가리키는 중첩 field_range) 이후 removal 의 수집-시점 (start,end) 가
-                // 현재 길이를 초과해 슬라이스 패닉(36396650). 현재 길이 기준 범위를 재검증해 skip.
-                if start > end || end > chars.len() {
-                    continue;
-                }
-                let removed_len = end - start;
-                let new_text: String = chars[..start].iter().chain(chars[end..].iter()).collect();
-                para.text = new_text;
-                para.field_ranges[fri].end_char_idx = start;
-                // 이후 field_ranges의 char_idx 조정
-                for i in 0..para.field_ranges.len() {
-                    if i == fri {
-                        continue;
-                    }
-                    let other = &mut para.field_ranges[i];
-                    if other.start_char_idx >= end {
-                        other.start_char_idx -= removed_len;
-                    }
-                    if other.end_char_idx >= end {
-                        other.end_char_idx -= removed_len;
-                    }
-                }
-                any_removed = true;
-
-                // [Task #1893] char_offsets/char_shapes/char_count 직접 수술 — 원본 utf16
-                // 좌표 기준. 역순 처리라 오른쪽 removal 의 시프트가 왼쪽 utf16 좌표에 영향
-                // 없고, 삭제 폭(u_end−u_start)은 원본 스냅샷 불변량이다. 컨트롤/필드 마커의
-                // 8유닛 갭 구조는 기존 오프셋에 이미 올바르게 인코딩되어 있으므로 감산만으로
-                // 보존된다.
-                if offsets_valid && start < end && end <= orig_offsets.len() {
-                    let u_start = orig_offsets[start];
-                    // [#3545] 지워진 본문 run 을 HWPX 저장에서 되살리기 위한 잔재 기록.
-                    // 한컴 정준형은 미기입 누름틀의 안내문을 파일에 본문 run 으로 남기므로
-                    // (form-01.hwpx), 기록 없이 저장하면 파일에서 영구 소실된다. 서식까지
-                    // 되살리도록 그 텍스트를 담던 run 의 char shape 도 함께 남긴다 — 아래
-                    // 수술이 zero-width 로 접기 전의 원본 좌표에서 조회해야 정확하다.
-                    let residue_shape_id = para
-                        .char_shapes
-                        .iter()
-                        .rev()
-                        .find(|cs| cs.start_pos <= u_start)
-                        .map(|cs| cs.char_shape_id)
-                        .unwrap_or(0);
-                    let residue_text: String = orig_chars[start..end].iter().collect();
-                    let ctrl_idx = para.field_ranges[fri].control_idx;
-                    if let Some(Control::Field(f)) = para.controls.get_mut(ctrl_idx) {
-                        f.guide_residue = Some(crate::model::control::GuideResidue {
-                            text: residue_text,
-                            char_shape_id: residue_shape_id,
-                        });
-                    }
-                    // 삭제 폭 = 삭제 문자들의 utf16 폭만. orig_offsets[end] 는 필드 end
-                    // 마커의 8유닛 갭을 건너뛴 다음 문자 위치라 갭까지 폭에 포함되어
-                    // 후속 오프셋에서 마커 갭이 소실된다(슬롯 방출 위치 붕괴).
-                    let u_end = orig_offsets[end - 1] + utf16_width(orig_chars[end - 1]);
-                    let width = u_end.saturating_sub(u_start);
-                    // 삭제 구간의 오프셋 엔트리 제거 + 후속 엔트리 감산.
-                    para.char_offsets.drain(start..end);
-                    for off in para.char_offsets.iter_mut().skip(start) {
-                        *off = off.saturating_sub(width);
-                    }
-                    para.char_count = para.char_count.saturating_sub(width);
-                    for cs in &mut para.char_shapes {
-                        if cs.start_pos >= u_end {
-                            cs.start_pos -= width;
-                        } else if cs.start_pos > u_start {
-                            // 삭제 범위 내부 경계 → zero-width run 으로 시작점에 고정
-                            // (한컴도 필드값 삭제 시 zero-width char run 을 남긴다 —
-                            // 원본 서식의 자식 없는 <hp:run/> 33개와 동일 표현).
-                            cs.start_pos = u_start;
-                        }
-                    }
-                }
-            }
-            if any_removed {}
-        }
-
-        fn process_table(table: &mut crate::model::table::Table) {
-            for cell in &mut table.cells {
-                for cp in &mut cell.paragraphs {
-                    process_para(cp);
-                    // 중첩 표 재귀 탐색
-                    for ctrl in &mut cp.controls {
-                        if let Control::Table(nested) = ctrl {
-                            process_table(nested);
-                        }
-                    }
-                }
-            }
-        }
-
-        for section in &mut document.sections {
-            for para in &mut section.paragraphs {
-                process_para(para);
-                for ctrl in &mut para.controls {
-                    if let Control::Table(table) = ctrl {
-                        process_table(table);
-                    }
-                }
-            }
-        }
+        initial_fields::clear(document);
     }
 }
 
