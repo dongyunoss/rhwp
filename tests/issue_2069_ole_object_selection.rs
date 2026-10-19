@@ -857,6 +857,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
                     if run.display_or_text() == "1."
             )
         })
+        .filter(|_| rendered_text.contains("그림 1."))
         .unwrap_or_else(|| {
             panic!(
                 "OLE 캡션의 표시 번호가 있어야 함 {}: 표시 문자열={:?}",
