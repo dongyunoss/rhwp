@@ -1,4 +1,5 @@
-//! MultiLine의 저장 값과 표시 효과를 분리하는 미해결 렌더링 회귀.
+//! 저장된 개행과 입력 상자의 Print 표시 문자열을 구분한다.
+//! 독립 한컴 Print는 같은 FIRST LF SECOND 입력에서 MultiLine=0/1 모두 FIRST만 표시한다.
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, FormType};
 
@@ -27,16 +28,23 @@ fn fixture(multiline: bool, text: &str) -> DocumentCore {
 }
 
 #[test]
-fn multiline_edit_must_not_paint_a_stored_line_break_as_single_line() {
+fn edit_print_displays_first_stored_line_for_both_multiline_values() {
     let multiline = fixture(true, "FIRST\nSECOND");
     let singleline = fixture(false, "FIRST\nSECOND");
-    // 이 회귀는 줄 높이·정렬 수치를 정하지 않고 현재 속성의 완전 무시만 검출한다.
-    // SVG text 요소 안의 개행 하나는 두 표시 줄을 만들지 않는다.
-    assert_ne!(
-        multiline.render_page_svg_native(0).unwrap(),
-        singleline.render_page_svg_native(0).unwrap(),
-        "MultiLine=1의 저장된 두 줄이 한 줄 입력 상자와 똑같이 그려짐",
-    );
+    let outputs = [multiline, singleline].map(|doc| doc.render_page_svg_native(0).unwrap());
+    // 동일성만 검사하면 두 출력에 SECOND를 잘못 이어 그린 이전 코드도 통과한다.
+    // 원문·속성 보존은 fixture에서, 실제 표시 문자열은 출력에서 독립적으로 확인한다.
+    for svg in &outputs {
+        assert!(
+            svg.contains(">FIRST</text>"),
+            "Print에 첫 줄이 표시되어야 한다"
+        );
+        assert!(
+            !svg.contains("SECOND"),
+            "Print에 저장된 다음 줄을 이어 그리지 않는다"
+        );
+    }
+    assert_eq!(outputs[0], outputs[1], "이 입력의 독립 Print 두 장은 같다");
 }
 
 #[test]
