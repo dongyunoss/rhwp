@@ -207,23 +207,68 @@ pub(crate) fn project(owner: &TextRunNode, bbox: BoundingBox) -> Option<Projecti
     let inner_baseline = baseline + base_size * (ratio - 1.0) * alignment;
     let count = composition.characters.len();
     let mut interior = Vec::with_capacity(count);
+    // 펼침은 동일한 중심 간격이 아니다. 원 글자의 자연 전진에 비례해 내부
+    // 80% 폭을 나누고, 실제로 그린 글자들의 전체 경계를 가운데에 놓는다.
+    // 크기 비율은 그릴 글자만 바꾸며 원 글자 사이에 배분한 전진은 보존한다.
+    let natural_widths: Vec<_> = composition
+        .characters
+        .iter()
+        .map(|(character, style)| {
+            glyph(owner, *character, style.clone(), 0.0, inner_baseline)
+                .bbox
+                .width
+        })
+        .collect();
+    let total_width: f64 = natural_widths.iter().sum();
+    let mut cursor = 0.0;
     for (i, (character, original)) in composition.characters.iter().enumerate() {
         let mut style = original.clone();
         style.font_size *= ratio;
-        if composition.spread && count > 0 {
-            let scale = 1.0 / count as f64;
-            style.ratio *= if composition.border.is_none() {
-                scale.min(0.8)
+        if composition.spread {
+            let share = if total_width > 0.0 {
+                natural_widths[i] / total_width
             } else {
-                scale
+                1.0 / count as f64
             };
-        }
-        let center = if composition.spread && count > 1 {
-            bbox.x + width * (i as f64 + 0.5) / count as f64
+            let advance = width * 0.8 * share;
+            let natural = glyph(owner, *character, style.clone(), 0.0, inner_baseline)
+                .bbox
+                .width;
+            let base_scale = (1.0 / count as f64).min(if composition.border.is_none() {
+                0.8
+            } else {
+                1.0
+            });
+            let minimum_scale = if natural > 0.0 {
+                (advance / natural).min(1.0)
+            } else {
+                0.0
+            };
+            style.ratio =
+                if style.ratio > 0.0 { style.ratio } else { 1.0 } * base_scale.max(minimum_scale);
+            let mut drawn = glyph(owner, *character, style, 0.0, inner_baseline);
+            drawn.bbox.x = cursor;
+            interior.push(drawn);
+            cursor += advance;
         } else {
-            bbox.x + width / 2.0
-        };
-        interior.push(glyph(owner, *character, style, center, inner_baseline));
+            interior.push(glyph(
+                owner,
+                *character,
+                style,
+                bbox.x + width / 2.0,
+                inner_baseline,
+            ));
+        }
+    }
+    if composition.spread {
+        let extent = interior
+            .iter()
+            .map(|g| g.bbox.x + g.bbox.width)
+            .fold(0.0, f64::max);
+        let origin = bbox.x + (width - extent) / 2.0;
+        for g in &mut interior {
+            g.bbox.x += origin;
+        }
     }
     let mut bounds = border.as_ref().map_or(bbox, |g| g.bbox);
     if !reversed {
