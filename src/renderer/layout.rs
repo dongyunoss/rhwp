@@ -5327,12 +5327,16 @@ impl LayoutEngine {
                     let img = {
                         bs.image_fill.as_ref().and_then(|img_fill| {
                             find_bin_data_bytes(bin_data_content, img_fill.bin_data_id).map(
-                                |data| PageBackgroundImage {
-                                    data,
-                                    fill_mode: img_fill.fill_mode,
-                                    brightness: img_fill.brightness,
-                                    contrast: img_fill.contrast,
-                                    effect: img_fill.effect,
+                                |data| {
+                                    crate::renderer::image_resolver::resolve_page_background_tone(
+                                        PageBackgroundImage {
+                                            data,
+                                            fill_mode: img_fill.fill_mode,
+                                            brightness: img_fill.brightness,
+                                            contrast: img_fill.contrast,
+                                            effect: img_fill.effect,
+                                        },
+                                    )
                                 },
                             )
                         })

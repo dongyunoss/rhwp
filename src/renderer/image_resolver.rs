@@ -24,7 +24,9 @@ use crate::renderer::render_tree::{
 };
 
 mod picture_adjustments;
-pub(crate) use picture_adjustments::{adjusted_picture_bytes, picture_tone_parameters};
+pub(crate) use picture_adjustments::{
+    adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
+};
 mod wmf_picture;
 /// 명시된 crop 좌표 범위는 보존한다. 원본 WMF의 범위가 없으면 한컴의
 /// 메타파일 자르기 좌표계(축마다 15000)를 사용한다. SVG/PNG 변환 뒤의 픽셀
