@@ -8,7 +8,7 @@ use encoding_rs::EUC_KR;
 pub(super) fn decode(payload: &[u8]) -> Option<String> {
     if let Some(split) = payload.windows(2).position(|pair| pair == [0, 0]) {
         let tail = &payload[split + 2..];
-        if tail.len() >= 2 && tail.ends_with(&[0, 0]) && (tail.len() - 2) % 2 == 0 {
+        if tail.len() >= 2 && tail.ends_with(&[0, 0]) && (tail.len() - 2).is_multiple_of(2) {
             let units: Vec<u16> = tail[..tail.len() - 2]
                 .chunks_exact(2)
                 .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))

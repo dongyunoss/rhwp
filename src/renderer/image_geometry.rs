@@ -2,7 +2,7 @@
 use super::render_tree::{BoundingBox, ShapeTransform};
 use crate::model::image::Picture;
 
-/// 저장본은 imgRect와 실제 합성 행렬이 그림의 방향을 정한다.
+/// 저장본은 실제 합성 행렬이 그림의 방향을 정한다.
 /// 편집 중에는 아직 저장 행렬이 없으므로 편집 플래그를 사용한다.
 pub(crate) fn picture_transform(picture: &Picture) -> ShapeTransform {
     let shape = &picture.shape_attr;
@@ -10,17 +10,10 @@ pub(crate) fn picture_transform(picture: &Picture) -> ShapeTransform {
     if shape.raw_rendering.is_empty() || shape.group_level != 0 {
         return transform;
     }
-    // border_x/y는 x/y 배열이 아니라 HWP5의 꼭짓점 스칼라 네 개씩이다.
-    let [x0, y0, x1, y1] = picture.border_x.map(f64::from);
-    let [_, _, x3, y3] = picture.border_y.map(f64::from);
-    let map_vector = |x, y| {
-        [
-            shape.render_sx * x + shape.render_b * y,
-            shape.render_c * x + shape.render_sy * y,
-        ]
-    };
-    let u = map_vector(x1 - x0, y1 - y0);
-    let v = map_vector(x3 - x0, y3 - y0);
+    // imgRect는 그림의 저장 경계다. 꼭짓점 순서를 뒤집은 입력을 이미지
+    // 반전으로 추정하지 않고, 실제 행렬이 변환한 두 기저축을 사용한다.
+    let u = [shape.render_sx, shape.render_c];
+    let v = [shape.render_b, shape.render_sy];
     let (sin, cos) = transform.rotation.to_radians().sin_cos();
     // 직교·축 정렬 계약이 성립하는 사각형만 분해한다. 전단·묶음 행렬을
     // 두 개의 flip 플래그로 근사하지 않으며 기존 별도 경로를 유지한다.

@@ -1164,22 +1164,13 @@ impl DocumentCore {
             pic.shape_attr.raw_rendering.clear();
             // 회전 없는 저장 경로는 이 명시적 행렬을 소비한다. 플래그만 바꾸면
             // 한컴은 반전 전 그림을 출력하므로 원본 사각형 안의 반전도 기록한다.
-            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64
-                + if pic.shape_attr.horz_flip {
-                    pic.shape_attr.original_width as f64
-                } else {
-                    0.0
-                };
-            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64
-                + if pic.shape_attr.vert_flip {
-                    pic.shape_attr.original_height as f64
-                } else {
-                    0.0
-                };
-            pic.shape_attr.render_sx = if pic.shape_attr.horz_flip { -1.0 } else { 1.0 };
-            pic.shape_attr.render_sy = if pic.shape_attr.vert_flip { -1.0 } else { 1.0 };
-            pic.shape_attr.render_b = 0.0;
-            pic.shape_attr.render_c = 0.0;
+            let [sx, b, tx, c, sy, ty] = pic.shape_attr.local_reflection_matrix();
+            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64 + tx;
+            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64 + ty;
+            pic.shape_attr.render_sx = sx;
+            pic.shape_attr.render_sy = sy;
+            pic.shape_attr.render_b = b;
+            pic.shape_attr.render_c = c;
         }
 
         // 자르기: HWP 내부 crop은 원본 이미지의 source rect 좌표이고,
