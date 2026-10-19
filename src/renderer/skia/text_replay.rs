@@ -462,7 +462,7 @@ impl SkiaTextReplay<'_> {
                                     + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
                                     + dx;
                                 canvas.save();
-                                canvas.translate((char_x, y as f32 + dy));
+                                canvas.translate((char_x, y as f32 + dy + span.baseline_offset));
                                 if has_ratio {
                                     canvas.scale((ratio, 1.0));
                                 }
