@@ -9358,25 +9358,26 @@ impl LayoutEngine {
                                     seg_display.as_deref().unwrap_or(&seg_text),
                                     &seg_style,
                                 );
-                                let (seg_w, seg_layout_positions) = if overlap_control_index.is_some() {
-                                    (full_width, layout_positions.clone())
-                                } else {
-                                    emitted_run_layout_positions(
-                                    kerning_layout_session,
-                                    ExactFontSlot::new(run.char_style_id, run.lang_index),
-                                    seg_display.as_deref().unwrap_or(&seg_text),
-                                    &seg_style,
-                                    seg_w,
-                                    0,
-                                    leading_space_ownership
-                                        .in_fragment(run_idx, seg_start, rel_pos),
-                                    run.char_overlap.is_none()
-                                        && seg_display.is_none()
-                                        && !seg_text.chars().any(|character| {
-                                            matches!(character, '\t' | '\n' | '\r')
-                                        }),
-                                )
-                                };
+                                let (seg_w, seg_layout_positions) =
+                                    if overlap_control_index.is_some() {
+                                        (full_width, layout_positions.clone())
+                                    } else {
+                                        emitted_run_layout_positions(
+                                            kerning_layout_session,
+                                            ExactFontSlot::new(run.char_style_id, run.lang_index),
+                                            seg_display.as_deref().unwrap_or(&seg_text),
+                                            &seg_style,
+                                            seg_w,
+                                            0,
+                                            leading_space_ownership
+                                                .in_fragment(run_idx, seg_start, rel_pos),
+                                            run.char_overlap.is_none()
+                                                && seg_display.is_none()
+                                                && !seg_text.chars().any(|character| {
+                                                    matches!(character, '\t' | '\n' | '\r')
+                                                }),
+                                        )
+                                    };
                                 let seg_id = tree.next_id();
                                 let seg_node = RenderNode::new(
                                     seg_id,
@@ -9473,23 +9474,23 @@ impl LayoutEngine {
                                 (full_width, layout_positions.clone())
                             } else {
                                 emitted_run_layout_positions(
-                                kerning_layout_session,
-                                ExactFontSlot::new(run.char_style_id, run.lang_index),
-                                seg_display.as_deref().unwrap_or(&seg_text),
-                                &seg_style,
-                                seg_w - extra_word_sp * trailing_space_count as f64,
-                                trailing_space_count,
-                                leading_space_ownership.in_fragment(
-                                    run_idx,
-                                    seg_start,
-                                    run_chars.len(),
-                                ),
-                                run.char_overlap.is_none()
-                                    && seg_display.is_none()
-                                    && !seg_text
-                                        .chars()
-                                        .any(|character| matches!(character, '\t' | '\n' | '\r')),
-                            )
+                                    kerning_layout_session,
+                                    ExactFontSlot::new(run.char_style_id, run.lang_index),
+                                    seg_display.as_deref().unwrap_or(&seg_text),
+                                    &seg_style,
+                                    seg_w - extra_word_sp * trailing_space_count as f64,
+                                    trailing_space_count,
+                                    leading_space_ownership.in_fragment(
+                                        run_idx,
+                                        seg_start,
+                                        run_chars.len(),
+                                    ),
+                                    run.char_overlap.is_none()
+                                        && seg_display.is_none()
+                                        && !seg_text.chars().any(|character| {
+                                            matches!(character, '\t' | '\n' | '\r')
+                                        }),
+                                )
                             };
                             let seg_id = tree.next_id();
                             let seg_node = RenderNode::new(

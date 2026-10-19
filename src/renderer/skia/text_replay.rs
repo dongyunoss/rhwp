@@ -779,7 +779,12 @@ impl SkiaTextReplay<'_> {
                                     glyph_paint,
                                     self.raster_target,
                                 ) {
-                                    canvas.draw_str(cluster, (char_x + fit_dx, char_y), &font, glyph_paint);
+                                    canvas.draw_str(
+                                        cluster,
+                                        (char_x + fit_dx, char_y),
+                                        &font,
+                                        glyph_paint,
+                                    );
                                 }
                                 continue;
                             }
