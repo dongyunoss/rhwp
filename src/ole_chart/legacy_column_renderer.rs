@@ -2,7 +2,8 @@
 
 use std::fmt::Write;
 
-use super::legacy_presentation::{Backdrop, Font, Pen, Presentation, Section, Text};
+use super::legacy_legend_layout::{text_size, LegendLayout};
+use super::legacy_presentation::{Backdrop, Font, Pen, Presentation, Section};
 use super::svg_renderer::{escape_xml_text, font_attributes, format_axis_value, series_fill};
 use super::OleChart;
 
@@ -32,22 +33,6 @@ fn inset(section: &Section) -> f64 {
         }
         _ => 40.0,
     }
-}
-
-fn text_size(text: &Text) -> Option<[f64; 2]> {
-    let m = &text.metrics;
-    if !m.cache_valid
-        || m.extent.iter().any(|v| *v < 0)
-        || m.margin < 0
-        || m.orientation != 0
-        || m.horizontal > 2
-        || m.vertical != 2
-    {
-        return None;
-    }
-    let width = f64::from(m.rect[2]) - f64::from(m.rect[0]);
-    let height = f64::from(m.rect[3]) - f64::from(m.rect[1]);
-    (width > 0.0 && height > 0.0).then_some([width, height])
 }
 
 fn line(svg: &mut String, bounds: [f64; 4], pen: Pen, unit: f64) {
@@ -111,36 +96,14 @@ pub(super) fn render(
         if !plain(font) || section.location != 6 || !supported(section.backdrop.as_ref()) {
             return None;
         }
-        let mut marker: f64 = 0.0;
-        let mut label_width: f64 = 0.0;
-        for series in &p.series {
-            let label = series.legend.as_ref()?;
-            if label.font != *font || label.metrics.horizontal != 0 {
-                return None;
-            }
-            let size = text_size(label)?;
-            marker = marker.max(size[1] * unit);
-            label_width = label_width.max(size[0] * unit);
-        }
-        let column_width = marker * 1.5 + label_width;
-        // 열 사이 간격은 저장 Section 좌표이며 마커/레이블은 물리 점유 크기다.
-        let gap = f64::from(section.internal) * sx;
-        let margin = inset(section);
-        let available_width = width - 2.0 * f64::from(section.external) * sx;
-        let cols = ((available_width + gap) / (column_width + gap)).floor() as usize;
-        if cols == 0 {
-            return None;
-        }
-        let cols = cols.min(chart.series.len());
-        let rows = chart.series.len().div_ceil(cols);
-        let grid_w = cols as f64 * (column_width + gap) - gap;
-        let row_step = marker * 1.5;
-        let grid_h = rows as f64 * row_step - marker * 0.5;
-        // Section 최대 쪽의 50단위도 같은 저장 좌표 변환을 사용한다.
-        let grid_bottom = map_y(section.rect[1] + margin + 50.0);
-        let y = grid_bottom - grid_h;
-        let x = (width - grid_w - 50.0 * sx) / 2.0;
-        legend_layout = Some((x, y, marker, column_width + gap, row_step, cols));
+        legend_layout = Some(LegendLayout::new(
+            p,
+            font,
+            width,
+            height,
+            dpi,
+            inset(section),
+        )?);
     }
 
     let category = p.labels[0].as_ref()?;
@@ -161,7 +124,11 @@ pub(super) fn render(
     let left = map_x(p.plot_section.rect[0] + margin + value_gutter);
     let right = map_x(p.plot_section.rect[2] - margin);
     let top = map_y(p.plot_section.rect[3] - margin - endpoint);
-    let bottom = map_y(p.plot_section.rect[1] + margin + endpoint + category_gutter);
+    // 범례 표시와 같은 실제 점유 결과를 소비하고 저장 Section 사이 간격은 보존한다.
+    let bottom = map_y(p.plot_section.rect[1] + margin + endpoint + category_gutter)
+        + legend_layout
+            .as_ref()
+            .map_or(0.0, |layout| layout.section_top_delta);
     if left >= right || top >= bottom {
         return None;
     }
@@ -264,12 +231,11 @@ pub(super) fn render(
             let _ = write!(svg, "<rect x=\"{x:.4}\" y=\"{:.4}\" width=\"{bar_w:.4}\" height=\"{:.4}\" fill=\"{}\"/>", end.min(zero), (end - zero).abs(), series_fill(Some(p), series_index));
         }
     }
-    if let Some((x, y, marker, col_step, row_step, cols)) = legend_layout {
+    if let Some(layout) = legend_layout {
         let attrs = font_attributes(p.legend_font.as_ref(), dpi, "");
         for (index, _) in chart.series.iter().enumerate() {
-            let x = x + (index % cols) as f64 * col_step;
-            let y = y + (index / cols) as f64 * row_step;
-            let size = marker;
+            let [x, y] = layout.origin(index);
+            let size = layout.marker;
             let label = p.series[index].legend.as_ref()?;
             let name = &label.value;
             // 마커 packing의 물리 줄 높이와 글자의 저장 paint 상자를 구분한다.
