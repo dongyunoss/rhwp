@@ -1244,7 +1244,7 @@ struct RunEmitState {
     x: f64,
     y: f64,
     char_offset: usize,
-    emitted_tac_slots: usize,
+    emitted_inline_slots: usize,
     run_char_pos: usize,
     inline_tab_cursor_render: usize,
     pending_right_tab_render: Option<(f64, u8, u8)>,
@@ -1430,7 +1430,8 @@ pub(crate) fn trailing_space_width_after_last_inline_object(
         if stop_on_underline && ts.underline != crate::renderer::UnderlineType::None {
             break;
         }
-        width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
+        // 글자 배치가 소비하는 비반올림 폭과 같은 값으로 빼야 공백 유무가 원점을 바꾸지 않는다.
+        width += estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts);
         if trailing_spaces != run_char_count {
             break;
         }
@@ -2406,7 +2407,7 @@ fn compute_line_extra_spacing_with_dash_plan(
                     (0.0, 0)
                 } else {
                     (
-                        estimate_text_width(&" ".repeat(trailing_spaces), &ts),
+                        estimate_text_width_exact(&" ".repeat(trailing_spaces), &ts),
                         trailing_spaces,
                     )
                 }
@@ -5969,7 +5970,7 @@ impl LayoutEngine {
 
         // start_line까지의 누적 문자 오프셋 계산 (편집용 문서 좌표)
         let mut char_offset: usize = 0;
-        let mut emitted_tac_slots = 0;
+        let mut emitted_inline_slots = 0;
         let stored_tac_assignment =
             para.and_then(|p| crate::renderer::composer::composed_tac_line_assignment(p, composed));
         let tac_slots_for_line = |line_idx| {
@@ -6001,7 +6002,7 @@ impl LayoutEngine {
             // 앞쪽 조각도 실제 줄 소유 TAC의 논리 칸을 같은 기준으로 이어받는다.
             let slots = tac_slots_for_line(li);
             char_offset += slots;
-            emitted_tac_slots += slots;
+            emitted_inline_slots += slots;
         }
 
         // 첫 줄의 참조 번호도 보통 줄 안 번호와 같은 글꼴·baseline 결과를 쓴다.
@@ -6260,7 +6261,7 @@ impl LayoutEngine {
                     }
                     let slots = tac_slots_for_line(line_idx);
                     char_offset += slots;
-                    emitted_tac_slots += slots;
+                    emitted_inline_slots += slots;
                     continue;
                 }
             }
@@ -7865,7 +7866,7 @@ impl LayoutEngine {
                     x,
                     y,
                     char_offset,
-                    emitted_tac_slots,
+                    emitted_inline_slots,
                     run_char_pos,
                     inline_tab_cursor_render,
                     pending_right_tab_render,
@@ -7876,7 +7877,7 @@ impl LayoutEngine {
             x = emit_state.x;
             y = emit_state.y;
             char_offset = emit_state.char_offset;
-            emitted_tac_slots = emit_state.emitted_tac_slots;
+            emitted_inline_slots = emit_state.emitted_inline_slots;
             run_char_pos = emit_state.run_char_pos;
             inline_tab_cursor_render = emit_state.inline_tab_cursor_render;
             pending_right_tab_render = emit_state.pending_right_tab_render;
@@ -8013,7 +8014,7 @@ impl LayoutEngine {
                     &mut current_line_reserved_tac_picture_height,
                 );
                 char_offset += empty_line_slots;
-                emitted_tac_slots += empty_line_slots;
+                emitted_inline_slots += empty_line_slots;
             }
 
             // [Task #287] 빈 runs 줄의 TAC 수식 인라인 처리 — #2067 추출
@@ -8065,11 +8066,11 @@ impl LayoutEngine {
                     section_index,
                     para_index,
                     &cell_ctx,
-                    char_offset - emitted_tac_slots,
+                    char_offset - emitted_inline_slots,
                     composed
                         .lines
                         .get(line_idx + 1)
-                        .is_some_and(|next| next.char_start == char_offset - emitted_tac_slots),
+                        .is_some_and(|next| next.char_start == char_offset - emitted_inline_slots),
                     x,
                     y,
                     line_height,
@@ -8605,7 +8606,7 @@ impl LayoutEngine {
             mut x,
             y,
             mut char_offset,
-            mut emitted_tac_slots,
+            mut emitted_inline_slots,
             mut run_char_pos,
             mut inline_tab_cursor_render,
             mut pending_right_tab_render,
@@ -9157,6 +9158,49 @@ impl LayoutEngine {
                     para_index, line_idx, run_idx, run_char_pos, run_char_end, y, line_height, line_spacing_px, raw_lh, baseline, run_tacs);
             }
 
+            // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
+            // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
+            let is_last = is_last_run_of_line(run_idx);
+            let run_fn_markers: Vec<(usize, u16, usize, usize)> = fn_positions
+                .iter()
+                .enumerate()
+                .filter_map(|(fni, &(fpos, fnum, ctrl_idx))| {
+                    if is_leading_note_marker_rendered_as_prefix(
+                        para,
+                        ctrl_idx,
+                        line_idx,
+                        start_line,
+                        fpos,
+                        comp_line.char_start,
+                    ) {
+                        // 선두 주석 번호는 첫 줄의 최종 기준선에서 FootnoteMarker로 이미 그린다.
+                        // 같은 위치의 위첨자 마커를 다시 만들면 `문26)`처럼 제목이 중복된다.
+                        fn_marker_inserted[fni] = true;
+                        return None;
+                    }
+                    let relative = if let Some(overlap_index) = overlap_control_index {
+                        if fpos != run_char_pos {
+                            None
+                        } else if ctrl_idx < overlap_index {
+                            Some(0)
+                        } else if is_last {
+                            Some(run.text.chars().count())
+                        } else {
+                            None
+                        }
+                    } else {
+                        (fpos >= run_char_pos
+                            && (fpos < run_char_end || (is_last && fpos == run_char_end)))
+                            .then(|| fpos - run_char_pos)
+                    };
+                    if fn_marker_inserted[fni] {
+                        None
+                    } else {
+                        relative.map(|relative| (relative, fnum, fni, ctrl_idx))
+                    }
+                })
+                .collect();
+
             if run_tacs.is_empty() {
                 // tac 없음: 기존 렌더링 경로
                 // 선행 공백 분리
@@ -9265,49 +9309,6 @@ impl LayoutEngine {
                 let mut fn_split_extra = 0.0f64; // 각주 마커 삽입으로 인한 추가 폭
                 let mut emitted_text_width = full_width;
                 {
-                    // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
-                    // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
-                    let is_last = is_last_run_of_line(run_idx);
-                    let run_fn_markers: Vec<(usize, u16, usize, usize)> = fn_positions
-                        .iter()
-                        .enumerate()
-                        .filter_map(|(fni, &(fpos, fnum, ctrl_idx))| {
-                            if is_leading_note_marker_rendered_as_prefix(
-                                para,
-                                ctrl_idx,
-                                line_idx,
-                                start_line,
-                                fpos,
-                                comp_line.char_start,
-                            ) {
-                                // 선두 주석 번호는 첫 줄의 최종 기준선에서 FootnoteMarker로 이미 그린다.
-                                // 같은 위치의 위첨자 마커를 다시 만들면 `문26)`처럼 제목이 중복된다.
-                                fn_marker_inserted[fni] = true;
-                                return None;
-                            }
-                            let relative = if let Some(overlap_index) = overlap_control_index {
-                                if fpos != run_char_pos {
-                                    None
-                                } else if ctrl_idx < overlap_index {
-                                    Some(0)
-                                } else if is_last {
-                                    Some(run.text.chars().count())
-                                } else {
-                                    None
-                                }
-                            } else {
-                                (fpos >= run_char_pos
-                                    && (fpos < run_char_end || (is_last && fpos == run_char_end)))
-                                    .then(|| fpos - run_char_pos)
-                            };
-                            if fn_marker_inserted[fni] {
-                                None
-                            } else {
-                                relative.map(|relative| (relative, fnum, fni, ctrl_idx))
-                            }
-                        })
-                        .collect();
-
                     if run_fn_markers.is_empty() {
                         // 각주 없음: 기존 방식으로 전체 TextRun 생성
                         let run_x = x;
@@ -9416,45 +9417,27 @@ impl LayoutEngine {
                                     rel_pos - seg_start
                                 };
                             }
-                            // FootnoteMarker 노드
-                            let fn_text = note_marker_text_from_control(
+                            let reference = super::note_reference::reference(
                                 para.and_then(|p| p.controls.get(ctrl_idx)),
                                 fnum,
+                                text_style.clone(),
+                                ctrl_idx,
                             );
-                            let base_ts = &text_style;
-                            let sup_size = FootnoteMarkerNode::font_size(base_ts.font_size);
-                            let sup_ts = TextStyle {
-                                font_size: sup_size,
-                                font_family: base_ts.font_family.clone(),
-                                color: base_ts.color,
-                                ..Default::default()
-                            };
-                            let sup_w = estimate_text_width(&fn_text, &sup_ts);
-                            let fid = tree.next_id();
-                            let fn_node = RenderNode::new(
-                                fid,
-                                RenderNodeType::FootnoteMarker(FootnoteMarkerNode {
-                                    number: fnum,
-                                    text: fn_text,
-                                    base_font_size: base_ts.font_size,
-                                    baseline: FootnoteMarkerNode::reference_baseline(
-                                        base_ts.font_size,
-                                        baseline,
-                                    ),
-                                    font_family: base_ts.font_family.clone(),
-                                    color: base_ts.color,
-                                    section_index,
-                                    para_index,
-                                    control_index: ctrl_idx,
-                                }),
-                                BoundingBox::new(sub_x, y, sup_w, line_height),
+                            let sup_w = reference.4;
+                            super::note_reference::append(
+                                tree,
+                                line_node,
+                                &[reference],
+                                (sub_x, y),
+                                (line_height, baseline),
+                                (section_index, para_index),
                             );
-                            line_node.children.push(fn_node);
                             sub_x += sup_w;
                             fn_split_extra += sup_w;
                             // 각주/미주도 논리 캐럿 한 칸이다. 뒤 글의 시작 주소에 포함한다.
                             sub_char_offset += 1;
                             char_offset += 1;
+                            emitted_inline_slots += 1;
                             seg_start = rel_pos;
                         }
                         // 마지막 세그먼트 (각주 뒤 나머지 텍스트)
@@ -9588,7 +9571,19 @@ impl LayoutEngine {
                 // 글상자(TextBox) 자체와 그 내부 텍스트("개화" 같은)는
                 // shape_layout 이 inline_shape_position 을 보고 별도 패스에서 렌더하므로 중복되지 않는다.
 
-                for &(tac_rel, tac_w, tac_ci) in &run_tacs {
+                let mut events: Vec<_> = run_tacs
+                    .iter()
+                    .map(|&(position, width, control)| (position, width, control, None))
+                    .chain(
+                        run_fn_markers
+                            .iter()
+                            .map(|&(position, number, index, control)| {
+                                (position, 0.0, control, Some((number, index)))
+                            }),
+                    )
+                    .collect();
+                events.sort_by_key(|&(position, _, control, _)| (position, control));
+                for &(tac_rel, tac_w, tac_ci, note) in &events {
                     // [Issue #3396] 한글은 TAC 표를 "outMargin 포함 폭의 문자"로
                     // 배치한다 — 괘선(테두리)은 pen + outMargin.left 에 그려지고,
                     // 다음 문자는 outMargin.right 뒤에서 시작한다 (오라클 실측:
@@ -9678,6 +9673,30 @@ impl LayoutEngine {
                         }
                         x += seg_w;
                         sub_char_offset += seg_char_count;
+                    }
+                    if let Some((number, index)) = note {
+                        let reference = super::note_reference::reference(
+                            para.and_then(|p| p.controls.get(tac_ci)),
+                            number,
+                            text_style.clone(),
+                            tac_ci,
+                        );
+                        let width = reference.4;
+                        super::note_reference::append(
+                            tree,
+                            line_node,
+                            &[reference],
+                            (x, y),
+                            (line_height, baseline),
+                            (section_index, para_index),
+                        );
+                        fn_marker_inserted[index] = true;
+                        x += width;
+                        sub_char_offset += 1;
+                        char_offset += 1;
+                        emitted_inline_slots += 1;
+                        seg_start = tac_rel;
+                        continue;
                     }
                     // 인라인 이미지 렌더링: 텍스트 흐름 순서에 맞게 이 위치에서 직접 렌더링
                     if let (Some(p), Some(bdc)) = (para, bin_data_content) {
@@ -10131,7 +10150,7 @@ impl LayoutEngine {
                     sub_char_offset += 1;
                     // 다음 서식 런도 TAC가 차지한 논리 캐럿 한 칸을 이어받는다.
                     char_offset += 1;
-                    emitted_tac_slots += 1;
+                    emitted_inline_slots += 1;
                     seg_start = tac_rel;
                 }
 
@@ -10241,14 +10260,14 @@ impl LayoutEngine {
             char_offset += run_char_count;
             run_char_pos = run_char_end;
             inline_tab_cursor_render += run.text.chars().filter(|c| *c == '\t').count();
-            // 마커 배치는 기존 축을 유지하고 새 TAC 논리 슬롯만 제외한다.
-            char_x_map.push((char_offset - emitted_tac_slots, x));
+            // 필드 마커는 원문 축을 쓰므로 방출한 주석·TAC 논리 칸을 제외한다.
+            char_x_map.push((char_offset - emitted_inline_slots, x));
         }
         RunEmitState {
             x,
             y,
             char_offset,
-            emitted_tac_slots,
+            emitted_inline_slots,
             run_char_pos,
             inline_tab_cursor_render,
             pending_right_tab_render,

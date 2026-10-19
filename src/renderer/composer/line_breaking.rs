@@ -5494,6 +5494,12 @@ fn reflow_line_segs_impl(
                         && forced_inline_line
                             .is_some_and(|(position, ..)| position == control.char_position))
             })
+            // 별도 줄로 분리된 개체 높이는 앞 텍스트 줄에 중복 계상하지 않는다.
+            .filter(|control| {
+                !forced_inline_line.is_some_and(|(position, start, ..)| {
+                    position > lb.start_idx && start == control.utf16_position
+                })
+            })
             .max_by_key(|control| (control.height_hwp, control.baseline_distance_hwp))
         {
             let inline_owns_row_height = control.height_hwp > text_seg.line_height;
