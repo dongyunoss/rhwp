@@ -2,6 +2,11 @@
 
 rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 라이선스 목록이다.
 
+아랍어 문맥 측정의 결합 속성 표는 Unicode 16.0.0의
+[ArabicShaping.txt](https://www.unicode.org/Public/16.0.0/ucd/ArabicShaping.txt)에서 생성했다.
+Copyright © 2024 Unicode, Inc.이며 [Unicode License v3](assets/licenses/Unicode-3.0.txt)를 적용한다.
+원문 SHA-256은 `764f420cedfc8b43d9fec251c957a5d55fc45d40f6573f162990ed1dce7e36e0`이다.
+
 기준 파일:
 
 - `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.7)

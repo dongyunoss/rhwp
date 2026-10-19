@@ -9,6 +9,7 @@ use crate::model::control::Control;
 use crate::model::paragraph::LineSeg;
 use crate::model::style::{LineSpacingType, UnderlineType};
 
+pub(crate) mod arabic_context;
 pub(crate) mod arrow;
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod bitmap_raster;

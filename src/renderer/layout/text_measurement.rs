@@ -388,6 +388,7 @@ fn compute_char_positions_walk(
     let has_custom_tabs = !style.tab_stops.is_empty() || style.auto_tab_right;
 
     let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
+    let contextual = super::super::arabic_context::advances(&chars, style);
     let char_width = |i: usize| -> f64 {
         char_width_decision_with_hft_tracking(
             &chars,
@@ -396,6 +397,7 @@ fn compute_char_positions_walk(
             style,
             supplemental.as_ref().is_some_and(|mask| mask[i]),
             include_hft_bold_tracking,
+            contextual.as_ref().and_then(|widths| widths[i]),
         )
         .final_width_px
     };
@@ -508,13 +510,16 @@ impl EmbeddedTextMeasurer {
         let has_custom_tabs = !style.tab_stops.is_empty() || style.auto_tab_right;
 
         let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
+        let contextual = super::super::arabic_context::advances(&chars, style);
         let char_width = |i: usize| -> f64 {
-            char_width_decision(
+            char_width_decision_with_hft_tracking(
                 &chars,
                 &cluster_len,
                 i,
                 style,
                 supplemental.as_ref().is_some_and(|mask| mask[i]),
+                true,
+                contextual.as_ref().and_then(|widths| widths[i]),
             )
             .final_width_px
         };
@@ -1711,7 +1716,16 @@ pub(crate) fn char_width_decision<'a>(
     style: &'a TextStyle,
     allow_supplemental: bool,
 ) -> CharWidthDecision<'a> {
-    char_width_decision_with_hft_tracking(chars, cluster_len, i, style, allow_supplemental, true)
+    let contextual = super::super::arabic_context::advances(chars, style);
+    char_width_decision_with_hft_tracking(
+        chars,
+        cluster_len,
+        i,
+        style,
+        allow_supplemental,
+        true,
+        contextual.as_ref().and_then(|widths| widths[i]),
+    )
 }
 
 fn char_width_decision_with_hft_tracking<'a>(
@@ -1721,6 +1735,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     style: &'a TextStyle,
     allow_supplemental: bool,
     include_hft_bold_tracking: bool,
+    contextual_advance: Option<f64>,
 ) -> CharWidthDecision<'a> {
     let (font_size, ratio, _) = style_params(style);
     // 줄 채움의 원문 스칼라와 paint의 확정 표시 기호는 같은 advance를 쓴다.
@@ -1943,6 +1958,12 @@ fn char_width_decision_with_hft_tracking<'a>(
                 latin.is_none() && style.hft_hangul_face,
             )
         };
+        if let Some(em) = contextual_advance {
+            // 기본 cmap 글자의 hmtx가 아닌 실제 GSUB 결합형·합자의 전진을 소비한다.
+            embedded.width_px = Some(quantize_hwp_px(font_size * em));
+            embedded.em_fraction = Some(em);
+            embedded.width_source = "sourceContextualMetric";
+        }
         // 부분 표의 미수집은 글리프 부재가 아니다. 확인한 원본 폭이 없으면
         // 기존 표시 face의 폭을 보존한다. ASCII 밖의 전각 괄호도 반각으로 줄이지 않는다.
         if (c.is_ascii_graphic() || source_hft_metric)
@@ -2381,13 +2402,16 @@ pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f6
     let char_count = chars.len();
 
     let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
+    let contextual = super::super::arabic_context::advances(&chars, style);
     let char_width = |i: usize| -> f64 {
-        char_width_decision(
+        char_width_decision_with_hft_tracking(
             &chars,
             &cluster_len,
             i,
             style,
             supplemental.as_ref().is_some_and(|mask| mask[i]),
+            true,
+            contextual.as_ref().and_then(|widths| widths[i]),
         )
         .final_width_px
     };
