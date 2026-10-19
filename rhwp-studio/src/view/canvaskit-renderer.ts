@@ -2980,7 +2980,8 @@ export class CanvasKitLayerRenderer {
         canvas.translate(-cx, -cy);
       }
       if (rotation !== 0) {
-        canvas.rotate(rotation, cx, cy);
+        // SVG·Canvas2D와 같은 로컬 대칭 뒤 회전 계약이다.
+        canvas.rotate(horzFlip !== vertFlip ? -rotation : rotation, cx, cy);
       }
       draw();
     } finally {

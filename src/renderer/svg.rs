@@ -1390,7 +1390,6 @@ impl SvgRenderer {
         // 한컴 정답지 시각 표준: 도형이 자체 좌표계 기준으로 먼저 회전 후 flip 적용.
         // SVG 에서 동일 결과 = "translate(flip) scale(-1,1) rotate(-θ)"
         // (flip 와 함께 회전 시 각도 부호 반전 필요).
-        let flip_negate_rotation = transform.horz_flip ^ transform.vert_flip;
         if transform.horz_flip {
             parts.push(format!("translate({},0) scale(-1,1)", cx * 2.0));
         }
@@ -1398,11 +1397,7 @@ impl SvgRenderer {
             parts.push(format!("translate(0,{}) scale(1,-1)", cy * 2.0));
         }
         if transform.rotation != 0.0 {
-            let effective_rotation = if flip_negate_rotation {
-                -transform.rotation
-            } else {
-                transform.rotation
-            };
+            let effective_rotation = transform.reflected_rotation();
             parts.push(format!("rotate({},{},{})", effective_rotation, cx, cy));
         }
         self.output

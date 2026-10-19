@@ -1274,6 +1274,15 @@ impl ShapeTransform {
         self.rotation != 0.0 || self.horz_flip || self.vert_flip
     }
 
+    /// 축 반전을 먼저 concat하는 backend에서 로컬 대칭 뒤 회전을 재현할 각도.
+    pub fn reflected_rotation(&self) -> f64 {
+        if self.horz_flip ^ self.vert_flip {
+            -self.rotation
+        } else {
+            self.rotation
+        }
+    }
+
     /// 그림 노드 한정: 회전각 90°/270° (±1° 톨러런스) 일 때 bbox extent 만 swap.
     /// 그 외 각도(0/45/180 등)는 입력 bbox 그대로 반환.
     ///

@@ -1711,17 +1711,12 @@ impl WebCanvasRenderer {
         self.ctx.save();
         // [Task #1067] 한컴 정답지 시각 표준 정합 — flip 와 회전 동시 적용 시 회전 부호 반전.
         // svg.rs::open_shape_transform 와 동일 패턴.
-        let flip_negate_rotation = transform.horz_flip ^ transform.vert_flip;
         let _ = self.ctx.translate(cx, cy);
         let sx = if transform.horz_flip { -1.0 } else { 1.0 };
         let sy = if transform.vert_flip { -1.0 } else { 1.0 };
         let _ = self.ctx.scale(sx, sy);
         if transform.rotation != 0.0 {
-            let effective_rotation = if flip_negate_rotation {
-                -transform.rotation
-            } else {
-                transform.rotation
-            };
+            let effective_rotation = transform.reflected_rotation();
             let _ = self
                 .ctx
                 .rotate(effective_rotation * std::f64::consts::PI / 180.0);

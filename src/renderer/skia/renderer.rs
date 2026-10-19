@@ -1229,7 +1229,7 @@ impl SkiaLayerRenderer {
                     canvas.scale((1.0, -1.0));
                 }
                 if transform.rotation != 0.0 {
-                    canvas.rotate(transform.rotation as f32, Some((cx, cy).into()));
+                    canvas.rotate(transform.reflected_rotation() as f32, Some((cx, cy).into()));
                 }
             };
 
