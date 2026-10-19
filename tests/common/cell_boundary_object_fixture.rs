@@ -196,4 +196,3 @@ fn copy(core: &mut DocumentCore, path: &Path, flat: bool) {
             .unwrap();
     }
 }
-

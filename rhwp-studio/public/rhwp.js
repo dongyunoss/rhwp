@@ -12521,6 +12521,9 @@ function __wbg_get_imports() {
         __wbg_set_globalAlpha_7990fab00eb6c8f2: function(arg0, arg1) {
             arg0.globalAlpha = arg1;
         },
+        __wbg_set_globalCompositeOperation_1336df410cebd928: function() { return handleError(function (arg0, arg1, arg2) {
+            arg0.globalCompositeOperation = getStringFromWasm0(arg1, arg2);
+        }, arguments); },
         __wbg_set_height_d72f2b76484a44de: function(arg0, arg1) {
             arg0.height = arg1 >>> 0;
         },
