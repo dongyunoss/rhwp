@@ -39,6 +39,9 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
     let profile = document.layout_profile();
     let lookup = missing_fonts::lookup_context(document);
     let mut styles = resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout());
+    if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5 {
+        styles.char_overlap_size_bounds = Some((-8, 2));
+    }
     super::legacy_font_advances::select_native_programs(document, &mut styles);
     // [#7051] 계보 신호가 없는 저장본의 HFT ASCII 반각 판정은 로드 시 한 번 내려 출처에 둔다.
     styles.hft_ascii_halfwidth |= document.provenance.hft_ascii_halfwidth_witnessed;
@@ -296,6 +299,17 @@ pub fn resolve_styles_with_variant(
     let mut styles = ResolvedStyleSet {
         source_program_projection_slots: Default::default(),
         native_pua_fonts: Default::default(),
+        char_overlap_size_bounds: None,
+        source_char_shapes: doc_info
+            .char_shapes
+            .iter()
+            .map(|source| {
+                let mut shape = source.clone();
+                shape.raw_data = None;
+                shape
+            })
+            .collect::<Vec<_>>()
+            .into(),
         resolved_dpi: Some(dpi),
         isolated_jamo_font: None,
         page_number_char_style_id,

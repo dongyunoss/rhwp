@@ -376,7 +376,7 @@ fn compose_paragraph_scoped(
     supplemental_clusters::preserve_literal_spaces(&mut composed, &para.literal_figure_spaces);
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
-    inject_char_overlap_text(&mut composed, para);
+    inject_char_overlap_text(&mut composed, para, metric_styles);
 
     // PUA 테두리 숫자(사각형/원형 안의 숫자) → CharOverlap 런으로 변환
     convert_pua_enclosed_numbers(&mut composed);

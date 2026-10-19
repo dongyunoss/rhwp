@@ -1630,6 +1630,12 @@ export interface LayerCharOverlapOp {
   positions: number[];
   positionsComplete: boolean;
   charOverlap: LayerCharOverlap;
+  /** 원문 겹침의 공통 배치. 최종 좌표·스타일을 재계산하지 않고 소비한다. */
+  composition?: {
+    reversed: boolean;
+    border: LayerTextRunOp | null;
+    interior: LayerTextRunOp[];
+  };
 }
 
 export interface LayerGlyphRunOp {

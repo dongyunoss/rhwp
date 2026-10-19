@@ -48,6 +48,9 @@ pub struct CharOverlapInfo {
     pub border_type: u8,
     /// 내부 글자 크기의 부호 있는 10% 단계 (0=원래 크기)
     pub inner_char_size: i8,
+    /// 원문 컨트롤의 문자별 스타일과 펼침. 폰트 인코딩 PUA는 별도 계약을 쓴다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub composition: Option<Box<super::char_overlap::Composition>>,
 }
 
 /// 구성된 텍스트 런 (줄 내 동일 스타일 + 동일 언어 구간)

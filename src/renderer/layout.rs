@@ -4687,6 +4687,7 @@ impl LayoutEngine {
                     if let RenderNodeType::TextRun(run) = &node.node_type {
                         if let Some(ink) =
                             super::text_decoration::raised_decoration_ink_bbox(cb, run)
+                                .or_else(|| super::char_overlap::ink_bounds(run, cb))
                         {
                             let right = (cb.x + cb.width).max(ink.x + ink.width);
                             let bottom = (cb.y + cb.height).max(ink.y + ink.height);

@@ -1717,6 +1717,14 @@ impl SkiaLayerRenderer {
                             if role == TextVisualReplayRole::SuppressedFallback {
                                 continue;
                             }
+                            if role == TextVisualReplayRole::CharOverlap {
+                                if let Some(plan) =
+                                    crate::renderer::char_overlap::project(run, *bbox)
+                                {
+                                    text_replay.draw_composed_overlap(&plan, run.rotation, *bbox);
+                                    continue;
+                                }
+                            }
                             let decoration_replay = op.decoration_replay();
                             let (bbox, run) = decoration_replay
                                 .as_ref()
@@ -3916,6 +3924,7 @@ mod tests {
             char_overlap: Some(CharOverlapInfo {
                 border_type: 1,
                 inner_char_size: 90,
+                composition: None,
             }),
             border_fill_id: 0,
             baseline: 22.0,

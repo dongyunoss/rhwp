@@ -4,6 +4,8 @@
 //! web-sys를 통해 CanvasRenderingContext2d에 직접 그린다.
 
 #[cfg(target_arch = "wasm32")]
+mod char_overlap;
+#[cfg(target_arch = "wasm32")]
 mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
 mod image_reduction;
@@ -998,6 +1000,9 @@ impl WebCanvasRenderer {
     }
 
     fn render_text_run(&mut self, bbox: &BoundingBox, run: &TextRunNode) {
+        if self.render_composed_overlap(bbox, run) {
+            return;
+        }
         if let Some(ref overlap) = run.char_overlap {
             self.draw_char_overlap(
                 &run.text,

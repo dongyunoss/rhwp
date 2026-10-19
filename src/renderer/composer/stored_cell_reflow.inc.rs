@@ -816,14 +816,8 @@ pub(crate) fn shrunk_cell_horizontal_padding(
             let mut w = 0.0;
             for run in &line.runs {
                 let mut ts = run.text_style(styles);
-                if run.char_overlap.is_some() {
-                    let fs = if ts.font_size > 0.0 {
-                        ts.font_size
-                    } else {
-                        12.0
-                    };
-                    let chars: Vec<char> = run.text.chars().collect();
-                    w += fs * char_overlap_advance_units(&chars) as f64;
+                if let Some(overlap) = &run.char_overlap {
+                    w += super::char_overlap::advance(&run.text, overlap, &ts);
                     continue;
                 }
                 // 자연 폭 측정: 음수 자간을 제거하여 글리프가 서로 겹치지 않는 최소 폭을 얻음

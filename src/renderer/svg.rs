@@ -27,6 +27,7 @@ use super::{
 use crate::paint::{PaintOp, TextDecorationKind};
 use std::fmt::Write as _;
 
+mod char_overlap;
 mod stroke_pattern;
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
@@ -795,7 +796,9 @@ impl SvgRenderer {
                         }
                     }
                 }
-                if let Some(ref overlap) = run.char_overlap {
+                if self.render_composed_overlap(node, run) {
+                    // 원문 겹침의 모든 글자는 위 공통 결과로 출력했다.
+                } else if let Some(ref overlap) = run.char_overlap {
                     // 글자겹침(CharOverlap) 렌더링: 각 문자에 테두리 도형 + 텍스트
                     self.draw_char_overlap(
                         &run.text,

@@ -908,6 +908,10 @@ impl PaintOp {
                 let _ = write!(buf, ",\"positionsComplete\":{complete}");
                 buf.push_str(",\"charOverlap\":");
                 write_char_overlap(buf, run.char_overlap.as_ref());
+                if let Some(plan) = crate::renderer::char_overlap::project(run, *bbox) {
+                    buf.push_str(",\"composition\":");
+                    write_overlap_composition(buf, &plan);
+                }
                 buf.push('}');
             }
             PaintOp::TextControlMark { bbox, run, source } => {
@@ -2059,6 +2063,32 @@ fn field_marker_str(value: FieldMarkerType) -> &'static str {
         FieldMarkerType::FieldBeginEnd => "fieldBeginEnd",
         FieldMarkerType::ShapeMarker(_) => "shapeMarker",
     }
+}
+
+fn write_overlap_glyph(buf: &mut String, glyph: &crate::renderer::char_overlap::Glyph) {
+    buf.push_str("{\"type\":\"textRun\",\"bbox\":");
+    write_bbox(buf, glyph.bbox);
+    let _ = write!(buf, ",\"text\":{},\"baseline\":{:.3},\"rotation\":0,\"isVertical\":false,\"positions\":[0,{:.3}],\"style\":",
+        json_escape(&glyph.run.text),glyph.run.baseline,glyph.bbox.width);
+    write_text_style(buf, &glyph.run.style);
+    buf.push('}');
+}
+
+fn write_overlap_composition(buf: &mut String, plan: &crate::renderer::char_overlap::Projection) {
+    let _ = write!(buf, "{{\"reversed\":{},\"border\":", plan.reversed);
+    if let Some(border) = &plan.border {
+        write_overlap_glyph(buf, border);
+    } else {
+        buf.push_str("null");
+    }
+    buf.push_str(",\"interior\":[");
+    for (i, glyph) in plan.interior.iter().enumerate() {
+        if i > 0 {
+            buf.push(',');
+        }
+        write_overlap_glyph(buf, glyph);
+    }
+    buf.push_str("]}");
 }
 
 fn write_char_overlap(
@@ -3694,6 +3724,7 @@ mod tests {
                 char_overlap: Some(CharOverlapInfo {
                     border_type: 1,
                     inner_char_size: 90,
+                    composition: None,
                 }),
                 border_fill_id: 0,
                 baseline: 13.0,
@@ -4016,6 +4047,7 @@ mod tests {
             char_overlap: Some(CharOverlapInfo {
                 border_type: 2,
                 inner_char_size: 80,
+                composition: None,
             }),
             border_fill_id: 0,
             baseline: 11.0,
@@ -4227,6 +4259,7 @@ mod tests {
             char_overlap: Some(CharOverlapInfo {
                 border_type: 1,
                 inner_char_size: 100,
+                composition: None,
             }),
             border_fill_id: 0,
             baseline: 10.0,

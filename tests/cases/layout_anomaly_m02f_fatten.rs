@@ -103,6 +103,7 @@ fn text_run_node(n: &serde_json::Value, bbox: BoundingBox) -> RenderNode {
                 Some(rhwp::renderer::composer::CharOverlapInfo {
                     border_type: 1,
                     inner_char_size: 100,
+                    composition: None,
                 })
             } else {
                 None

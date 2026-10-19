@@ -459,6 +459,7 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
                         char_overlap: Some(CharOverlapInfo {
                             border_type,
                             inner_char_size: 0,
+                            composition: None,
                         }),
                         footnote_marker: None,
                         display_text: None,

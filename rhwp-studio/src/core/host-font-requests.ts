@@ -137,12 +137,18 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         continue;
       }
       if (op.type !== 'textRun' && op.type !== 'charOverlap' && op.type !== 'footnoteMarker') continue;
-      const style = op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style;
-      const family = style?.fontFamily;
-      if (!family) continue;
-      for (const candidate of parseCssFontFamilyList(family)) {
-        const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
-        if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+      const styles = [op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style];
+      if (op.type === 'charOverlap' && op.composition && Array.isArray(op.composition.interior)) {
+        if (op.composition.border) styles.push(op.composition.border.style);
+        styles.push(...op.composition.interior.slice(0, 9).map(glyph => glyph.style));
+      }
+      for (const style of styles) {
+        const family = style?.fontFamily;
+        if (!family) continue;
+        for (const candidate of parseCssFontFamilyList(family)) {
+          const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
+          if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+        }
       }
       if ([...op.text].some(character => {
         const code = character.codePointAt(0) ?? 0;

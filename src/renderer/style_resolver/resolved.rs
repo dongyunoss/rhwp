@@ -511,6 +511,12 @@ pub struct ResolvedStyleSet {
     pub(crate) source_program_projection_slots:
         std::collections::HashMap<(u32, usize), ResolvedCharStyle>,
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,
+    /// HWP5 저장 겹침은 다시 열 때 -80%~+20% 범위로 해소된다.
+    /// XML 입력의 원래 값과 구분하며 모델의 저장 바이트는 보존한다.
+    pub(crate) char_overlap_size_bounds: Option<(i8, i8)>,
+    /// 저장 겹침의 기준 글자모양이 현재 문단과 같은지 원본 속성으로 판정한다.
+    /// 대체된 표시 글꼴의 유사성으로 저장 서식의 유효성을 추정하지 않는다.
+    pub(crate) source_char_shapes: std::sync::Arc<[crate::model::style::CharShape]>,
     /// px 형태의 해소된 스타일을 원본 HWPUNIT으로 환산할 때의 배율.
     pub(crate) resolved_dpi: Option<f64>,
     /// 한컴 2020의 독립 자모 프로그램. 문서의 글꼴 선언과 구분한다.
@@ -587,5 +593,11 @@ impl ResolvedStyleSet {
                     lang_index,
                 ))
             })
+    }
+
+    /// 저장 값은 건드리지 않고 해당 입력 계약의 표시 범위만 해소한다.
+    pub(crate) fn char_overlap_inner_size(&self, raw: i8) -> i8 {
+        self.char_overlap_size_bounds
+            .map_or(raw, |(min, max)| raw.clamp(min, max))
     }
 }

@@ -2007,13 +2007,8 @@ pub(crate) fn right_tab_block_width(
         if r.text.contains('\t') {
             break;
         }
-        if let Some(_ov) = &r.char_overlap {
-            let chars: Vec<char> = r.text.chars().collect();
-            let fs = {
-                let ts = r.text_style(styles);
-                ts.effective_font_size()
-            };
-            w += fs * crate::renderer::composer::char_overlap_advance_units(&chars) as f64;
+        if let Some(overlap) = &r.char_overlap {
+            w += crate::renderer::char_overlap::advance(&r.text, overlap, &r.text_style(styles));
             continue;
         }
         let mut ts = r.text_style(styles);
@@ -7514,11 +7509,8 @@ impl LayoutEngine {
                         ts.text_start_offset = text_start_offset;
                         ts.inline_tabs = composed.tab_extended.clone();
                         ts.extra_char_spacing = extra_char_sp;
-                        if r.char_overlap.is_some() {
-                            let fs = ts.effective_font_size();
-                            let chars: Vec<char> = r.text.chars().collect();
-                            fs * crate::renderer::composer::char_overlap_advance_units(&chars)
-                                as f64
+                        if let Some(overlap) = &r.char_overlap {
+                            crate::renderer::char_overlap::advance(&r.text, overlap, &ts)
                         } else {
                             estimate_text_width(effective_text_for_metrics(r), &ts)
                         }
@@ -8933,11 +8925,9 @@ impl LayoutEngine {
                 .get(run.char_style_id as usize)
                 .map(|cs| cs.border_fill_id)
                 .unwrap_or(0);
-            let full_width = if run.char_overlap.is_some() {
-                // 글자겹침: 한 컨트롤은 payload 글자 수와 무관하게 1글자 폭.
-                let fs = text_style.effective_font_size();
-                let chars: Vec<char> = run.text.chars().collect();
-                fs * crate::renderer::composer::char_overlap_advance_units(&chars) as f64
+            let full_width = if let Some(overlap) = &run.char_overlap {
+                // 논리 한 칸의 측정과 표시가 같은 기준 글자의 전진을 소비한다.
+                crate::renderer::char_overlap::advance(&run.text, overlap, &text_style)
             } else if run.display_text.is_some()
                 && run.text.chars().count() == 1
                 && matches!(
@@ -10936,10 +10926,8 @@ impl LayoutEngine {
                 }
             }
             // 글자겹침 run: PUA 다자리 숫자는 1글자 폭, 그 외는 font_size * char_count
-            if run.char_overlap.is_some() {
-                let fs = ts.effective_font_size();
-                let chars: Vec<char> = run.text.chars().collect();
-                let w = fs * crate::renderer::composer::char_overlap_advance_units(&chars) as f64;
+            if let Some(overlap) = &run.char_overlap {
+                let w = crate::renderer::char_overlap::advance(&run.text, overlap, &ts);
                 est_x += w + note_width;
                 run_char_pos_est = run_char_end_est;
                 inline_tab_cursor_est += run.text.chars().filter(|c| *c == '\t').count();

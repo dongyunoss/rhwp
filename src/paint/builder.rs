@@ -1265,6 +1265,7 @@ mod tests {
         run.char_overlap = Some(CharOverlapInfo {
             border_type: 1,
             inner_char_size: 90,
+            composition: None,
         });
         run.style.tab_leaders.push(TabLeaderInfo {
             start_x: 2.0,

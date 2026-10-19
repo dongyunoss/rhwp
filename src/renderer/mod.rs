@@ -18,6 +18,7 @@ pub mod canvas;
 pub mod canvas_text_font;
 pub mod canvaskit_policy;
 pub(crate) mod cell_paragraph_spacing;
+pub mod char_overlap;
 pub mod composer;
 mod conjoining_jamo;
 pub(crate) mod endnote_spacing;

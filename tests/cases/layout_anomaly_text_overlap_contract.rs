@@ -267,6 +267,7 @@ fn intentional_char_overlap_runs_are_not_flagged() {
         tr.char_overlap = Some(rhwp::renderer::composer::CharOverlapInfo {
             border_type: 1,
             inner_char_size: 100,
+            composition: None,
         });
     }
     let other = text_run_at("나", 12.0, 10.0, 20.0, 12.0);

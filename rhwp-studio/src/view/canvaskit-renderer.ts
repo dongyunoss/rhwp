@@ -1,3 +1,4 @@
+import { replayComposedCharOverlap } from './canvaskit-char-overlap';
 import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
 import { parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
@@ -3550,6 +3551,15 @@ export class CanvasKitLayerRenderer {
   }
 
   private renderCharOverlap(canvas: SkCanvas, op: LayerCharOverlapOp): void {
+    if (op.composition) {
+      if (replayComposedCharOverlap(this.canvasKit, canvas, op, glyph => this.renderTextRun(canvas, glyph))) {
+        this.currentReplayFeatureCounts.charOverlaps++;
+      } else {
+        this.unsupportedOps.add('charOverlap:invalidComposition');
+      }
+      return;
+    }
+
     if (typeof op.text !== 'string' || !op.charOverlap || !Array.isArray(op.positions)) {
       this.unsupportedOps.add('charOverlap:invalidGeometry');
       return;
@@ -3783,6 +3793,7 @@ export class CanvasKitLayerRenderer {
     this.withHorizontalTextVisualOrigin(canvas, op.bbox, op.rotation ?? 0, 'charOverlap', draw);
     if (rendered) this.currentReplayFeatureCounts.charOverlaps++;
   }
+
 
   private renderTextControlMark(canvas: SkCanvas, op: LayerTextControlMarkOp): void {
     if (op.isVertical) {

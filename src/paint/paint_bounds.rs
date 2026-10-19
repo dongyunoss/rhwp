@@ -73,6 +73,9 @@ impl PaintOp {
                 bounds
             }
             Self::CharOverlap { run, .. } => {
+                if let Some(visual) = crate::renderer::char_overlap::ink_bounds(run, logical) {
+                    return PaintBounds { logical, visual };
+                }
                 let padding = run
                     .style
                     .font_size
