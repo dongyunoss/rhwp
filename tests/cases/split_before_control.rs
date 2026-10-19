@@ -282,9 +282,10 @@ fn rewrite_section(core: &DocumentCore, edit: impl Fn(&str) -> String) -> Docume
     let mut output = zip::ZipWriter::new(Cursor::new(Vec::new()));
     for i in 0..input.len() {
         let mut entry = input.by_index(i).unwrap();
+        let name = entry.name().expect("ZIP 항목 이름").into_owned();
         let mut data = Vec::new();
         entry.read_to_end(&mut data).unwrap();
-        if entry.name() == "Contents/section0.xml" {
+        if name == "Contents/section0.xml" {
             let xml = String::from_utf8(data).unwrap();
             let edited = edit(&xml);
             assert_ne!(edited, xml, "본문 XML 을 고치지 못했다");
@@ -292,7 +293,7 @@ fn rewrite_section(core: &DocumentCore, edit: impl Fn(&str) -> String) -> Docume
         }
         output
             .start_file(
-                entry.name(),
+                name,
                 zip::write::SimpleFileOptions::default().compression_method(entry.compression()),
             )
             .unwrap();
