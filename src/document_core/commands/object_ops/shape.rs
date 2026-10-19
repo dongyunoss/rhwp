@@ -1,5 +1,7 @@
 //! 도형 생성/속성/그룹 native 명령 (object_ops 분할, #1904).
 
+mod group_geometry;
+
 use super::MIN_SHAPE_SIZE;
 use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
@@ -1918,29 +1920,17 @@ impl DocumentCore {
             }
             shift(&mut g.children, x as f64, y as f64);
         }
-        let (frame_w, frame_h) = (child.common().width as f64, child.common().height as f64);
+        let placement = group_geometry::placement(child, x as f64, y as f64);
         let sa = child.shape_attr_mut();
-        let positive = |v: u32, fallback: f64| if v > 0 { v as f64 } else { fallback };
-        let cur_w = positive(sa.current_width, frame_w);
-        let cur_h = positive(sa.current_height, frame_h);
-        let sx = cur_w / positive(sa.original_width, cur_w);
-        let sy = cur_h / positive(sa.original_height, cur_h);
-        let fx = if sa.horz_flip { -1.0 } else { 1.0 };
-        let fy = if sa.vert_flip { -1.0 } else { 1.0 };
-        let (sin, cos) = (sa.rotation_angle as f64).to_radians().sin_cos();
-        // 원래 좌표 → 크기·대칭 → 상자 중심 기준 회전 → 틀 중심 (x + w/2, y + h/2)
-        let (hx, hy) = (fx * cur_w / 2.0, fy * cur_h / 2.0);
-        let tx = x as f64 + frame_w / 2.0 - (cos * hx - sin * hy);
-        let ty = y as f64 + frame_h / 2.0 - (sin * hx + cos * hy);
         sa.offset_x = x;
         sa.offset_y = y;
         sa.group_level = 1;
         sa.is_two_ctrl_id = false; // 그룹 자식은 ctrl_id 1번만
         Self::store_group_rendering(
             sa,
-            (tx, ty),
-            [fx * sx, 0.0, 0.0, 0.0, fy * sy, 0.0],
-            [cos, -sin, 0.0, sin, cos, 0.0],
+            placement.translation,
+            placement.scale,
+            placement.rotation,
         );
     }
 
@@ -2030,10 +2020,14 @@ impl DocumentCore {
         let mut group_max_x = i32::MIN;
         let mut group_max_y = i32::MIN;
         for ((_, _, s), &(x, y)) in items.iter().zip(&origins) {
-            group_min_x = group_min_x.min(x);
-            group_min_y = group_min_y.min(y);
-            group_max_x = group_max_x.max(x + s.common().width as i32);
-            group_max_y = group_max_y.max(y + s.common().height as i32);
+            // 저장 행렬과 같은 변환을 사용한다. 회전 전 프레임만 합치면 자식이
+            // 부모 경계를 벗어나 한컴에서 그룹 전체가 다시 축소된다.
+            let (left, top, right, bottom) =
+                group_geometry::placement(s, x as f64, y as f64).bounds();
+            group_min_x = group_min_x.min(left.floor() as i32);
+            group_min_y = group_min_y.min(top.floor() as i32);
+            group_max_x = group_max_x.max(right.ceil() as i32);
+            group_max_y = group_max_y.max(bottom.ceil() as i32);
         }
         let group_w = (group_max_x - group_min_x).max(1) as u32;
         let group_h = (group_max_y - group_min_y).max(1) as u32;
