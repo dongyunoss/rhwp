@@ -2,6 +2,61 @@
 
 use crate::model::shape::ShapeObject;
 
+/// 최상위 도형의 표시 중심은 유지하고, 저장 프레임만 회전 후 외곽 크기로 맞춘다.
+/// 원본 꼭짓점과 current 크기는 회전 전 로컬 좌표계이므로 변경하지 않는다.
+pub(super) fn refresh_top_level_frame(shape: &mut ShapeObject) {
+    use crate::model::shape::{HorzAlign, VertAlign};
+
+    let sa = shape.shape_attr();
+    let (w, h) = (sa.current_width, sa.current_height);
+    let (bw, bh) =
+        crate::document_core::DocumentCore::picture_rotated_bounds(w, h, sa.rotation_angle);
+    if w == 0 || h == 0 {
+        return;
+    }
+    let common = shape.common_mut();
+    // 가운데 정렬은 프레임 크기 변화가 이미 정렬 원점에 반영된다.
+    if common.horz_align != HorzAlign::Center {
+        let delta = (i64::from(common.width) - i64::from(bw)) / 2;
+        common.horizontal_offset =
+            (i64::from(common.horizontal_offset as i32) + delta) as i32 as u32;
+    }
+    if common.vert_align != VertAlign::Center {
+        let delta = (i64::from(common.height) - i64::from(bh)) / 2;
+        common.vertical_offset = (i64::from(common.vertical_offset as i32) + delta) as i32 as u32;
+    }
+    common.width = bw;
+    common.height = bh;
+    let sa = shape.shape_attr_mut();
+    sa.rotation_center.x = (bw / 2) as i32;
+    sa.rotation_center.y = (bh / 2) as i32;
+}
+
+/// 실제 변환 변경에서만 저장 캐시를 비우며, 무변경 속성 되먹임은 원본 행렬을 보존한다.
+pub(super) fn finish_top_level_edit(
+    shape: &mut ShapeObject,
+    before: (u32, u32, u32, u32, u32, u32, i16, bool, bool),
+) {
+    if matches!(shape, ShapeObject::Group(_)) {
+        return;
+    }
+    if shape.shape_attr().rotation_angle != before.6 {
+        refresh_top_level_frame(shape);
+    }
+    if super::super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr())
+        != before
+    {
+        let sa = shape.shape_attr_mut();
+        sa.raw_rendering.clear();
+        sa.render_tx = 0.0;
+        sa.render_ty = 0.0;
+        sa.render_sx = 1.0;
+        sa.render_sy = 1.0;
+        sa.render_b = 0.0;
+        sa.render_c = 0.0;
+    }
+}
+
 pub(super) struct Placement {
     pub translation: (f64, f64),
     pub scale: [f64; 6],

@@ -587,13 +587,9 @@ impl DocumentCore {
             }
         }
 
-        // Rectangle 좌표 동기화
-        if let crate::model::shape::ShapeObject::Rectangle(ref mut rect) = shape {
-            let w = rect.common.width as i32;
-            let h = rect.common.height as i32;
-            rect.x_coords = [0, w, w, 0];
-            rect.y_coords = [0, 0, h, h];
-        }
+        // 꼭짓점은 original 좌표계로 보존한다. current/common 크기로 덮으면
+        // 저장 시 current/original 배율이 두 번 적용된다.
+        group_geometry::finish_top_level_edit(shape, transform_before);
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
 
@@ -942,12 +938,7 @@ impl DocumentCore {
             }
         }
 
-        if let crate::model::shape::ShapeObject::Rectangle(ref mut rect) = shape {
-            let w = rect.common.width as i32;
-            let h = rect.common.height as i32;
-            rect.x_coords = [0, w, w, 0];
-            rect.y_coords = [0, 0, h, h];
-        }
+        group_geometry::finish_top_level_edit(shape, transform_before);
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
 
@@ -2330,11 +2321,7 @@ impl DocumentCore {
                 c.attr = gc.attr;
                 c.treat_as_char = gc.treat_as_char;
             }
-            if let ShapeObject::Rectangle(rect) = &mut child {
-                let (w, h) = (rect.common.width as i32, rect.common.height as i32);
-                rect.x_coords = [0, w, w, 0];
-                rect.y_coords = [0, 0, h, h];
-            }
+            group_geometry::refresh_top_level_frame(&mut child);
 
             // 문단에 삽입
             // [#3214] controls 기준 인덱스를 ctrl_data_records 에 그대로 쓰기 전에 정렬한다.
