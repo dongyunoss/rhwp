@@ -127,6 +127,26 @@ pub(crate) fn update_changed_polygon_geometry(
 }
 
 impl DocumentCore {
+    /// 인라인 개체 편집 뒤 실제 줄과 후속 문단의 저장 흐름을 함께 갱신한다.
+    pub(crate) fn reflow_body_inline_object_change(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
+        self.reflow_paragraph(section_idx, para_idx);
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_before,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
+    }
+
     const COMMON_OBJ_ATTR_KNOWN_MASK: u32 = 0x01
         | (0x03 << 3)
         | (0x07 << 5)

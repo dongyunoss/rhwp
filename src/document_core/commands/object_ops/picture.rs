@@ -615,16 +615,10 @@ impl DocumentCore {
             let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
                 &self.document.sections[section_idx].paragraphs[parent_para_idx],
             );
-            self.reflow_paragraph(section_idx, parent_para_idx);
-            let doc_hwp3_layout = self.document.layout_profile().hwp3_layout();
-            crate::renderer::composer::recalculate_section_vpos(
-                &mut self.document.sections[section_idx].paragraphs,
+            self.reflow_body_inline_object_change(
+                section_idx,
                 parent_para_idx,
-                None,
                 stored_end_for_reset,
-                &self.styles,
-                self.dpi,
-                doc_hwp3_layout,
             );
         }
         // 캡션 생성/삭제 시 자동번호를 재할당한다.

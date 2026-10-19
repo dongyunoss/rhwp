@@ -6839,9 +6839,9 @@ impl LayoutEngine {
                 && !empty_tac_guide_has_explicit_shape_height
                 && raw_lh > max_fs * 1.5
             {
-                // raw_lh는 Shape 높이 포함 원본 줄 높이, line_height는 폰트 기반 보정 높이
-                // 텍스트를 Shape 하단 근처로 이동 (Shape 높이 - 폰트 줄 높이)
-                y + (raw_lh - line_height).max(0.0)
+                // 큰 개체의 저장 기준선과 텍스트 기준선은 같은 물리 위치다.
+                // 높이 차로 하단을 맞추면 글꼴과 개체의 어센트 차이만큼 어긋난다.
+                y + object_baseline - baseline
             } else {
                 y
             };
@@ -7747,7 +7747,12 @@ impl LayoutEngine {
                                 layout_positions: None,
                                 display_text: None,
                             }),
-                            BoundingBox::new(x + geometry.marker_dx_px, y, num_width, line_height),
+                            BoundingBox::new(
+                                x + geometry.marker_dx_px,
+                                text_y,
+                                num_width,
+                                line_height,
+                            ),
                         )
                     };
                     line_node.children.push(num_node);
@@ -7929,7 +7934,7 @@ impl LayoutEngine {
                             layout_positions: None,
                             display_text: None,
                         }),
-                        BoundingBox::new(x, y, mw, line_height),
+                        BoundingBox::new(x, text_y, mw, line_height),
                     );
                     line_node.children.push(mn);
                     x += mw;
@@ -8072,7 +8077,7 @@ impl LayoutEngine {
                         .get(line_idx + 1)
                         .is_some_and(|next| next.char_start == char_offset - emitted_inline_slots),
                     x,
-                    y,
+                    text_y,
                     line_height,
                     baseline,
                 );
@@ -8613,6 +8618,9 @@ impl LayoutEngine {
             mut pending_right_leader_digit_render,
             mut current_line_reserved_tac_picture_height,
         } = st;
+        // 글자·참조 번호·글자 배경은 최종 글줄 원점을 소비한다.
+        // 상태의 y는 개체 배치와 문단 흐름의 원점이므로 그대로 돌려준다.
+        let text_y = line_node.bbox.y;
         // [#7150] 정렬·방출이 사용하는 줄별 TAC 집합에서 표 앵커를 한 번 선택한다.
         // 저장 UTF-16 줄 경계에서는 이전 줄 끝 표와 다음 줄 첫 개체가 같은 가시
         // 문자 위치에 투영된다. composed.tac_controls를 문자 구간으로 다시 나누면
@@ -8724,7 +8732,7 @@ impl LayoutEngine {
                             layout_positions: None,
                             display_text: None,
                         }),
-                        BoundingBox::new(x, y, mw, line_height),
+                        BoundingBox::new(x, text_y, mw, line_height),
                     );
                     line_node.children.push(mn);
                     x += mw;
@@ -9235,7 +9243,7 @@ impl LayoutEngine {
                         .extend(Self::border_fill_background_nodes(
                             tree,
                             styles.border_styles.get(usize::from(bf_idx)),
-                            BoundingBox::new(x, y, full_width, line_height),
+                            BoundingBox::new(x, text_y, full_width, line_height),
                             bin_data_content.unwrap_or_default(),
                         ));
                 }
@@ -9294,7 +9302,7 @@ impl LayoutEngine {
                                     },
                                     None,
                                 )),
-                                BoundingBox::new(hl_x, y, hl_w, line_height),
+                                BoundingBox::new(hl_x, text_y, hl_w, line_height),
                             )
                             // RangeTag markpen is an editing annotation, unlike
                             // the character's shade/border-fill background above.
@@ -9335,7 +9343,7 @@ impl LayoutEngine {
                                 field_marker: FieldMarkerType::None,
                                 layout_positions,
                             }),
-                            BoundingBox::new(run_x, y, full_width, line_height),
+                            BoundingBox::new(run_x, text_y, full_width, line_height),
                         );
                         line_node.children.push(run_node);
                     } else {
@@ -9406,7 +9414,7 @@ impl LayoutEngine {
                                         layout_positions: seg_layout_positions,
                                         display_text: seg_display,
                                     }),
-                                    BoundingBox::new(sub_x, y, seg_w, line_height),
+                                    BoundingBox::new(sub_x, text_y, seg_w, line_height),
                                 );
                                 line_node.children.push(seg_node);
                                 sub_x += seg_w;
@@ -9428,7 +9436,7 @@ impl LayoutEngine {
                                 tree,
                                 line_node,
                                 &[reference],
-                                (sub_x, y),
+                                (sub_x, text_y),
                                 (line_height, baseline),
                                 (section_index, para_index),
                             );
@@ -9498,7 +9506,7 @@ impl LayoutEngine {
                                     layout_positions: seg_layout_positions,
                                     display_text: seg_display,
                                 }),
-                                BoundingBox::new(sub_x, y, seg_w, line_height),
+                                BoundingBox::new(sub_x, text_y, seg_w, line_height),
                             );
                             line_node.children.push(seg_node);
                             emitted_text_width += seg_w;
@@ -9529,7 +9537,7 @@ impl LayoutEngine {
                                     layout_positions: None,
                                     display_text: None,
                                 }),
-                                BoundingBox::new(sub_x, y, 0.0, line_height),
+                                BoundingBox::new(sub_x, text_y, 0.0, line_height),
                             ));
                         }
                     }
@@ -9540,7 +9548,7 @@ impl LayoutEngine {
                     let bf_idx = (run_border_fill_id as usize).saturating_sub(1);
                     if let Some(bs) = styles.border_styles.get(bf_idx) {
                         let bx = x;
-                        let by = y;
+                        let by = text_y;
                         let bw = full_width;
                         let bh = line_height;
                         // borders[0]=left, [1]=right, [2]=top, [3]=bottom
@@ -9667,7 +9675,7 @@ impl LayoutEngine {
                                     layout_positions: seg_layout_positions,
                                     display_text: seg_display,
                                 }),
-                                BoundingBox::new(x, y, seg_w, line_height),
+                                BoundingBox::new(x, text_y, seg_w, line_height),
                             );
                             line_node.children.push(sub_run_node);
                         }
@@ -9686,7 +9694,7 @@ impl LayoutEngine {
                             tree,
                             line_node,
                             &[reference],
-                            (x, y),
+                            (x, text_y),
                             (line_height, baseline),
                             (section_index, para_index),
                         );
@@ -9887,7 +9895,7 @@ impl LayoutEngine {
                             );
                             // 측정한 기준선 거리로 원점을 정한다. 저장 상자 안의 빈 높이도
                             // 기준선의 일부이므로 줄 상단 clamp로 다시 덮어쓰지 않는다.
-                            let eq_y = y + baseline - eq_baseline;
+                            let eq_y = text_y + baseline - eq_baseline;
                             let inline_metrics =
                                 crate::renderer::equation::inline_box::horizontal_metrics(eq);
                             let content_x = inline_metrics.content_origin_x(x, self.dpi);
@@ -10043,7 +10051,7 @@ impl LayoutEngine {
                                     //   issue2083  121.80 → 35.20 → **16.9** (한/글 18.22)
                                     //   issue2470   41.60 → 19.40 → ** 4.9** (한/글  6.23)
                                     //   36384689    62.80 → 22.20 → ** 8.2** (한/글  9.43)
-                                    (y + baseline - table_h * 0.85).max(y)
+                                    (text_y + baseline - table_h * 0.85).max(y)
                                 };
                                 // [Task #2212] 셀 안 인라인 TAC 표는 외곽 셀 경로를
                                 // 확장한 2단 cell_context 로 렌더해야 경로 기반 조회
@@ -10104,7 +10112,7 @@ impl LayoutEngine {
                     if let Some(p) = para {
                         if let Some(Control::Form(f)) = p.controls.get(tac_ci) {
                             let form_h = hwpunit_to_px(f.height as i32, self.dpi);
-                            let form_y = (y + baseline - form_h).max(y);
+                            let form_y = (text_y + baseline - form_h).max(y);
                             // 셀 내부인 경우 cell_location 채우기 — 빈 경로면 None
                             let cell_location = cell_ctx.as_ref().and_then(|ctx| {
                                 ctx.path.first().map(|e| {
@@ -10216,7 +10224,7 @@ impl LayoutEngine {
                                 layout_positions: seg_layout_positions,
                                 display_text: seg_display,
                             }),
-                            BoundingBox::new(x, y, seg_w, line_height),
+                            BoundingBox::new(x, text_y, seg_w, line_height),
                         );
                         line_node.children.push(sub_run_node);
                     }
@@ -10250,7 +10258,7 @@ impl LayoutEngine {
                             layout_positions: None,
                             display_text: None,
                         }),
-                        BoundingBox::new(x, y, 0.0, line_height),
+                        BoundingBox::new(x, text_y, 0.0, line_height),
                     );
                     line_node.children.push(sub_run_node);
                 }

@@ -1426,6 +1426,9 @@ impl DocumentCore {
             }),
         };
 
+        let stored_end_before = crate::renderer::composer::paragraph_flow_end(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+        );
         // --- 기존 문단에 인라인 컨트롤로 삽입 ---
         self.document.sections[section_idx].raw_stream = None;
 
@@ -1470,6 +1473,10 @@ impl DocumentCore {
             insert_ctrl_idx = insert_idx;
         }
         self.shift_active_field_for_control_insert(section_idx, para_idx, insert_ctrl_idx);
+
+        if treat_as_char {
+            self.reflow_body_inline_object_change(section_idx, para_idx, stored_end_before);
+        }
 
         // 리플로우 + 페이지네이션
         self.recompose_section(section_idx);
