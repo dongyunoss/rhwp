@@ -1,3 +1,5 @@
+import {installIntrinsicCanvasFont} from '../rhwp-studio/src/core/canvas-intrinsic-font.mjs';
+
 // fontdb 0.23의 style/weight 우선순위로 실제 요청한 메타파일 face만 고른다.
 export function selectMetafileFontFaces(fonts, requests) {
   const selected = new Set();
@@ -27,10 +29,11 @@ export function selectMetafileFontFaces(fonts, requests) {
   return selected;
 }
 
-export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false) {
+export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false, intrinsicRequested = false) {
   const font = new FontFace(family, bytes, descriptors);
   await font.load();
   document.fonts.add(font);
+  if (intrinsicRequested) await installIntrinsicCanvasFont(family, bytes, descriptors);
   // Canvas의 모든 굵기를 paint에 복제하면 미사용 face로 바이트 상한을 소진한다.
   // 같은 catalog에서 요청에 맞게 선택한 실제 프로그램만 별도 세션에 공급한다.
   if (metafileSelected && typeof sourceOwner?.registerMetafileFont === 'function') {

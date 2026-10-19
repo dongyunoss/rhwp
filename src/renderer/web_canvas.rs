@@ -1018,7 +1018,7 @@ impl WebCanvasRenderer {
             };
             let font_style_str = if run.style.italic { "italic " } else { "" };
             let font_size = run.style.effective_font_size();
-            let font_family = super::canvas_font_family_chain(&run.style.font_family);
+            let font_family = super::canvas_text_font::family_chain(&run.style);
             let font = format!(
                 "{}{}{:.3}px {}",
                 font_style_str, font_weight, font_size, font_family
@@ -3512,7 +3512,7 @@ impl WebCanvasRenderer {
             let family = format!(
                 "'{}',{}",
                 super::boxed_digit_geometry::number_face(),
-                super::canvas_font_family_chain(&style.font_family)
+                super::canvas_text_font::family_chain(style)
             );
             self.ctx.save();
             self.ctx.set_stroke_style_str(&color);
@@ -3548,7 +3548,7 @@ impl WebCanvasRenderer {
             ""
         };
         let font_style = if style.italic { "italic " } else { "" };
-        let font_family = super::canvas_font_family_chain(&style.font_family);
+        let font_family = super::canvas_text_font::family_chain(style);
         let number_font_size = (font_size * 0.5).max(1.0);
 
         self.ctx.save();
@@ -3631,7 +3631,7 @@ impl WebCanvasRenderer {
             glyph_color.clone()
         };
 
-        let font_family = super::canvas_font_family_chain(&style.font_family);
+        let font_family = super::canvas_text_font::family_chain(style);
         let font_weight = if style.is_visually_bold() {
             "bold "
         } else {
@@ -3773,7 +3773,7 @@ impl WebCanvasRenderer {
             glyph_color.clone()
         };
 
-        let font_family = super::canvas_font_family_chain(&style.font_family);
+        let font_family = super::canvas_text_font::family_chain(style);
 
         let cx = bbox_x + box_size / 2.0;
         let cy = bbox_y + bbox_h - box_size / 2.0;
