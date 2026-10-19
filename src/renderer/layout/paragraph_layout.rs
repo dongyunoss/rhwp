@@ -11612,7 +11612,7 @@ fn make_picture_image_node(
             // Inline glyphs stay in flow even if the saved object retains a
             // floating wrap mode. Otherwise a textbox fill covers its pictures.
             text_wrap: (!pic.common.treat_as_char).then_some(pic.common.text_wrap),
-            transform: extract_picture_transform(pic),
+            transform: crate::renderer::image_geometry::picture_transform(pic),
             external_path: pic.image_attr.external_path.clone(),
             content_inset: crate::renderer::layout::utils::picture_content_inset(pic),
             pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(pic),

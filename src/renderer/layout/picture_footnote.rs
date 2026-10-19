@@ -590,7 +590,7 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_picture_transform(picture),
+                transform: crate::renderer::image_geometry::picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
@@ -924,7 +924,7 @@ impl LayoutEngine {
                 contrast: picture.image_attr.contrast,
                 opacity: picture.image_attr.opacity(),
                 text_wrap: Some(picture.common.text_wrap),
-                transform: extract_picture_transform(picture),
+                transform: crate::renderer::image_geometry::picture_transform(picture),
                 external_path: picture.image_attr.external_path.clone(),
                 content_inset: crate::renderer::layout::utils::picture_content_inset(picture),
                 pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
@@ -2582,7 +2582,7 @@ impl LayoutEngine {
             shadow: None,
         };
         let border_id = tree.next_id();
-        let transform = extract_picture_transform(picture);
+        let transform = crate::renderer::image_geometry::picture_transform(picture);
         let bbox = transform.effective_image_bbox(&bbox);
         // 독립 Print의 그림 외곽선은 한 화면 픽셀까지 그림 안에 겹치고
         // 나머지 굵기는 바깥으로 자란다. 중앙 stroke로 그리면 굵은 선이

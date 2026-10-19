@@ -116,6 +116,7 @@ pub mod svg_fragment;
 pub mod svg_layer;
 pub(crate) mod tab_leader;
 pub(crate) mod text_decoration;
+pub(crate) mod text_direction;
 pub(crate) mod text_transform;
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]

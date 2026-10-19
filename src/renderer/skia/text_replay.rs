@@ -291,6 +291,16 @@ impl SkiaTextReplay<'_> {
                     layout_positions,
                     &char_positions,
                 );
+                let visual_positions = crate::renderer::text_direction::VisualTextPositions::new(
+                    text,
+                    &char_positions,
+                );
+                let span_x = |start: usize, end: usize| {
+                    visual_positions
+                        .as_ref()
+                        .and_then(|positions| positions.span_origin(start, end))
+                        .unwrap_or_else(|| char_positions.get(start).copied().unwrap_or(0.0))
+                };
                 let clusters = split_into_clusters(text);
                 let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
                 let trim = trim_trailing_spaces.min(trailing);
@@ -455,12 +465,10 @@ impl SkiaTextReplay<'_> {
                         if let Some(span) = spans.peek().filter(|span| cluster_index >= span.start)
                         {
                             if cluster_index == span.start {
-                                // Keep the producer's start position and the next
-                                // cluster's layout anchor, even when GSUB changes
-                                // the number/width/order of glyphs inside this span.
-                                let char_x = bbox.x as f32
-                                    + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
-                                    + dx;
+                                // 공백·원문 전진은 유지하고 blob은 방향 구간의 실제 표시 원점에 그린다.
+                                let (end_start, end_text) = &clusters[span.end - 1];
+                                let end = end_start + end_text.chars().count();
+                                let char_x = bbox.x as f32 + span_x(*char_idx, end) as f32 + dx;
                                 canvas.save();
                                 canvas.translate((char_x, y as f32 + dy + span.baseline_offset));
                                 if has_ratio {
@@ -479,6 +487,8 @@ impl SkiaTextReplay<'_> {
                         {
                             continue;
                         }
+                        let cluster_offset = span_x(*char_idx, *char_idx + cluster.chars().count());
+                        let char_x = bbox.x as f32 + cluster_offset as f32 + dx;
                         if cluster == "-" {
                             if let Some((start, end, y_offset, stroke)) =
                                 crate::renderer::overlapping_dash_leader_segment(
@@ -489,7 +499,6 @@ impl SkiaTextReplay<'_> {
                                     f64::from(font_size),
                                 )
                             {
-                                let char_x = bbox.x as f32 + char_positions[*char_idx] as f32 + dx;
                                 let line_y = y as f32 + y_offset as f32 + dy;
                                 let mut line_paint = Paint::default();
                                 line_paint.set_anti_alias(true);
@@ -512,7 +521,7 @@ impl SkiaTextReplay<'_> {
                         if let Some((cx, cy, rx, ry)) =
                             crate::renderer::legacy_hft_bullet_geometry(cluster, style)
                         {
-                            let left = bbox.x + char_positions[*char_idx] + cx + f64::from(dx);
+                            let left = bbox.x + cluster_offset + cx + f64::from(dx);
                             let top = y + cy + f64::from(dy);
                             canvas.draw_oval(
                                 skia_safe::Rect::from_xywh(
@@ -549,10 +558,7 @@ impl SkiaTextReplay<'_> {
                         }
                         if is_middle_dot(cluster) {
                             let advance = cluster_advance(*char_idx, cluster);
-                            let cx = bbox.x as f32
-                                + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
-                                + advance / 2.0
-                                + dx;
+                            let cx = bbox.x as f32 + cluster_offset as f32 + advance / 2.0 + dx;
                             let cy = y as f32
                                 - font_size
                                     * crate::renderer::render_tree::MIDDLE_DOT_CY_OFFSET_EM as f32
@@ -578,9 +584,6 @@ impl SkiaTextReplay<'_> {
                                 .next()
                                 .and_then(crate::renderer::boxed_pua_number)
                             {
-                                let char_x = bbox.x as f32
-                                    + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
-                                    + dx;
                                 let baseline_y = y as f32 + dy;
                                 if let Some(g) = crate::renderer::boxed_digit_geometry::single_digit(
                                     number,
@@ -685,9 +688,6 @@ impl SkiaTextReplay<'_> {
                                 paint
                             });
                             let glyph_paint = bold_paint.as_ref().unwrap_or(&text_paint);
-                            let char_x = bbox.x as f32
-                                + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
-                                + dx;
                             let char_y = y as f32 + dy;
                             // 측정에서 폭을 소유한 경로가 paint의 축소도 결정한다.
                             // Unicode 범위만으로 이미 좁은 자연 글리프를 다시 줄이지 않는다.

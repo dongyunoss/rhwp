@@ -1295,7 +1295,7 @@ impl LayoutEngine {
                                     control_index: Some(ctrl_idx),
                                     fill_mode: None,
                                     original_size: None,
-                                    transform: extract_shape_transform(&pic.shape_attr),
+                                    transform: crate::renderer::image_geometry::picture_transform(pic),
                                     crop,
                                     original_size_hu,
                                     effect: pic.image_attr.effect,

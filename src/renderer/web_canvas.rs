@@ -2600,6 +2600,14 @@ impl Renderer for WebCanvasRenderer {
         let metric_text = super::composer::display_projection_metric_text(&metric_source, text);
         let char_positions =
             super::replay_positions_or_compute(metric_text, style, layout_positions);
+        let visual_positions =
+            super::text_direction::VisualTextPositions::new(text, &char_positions);
+        let cluster_x = |start: usize, cluster: &str| {
+            visual_positions
+                .as_ref()
+                .and_then(|positions| positions.span_origin(start, start + cluster.chars().count()))
+                .unwrap_or(char_positions[start])
+        };
         // 글리프 폭은 커닝 전 advance에 맞춘다. 자리는 char_positions가 정한다.
         let fit_positions =
             super::glyph_fit_positions(metric_text, style, layout_positions, &char_positions);
@@ -2626,6 +2634,7 @@ impl Renderer for WebCanvasRenderer {
                 self.draw_text_with_effects(
                     &clusters,
                     &char_positions,
+                    visual_positions.as_ref(),
                     x,
                     y,
                     style,
@@ -2647,7 +2656,7 @@ impl Renderer for WebCanvasRenderer {
                     };
                     self.draw_boxed_pua_number(
                         number,
-                        x + char_positions[*char_idx],
+                        x + cluster_x(*char_idx, cluster_str),
                         y,
                         style,
                         font_size,
@@ -2667,7 +2676,7 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.begin_path();
                         self.ctx
                             .ellipse(
-                                x + char_positions[*char_idx] + cx,
+                                x + cluster_x(*char_idx, cluster_str) + cx,
                                 y + cy,
                                 rx,
                                 ry,
@@ -2695,7 +2704,7 @@ impl Renderer for WebCanvasRenderer {
                     {
                         continue;
                     }
-                    let char_x = x + char_positions[*char_idx];
+                    let char_x = x + cluster_x(*char_idx, cluster_str);
 
                     let ch = cluster_str.chars().next().unwrap_or(' ');
 
@@ -3364,6 +3373,7 @@ impl WebCanvasRenderer {
         &self,
         clusters: &[(usize, String)],
         char_positions: &[f64],
+        visual_positions: Option<&super::text_direction::VisualTextPositions<'_>>,
         x: f64,
         y: f64,
         style: &TextStyle,
@@ -3421,7 +3431,13 @@ impl WebCanvasRenderer {
                 if cs.starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r')) {
                     continue;
                 }
-                let char_x = x + char_positions[*char_idx] + dx;
+                let char_x = x
+                    + visual_positions
+                        .and_then(|positions| {
+                            positions.span_origin(*char_idx, *char_idx + cs.chars().count())
+                        })
+                        .unwrap_or(char_positions[*char_idx])
+                    + dx;
                 let char_y = y + dy;
 
                 if cs == "․"

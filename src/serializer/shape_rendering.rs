@@ -37,7 +37,7 @@ pub(super) fn generated(attr: &ShapeComponentAttr) -> RenderMatrices {
     } else {
         // 위치의 권위는 명시적 render_tx/ty다. offset을 임의로 이동 행렬로 승격하지 않는다.
         // 크기는 current/original로 표현하므로 회전 없는 폴백에 배율을 중복 기록하지 않는다.
-        (IDENTITY, IDENTITY, IDENTITY)
+        (IDENTITY, local_reflection(attr), IDENTITY)
     };
     let mut pairs = vec![(scale, rotation)];
     // 한컴 HWP5 저장본의 행렬 쌍 개수는 그룹 깊이 + 1이다.
@@ -67,7 +67,36 @@ fn shape_scale_matrix(attr: &ShapeComponentAttr) -> [f64; 6] {
     } else {
         1.0
     };
-    [sx, 0.0, 0.0, 0.0, sy, 0.0]
+    let reflection = local_reflection(attr);
+    [
+        sx * reflection[0],
+        0.0,
+        sx * reflection[2],
+        0.0,
+        sy * reflection[4],
+        sy * reflection[5],
+    ]
+}
+
+/// 반전은 원본 사각형 내부에서 먼저 수행한다. 회전·이동은 그 뒤에 합성한다.
+/// 이 플래그는 행렬을 대신하지 않으므로 새 저장 행렬에도 실제 반전을 기록한다.
+fn local_reflection(attr: &ShapeComponentAttr) -> Matrix {
+    [
+        if attr.horz_flip { -1.0 } else { 1.0 },
+        0.0,
+        if attr.horz_flip {
+            attr.original_width as f64
+        } else {
+            0.0
+        },
+        0.0,
+        if attr.vert_flip { -1.0 } else { 1.0 },
+        if attr.vert_flip {
+            attr.original_height as f64
+        } else {
+            0.0
+        },
+    ]
 }
 
 fn shape_rotation_positive_correction(attr: &ShapeComponentAttr) -> (f64, f64) {
