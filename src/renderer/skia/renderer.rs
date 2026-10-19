@@ -2025,9 +2025,7 @@ impl SkiaLayerRenderer {
                                 })
                                 .flatten();
                             let resolved = resolved.as_deref().or(fallback.as_ref());
-                            let effective_bbox = image
-                                .transform
-                                .effective_image_bbox(&image.paint_bbox(bbox));
+                            let effective_bbox = image.transformed_paint_bbox(bbox);
                             if image.transform.has_transform() {
                                 open_shape_transform(image.transform, &effective_bbox);
                             }

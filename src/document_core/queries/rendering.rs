@@ -2602,6 +2602,7 @@ impl DocumentCore {
                             // [#7193] 그리는 자리는 틀에서 그림 안쪽 여백을 뺀 사각형이다.
                             self.write_image(
                                 image.paint_bbox(bbox),
+                                image.transformed_paint_bbox(bbox),
                                 clip,
                                 image,
                                 resolved.as_deref(),
@@ -2616,6 +2617,7 @@ impl DocumentCore {
             fn write_image(
                 &mut self,
                 bbox: BoundingBox,
+                paint_bbox: BoundingBox,
                 clip: Option<BoundingBox>,
                 image: &crate::renderer::render_tree::ImageNode,
                 resolved: Option<&crate::paint::ResolvedImagePayload>,
@@ -2629,7 +2631,11 @@ impl DocumentCore {
                 buf.push_str("{\"bbox\":");
                 write_bbox(buf, bbox);
                 buf.push_str(",\"imagePaintBBox\":");
-                write_bbox(buf, image.transform.effective_image_bbox(&bbox));
+                write_bbox(buf, paint_bbox);
+                if image.pre_rotation_ratio.is_some() {
+                    buf.push_str(",\"paintBbox\":");
+                    write_bbox(buf, paint_bbox);
+                }
                 // 조상 clip 이 있으면 **언제나** 싣는다. 교차한 값을 그대로 주고, 그것으로 무엇을
                 // 할지는 소비자가 정한다.
                 //

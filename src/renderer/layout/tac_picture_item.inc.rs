@@ -267,6 +267,7 @@ impl LayoutEngine {
                     text_wrap: Some(pic.common.text_wrap),
                     external_path: pic.image_attr.external_path.clone(),
                     content_inset: utils::picture_content_inset(pic),
+                    pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(pic),
                     ..ImageNode::new(bin_data_id, image_data)
                 }),
                 BoundingBox::new(pic_x + margin_left, pic_y + margin_top, pic_w, pic_h),

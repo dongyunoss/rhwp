@@ -681,7 +681,7 @@ export class PageRenderer {
       const quarterTurned = ((image.rotation % 180) + 180) % 180 === 90;
       // The producer resolves source current/common sizes for every angle.
       // Retain the quarter-turn fallback for older WASM responses only.
-      const paintFrame = image.imagePaintBBox;
+      const paintFrame = image.imagePaintBBox ?? image.paintBbox;
       const frameWidth = paintFrame?.width ?? (quarterTurned ? image.bbox.height : image.bbox.width);
       const frameHeight = paintFrame?.height ?? (quarterTurned ? image.bbox.width : image.bbox.height);
       const frameX = paintFrame?.x ?? image.bbox.x + (image.bbox.width - frameWidth) / 2;

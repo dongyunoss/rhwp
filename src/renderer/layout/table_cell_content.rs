@@ -1310,6 +1310,10 @@ impl LayoutEngine {
                                     outer_table_control_index: enclosing_ctx
                                         .map(|(_, _, _, table_ci)| table_ci),
                                     cell_context: cell_ctx.clone(),
+                                    pre_rotation_ratio:
+                                        crate::renderer::image_geometry::picture_pre_rotation_ratio(
+                                            pic,
+                                        ),
                                     content_inset:
                                         crate::renderer::layout::utils::picture_content_inset(pic),
                                 }),

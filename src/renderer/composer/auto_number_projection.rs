@@ -72,9 +72,11 @@ pub(super) fn project(composed: &mut ComposedParagraph, para: &Paragraph) {
     });
 }
 
-/// 캡션은 번호 종류와 무관하게 모든 자동 번호를 자기 자리표에 투영한다.
+/// 공통 문단 구성에서 처리한 주석 번호와 나머지 캡션 번호의 소유를 나눈다.
 pub(crate) fn project_caption(composed: &mut ComposedParagraph, para: &Paragraph) {
-    project_where(composed, para, |_| true);
+    project_where(composed, para, |kind| {
+        !matches!(kind, AutoNumberType::Footnote | AutoNumberType::Endnote)
+    });
 }
 
 fn project_where(
@@ -82,8 +84,7 @@ fn project_where(
     para: &Paragraph,
     owns: impl Fn(AutoNumberType) -> bool,
 ) {
-    let positions = para.control_text_positions();
-    let utf16_positions = para.control_utf16_positions();
+    let sources = para.control_source_positions();
     for (index, control) in para.controls.iter().enumerate() {
         let Control::AutoNumber(number) = control else {
             continue;
@@ -91,14 +92,13 @@ fn project_where(
         if !owns(number.number_type) {
             continue;
         }
-        let Some(&position) = positions.get(index) else {
+        let Some(source) = sources.get(index) else {
             continue;
         };
-        let utf16 = utf16_positions.get(index).copied().unwrap_or(0);
+        let position = source.char_index;
+        let utf16 = source.utf16;
         let style = super::find_active_char_shape(&para.char_shapes, utf16);
-        if para.char_offsets.get(position).copied() == Some(utf16)
-            && project_placeholder(composed, position, number, style)
-        {
+        if source.owns_char && project_placeholder(composed, position, number, style) {
             continue;
         }
         // 원문 scalar를 갖지 않는 형식의 control만 별도 표시 런을 삽입한다.

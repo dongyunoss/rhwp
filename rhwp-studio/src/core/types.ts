@@ -1406,6 +1406,8 @@ export interface LayerImageOp {
   bbox: LayerBounds;
   /** Shared producer result before rotation; bbox remains the occupied frame. */
   imagePaintBBox?: LayerBounds;
+  /** 회전 전 출력 크기. 없으면 기존 bbox 계약을 사용한다. */
+  paintBbox?: LayerBounds;
   /** Explicit source sampling; absent preserves the output profile policy. */
   imageInterpolation?: 'nearest' | 'linear';
   /** 실제 Print 색 전달 payload의 축소 재구성 계약. */

@@ -1105,12 +1105,12 @@ impl PaintOp {
                 // [#7193] 소비자가 그리는 자리 — 틀에서 그림 안쪽 여백을 뺀 사각형.
                 write_bbox(buf, image.paint_bbox(bbox));
                 buf.push_str(",\"imagePaintBBox\":");
-                write_bbox(
-                    buf,
-                    image
-                        .transform
-                        .effective_image_bbox(&image.paint_bbox(bbox)),
-                );
+                write_bbox(buf, image.transformed_paint_bbox(bbox));
+                if image.pre_rotation_ratio.is_some() {
+                    // bbox는 기존 외접 프레임 계약을 유지한다. 실제 그릴 크기는 별도로 전달한다.
+                    buf.push_str(",\"paintBbox\":");
+                    write_bbox(buf, image.transformed_paint_bbox(bbox));
+                }
                 if let Some(frame) = resolved.and_then(|payload| {
                     crate::renderer::print_raster::PrintRasterFrame::read(&payload.data)
                 }) {

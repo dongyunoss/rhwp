@@ -37,6 +37,8 @@ mod supplementary_pictographs;
 
 #[path = "font_metric_math_symbol_blocks.rs"]
 mod math_symbol_blocks;
+#[path = "font_metric_contextual_scripts.rs"]
+mod contextual_scripts;
 
 pub(crate) use legacy_hft::{
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
@@ -113,6 +115,7 @@ impl FontMetric {
                 Some(w)
             } else {
                 supplementary_pictographs::width(self, ch)
+                    .or_else(|| contextual_scripts::width(self, ch))
             };
         }
         // 기존 범위는 그대로 우선하며, 확인된 프로그램의 누락 구간만 보충한다.
@@ -121,6 +124,7 @@ impl FontMetric {
             .or_else(|| math_alphabet::width(self, ch))
             .or_else(|| math_symbol_blocks::width(self, ch))
             .or_else(|| supplementary_pictographs::width(self, ch))
+            .or_else(|| contextual_scripts::width(self, ch))
     }
 }
 
@@ -134,6 +138,7 @@ pub(crate) fn verified_metric_has_glyph(metric: &FontMetric, ch: char) -> Option
         .or_else(|| cjk_punctuation::primary_has_glyph(metric.name, metric.bold, metric.italic, ch))
         .or_else(|| math_symbol_blocks::entry(metric, ch).map(|(present, _)| present))
         .or_else(|| supplementary_pictographs::entry(metric, ch).map(|(present, _)| present))
+        .or_else(|| contextual_scripts::entry(metric, ch).map(|(present, _)| present))
 }
 
 /// DB 항목이 없어도 확인한 원 face의 cmap은 독립적으로 조회한다.
@@ -146,6 +151,7 @@ pub(crate) fn verified_named_program_has_glyph(
     math_alphabet::primary_has_glyph(family, bold, italic, ch)
         .or_else(|| cjk_punctuation::primary_has_glyph(family, bold, italic, ch))
         .or_else(|| supplementary_pictographs::primary_has_glyph(family, bold, italic, ch))
+        .or_else(|| contextual_scripts::primary_has_glyph(family, bold, italic, ch))
 }
 
 /// 확인한 원 프로그램의 결측 글리프 공급 체인. 기본 face의 폭 계약은 바꾸지 않는다.

@@ -47,6 +47,7 @@ pub(crate) mod hft_outline;
 pub mod html;
 pub(crate) mod hwp3_caption_host;
 pub mod hyperlinks;
+pub(crate) mod image_geometry;
 pub(crate) mod image_header;
 pub mod image_resolver;
 pub mod inline_flow;

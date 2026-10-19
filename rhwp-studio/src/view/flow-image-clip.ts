@@ -16,6 +16,8 @@ export interface FlowImagePaintOp {
   bbox: FlowImageBbox;
   /** Shared unrotated paint frame, separate from occupied/clipped bounds. */
   imagePaintBBox?: FlowImageBbox;
+  /** 실제 회전 전 출력 상자. bbox는 가시성과 clip의 외접 프레임이다. */
+  paintBbox?: FlowImageBbox;
   imageInterpolation?: 'nearest' | 'linear';
   /**
    * `<img>.src` 로 그대로 넣는 값.
@@ -51,6 +53,7 @@ type LayerPaintOpLike = {
   type?: unknown;
   bbox?: unknown;
   imagePaintBBox?: unknown;
+  paintBbox?: unknown;
   mime?: unknown;
   base64?: unknown;
   crop?: unknown;
@@ -121,6 +124,7 @@ export function collectFlowImagePaintOps(
         images.push({
           bbox: op.bbox,
           ...(isFiniteBbox(op.imagePaintBBox) ? { imagePaintBBox: op.imagePaintBBox } : {}),
+          ...(isFiniteBbox(op.paintBbox) ? { paintBbox: op.paintBbox } : {}),
           ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
             ? { imageInterpolation: op.imageInterpolation } : {}),
           src: `data:${op.mime};base64,${op.base64}`,
@@ -256,6 +260,7 @@ export function flowImageOpsFromNarrowQuery(
     images.push({
       bbox: op.bbox,
       ...(isFiniteBbox(op.imagePaintBBox) ? { imagePaintBBox: op.imagePaintBBox } : {}),
+      ...(isFiniteBbox(op.paintBbox) ? { paintBbox: op.paintBbox } : {}),
       ...(op.imageInterpolation === 'nearest' || op.imageInterpolation === 'linear'
         ? { imageInterpolation: op.imageInterpolation } : {}),
       src,

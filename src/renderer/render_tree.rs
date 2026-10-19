@@ -1641,6 +1641,9 @@ pub struct ImageNode {
     /// `None` 이면 틀 전체에 그린다.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub content_inset: Option<[f64; 4]>,
+    /// 저장 계약이 확인된 그림의 회전 전 크기 / 회전 후 프레임 크기.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pre_rotation_ratio: Option<[f64; 2]>,
 }
 
 /// [Task #825] 머리말/꼬리말 안 그림의 outer 위치 + 종류.
@@ -1699,6 +1702,7 @@ impl ImageNode {
             outer_table_control_index: None,
             cell_context: None,
             content_inset: None,
+            pre_rotation_ratio: None,
         }
     }
 
@@ -1715,6 +1719,15 @@ impl ImageNode {
             frame.y + frame.height * top,
             frame.width * (1.0 - left - right),
             frame.height * (1.0 - top - bottom),
+        )
+    }
+
+    /// 회전·대칭을 적용하기 전 실제 그림 출력 사각형. 모든 backend가 한 번만 소비한다.
+    pub fn transformed_paint_bbox(&self, frame: &BoundingBox) -> BoundingBox {
+        super::image_geometry::pre_rotation_bbox(
+            &self.paint_bbox(frame),
+            self.transform,
+            self.pre_rotation_ratio,
         )
     }
 }

@@ -2259,7 +2259,7 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('image:decodeFailed');
       return;
     }
-    const paintOp = op.imagePaintBBox ? { ...op, bbox: op.imagePaintBBox } : op;
+    const paintOp = (op.imagePaintBBox ?? op.paintBbox) ? { ...op, bbox: (op.imagePaintBBox ?? op.paintBbox)! } : op;
     this.withImageTransform(canvas, paintOp.bbox, paintOp.transform,
       () => this.drawImageOp(canvas, image, paintOp, undefined, profile));
   }

@@ -5,6 +5,7 @@
 
 #[cfg(target_arch = "wasm32")]
 mod char_overlap;
+mod contextual_text;
 #[cfg(target_arch = "wasm32")]
 mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
@@ -1326,7 +1327,7 @@ impl WebCanvasRenderer {
         restore_transform: bool,
     ) {
         // [#7193] 그림은 틀(bbox)에서 안쪽 여백을 뺀 자리에 그린다.
-        let eff_bbox = img.transform.effective_image_bbox(&img.paint_bbox(bbox));
+        let eff_bbox = img.transformed_paint_bbox(bbox);
         self.open_shape_transform(&img.transform, &eff_bbox);
         if img.data.is_none() && img.external_path.is_some() {
             self.ctx.set_fill_style_str("#f0f0f0");
@@ -2598,7 +2599,7 @@ impl Renderer for WebCanvasRenderer {
         self.ctx.set_font(font);
 
         // 클러스터 분할
-        let clusters = split_into_clusters(text);
+        let clusters = contextual_text::coalesce(split_into_clusters(text));
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
         let metric_text = super::composer::display_projection_metric_text(&metric_source, text);
@@ -2828,7 +2829,10 @@ impl Renderer for WebCanvasRenderer {
                         });
                         // Measured fallback advance already includes script size and
                         // document ratio exactly once. Do not fit it a second time.
-                        let fit = if measured_descriptor.is_some() {
+                        // 문맥 shaping의 내부 전진·결합은 브라우저가 결정한다.
+                        // 저장 원점은 유지하며 낱글자 폭의 합으로 다시 압축하지 않는다.
+                        let contextual = contextual_text::is_contextual(cluster_str);
+                        let fit = if measured_descriptor.is_some() || contextual {
                             None
                         } else if cluster_advance > 0.0 {
                             self.ctx.measure_text(cluster_str).ok().and_then(|metrics| {
