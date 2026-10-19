@@ -758,8 +758,18 @@ impl FormObjectNode {
         if form.form_type != crate::model::control::FormType::Edit {
             return None;
         }
-        let mask = form.properties.get("PasswordChar")?.chars().next()?;
-        Some(mask.to_string().repeat(form.text.chars().count()))
+        // 한컴 Print는 저장된 LF 뒤 문자열을 한 줄 입력 상자에 이어 그리지 않는다.
+        // MultiLine=0/1인 동일 입력의 독립 Print 모두 첫 줄만 표시한다. 원문은 보존한다.
+        let first_line = form.text.split(['\r', '\n']).next().unwrap_or_default();
+        if let Some(mask) = form
+            .properties
+            .get("PasswordChar")
+            .and_then(|value| value.chars().next())
+        {
+            Some(mask.to_string().repeat(first_line.chars().count()))
+        } else {
+            (first_line.len() != form.text.len()).then(|| first_line.to_owned())
+        }
     }
 
     pub fn display_or_text(&self) -> &str {
