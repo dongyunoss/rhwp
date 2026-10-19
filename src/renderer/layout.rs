@@ -7584,7 +7584,15 @@ impl LayoutEngine {
         let start_shift = if allow_negative_visual_start {
             col_content.start_height.min(0.0)
         } else {
-            0.0
+            super::stored_page_origin::initial_column_band::for_paint(
+                paragraphs,
+                styles,
+                self.profile.get(),
+                zone_layout.column_areas.len(),
+                col_content,
+                page_content,
+                self.dpi,
+            )
         };
         let visual_col_y = col_area.y + start_shift;
         let visual_col_height = col_area.height - start_shift;

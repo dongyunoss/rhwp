@@ -30,6 +30,8 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) current_height: f64,
     /// 현재 단 시작 시점의 논리 높이 (px)
     pub(in crate::renderer::typeset) current_start_height: f64,
+    /// 첫 물리 쪽의 모든 단이 공유하는 인증된 저장 시작 밴드.
+    pub(in crate::renderer::typeset) stored_initial_column_band: f64,
     /// 현재 단에 미주 흐름 항목이 포함되어 있는지 여부
     pub(in crate::renderer::typeset) current_endnote_flow: bool,
     /// [#5886] 현재 단에 문단-사이 compact 되감김을 넣었으면, 이후 문단도

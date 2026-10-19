@@ -22,6 +22,7 @@ impl TypesetState {
                 paragraph_fragment_content_bottoms: Default::default(),
                 current_height: 0.0,
                 current_start_height: 0.0,
+                stored_initial_column_band: 0.0,
                 current_endnote_flow: false,
                 column_had_compact_endnote_rewind: false,
                 prev_body_bottom_vpos: None,
@@ -726,7 +727,10 @@ impl TypesetState {
             // current_height의 시작값으로 사용 (가용 공간만 줄임, zone_y_offset은 건드리지 않음).
             // layout은 body_wide_reserved로 별도 처리하므로 여기서 zone_y_offset에
             // 넣으면 double-shift가 발생.
-            self.data.current_height = self.data.pending_body_wide_top_reserve;
+            self.data.current_height = self
+                .data
+                .pending_body_wide_top_reserve
+                .max(self.data.stored_initial_column_band);
             self.data.current_start_height = self.data.current_height;
             self.data.current_endnote_flow = false;
             // [#5699 H1] 밴드 교정 바닥은 단 흐름 좌표 — 새 단에서 리셋.
@@ -845,6 +849,7 @@ impl TypesetState {
         self.data.current_column = 0;
         self.data.current_height = 0.0;
         self.data.current_start_height = 0.0;
+        self.data.stored_initial_column_band = 0.0;
         // [#5699 H1] 밴드 교정 바닥은 쪽 단위.
         self.data.ladder_band_floor = 0.0;
         // [compat 2024] 앵커 줄 회수 누계는 쪽 단위 — 새 쪽에서 리셋.

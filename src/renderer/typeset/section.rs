@@ -96,6 +96,15 @@ impl TypesetEngine {
                 .any(|p| p.line_segs.iter().any(|ls| !is_synthetic_line_seg(ls))),
             skip_spacing_before_prededuct,
         );
+        if let Some(band) = crate::renderer::stored_page_origin::initial_column_band::resolve(
+            paragraphs,
+            styles,
+            profile,
+            usize::from(col_count),
+            self.dpi,
+        ) {
+            st.initialize_stored_column_band(band);
+        }
         // [#2279 OMIT-eager] 기계생성 압축 ladder 문서군 사전 판별 — lazy 판별
         // (#2383, 빈 host 표 성장 시점)보다 앞서 페이지말 fit 규칙에 적용되도록
         // 구역 시작 시점에 확정한다. lazy 경로는 사전 스캔 미검출 형상의

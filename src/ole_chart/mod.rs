@@ -10,6 +10,7 @@ mod legacy_column_renderer;
 mod legacy_combo_renderer;
 mod legacy_legend_layout;
 mod legacy_presentation;
+mod legacy_string;
 mod ooxml_text;
 pub mod orientation;
 pub mod parser;

@@ -160,7 +160,15 @@ impl TypesetState {
         }
         self.data.deferred_next_page_stored_frames.push(picture);
     }
-    /// OLE를 넘기더라도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
+    /// 첫 쪽의 인증된 시작 밴드를 측정 커서에 설정한다.
+    pub(in crate::renderer::typeset) fn initialize_stored_column_band(&mut self, band: f64) {
+        self.data.stored_initial_column_band = band;
+        self.data.current_height = band;
+        self.data.current_start_height = band;
+    }
+
+    /// OLE를 넘겨도 현재 단의 뒤 본문은 남은 예산을 계속 소비한다.
+    /// 다음 단의 확정 원점은 첫 쪽 공통 밴드를 소비한다.
     pub(in crate::renderer::typeset) fn defer_table_host_ole_to_next_column(
         &mut self,
         para_idx: usize,
@@ -179,7 +187,12 @@ impl TypesetState {
             .deferred_next_column_stored_frames
             .iter()
             .map(|frame| frame.placement.occupied_bottom)
-            .fold(self.data.pending_body_wide_top_reserve, f64::max);
+            .fold(
+                self.data
+                    .pending_body_wide_top_reserve
+                    .max(self.data.stored_initial_column_band),
+                f64::max,
+            );
         let Some(placement) =
             crate::renderer::float_placement::column_ole_placement(shape, anchor_y, dpi)
         else {
@@ -683,6 +696,12 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn restart_zone_columns(&mut self) {
         self.data.current_column = 0;
         self.data.current_height = 0.0;
+        // 저장 첫 줄의 밴드는 첫 존이 소유한다. 뒤 존의 측정과 paint가
+        // 이전 존의 시작 높이를 물려받지 않도록 소유 상태를 함께 닫는다.
+        if self.data.stored_initial_column_band > 0.0 {
+            self.data.stored_initial_column_band = 0.0;
+            self.data.current_start_height = 0.0;
+        }
         self.data.on_first_multicolumn_page = true;
     }
     pub(in crate::renderer::typeset) fn reserve_bottom_fixed_flow(
