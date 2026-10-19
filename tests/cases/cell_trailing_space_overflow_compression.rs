@@ -41,13 +41,16 @@ fn number_run(core: &DocumentCore) -> (f64, Vec<f64>) {
 /// 1×1 표의 오른쪽 정렬 칸에 `text` 를 넣고 칸 폭을 `cell_width` 로 맞춘다.
 fn right_aligned_cell(text: &str, cell_width: Option<u32>) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("유효한 글자·문단 모양 정의");
     {
         let mut section = rhwp::model::document::Section::default();
         section.section_def.page_def = rhwp::model::page::PageDef::a4_default();
         section
             .paragraphs
             .push(rhwp::model::paragraph::Paragraph::new_empty());
-        let mut document = rhwp::model::document::Document::default();
+        let mut document = core.document().clone();
+        document.sections.clear();
         document.sections.push(section);
         core.set_document(document);
     }

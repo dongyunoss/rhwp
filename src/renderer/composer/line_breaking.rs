@@ -5403,27 +5403,31 @@ fn reflow_line_segs_impl(
     // 실제 측정한 표 본체와 바깥 여백을 줄 폭과 줄 높이에서 함께 사용한다.
     // 개체 줄은 개체 자신의 원시 위치에서 시작한다. 뒤 글자 위치(`char_offsets`)로
     // 시작하면 저장 줄 경계가 개체 뒤에 놓여 개체가 앞 줄 끝에 남는다.
-    let occupied_controls: Vec<_> =
-        if split_stale_cell_reflow || edited_tac_table || inline_controls.is_empty() {
-            para.controls
-                .iter()
-                .zip(para.control_text_positions())
-                .zip(para.control_utf16_positions())
-                .filter_map(|((control, position), utf16_start)| {
-                    let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
-                    Some((position, utf16_start, width, height))
-                })
-                .collect()
-        } else {
-            Vec::new()
-        };
+    let terminal_inline_control = para
+        .controls
+        .iter()
+        .zip(para.control_text_positions())
+        .any(|(control, position)| position == text_len && control.is_treat_as_char_object());
+    let occupied_controls: Vec<_> = if split_stale_cell_reflow
+        || edited_tac_table
+        || terminal_inline_control
+        || inline_controls.is_empty()
+    {
+        para.controls
+            .iter()
+            .zip(para.control_text_positions())
+            .zip(para.control_utf16_positions())
+            .filter_map(|((control, position), utf16_start)| {
+                let (width, height) = inline_control_occupied_size_hwp(control, styles, dpi)?;
+                Some((position, utf16_start, width, height))
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
     // 마지막 글자 뒤의 글자처럼 취급 개체는 뒤 글자가 없어 채움 토큰에 폭이 실리지 않는다
     // (`flow_inline_controls`). 채움이 그 앞에서 줄을 나눌 수 없으므로 표와 같은 개체 줄
     // 판정을 받는다. 판정이 없으면 넓은 그림이 앞 글자와 한 줄에 남아 오른쪽 여백을 넘는다.
-    let terminal_inline_control = inline_controls.is_empty()
-        && occupied_controls
-            .iter()
-            .any(|&(position, ..)| position == text_len);
     let forced_inline_line =
         (split_stale_cell_reflow || edited_tac_table || terminal_inline_control)
             .then(|| {

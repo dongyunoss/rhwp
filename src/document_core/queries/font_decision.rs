@@ -225,16 +225,20 @@ fn source_character(
         .unwrap_or_default();
     let para = core.resolve_control_para(section, paragraph, &path).ok()?;
     let control_positions = find_logical_control_positions(para);
+    let text_positions = para.control_text_positions();
     let mut note_positions: Vec<usize> = para
         .controls
         .iter()
         .zip(&control_positions)
-        .filter_map(|(control, position)| {
-            matches!(control, Control::Footnote(_) | Control::Endnote(_)).then_some(*position)
+        .zip(text_positions)
+        .filter_map(|((control, position), text_position)| {
+            (text_position == 0 && matches!(control, Control::Footnote(_) | Control::Endnote(_)))
+                .then_some(*position)
         })
         .collect();
     note_positions.sort_unstable();
-    // 주석 마커는 런의 글자 주소에 칸을 더하지 않는다. 변환기가 세는 모델 칸을 먼저 복원한다.
+    // 선두 참조 번호는 note_reference가 줄 밖의 prefix로 방출해 런 주소에서 제외된다.
+    // 줄 안의 참조 번호는 emit_line_runs가 이미 논리 한 칸을 반영하므로 다시 더하지 않는다.
     for note_position in note_positions {
         if note_position > logical_offset {
             break;

@@ -22,13 +22,16 @@ const DECLARED: u32 = 1200;
 /// 2×1 표의 첫 칸을 "안 여백 합 > 선언 높이 ≥ 줄 높이" 로 만든다. 줄 높이를 돌려준다.
 fn document() -> (DocumentCore, i32) {
     let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("유효한 글자·문단 모양 정의");
     {
         let mut section = rhwp::model::document::Section::default();
         section.section_def.page_def = rhwp::model::page::PageDef::a4_default();
         section
             .paragraphs
             .push(rhwp::model::paragraph::Paragraph::new_empty());
-        let mut document = rhwp::model::document::Document::default();
+        let mut document = core.document().clone();
+        document.sections.clear();
         document.sections.push(section);
         core.set_document(document);
     }

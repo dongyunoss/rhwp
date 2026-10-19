@@ -2,7 +2,6 @@
 
 use super::super::helpers::get_textbox_from_shape;
 use super::super::queries::rendering::FocusedPageTreePatch;
-use super::clipboard::text_to_split_logical_offset;
 use super::formatting::restore_para_meta;
 use crate::document_core::{
     ActiveFieldInfo, DeferredPaginationDescriptor, DeferredPaginationTargetStatus, DocumentCore,
@@ -88,20 +87,35 @@ fn cell_boundary_has_objects(
     Ok(true)
 }
 
-fn delete_cell_boundary(paragraph: &mut Paragraph, start: usize, end: usize, has_objects: bool) {
-    if !has_objects {
-        paragraph.delete_text_at(start, end - start);
+fn delete_paragraph_boundary(
+    paragraph: &mut Paragraph,
+    start: usize,
+    end: usize,
+    has_objects: bool,
+) {
+    let text_len = paragraph.text.chars().count();
+    let end = end.min(text_len);
+    if start > end {
         return;
     }
-    let end_after = end >= paragraph.text.chars().count();
-    let from = text_to_split_logical_offset(paragraph, start, false);
-    let to = text_to_split_logical_offset(paragraph, end, end_after);
-    // 문단 끝의 떠 있는 개체는 캐럿 칸이 없으므로 뒤 조각에 남기지 않는다.
-    let suffix = (!end_after).then(|| paragraph.split_at(to));
-    let _ = paragraph.split_at(from);
-    if let Some(suffix) = suffix {
-        paragraph.merge_from(&suffix);
+    if has_objects {
+        let end_after = end == text_len;
+        let positions = paragraph.control_text_positions();
+        // 복사와 같은 반개방 글자 범위를 쓴다. 문단 끝 경계는 후행 개체까지 포함한다.
+        // 슬롯 제거를 공통 모델 연산에 맡겨 글자 모양과 필드의 컨트롤 번호도 함께 옮긴다.
+        for control in (0..paragraph.controls.len()).rev() {
+            let at = positions[control];
+            if matches!(
+                paragraph.controls[control],
+                Control::Table(_) | Control::Picture(_)
+            ) && at >= start
+                && (at < end || (at == end && end_after))
+            {
+                paragraph.remove_control(control);
+            }
+        }
     }
+    paragraph.delete_text_at(start, end - start);
 }
 
 /// flat·중첩 경로 모두 같은 문단 범위를 검증한 뒤 적용한다.
@@ -143,16 +157,16 @@ fn delete_cell_range(
     };
     // 끝 경계까지 검증을 마친 뒤에만 원문을 바꿔 실패 시 부분 삭제를 막는다.
     if start_para == end_para {
-        delete_cell_boundary(
+        delete_paragraph_boundary(
             &mut paragraphs[start_para],
             start_offset,
             end_offset,
             first_objects,
         );
     } else {
-        delete_cell_boundary(&mut paragraphs[end_para], 0, end_offset, last_objects);
+        delete_paragraph_boundary(&mut paragraphs[end_para], 0, end_offset, last_objects);
         paragraphs.drain(start_para + 1..end_para);
-        delete_cell_boundary(
+        delete_paragraph_boundary(
             &mut paragraphs[start_para],
             start_offset,
             first_end,
@@ -1325,7 +1339,10 @@ impl DocumentCore {
             &self.document.sections[section_idx].paragraphs[para_idx],
         );
         let flow_changed = flow_before != flow_after;
-        if flow_changed {
+        if self.batch_mode {
+            // 문단의 새 줄 구성은 위에서 갱신했다. 쪽 소속 확정은 endBatch가 소유한다.
+            self.mark_section_dirty(section_idx);
+        } else if flow_changed {
             self.paginate();
             for _ in 0..2 {
                 let new_col = self
@@ -1393,7 +1410,9 @@ impl DocumentCore {
 
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"charOffset\":{},\"documentPaginationPending\":{},\"flowChanged\":{}",
-            new_offset, !flow_changed, flow_changed
+            new_offset,
+            self.batch_mode || !flow_changed,
+            flow_changed
         )))
     }
 
@@ -3433,8 +3452,12 @@ impl DocumentCore {
                 // 같은 문단 내 삭제
                 let count = end_offset - start_offset;
                 if count > 0 {
-                    self.document.sections[section_idx].paragraphs[start_para]
-                        .delete_text_at(start_offset, count);
+                    delete_paragraph_boundary(
+                        &mut self.document.sections[section_idx].paragraphs[start_para],
+                        start_offset,
+                        end_offset,
+                        true,
+                    );
                     // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
                     let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
                         &self.document.sections[section_idx].paragraphs[start_para],
@@ -3455,10 +3478,12 @@ impl DocumentCore {
                 self.recompose_paragraph(section_idx, start_para);
             } else {
                 // 1) 마지막 문단 앞부분 삭제
-                if end_offset > 0 {
-                    self.document.sections[section_idx].paragraphs[end_para]
-                        .delete_text_at(0, end_offset);
-                }
+                delete_paragraph_boundary(
+                    &mut self.document.sections[section_idx].paragraphs[end_para],
+                    0,
+                    end_offset,
+                    true,
+                );
                 // 2) 중간 문단 역순 제거 (composed도 동기)
                 for mid_para in (start_para + 1..end_para).rev() {
                     self.forget_text_reflowed_tables_in_paragraph_at(section_idx, mid_para);
@@ -3473,10 +3498,12 @@ impl DocumentCore {
                         .text
                         .chars()
                         .count();
-                    if start_offset < para_len {
-                        self.document.sections[section_idx].paragraphs[start_para]
-                            .delete_text_at(start_offset, para_len - start_offset);
-                    }
+                    delete_paragraph_boundary(
+                        &mut self.document.sections[section_idx].paragraphs[start_para],
+                        start_offset,
+                        para_len,
+                        true,
+                    );
                 }
                 // 4) 첫-마지막 문단 병합 (마지막 문단이 이제 start_para+1에 위치)
                 if start_para + 1 < self.document.sections[section_idx].paragraphs.len() {

@@ -1222,6 +1222,8 @@ impl Paragraph {
             }
         }
         self.char_count = self.char_count.saturating_sub(CTRL_CHAR_CODE_UNITS);
+        self.control_mask =
+            Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
         removed
     }
 
@@ -2057,8 +2059,12 @@ impl Paragraph {
         self.ctrl_data_records = kept_ctrl_data;
         // 나눈 자리 갭(글자 `split_pos` 바로 앞)에 있다가 새 문단으로 가는 컨트롤 수.
         let moved_gap_controls = moved_control_idx_map
-            .keys()
-            .filter(|&&ci| text_positions.get(ci) == Some(&split_pos))
+            .iter()
+            // 자동 번호의 8유닛은 자리표 글자에 있다. 앞 갭에 다시 예약하지 않는다.
+            .filter(|&(&ci, &new_ci)| {
+                text_positions.get(ci) == Some(&split_pos)
+                    && !matches!(new_controls[new_ci], Control::AutoNumber(_))
+            })
             .count();
 
         // 6. char_count 갱신

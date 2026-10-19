@@ -22,13 +22,16 @@ const SLACK: i32 = 33;
 /// 1×1 TAC RowBreak 표, 칸 문단 `["가", " "]`. 선언 높이(HU)를 돌려준다.
 fn document() -> (DocumentCore, u32) {
     let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("유효한 글자·문단 모양 정의");
     {
         let mut section = rhwp::model::document::Section::default();
         section.section_def.page_def = rhwp::model::page::PageDef::a4_default();
         section
             .paragraphs
             .push(rhwp::model::paragraph::Paragraph::new_empty());
-        let mut document = rhwp::model::document::Document::default();
+        let mut document = core.document().clone();
+        document.sections.clear();
         document.sections.push(section);
         core.set_document(document);
     }
