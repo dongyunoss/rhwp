@@ -3592,12 +3592,6 @@ export class CanvasKitLayerRenderer {
       return;
     }
     const fontSize = Math.max(1, rawFontSize);
-    const rawRatio = op.charOverlap.innerCharSize > 0
-      ? op.charOverlap.innerCharSize / 100
-      : op.charOverlap.innerCharSize < 0
-        ? 1 + op.charOverlap.innerCharSize * 0.1
-        : 1;
-    const innerFontSize = Math.max(1, fontSize * Math.min(4, Math.max(0.1, rawRatio)));
     const requestedFontFamily = primaryFontFamily(style.fontFamily);
     const preparedTypeface = this.findPreparedTypeface(style.fontFamily, style);
     if (requestedFontFamily && !preparedTypeface && this.requirePreparedFontFamilies) {
@@ -3631,6 +3625,14 @@ export class CanvasKitLayerRenderer {
           .map(([, digit]) => String.fromCharCode(0x30 + digit))
           .join('')
       : null;
+
+    // 원문 charSz는 부호 있는 10% 단계다. 테두리가 없으면 적용하지 않는다.
+    // PUA 다자리 숫자가 실제 원 테두리를 그리는 경로도 Rust와 같은 조건을 쓴다.
+    const effectiveBorder = op.charOverlap.borderType === 0 && decodedNumber !== null
+      ? 1
+      : op.charOverlap.borderType;
+    const sizeRatio = effectiveBorder === 0 ? 1 : 1 + op.charOverlap.innerCharSize * 0.1;
+    const innerFontSize = Math.max(1, fontSize * sizeRatio);
 
     let rendered = false;
     const draw = (originX: number, originY: number) => {

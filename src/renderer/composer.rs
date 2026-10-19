@@ -46,7 +46,7 @@ mod punctuation_slots;
 pub struct CharOverlapInfo {
     /// 테두리 타입 (0=없음, 1=원, 2=반전원, 3=사각형, 4=반전사각형)
     pub border_type: u8,
-    /// 내부 글자 크기 (%, 기본 100)
+    /// 내부 글자 크기의 부호 있는 10% 단계 (0=원래 크기)
     pub inner_char_size: i8,
 }
 
