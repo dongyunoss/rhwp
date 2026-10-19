@@ -34,62 +34,7 @@ fn public_trace(path: &str, page: u32, max_characters: u64) -> serde_json::Value
     serde_json::from_str(&json).expect("public fixture trace JSON")
 }
 
-fn assert_stage4_profile(trace: &serde_json::Value, profile: &serde_json::Value) {
-    let records = trace["records"].as_array().expect("trace records");
-    let address = profile["sourceAddress"]
-        .as_object()
-        .expect("원본 문자 주소");
-    let matches: Vec<_> = records
-        .iter()
-        .filter(|record| {
-            address
-                .iter()
-                .all(|(key, value)| record["source"].get(key) == Some(value))
-        })
-        .collect();
-    assert_eq!(
-        matches.len(),
-        1,
-        "같은 원본 문자의 프로필은 유일하다: {}",
-        profile["id"]
-    );
-    let record = matches[0];
-    let expected = &profile["expected"];
-    assert_eq!(record["source"]["status"], expected["sourceStatus"]);
-    assert_eq!(record["source"]["character"], expected["character"]);
-    assert_eq!(record["document"]["face"], expected["documentFace"]);
-    assert_eq!(record["document"]["substFont"], expected["substFont"]);
-    assert_eq!(
-        record["layoutName"]["normalizedFace"],
-        expected["normalizedFace"]
-    );
-    let expected_step = &expected["layoutStepKind"];
-    if expected_step.is_null() {
-        assert!(record["layoutName"]["steps"]
-            .as_array()
-            .expect("layout steps")
-            .is_empty());
-    } else {
-        assert!(record["layoutName"]["steps"]
-            .as_array()
-            .expect("layout steps")
-            .iter()
-            .any(|step| step.get("kind") == Some(expected_step)));
-    }
-    assert_eq!(
-        record["layoutMetric"]["matchKind"],
-        expected["metricMatchKind"]
-    );
-    assert_eq!(
-        record["layoutMetric"]["characterMatch"], expected["metricCharacterMatch"],
-        "{}: 전용 폭 표의 문자 hit와 공통 메트릭 DB의 matchKind는 별개다",
-        profile["id"]
-    );
-    assert_eq!(
-        record["layoutMetric"]["widthSource"],
-        expected["widthSource"]
-    );
-}
+include!("../common/font_trace_profile_assertions.rs");
 
 #[test]
 fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
@@ -126,75 +71,7 @@ fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
                 assert_eq!(&trace["counts"][key], value, "{id}: {key}");
             }
             if document["validateRunOwnership"] == true {
-                let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .join(document["path"].as_str().expect("source path"));
-                let core = DocumentCore::from_bytes(&std::fs::read(path).expect("동일 원본"))
-                    .expect("원본 문서 열기");
-                let public: serde_json::Value =
-                    serde_json::from_str(
-                        &core
-                            .get_page_text_layout_native(
-                                document["page"].as_u64().expect("page") as u32
-                            )
-                            .expect("공개 문자 배치"),
-                    )
-                    .expect("문자 배치 JSON");
-                let runs = public["runs"].as_array().expect("공개 소유 런");
-                assert_eq!(
-                    trace["counts"]["runsSeen"].as_u64(),
-                    Some(runs.len() as u64)
-                );
-                let count: usize = runs
-                    .iter()
-                    .map(|run| run["text"].as_str().expect("내용").chars().count())
-                    .sum();
-                assert_eq!(
-                    trace["counts"]["charactersSeen"].as_u64(),
-                    Some(count as u64)
-                );
-                let records = trace["records"].as_array().expect("문자 기록");
-                let ids: std::collections::HashSet<_> = records
-                    .iter()
-                    .map(|record| record["recordId"].as_str().expect("기록 ID"))
-                    .collect();
-                assert_eq!(ids.len(), records.len(), "기록을 중복하지 않는다");
-                for record in records {
-                    let owner = record["source"]["runIndex"].as_u64().expect("소유 런") as usize;
-                    let run = runs.get(owner).expect("실제 소유 런");
-                    let local = record["recordId"]
-                        .as_str()
-                        .expect("문자 기록 ID")
-                        .rsplit(":char:")
-                        .next()
-                        .expect("런 내부 문자 번호")
-                        .parse::<usize>()
-                        .expect("문자 번호");
-                    let character = run["text"]
-                        .as_str()
-                        .expect("소유 런 내용")
-                        .chars()
-                        .nth(local)
-                        .expect("문자는 소유 런 안에 포함");
-                    assert_eq!(record["source"]["character"], character.to_string());
-                    if let Some(start) = run["charStart"].as_u64() {
-                        assert_eq!(
-                            record["source"]["charOffset"].as_u64(),
-                            Some(start + local as u64)
-                        );
-                        assert_eq!(record["source"]["sectionIndex"], run["secIdx"]);
-                    } else {
-                        assert_eq!(record["source"]["status"], "unavailable");
-                    }
-                    assert_eq!(record["source"]["charShapeId"], run["charShapeId"]);
-
-                    if run["charStart"].is_null() {
-                        assert!(record["source"]["charOffset"].is_null());
-                    } else if run["cellPath"].is_null() {
-                        assert_eq!(record["source"]["paragraphIndex"], run["paraIdx"]);
-                    } else {
-                        assert_eq!(record["source"]["paragraphIndex"], run["parentParaIdx"]);
-                    }
-                }
+                assert_profile_run_ownership(document, &trace);
             }
         }
         if !is_render_pin_deferred("expectedLayoutHash") {
