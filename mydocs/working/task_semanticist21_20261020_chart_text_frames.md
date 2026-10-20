@@ -848,3 +848,41 @@ fresh243/236, PDF134/134였다. 고정된 내용 판정 `<232`에서 fresh 아�
 `logs/chart-title-reservation-985.log`, `logs/chart-fixed-label-title-pitch-988.log`,
 `logs/chart-frame-strokes-992.log`다. 남은 출력 결함·fresh 전체·최신 base 비교·기존 Rust
 실패·전체 통합 검증을 해결하기 전 PR을 제출하지 않는다.
+
+## 기본 외곽선의 pt/px 경로 보정
+
+993에서 원본 무저장 LineSeg 호스트의 차트 바깥 선만 명시0.5/0.75/1/1.5pt로 바꾼
+독립 대조군4개를 만들었다. 현대 XML과 중첩CFB를 함께 갱신했다. 한컴2022 저장 제품을
+확인해 engine2020의 비동기 start/status/download로 Print했다. 네 요청 모두 성공했으며,
+실제 제품·PrintMethod0·one-up 모드와 입력/PDF SHA를 receipt에 보존했다. 원본의
+기준 PDF를 바꾸지 않았고 이 합성 대조군의 통과를 원본 통과로 보고하지 않는다.
+
+995의600dpi 계측에서 기본 외곽선의 위/아래/왼쪽/오른쪽 짙은 밴드0.8/1.28/0.8/0.96px는
+명시0.75pt의 밴드와 네 변 모두 같았다. 명시0.5pt는0.64/0.96/0.64/0.64px,
+명시1pt는0.96/1.60/0.96/1.28px로 달랐다. 따라서 기본 선은0.75pt이며,
+96dpi에서1px가 된다. 기본 회색은134, 명시RGB8C의 출력은140으로 실제 기본색도 구분했다.
+이 밴드 폭을 화면 좌표 핀으로 삼지 않고 명시 서식과 기본 서식의 같은 물리 단위를 확인했다.
+
+현재 `FRAME_STYLE`은0.75를 px 문자열로 직접 방출했고, `line_attr`의 명시 선은0.75pt를
+`PX_PER_PT`로 변환했다. 기본값을 `LineSpec::Solid`로 만들고 같은 `line_attr`를 소비하게
+보정했다. 기본 회색은 독립 Print의RGB134로 설정한다. 명시 굵기·명시색·`noFill`과
+지원하지 않는 차트의 fallback은 앞선 분기를 유지한다. 좌표·크기·줄 나눔·viewport·마스크
+임계값을 바꾸거나 특정 문서의 분기를 추가하지 않았다.
+
+994의 최소 Chrome 재현에서도0.75px 선의 아래 픽셀244/236을 확인했다. 표본 배율만
+1→2→4로 바꿔도 같았고, 잉크 영역을 확대하면198로 짙어졌다. 그러나 영역 확장은 실제
+기본 선의 잘못된 단위를 고치는 것이 아니므로 적용하지 않았다. `RawSvgNode`·paint bounds·
+브라우저의 공통 래스터 계약을 바꾸지 않고 먼저 기본/명시 선의 단위 계약을 일치시킨다.
+
+996에서 fmt와 차트 전체 target Clippy는 통과했다. 기존 차트 검사는157PASS/8FAIL로
+974와 같은 여덟 실패 함수다. `chart-frame-units-996-existing-failures.json`에 함수 이름을
+대조했다. 새 검사·기대값·골든은 추가하거나 갱신하지 않았다. 이 소스의 Native074/fresh028과
+전체 조건 재산출·직접 판독 전까지 기본 외곽선의 시각 개선 완료로 표시하지 않는다.
+989는 이전 커밋 제품의 전체 fresh 대조를 계속 실행 중이므로 이 새 코드의 검증으로 쓰지 않는다.
+
+이 단계의 추가 근거는 `chart-frame-width-controls-993/manifest.json`,
+`mcp-chart-frame-width-controls-993/*-complete.json`, `chart-frame-width-993-print-plan.json`,
+`chart-frame-strokes-995/measurements.json`, `svg-frame-canvas-probe-994/measurements.json`,
+`chart-frame-units-996-validation.json`이다. 로그는 `logs/chart-frame-width-controls-993-generate.log`,
+`logs/chart-frame-width-controls-993-print.log`, `logs/chart-frame-strokes-995.log`,
+`logs/svg-frame-canvas-probe-994.log`, `logs/chart-frame-units-996-{fmt,tests,clippy}.log`다.

@@ -74,8 +74,12 @@ mod hancom_default {
     pub const GRID_STYLE: &str = "stroke=\"#8c8c8c\" stroke-width=\"1\"";
     /// 주 눈금 길이 = 0.23 × 라벨 글꼴 (실측 4배 래스터 10~12px = 2.5~3px, 축선과 같은 선).
     pub const TICK_EM: f64 = 0.23;
-    /// 차트 바깥 테두리 — `c:chartSpace > c:spPr` 미지정일 때 (실측 4배 래스터 3px·gray 134).
-    pub const FRAME_STYLE: &str = "stroke=\"#8c8c8c\" stroke-width=\"0.75\"";
+    /// 차트 바깥 테두리의 기본 선. 독립 Print의 명시 0.75pt 선과 같은 두께다.
+    /// 명시 선과 같은 pt→px 변환을 소비하며 기본 회색은 RGB 134다.
+    pub const FRAME_LINE: super::LineSpec = super::LineSpec::Solid {
+        rgb: 0x00868686,
+        width_emu: None,
+    };
 }
 
 /// 선 선언 → SVG stroke 속성. 미지정이면 `default_attr`, `a:noFill` 이면 선 없음. [#6624]
@@ -318,6 +322,10 @@ pub fn render_chart_svg_with_text_measure(
         return render_fallback(chart, x, y, w, h);
     }
 
+    let frame_line = match chart.chart_line {
+        LineSpec::Unspecified => hancom_default::FRAME_LINE,
+        line => line,
+    };
     let mut svg = String::new();
     svg.push_str(&format!(
         "<g class=\"hwp-ooxml-chart\"><g font-family=\"{}\"><rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" {}/>\n",
@@ -326,7 +334,7 @@ pub fn render_chart_svg_with_text_measure(
         y,
         w,
         h,
-        line_attr(chart.chart_line, hancom_default::FRAME_STYLE)
+        line_attr(frame_line, "")
     ));
 
     // C1c #1882 갭①: 명시 제목이 없어도 c:title 요소가 있고 autoTitleDeleted=0이면
