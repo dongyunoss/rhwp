@@ -84,6 +84,11 @@ impl ValueScale {
                 .find(|s| s.axis_group == group)
                 .and_then(|s| s.format_code.as_deref())
         });
+        let fmt = if chart.chart_type == OoxmlChartType::Scatter {
+            None
+        } else {
+            fmt
+        };
         let font = label_font_px(chart);
         let family = chart.text_font_family.as_deref().unwrap_or("sans-serif");
         let steps = if self.step > 0.0 {
@@ -99,11 +104,9 @@ impl ValueScale {
         (0..=steps)
             .map(|i| {
                 let value = self.min + i as f64 * self.step;
-                let text = if percent {
-                    format!("{}%", value.round() as i64)
-                } else {
-                    format_value_axis_num(value, fmt)
-                };
+                let decimal = chart.chart_type == OoxmlChartType::Scatter
+                    || (self.step - self.step.round()).abs() > 1e-9;
+                let text = format_grid_value(value, fmt, percent, decimal);
                 measure(&text, font, family)
             })
             .fold(0.0, f64::max)
@@ -113,14 +116,14 @@ impl ValueScale {
 /// 두 글줄 사이에 들어가는 눈금 수와 양 끝을 포함해 원 데이터에 최대 열 칸을 배정한다.
 /// 10% 범위 여유는 표시 범위에 포함하며 원 데이터의 최대값을 축 끝에 붙이지 않는다.
 fn automatic_scale(min: f64, max: f64, length: f64, font: f64) -> ValueScale {
-    if length <= 0.0 {
+    if length.abs() <= f64::EPSILON {
         return ValueScale::from_tuple((0.0, 0.0, 1.0));
     }
     let min = min.min(0.0);
     let max = max.max(0.0);
     let span = (max - min).max(f64::EPSILON);
     let line_height = font * crate::legend_layout::TEXT_LINE_EM;
-    let budget = (1.0 + (length / (line_height * 2.0)).round()).clamp(3.0, 10.0);
+    let budget = (1.0 + (length.abs() / (line_height * 2.0)).round()).clamp(3.0, 10.0);
     let raw_step = span / budget;
     let magnitude = 10.0_f64.powf(raw_step.log10().floor());
     let step = [1.0, 2.0, 5.0, 10.0]
@@ -372,7 +375,12 @@ impl CartesianLayout {
             } else {
                 category.bottom_reservation(chart, crosses_inside)
             };
-            let plot_height = (height - title_height - legend_height - bottom).max(0.0);
+            let remaining_height = height - title_height - legend_height - bottom;
+            let plot_height = if pie || chart.is_3d {
+                remaining_height.max(0.0)
+            } else {
+                remaining_height
+            };
             let scales = ChartScales::new(chart, plot_width, plot_height);
             if crosses_inside || (horizontal && !chart.is_3d) {
                 category.axis_fraction = scales.primary.zero_fraction();
@@ -388,10 +396,8 @@ impl CartesianLayout {
                 scales.secondary.label_width(chart, 1, measure) + FRAME_PAD * 1.8
             } else if horizontal {
                 // 마지막 수치 라벨은 축 끝을 중심으로 놓인다.
-                let axis = axis_at(chart, AxisPos::Bottom);
-                let text = format_value_axis_num(scales.primary.max, axis.format_code.as_deref());
-                let family = chart.text_font_family.as_deref().unwrap_or("sans-serif");
-                measure(&text, font, family) * 0.5 + FRAME_PAD * 1.3
+                // 중간의 소수 눈금이 정수 끝점보다 넓어도 같은 숫자열로 예약한다.
+                scales.primary.label_width(chart, 0, measure) * 0.5 + FRAME_PAD * 1.3
             } else if chart.chart_type == OoxmlChartType::Scatter {
                 let family = chart.text_font_family.as_deref().unwrap_or("sans-serif");
                 measure(&format_num(scales.secondary.max, None), font, family) * 0.5

@@ -91,9 +91,9 @@ fn plot_rect(chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) -> String {
     format!(
         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" {}/>\n",
         px,
-        py,
+        py.min(py + ph),
         pw,
-        ph,
+        ph.abs(),
         line_attr(chart.plot_area_line, "stroke=\"none\"")
     )
 }
@@ -350,6 +350,19 @@ fn format_value_axis_num(v: f64, format_code: Option<&str>) -> String {
         format!("{}%", (v * 100.0).round() as i64)
     } else {
         format_axis_num(v)
+    }
+}
+
+/// 축 눈금의 측정과 표시가 같은 문자열을 사용한다.
+fn format_grid_value(v: f64, format_code: Option<&str>, percent: bool, decimal: bool) -> String {
+    if percent {
+        format!("{}%", v.round() as i64)
+    } else if format_code.is_some_and(|code| code.contains('%')) {
+        format_value_axis_num(v, format_code)
+    } else if decimal {
+        format_axis_num(v)
+    } else {
+        format_num(v, format_code)
     }
 }
 
@@ -814,7 +827,7 @@ fn render_bars(
                     };
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                        start_x, cell, seg, bar_span_total, color, line_attr(ser.shape_line, "")
+                        start_x, cell.min(cell + bar_span_total), seg, bar_span_total.abs(), color, line_attr(ser.shape_line, "")
                     ));
                     if ser.show_values && v > 0.0 {
                         let font = data_label_font_px(chart, ser);
@@ -846,7 +859,7 @@ fn render_bars(
                     };
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                        cell, by, bar_span_total, seg, color, line_attr(ser.shape_line, "")
+                        cell, by.min(by + seg), bar_span_total, seg.abs(), color, line_attr(ser.shape_line, "")
                     ));
                     if ser.show_values && v > 0.0 {
                         let font = data_label_font_px(chart, ser);
@@ -928,13 +941,14 @@ fn render_bars(
                     let bw = pw * (t - zero_fraction).abs();
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                        bx, cy, bw, bar_w * 0.95, color, line_attr(ser.shape_line, "")
+                        bx, cy.min(cy + bar_w * 0.95), bw, (bar_w * 0.95).abs(), color, line_attr(ser.shape_line, "")
                     ));
                 } else {
                     let cx =
                         px + cat_slot(ci) + (cat_span - bar_span_total) / 2.0 + bar_w * si as f64;
-                    let bh = ph * (t - zero_fraction).abs();
-                    let by = py + ph * (1.0 - t.max(zero_fraction));
+                    let value_y = py + ph * (1.0 - t);
+                    let bh = (value_y - zero_y).abs();
+                    let by = value_y.min(zero_y);
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
                         cx, by, bar_w * 0.95, bh, color, line_attr(ser.shape_line, "")
@@ -1949,17 +1963,7 @@ fn render_value_grid(
     // 비정수 step은 소수 라벨 강제 — format_num의 정수 반올림이 0.5 간격 라벨을
     // "0,1,1,2…"로 손상시키는 것 차단 (C1c #1882 갭④)
     let decimal = decimal || (step - step.round()).abs() > 1e-9;
-    let label = |v: f64| -> String {
-        if percent {
-            format!("{}%", v.round() as i64)
-        } else if format_code.is_some_and(|code| code.contains('%')) {
-            format_value_axis_num(v, format_code)
-        } else if decimal {
-            format_axis_num(v)
-        } else {
-            format_num(v, format_code)
-        }
-    };
+    let label = |v: f64| format_grid_value(v, format_code, percent, decimal);
     // step 기반 눈금: v = vmin + step*i (정수 루프 — 부동소수 누적 드리프트 방지)
     let span = (vmax - vmin).max(1e-9);
     let step = if step > 0.0 { step } else { span / 5.0 };
@@ -2149,15 +2153,7 @@ fn render_value_grid_3d(
     // 라벨 문자열 규칙은 render_value_grid와 동일 (#1882 라벨 앵커 — 위치는
     // 앞면 rect 기준)
     let decimal = (step - step.round()).abs() > 1e-9;
-    let label = |v: f64| -> String {
-        if percent {
-            format!("{}%", v.round() as i64)
-        } else if decimal {
-            format_axis_num(v)
-        } else {
-            format_num(v, format_code)
-        }
-    };
+    let label = |v: f64| format_grid_value(v, format_code, percent, decimal);
     let span = (vmax - vmin).max(1e-9);
     let step = if step > 0.0 { step } else { span / 5.0 };
     let grid_lines = (span / step).round().max(1.0) as usize;
@@ -2606,8 +2602,8 @@ enum SwatchKind {
     LineOnly,
     /// 표식 라인·선+표식 분산형: 선분 + 중앙 마커 글리프 (—◆—)
     LineGlyph(usize),
-    /// 표식만 분산형·stock 종가: 마커 글리프만
-    GlyphOnly(usize),
+    /// 표식만 표시한다. 분산형은 선을 숨겨도 선형 계열의 슬롯을 유지한다.
+    GlyphOnly { index: usize, line_slot: bool },
     /// stock 시/고/저 (`c:symbol val="none"`): 스와치 없음 — 텍스트 정렬은 유지
     Blank,
 }
@@ -2615,8 +2611,12 @@ enum SwatchKind {
 impl SwatchKind {
     fn key_width(self, font: f64) -> f64 {
         match self {
-            Self::Square | Self::OutlinedSquare { .. } => font * 0.6,
-            _ => font * 1.05,
+            Self::LineOnly
+            | Self::LineGlyph(_)
+            | Self::GlyphOnly {
+                line_slot: true, ..
+            } => font * 1.05,
+            _ => font * 0.6,
         }
     }
 
@@ -2624,10 +2624,18 @@ impl SwatchKind {
         // 선과 중앙 마커는 면색 키보다 긴 가로 공간이 필요하다.
         self.key_width(font)
             + font
-                * if matches!(self, Self::Square | Self::OutlinedSquare { .. }) {
-                    0.4
-                } else {
+                * if matches!(
+                    self,
+                    Self::LineOnly
+                        | Self::LineGlyph(_)
+                        | Self::GlyphOnly {
+                            line_slot: true,
+                            ..
+                        }
+                ) {
                     0.3
+                } else {
+                    0.4
                 }
     }
 }
@@ -2646,13 +2654,19 @@ fn swatch_kind(chart: &OoxmlChart, s: &OoxmlSeries, i: usize) -> SwatchKind {
             let (line, _, marker) = chart.scatter_style.flags();
             match (line, marker) {
                 (true, true) => SwatchKind::LineGlyph(i),
-                (false, true) => SwatchKind::GlyphOnly(i),
+                (false, true) => SwatchKind::GlyphOnly {
+                    index: i,
+                    line_slot: true,
+                },
                 _ => SwatchKind::LineOnly,
             }
         }
         OoxmlChartType::Stock => {
             if matches!(s.marker_symbol, SeriesMarker::Auto | SeriesMarker::Named(_)) {
-                SwatchKind::GlyphOnly(i)
+                SwatchKind::GlyphOnly {
+                    index: i,
+                    line_slot: false,
+                }
             } else {
                 SwatchKind::Blank
             }
@@ -2766,7 +2780,7 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
                 &color_hex(color),
             );
         }
-        SwatchKind::GlyphOnly(si) => {
+        SwatchKind::GlyphOnly { index: si, .. } => {
             push_marker(
                 svg,
                 "hwp-legend-glyph",
