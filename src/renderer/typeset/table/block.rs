@@ -8,6 +8,7 @@ use crate::renderer::typeset::{
 
 use host_placement::HostPlacementConstraint;
 
+mod computed_host_frame;
 mod entry;
 pub(in crate::renderer::typeset) mod host_placement;
 mod prepare;

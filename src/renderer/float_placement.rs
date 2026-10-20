@@ -1996,7 +1996,7 @@ pub(crate) fn stored_square_sibling_outer_frame(para: &Paragraph) -> bool {
 /// 그 줄 위치에 기대지도 않는다. 표 셀에 그림을 넣으면 그림이 표 문단의 형제
 /// 제어로 붙는데(#1151), 이것 때문에 문단이 표 하나만 든 앵커가 아니게 되면
 /// 표 바깥 여백 상자가 흐름에서 빠져 표와 뒤 문단이 여백만큼 올라간다.
-fn control_leaves_table_anchor_empty(control: &Control) -> bool {
+pub(crate) fn control_leaves_table_anchor_empty(control: &Control) -> bool {
     match control {
         Control::SectionDef(_) | Control::ColumnDef(_) => true,
         Control::Picture(picture) => detached_from_anchor_line(&picture.common),

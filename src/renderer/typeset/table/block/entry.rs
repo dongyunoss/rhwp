@@ -2223,6 +2223,9 @@ impl TypesetEngine {
             )
         })();
         let unconstrained_host_placement = empty_sibling_placement.or(unconstrained_host_placement);
+        let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
+            super::computed_host_frame::resolve(input, placement_para_start_height, self.dpi)
+        });
         let constrain_host_placement = HostPlacementConstraint {
             table,
             has_preceding_coanchored_float,
