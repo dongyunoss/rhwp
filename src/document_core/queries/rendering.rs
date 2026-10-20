@@ -6129,6 +6129,14 @@ impl DocumentCore {
                                 &self.styles,
                                 self.dpi,
                             )
+                            .or_else(|| {
+                                crate::renderer::composer::inline_box_rows::normalized_host(
+                                    paragraph,
+                                    &self.styles,
+                                    self.dpi,
+                                    profile,
+                                )
+                            })
                             .map(|projected| (index, projected))
                         })
                         .collect()

@@ -264,6 +264,7 @@ include!("composer/cell_line_breaking.inc.rs");
 include!("composer/pua_surface.inc.rs");
 
 mod empty_line_metrics;
+pub(crate) mod inline_box_rows;
 mod line_breaking;
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{

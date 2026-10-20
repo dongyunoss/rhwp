@@ -3626,7 +3626,7 @@ fn apply_reflowed_equation_row_metrics(
     }
 }
 
-fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
+pub(super) fn apply_inline_control_line_height(seg: &mut LineSeg, height_hwp: i32) {
     if height_hwp > seg.line_height {
         seg.line_height = height_hwp;
         seg.text_height = height_hwp;
