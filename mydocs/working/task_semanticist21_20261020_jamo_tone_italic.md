@@ -321,3 +321,36 @@ Latin의 실제 italic 프로그램과 한글 fallback의 합성 기울임이 �
 선택한324는 정식 nextest3건 모두 통과했다(컴파일12.00초·실행0.408초). 정책 Node323도
 35건 통과했고, manifest322는1652sources/7152static test attrs로 고정 base 검사를 통과했다.
 최종 제출 전 전체 nextest·필수 lint·전체 시각 대조와 남은 원본 보정을 계속한다.
+
+## 저장 중첩 표 호스트의 공통 프레임 보정
+
+#7833 원문과 원 해결 #4961→#5122의 주소 계약을 대조했다. 높이만 수정한 진단 입력과
+일반 재조판 입력은 모두 Native/fresh WASM100%지만, 원문은72%대로 남아 있다.
+수정 근거는 단일 저장 줄이 인라인 본체·원본 바깥여백을 담지 못하는 데 있다.
+원문 문자·제어문자 순서·줄 경계·HWPX 주소 축은 그대로 유지해야 한다.
+
+`inline_box_rows::normalized_host_with_table_height`로 본문과 셀의 규칙을 공유한다.
+셀은 기존 nested_height 측정 callback을 사용해 같은 깊이·폭·호환 정책을 유지한다.
+고정 높이 표는 선언 크기를 보존하고, 보호되지 않은 상자가 저장 줄 밖에 있거나
+빈 em 캐시가 부실할 때 실제 본체 높이를 같은 측정기에서 받는다.
+
+`nested_table_frames`는 기존 가로 프레임 처리를 그대로 거친 뒤 높이 결과를 발행한다.
+`FrameGeometry.stored_partition`은 물리 높이와 재줄바꿈 소유를 구분한다. 높이만
+갱신한 저장 줄은 source line membership·HWPX char axis를 유지한다. 기존 재조판
+프레임의 소유·주소 갱신과 빈 em 프레임의 기존 동작은 보존한다.
+
+생산→소비는 공통 normalized_host → 셀의 recompose_cell_lines_with_nested_tables →
+FrameGeometry → HeightMeasurer와 table_layout의 paragraph_with_frame_geometry다.
+원본을 바꾸지 않고 해당 줄의 기준선·점유를 실제 배치까지 전달한다. HWP3 원점 보존,
+NO_LS의 기존 재조판, 여러 줄·여러 비중립 개체·캡션·고정 줄간격은 기존 경로를 따른다.
+
+새 제품 Native046/fresh WASM020에서 원문과 정상 대조군을 검증한다. 진행 중인
+Native045/WASM019 전체179조건 검증은38ef03ee96 제품의 보존 증거이며 새 코드 결과로
+보고하지 않는다. 원문 양쪽90%·직접 판독 전에는 기존 미주 회귀의 기대값을 바꾸지 않는다.
+
+Native046 빌드는 성공했다(268.08초, 공유 target/pr-review·잡8).330에서 바꾸지 않은
+HWP/HWPX 원문은 각각100%이고, 저장 높이만 바꾸거나 생략한 두 진단본도100%다.
+원문 HWP는329의2020 PrintMethod0 출력 SHA
+`dd662cb83ed3dcfbede58117e723dd8841dbc0ba1a0f60bbcc4b45513a941cba`와
+대조했다. 진단본의 통과와 원문 검증을 구분한다. 새 fresh WASM020·직접 판독·정상 대조군은
+계속 수행하며, 이 Native 결과만으로 미주 회귀 기대값은 아직 바꾸지 않았다.

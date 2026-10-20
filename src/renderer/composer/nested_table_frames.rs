@@ -27,6 +27,27 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
     mut nested_height: impl FnMut(&Table) -> f64,
 ) {
     let stored_geometry_policy = stored_geometry_policy.into();
+    let original = source;
+    let stored_projection = (!stored_geometry_policy.preserve_hwp3_origins
+        && !crate::renderer::para_has_no_stored_line_segs(source)
+        && source
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::Table(table) if table.common.treat_as_char)))
+    .then(|| {
+        super::inline_box_rows::normalized_host_with_table_height(source, styles, |table, _| {
+            let measured = nested_height(table);
+            (measured.is_finite() && measured > 0.0)
+                .then(|| crate::renderer::px_to_hwpunit(measured, dpi))
+        })
+    })
+    .flatten();
+    let source = stored_projection.as_ref().unwrap_or(source);
+    if stored_projection.is_some() {
+        let mut refreshed = super::compose_paragraph_in_context(source, styles);
+        super::preserve_context_resolved_runs(composed, &mut refreshed);
+        *composed = refreshed;
+    }
     let mut projected = None;
     let mut heights = Vec::new();
     let reflowed_table_host = !native_hwp5
@@ -101,5 +122,39 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
             native_hwp5,
             cache,
         );
+    }
+    if let Some(paragraph) = stored_projection {
+        let geometry = composed.frame_geometry.get_or_insert_with(|| {
+            std::sync::Arc::new(super::frame_geometry::FrameGeometry {
+                space_metrics: paragraph
+                    .line_segs
+                    .iter()
+                    .enumerate()
+                    .map(|(index, line)| (line.text_start, paragraph.line_space_metric(index)))
+                    .collect(),
+                line_segs: paragraph.line_segs.clone(),
+                inline_table_heights: Vec::new(),
+                stored_partition: true,
+            })
+        });
+        let geometry = std::sync::Arc::make_mut(geometry);
+        // 물리 높이의 갱신만으로 프레임이 새 줄 나눔을 소유한다고 선언하지 않는다.
+        for (index, (old, new)) in original
+            .controls
+            .iter()
+            .zip(&paragraph.controls)
+            .enumerate()
+        {
+            if let (Control::Table(old), Control::Table(new)) = (old, new) {
+                if old.common.height != new.common.height {
+                    geometry
+                        .inline_table_heights
+                        .retain(|(owner, _)| *owner != index);
+                    geometry
+                        .inline_table_heights
+                        .push((index, new.common.height));
+                }
+            }
+        }
     }
 }

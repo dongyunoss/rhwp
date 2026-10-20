@@ -65,5 +65,6 @@ pub(super) fn refresh(
         line_segs: vec![resolved],
         space_metrics: vec![(stored.text_start, source.line_space_metric(0))],
         inline_table_heights: Vec::new(),
+        stored_partition: false,
     }));
 }

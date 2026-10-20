@@ -1,6 +1,6 @@
 //! 실제 인라인 상자를 담지 못하는 단일 저장 줄의 공통 프레임 투영.
 use crate::model::{
-    control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
+    control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile, table::Table,
 };
 use crate::renderer::{
     height_measurer::HeightMeasurer, px_to_hwpunit, style_resolver::ResolvedStyleSet,
@@ -13,6 +13,24 @@ pub(crate) fn normalized_host(
     styles: &ResolvedStyleSet,
     dpi: f64,
     profile: LayoutCompatibilityProfile,
+) -> Option<Paragraph> {
+    normalized_host_with_table_height(source, styles, |table, index| {
+        let measured = HeightMeasurer::new(dpi)
+            .with_stored_geometry_policy(profile.stored_geometry_policy())
+            .with_native_hwp5(profile.native_hwp5_layout())
+            .with_hwpx_stored_layout(profile.hwpx_stored_layout())
+            .with_session_edited(profile.session_edited())
+            .measure_table(table, 0, index, styles);
+        (measured.total_height.is_finite() && measured.total_height > 0.0)
+            .then(|| px_to_hwpunit(measured.total_height, dpi))
+    })
+}
+
+/// 셀의 호출자는 같은 깊이·너비·호환 정책으로 이미 사용하는 표 측정기를 전달한다.
+pub(super) fn normalized_host_with_table_height(
+    source: &Paragraph,
+    styles: &ResolvedStyleSet,
+    mut measure: impl FnMut(&Table, usize) -> Option<i32>,
 ) -> Option<Paragraph> {
     let [stored] = source.line_segs.as_slice() else {
         return None;
@@ -57,17 +75,9 @@ pub(crate) fn normalized_host(
                                 .is_some()
                     })
                 });
-            let height = if stale_empty {
-                let measured = HeightMeasurer::new(dpi)
-                    .with_stored_geometry_policy(profile.stored_geometry_policy())
-                    .with_native_hwp5(profile.native_hwp5_layout())
-                    .with_hwpx_stored_layout(profile.hwpx_stored_layout())
-                    .with_session_edited(profile.session_edited())
-                    .measure_table(table, 0, index, styles);
-                if !measured.total_height.is_finite() || measured.total_height <= 0.0 {
-                    return None;
-                }
-                let height = px_to_hwpunit(measured.total_height, dpi).max(declared);
+            let outside_row = declared.checked_add(margins)? > stored.line_height;
+            let height = if !table.common.size_protect && (stale_empty || outside_row) {
+                let height = measure(table, index)?.max(declared);
                 table_height = Some(u32::try_from(height).ok()?);
                 height
             } else {

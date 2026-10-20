@@ -213,6 +213,7 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
                         line_segs: reflowed_para.line_segs,
                         space_metrics: reflowed_para.layout_space_metrics,
                         inline_table_heights: measured_inline_table_heights.to_vec(),
+                        stored_partition: false,
                     }));
             }
             // Q2-D5-N1: source NO_LS has no usable width during the initial

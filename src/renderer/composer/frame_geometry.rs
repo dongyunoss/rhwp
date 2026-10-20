@@ -9,6 +9,8 @@ pub(crate) struct FrameGeometry {
     pub(super) line_segs: Vec<LineSeg>,
     pub(super) space_metrics: Vec<(u32, SpaceMetric)>,
     pub(super) inline_table_heights: Vec<(usize, u32)>,
+    /// 높이만 갱신한 저장 줄은 원본의 줄 소속과 HWPX 문자 주소 축을 유지한다.
+    pub(super) stored_partition: bool,
 }
 
 impl ComposedParagraph {
@@ -16,7 +18,7 @@ impl ComposedParagraph {
     pub(crate) fn frame_owns_multiple_inline_tables(&self) -> bool {
         self.frame_geometry
             .as_ref()
-            .is_some_and(|frame| frame.inline_table_heights.len() > 1)
+            .is_some_and(|frame| !frame.stored_partition && frame.inline_table_heights.len() > 1)
     }
 
     /// 저장 줄과 현재 프레임은 같은 원시 제어문 슬롯 축을 소비한다.
@@ -24,7 +26,7 @@ impl ComposedParagraph {
         if self
             .frame_geometry
             .as_ref()
-            .is_some_and(|frame| !frame.inline_table_heights.is_empty())
+            .is_some_and(|frame| !frame.stored_partition && !frame.inline_table_heights.is_empty())
         {
             (0..para.controls.len())
                 .map(|index| super::control_slot_line_index(para, index))
@@ -46,10 +48,11 @@ impl ComposedParagraph {
     /// 실제 프레임 줄의 점유 높이에 포함해 발행한 인라인 표인지 조회한다.
     pub(crate) fn frame_owns_inline_table(&self, index: usize) -> bool {
         self.frame_geometry.as_ref().is_some_and(|frame| {
-            frame
-                .inline_table_heights
-                .iter()
-                .any(|&(owner, _)| owner == index)
+            !frame.stored_partition
+                && frame
+                    .inline_table_heights
+                    .iter()
+                    .any(|&(owner, _)| owner == index)
         })
     }
 
@@ -62,10 +65,18 @@ impl ComposedParagraph {
         match &self.frame_geometry {
             Some(frame) => {
                 let mut paragraph = source.clone();
-                paragraph.replace_line_segs_with_space_metrics(
-                    frame.line_segs.clone(),
-                    frame.space_metrics.clone(),
-                );
+                if frame.stored_partition {
+                    paragraph.line_segs.clone_from(&frame.line_segs);
+                    paragraph
+                        .layout_space_metrics
+                        .clone_from(&frame.space_metrics);
+                    paragraph.source_line_seg_vertical_pos = None;
+                } else {
+                    paragraph.replace_line_segs_with_space_metrics(
+                        frame.line_segs.clone(),
+                        frame.space_metrics.clone(),
+                    );
+                }
                 for &(index, height) in &frame.inline_table_heights {
                     if let Some(crate::model::control::Control::Table(table)) =
                         paragraph.controls.get_mut(index)
