@@ -89,8 +89,12 @@ pub(super) fn normalized_host_with_table_height(
             if crate::renderer::layout::shape_caption_for_layout(shape).is_some() {
                 return None;
             }
-            shape
-                .flow_height_hu()
+            // 저장 줄이 담아야 할 것은 실제 그리기에 전달하는 Common 프레임이다.
+            // flow_height_hu의 흐름 상한에는 내부 그리기 좌표의 current_height도
+            // 포함된다. 그 상한으로 유효한 저장 줄을 늘리면 좌표계만 큰 도형이
+            // 뒤 표와 본문을 다음 쪽으로 밀어낸다.
+            i32::try_from(shape.common().height)
+                .ok()?
                 .checked_add(i32::from(shape.common().margin.top))?
                 .checked_add(i32::from(shape.common().margin.bottom))?
         }
