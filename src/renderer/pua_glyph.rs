@@ -7,7 +7,8 @@ use std::{
 const FIRST: u32 = 0xe000;
 const LAST: u32 = 0xf8ff;
 const WORDS: usize = ((LAST - FIRST + 1) / 64) as usize;
-const MAX_FACES: usize = 256;
+// 보조 cmap 비트만 보관한다. 실제 공급 catalog의 별칭·스타일도 유한하게 수용한다.
+const MAX_FACES: usize = 4096;
 const MAX_SOURCE_BYTES: usize = 32 * 1024 * 1024;
 
 /// 모호한 역매핑은 선택하지 않는다. 원문·표시 문자열·문자 주소는 변경하지 않는다.
@@ -54,6 +55,24 @@ fn primary(family: &str) -> String {
 }
 
 impl FontCoverage {
+    /// 미검증 스타일이 같은 family의 이전 양수 coverage를 재사용하지 않게 한다.
+    /// 선택적 보조 정보의 상한 때문에 브라우저의 정상 글꼴 적재를 실패시키지 않는다.
+    fn disable_family(&mut self, family: String) -> bool {
+        let key = (family.clone(), 0, false);
+        if self
+            .faces
+            .get(&key)
+            .is_some_and(|mask| mask.iter().all(|word| *word == 0))
+        {
+            return false;
+        }
+        self.faces.retain(|(name, _, _), _| name != &family);
+        if self.faces.len() < MAX_FACES {
+            self.faces.insert(key, Arc::new([0; WORDS]));
+        }
+        false
+    }
+
     pub(crate) fn register(
         &mut self,
         family: &str,
@@ -63,18 +82,19 @@ impl FontCoverage {
         if family.is_empty() || family.len() > 256 || family.chars().any(char::is_control) {
             return Err("invalid text font family");
         }
-        if bytes.is_empty() || bytes.len() > MAX_SOURCE_BYTES {
-            return Err("text font source byte limit exceeded");
-        }
         let family = primary(family);
+        if bytes.is_empty() {
+            return Err("empty text font source");
+        }
+        if bytes.len() > MAX_SOURCE_BYTES {
+            return Ok(self.disable_family(family));
+        }
         let Ok(face) = ttf_parser::Face::parse(bytes, index) else {
-            let count = self.faces.len();
-            self.faces.retain(|(name, _, _), _| name != &family);
-            return Ok(count != self.faces.len());
+            return Ok(self.disable_family(family));
         };
         let key = (family, face.weight().to_number(), face.is_italic());
         if !self.faces.contains_key(&key) && self.faces.len() >= MAX_FACES {
-            return Err("text font face limit exceeded");
+            return Ok(self.disable_family(key.0));
         }
         let mut coverage = [0u64; WORDS];
         for cp in FIRST..=LAST {
@@ -143,4 +163,30 @@ pub(crate) fn candidates(text: &str) -> Vec<Candidate> {
             })
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn oversized_optional_program_does_not_abort_loading_or_reuse_stale_coverage() {
+        let mut coverage = FontCoverage::default();
+        coverage.faces.insert(
+            ("source face".into(), 400, false),
+            Arc::new([u64::MAX; WORDS]),
+        );
+        let text = "\u{1112}\u{119e}\u{11ab}";
+        assert_eq!(coverage.glyph("Source Face", text), Some('\u{f53a}'));
+        // 크기 상한은 보조 cmap 수집을 제한한다. 실제 FontFace 적재는 계속한다.
+        let oversized = vec![0; MAX_SOURCE_BYTES + 1];
+        assert_eq!(coverage.register("Source Face", &oversized, 0), Ok(false));
+        assert_eq!(coverage.glyph("Source Face", text), None);
+        // 다음 스타일을 알게 돼도 앞서 미검증인 스타일을 지워서 인정하지 않는다.
+        coverage.faces.insert(
+            ("source face".into(), 700, false),
+            Arc::new([u64::MAX; WORDS]),
+        );
+        assert_eq!(coverage.glyph("Source Face", text), None);
+    }
 }
