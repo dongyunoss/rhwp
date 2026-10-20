@@ -18,7 +18,7 @@ fn refresh_rows(
     styles: &ResolvedStyleSet,
     regenerated: bool,
 ) {
-    append_missing_single_tac_row(composed, para, styles);
+    refresh_single_tac_host_row(composed, para, styles);
     let positions = para.control_text_positions();
     let dpi = styles.resolved_dpi.unwrap_or(DEFAULT_DPI);
     let tac_offsets_px: Vec<_> = composed
@@ -288,7 +288,7 @@ fn source_inline_box_height(
 ///
 /// rhwp가 합성한 줄은 HWPX에 저장하지 않으므로, 양식 개체만 든 문단을 저장했다가 다시 열면
 /// 줄이 하나도 없어 개체가 그려지지 않았다. 양식 개체 줄은 재조판처럼 개체 높이를 줄 높이로 쓴다.
-fn append_missing_single_tac_row(
+fn refresh_single_tac_host_row(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     styles: &ResolvedStyleSet,
@@ -298,8 +298,14 @@ fn append_missing_single_tac_row(
         [Control::Form(f)] if f.common.treat_as_char => f.height as i32,
         _ => return,
     };
-    if !composed.lines.is_empty()
-        || !para.line_segs.is_empty()
+    // 직접 IR 편집 뒤 남은 합성 수식 줄은 정상 한컴 저장 줄의 근거가 아니다.
+    // 단일 양식의 실제 높이와 같은 결과로 다시 잰다. 정상 저장 LineSeg는 보존한다.
+    let generated_form = form_height > 0
+        && composed.lines.len() == 1
+        && para.line_segs.len() == 1
+        && para.line_segs[0].tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+            != 0;
+    if ((!composed.lines.is_empty() || !para.line_segs.is_empty()) && !generated_form)
         || para
             .text
             .chars()
@@ -322,12 +328,21 @@ fn append_missing_single_tac_row(
         ps.map_or(160.0, |s| s.line_spacing),
         styles.resolved_dpi.unwrap_or(DEFAULT_DPI),
     );
+    let line_height = metrics.line_height.max(form_height);
+    let baseline = metrics
+        .baseline_distance
+        .max(super::line_breaking::baseline_distance_hwp(form_height));
+    if generated_form {
+        let line = &mut composed.lines[0];
+        line.line_height = line_height;
+        line.baseline_distance = baseline;
+        line.line_spacing = metrics.line_spacing;
+        return;
+    }
     composed.lines.push(ComposedLine {
         runs: Vec::new(),
-        line_height: metrics.line_height.max(form_height),
-        baseline_distance: metrics
-            .baseline_distance
-            .max(super::line_breaking::baseline_distance_hwp(form_height)),
+        line_height,
+        baseline_distance: baseline,
         segment_width: 0,
         column_start: 0,
         line_spacing: metrics.line_spacing,

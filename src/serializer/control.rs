@@ -2972,7 +2972,7 @@ fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Recor
 }
 
 /// 정답지 fall-back BorderType (FormObject.properties 에 키가 없을 때).
-fn default_border_type(ft: FormType) -> i32 {
+pub(super) fn default_border_type(ft: FormType) -> i32 {
     match ft {
         FormType::PushButton => 4,
         FormType::CheckBox => 0,
