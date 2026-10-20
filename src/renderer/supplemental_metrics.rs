@@ -29,6 +29,15 @@ pub const MAX_SUPPLEMENTAL_KEY_BYTES: usize = 4 * 1024 * 1024;
 const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_TOTAL_FONT_BYTES: usize = 64 * 1024 * 1024;
 
+/// 원 face의 메트릭 hit는 보존한다. 선언 체인의 다른 face에서 빌린 폭은
+/// 실제 backend 전진이 아니므로 단일 자소의 유효한 보충 측정을 요청할 수 있다.
+pub(crate) fn requires_backend_measurement(width_source: &str) -> bool {
+    matches!(
+        width_source,
+        "heuristicHalfwidth" | "declaredGlyphFallbackMetric"
+    )
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MetricBackend {
     Canvas2d,

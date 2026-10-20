@@ -3,7 +3,7 @@
 use super::*;
 
 /// 해소된 글자 스타일 (CharShape + FontFace → 렌더링용)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ResolvedCharStyle {
     /// 글꼴 이름 (한국어 = 기본값, font_families[0]과 동일)
     pub font_family: String,

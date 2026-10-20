@@ -12,9 +12,23 @@ pub(crate) struct SourceGraphemes {
     rendered_sources: Vec<Option<usize>>,
 }
 impl SourceGraphemes {
-    pub fn new(para: &crate::model::paragraph::Paragraph) -> Self {
+    pub fn new(
+        para: &crate::model::paragraph::Paragraph,
+        styles: &super::style_resolver::ResolvedStyleSet,
+    ) -> Self {
         use crate::model::control::Control;
         let characters = para.text.chars().collect::<Vec<_>>();
+        let mut formatting_starts = vec![false; characters.len()];
+        let runs = para.char_shape_runs(0, characters.len().min(para.char_offsets.len()));
+        for pair in runs.windows(2) {
+            let before = styles.char_styles.get(pair[0].char_shape_id as usize);
+            let after = styles.char_styles.get(pair[1].char_shape_id as usize);
+            // ID만 다른 동등한 모양은 한컴에서도 같은 강조점 구간이다.
+            // 실제 서식 변경만 자소 소속을 끊으며 언어별 표시 런 분할은 제외한다.
+            if before.zip(after).is_some_and(|(a, b)| a != b) {
+                formatting_starts[pair[1].start_offset] = true;
+            }
+        }
         let positions = para.control_text_positions();
         let mut controls = para
             .controls
@@ -28,6 +42,11 @@ impl SourceGraphemes {
         let mut surface_sources = Vec::new();
         let mut rendered_sources = Vec::new();
         for index in 0..=characters.len() {
+            if formatting_starts.get(index).copied().unwrap_or(false) {
+                // 표시·저장하지 않는 경계이므로 rendered_sources는 전진시키지 않는다.
+                surface.push('\0');
+                surface_sources.push(None);
+            }
             while controls
                 .peek()
                 .is_some_and(|(_, position)| *position == index)

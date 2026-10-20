@@ -3817,7 +3817,7 @@ impl LayoutEngine {
         let with_stored_tabs = |mut ts: TextStyle, start_char: usize| -> TextStyle {
             if ts.emphasis_dot != 0 {
                 source_emphasis_graphemes
-                    .get_or_init(|| crate::renderer::emphasis::SourceGraphemes::new(para))
+                    .get_or_init(|| crate::renderer::emphasis::SourceGraphemes::new(para, styles))
                     .apply_source_style(start_char, &mut ts);
             }
             let first = tabs_before.get(start_char).copied().unwrap_or(0);
@@ -7897,7 +7897,7 @@ impl LayoutEngine {
                         if run.style.emphasis_dot != 0 {
                             source_emphasis_graphemes
                                 .get_or_init(|| {
-                                    crate::renderer::emphasis::SourceGraphemes::new(para)
+                                    crate::renderer::emphasis::SourceGraphemes::new(para, styles)
                                 })
                                 .apply(run);
                         }
