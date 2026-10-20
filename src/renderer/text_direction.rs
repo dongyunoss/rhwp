@@ -18,6 +18,10 @@ pub struct BidiVisualRun {
 pub struct BidiLayout {
     scalar_count: usize,
     logical_width: f64,
+    #[serde(skip)]
+    source_text: String,
+    #[serde(skip)]
+    source_positions: Vec<f64>,
     runs: Vec<BidiVisualRun>,
 }
 
@@ -70,18 +74,14 @@ impl<'a> VisualTextPositions<'a> {
         })
     }
 
-    /// 표시 문자열 변경으로 스칼라 수·전진이 달라진 경우에는 국소 해석으로 되돌린다.
+    /// 표시 문자열이나 전진 배열이 달라지면 같은 길이·폭이어도 국소 해석으로 되돌린다.
     pub(crate) fn for_style(
         text: &str,
         positions: &'a [f64],
         style: &'a super::TextStyle,
     ) -> Option<Self> {
         if let Some(layout) = &style.bidi_layout {
-            let width = positions.last()? - positions.first()?;
-            if layout.scalar_count + 1 == positions.len()
-                && layout.scalar_count == text.chars().count()
-                && (layout.logical_width - width).abs() <= 1e-9 * width.abs().max(1.0)
-            {
+            if layout.source_text == text && layout.source_positions.as_slice() == positions {
                 return Some(Self {
                     positions,
                     runs: Cow::Borrowed(&layout.runs),
@@ -206,7 +206,14 @@ pub(crate) fn resolve_page(root: &mut RenderNode) {
         positions.extend(local[..count].iter().map(|x| start_x + x));
         text.push_str(run.display_or_text());
         end_x = start_x + local[count];
-        owners.push((*index, start, start + count, start_x, local.into_owned()));
+        owners.push((
+            *index,
+            start,
+            start + count,
+            start_x,
+            local.into_owned(),
+            run.display_or_text().to_string(),
+        ));
     }
     positions.push(end_x);
     if positions.iter().any(|x| !x.is_finite()) || positions.windows(2).any(|p| p[1] < p[0]) {
@@ -216,7 +223,7 @@ pub(crate) fn resolve_page(root: &mut RenderNode) {
         return;
     };
     let mut layouts = Vec::new();
-    for (index, start, end, x, local) in owners {
+    for (index, start, end, x, local, source_text) in owners {
         let spans = visual
             .runs
             .iter()
@@ -236,6 +243,8 @@ pub(crate) fn resolve_page(root: &mut RenderNode) {
             BidiLayout {
                 scalar_count: end - start,
                 logical_width: local.last().unwrap() - local.first().unwrap(),
+                source_text,
+                source_positions: local,
                 runs: spans,
             },
         ));
