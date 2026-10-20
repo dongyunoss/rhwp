@@ -2794,9 +2794,40 @@ impl SvgRenderer {
         ));
     }
 
-    /// 선 모양(shape)에 따라 SVG line/group을 출력한다.
-    /// shape: 0=실선, 1=긴점선, 2=점선, 3=일점쇄선, 4=이점쇄선, 5=긴파선,
-    ///        6=원형점, 7=이중선, 8=가는+굵은, 9=굵은+가는, 10=삼중선
+    /// 줄 기준으로 해소한 위 밑줄을 그린다.
+    fn draw_top_underline(
+        &mut self,
+        x1: f64,
+        baseline: f64,
+        x2: f64,
+        color: &str,
+        geometry: &super::text_decoration::TopUnderlineGeometry,
+    ) {
+        if x2 <= x1 {
+            return;
+        }
+        for stroke in &geometry.strokes {
+            let dash = stroke
+                .dash
+                .iter()
+                .map(f64::to_string)
+                .collect::<Vec<_>>()
+                .join(" ");
+            let y = baseline + stroke.offset;
+            self.output.push_str(&format!(
+                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-dasharray=\"{dash}\"/>\n",
+                stroke.width,
+            ));
+        }
+        if let Some(dot) = &geometry.dots {
+            let y = baseline + dot.offset;
+            self.output.push_str(&format!(
+                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-linecap=\"round\" stroke-dasharray=\"0 {}\"/>\n",
+                dot.radius * 2.0, dot.step,
+            ));
+        }
+    }
+
     fn draw_line_shape(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, color: &str, shape: u8) {
         match shape {
             7 => {
@@ -3718,12 +3749,14 @@ impl Renderer for SvgRenderer {
                 // 글자색으로 바꿔 그렸다(hwpx_sample2 12쪽: 정답지 검정 25개 vs
                 // rhwp 글자색 #082108 24개). 저장값을 그대로 쓴다.
                 let ul_color = color_to_svg(style.underline_color);
-                let multi = if matches!(style.underline, UnderlineType::Top) {
-                    None
-                } else {
+                let top =
+                    crate::renderer::text_decoration::top_underline_geometry(style, font_size);
+                let multi =
                     crate::renderer::text_decoration::underline_multi_lines(style.underline_shape)
-                };
-                if let Some(lines) = multi {
+                        .filter(|_| style.underline != UnderlineType::Top);
+                if let Some(top) = top {
+                    self.draw_top_underline(x, y, x + text_width, &ul_color, &top);
+                } else if let Some(lines) = multi {
                     for (dy_em, width_em) in lines {
                         let ly = y + font_size * dy_em;
                         self.output.push_str(&format!(

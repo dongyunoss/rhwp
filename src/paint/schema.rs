@@ -15,9 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 29: rectangle-owned text transforms; imagePaintBBox/strokeJoin remain additive contracts.
-    // 29: rectangle-owned affine transforms; optional bidiLayout and paintClip.
-    schema_minor_version: 29,
+    // 30: 글줄 메트릭에서 해소한 topUnderline 기하.
+    schema_minor_version: 30,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -38,7 +37,7 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
-        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 29);
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 30);
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,

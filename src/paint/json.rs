@@ -2975,7 +2975,19 @@ fn write_text_decoration(
         }
         let _ = write!(buf, "{:.3}", position);
     }
-    let _ = write!(buf, "],\"positionsComplete\":{complete}}}");
+    let _ = write!(buf, "],\"positionsComplete\":{complete}");
+    if kind == TextDecorationKind::Underline {
+        if let Some(top) =
+            crate::renderer::text_decoration::top_underline_geometry(&run.style, font_size)
+        {
+            let _ = write!(
+                buf,
+                ",\"topUnderline\":{}",
+                serde_json::to_string(&top).unwrap()
+            );
+        }
+    }
+    buf.push('}');
 }
 
 fn write_shape_style(buf: &mut String, style: &ShapeStyle) {

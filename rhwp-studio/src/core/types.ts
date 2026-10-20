@@ -1599,6 +1599,11 @@ export interface LayerTextDecorationOp {
     emphasisDot: number;
     positions: number[];
     positionsComplete: boolean;
+    /** 실제 글줄 메트릭과 독립 Print로 해소한 기하. 클라이언트에서 크기를 다시 추정하지 않는다. */
+    topUnderline?: {
+      strokes: Array<{ offset: number; width: number; dash: number[] }>;
+      dots: { offset: number; radius: number; step: number } | null;
+    };
   };
 }
 

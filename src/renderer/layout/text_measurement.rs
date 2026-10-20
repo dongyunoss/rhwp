@@ -884,6 +884,7 @@ pub(crate) fn resolved_to_text_style(
                 })
                 .flatten(),
             bidi_layout: None,
+            top_underline_font_size: None,
             fixed_glyph_advances: false,
             source_font_is_hft: cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),

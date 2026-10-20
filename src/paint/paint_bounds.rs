@@ -905,15 +905,29 @@ fn decoration_bounds(
     let end = positions.len().saturating_sub(trim.min(trailing));
     let width = positions.get(end.saturating_sub(1)).copied().unwrap_or(0.0);
     let (font_size, baseline) = effective_text_font_size_and_baseline(run);
+    let top_geometry = (kind == TextDecorationKind::Underline)
+        .then(|| crate::renderer::text_decoration::top_underline_geometry(&run.style, font_size))
+        .flatten();
+    let end_pad = top_geometry
+        .as_ref()
+        .and_then(|g| g.dots.as_ref())
+        .map_or(0.0, |d| d.radius);
     let (y, height) = match kind {
-        TextDecorationKind::Underline => (
-            if run.style.underline == UnderlineType::Top {
-                baseline - font_size + 1.0
+        TextDecorationKind::Underline => {
+            if let Some(top) = &top_geometry {
+                let (top, bottom) = top.vertical_bounds();
+                (baseline + top, bottom - top)
             } else {
-                baseline + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
-            },
-            1.0,
-        ),
+                (
+                    if run.style.underline == UnderlineType::Top {
+                        baseline - font_size + 1.0
+                    } else {
+                        baseline + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
+                    },
+                    1.0,
+                )
+            }
+        }
         TextDecorationKind::Strikethrough => (baseline - font_size * 0.3, 1.0),
         TextDecorationKind::EmphasisDot => (baseline - font_size * 1.2, font_size * 0.3),
     };
@@ -921,7 +935,12 @@ fn decoration_bounds(
         union(
             logical,
             expand(
-                BoundingBox::new(logical.x, logical.y + y, width, height),
+                BoundingBox::new(
+                    logical.x - end_pad,
+                    logical.y + y,
+                    width + 2.0 * end_pad,
+                    height,
+                ),
                 2.0,
             ),
         ),

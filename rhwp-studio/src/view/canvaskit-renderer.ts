@@ -4067,6 +4067,33 @@ export class CanvasKitLayerRenderer {
     const draw = (originX: number, originY: number) => {
       const baselineY = originY + decoration.baseline;
       if (decoration.kind === 'underline') {
+        if (decoration.underline === 'top' && decoration.topUnderline) {
+          if (textWidth <= 0) return;
+          const geometry = decoration.topUnderline;
+          const dots = geometry.dots;
+          if (!Array.isArray(geometry.strokes)
+            || geometry.strokes.some(stroke => !Number.isFinite(stroke.offset)
+              || !Number.isFinite(stroke.width) || stroke.width <= 0
+              || !Array.isArray(stroke.dash)
+              || stroke.dash.some(value => !Number.isFinite(value) || value <= 0))
+            || (dots !== null && (!dots || !Number.isFinite(dots.offset)
+              || !Number.isFinite(dots.radius) || dots.radius <= 0
+              || !Number.isFinite(dots.step) || dots.step <= 0))) {
+            this.unsupportedOps.add('textDecoration:invalidGeometry');
+            return;
+          }
+          for (const stroke of geometry.strokes) {
+            const y = baselineY + stroke.offset;
+            this.drawTextVisualStroke(canvas, originX, y, originX + textWidth, y,
+              decoration.color, stroke.width, stroke.dash);
+          }
+          if (dots) {
+            const y = baselineY + dots.offset;
+            this.drawTextVisualStroke(canvas, originX, y, originX + textWidth, y,
+              decoration.color, dots.radius * 2, [0, dots.step], true);
+          }
+          return;
+        }
         const y = decoration.underline === 'top'
           ? baselineY - decoration.fontSize + 1
           // 독립 Print 6크기 계약: Native/SVG/Canvas2D와 같은 em 비례 오프셋.

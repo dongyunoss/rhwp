@@ -366,6 +366,9 @@ pub struct TextStyle {
     /// 글줄 전체에서 계산한 표시 방향. 모델/저장 스타일과 논리 전진은 바꾸지 않는다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bidi_layout: Option<BidiLayout>,
+    /// 실제 글줄의 최대 글꼴 크기. 위 밑줄은 비장식 글자도 포함한 이 크기를 따른다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub top_underline_font_size: Option<f64>,
     /// Session-only glyph metrics; never part of document/style serialization.
     #[serde(skip)]
     pub supplemental_metrics:
@@ -814,6 +817,7 @@ impl Default for TextStyle {
     fn default() -> Self {
         Self {
             bidi_layout: None,
+            top_underline_font_size: None,
             supplemental_metrics: None,
             isolated_jamo_font: None,
             font_family: String::new(),

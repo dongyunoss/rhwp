@@ -4,6 +4,39 @@ pub(super) struct TextLines<'a> {
     pub canvas: &'a Canvas,
 }
 impl TextLines<'_> {
+    pub fn top_underline(
+        &self,
+        x1: f32,
+        baseline: f32,
+        x2: f32,
+        color: Color,
+        geometry: &crate::renderer::text_decoration::TopUnderlineGeometry,
+    ) {
+        for stroke in &geometry.strokes {
+            let dash: Vec<f32> = stroke.dash.iter().map(|x| *x as f32).collect();
+            self.styled(
+                x1,
+                baseline + stroke.offset as f32,
+                x2,
+                color,
+                stroke.width as f32,
+                &dash,
+                false,
+            );
+        }
+        if let Some(dot) = &geometry.dots {
+            self.styled(
+                x1,
+                baseline + dot.offset as f32,
+                x2,
+                color,
+                (dot.radius * 2.0) as f32,
+                &[0.0, dot.step as f32],
+                true,
+            );
+        }
+    }
+
     pub fn styled(
         &self,
         x1: f32,

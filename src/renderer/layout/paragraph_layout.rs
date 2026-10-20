@@ -8731,6 +8731,9 @@ impl LayoutEngine {
                 }
             }
             let mut text_style = run.text_style(styles);
+            if text_style.underline == crate::model::style::UnderlineType::Top {
+                text_style.top_underline_font_size = Some(max_fs);
+            }
             text_style.default_tab_width = tab_width;
             text_style.tab_stops = tab_stops.to_vec();
             text_style.auto_tab_right = auto_tab_right;

@@ -2938,26 +2938,31 @@ impl Renderer for WebCanvasRenderer {
             // 밑줄 처리
             if !matches!(style.underline, UnderlineType::None) {
                 let text_width = decoration_width;
-                let ul_color = if style.underline_color != 0 {
-                    color_to_css(style.underline_color)
-                } else {
-                    color_to_css(style.color)
-                };
+                let ul_color = color_to_css(style.underline_color);
                 // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측, 고정
                 // 2.0px 은 큰 글꼴에서 디센더 관통). 선 모양 내부 기하는 캔버스 경로
                 // 현행 유지 — 오프셋만 SVG/Skia 와 같은 계약을 쓴다.
-                let ul_y = match style.underline {
-                    UnderlineType::Top => y - font_size + 1.0,
-                    _ => y + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO,
-                };
-                self.draw_line_shape_canvas(
-                    x,
-                    ul_y,
-                    x + text_width,
-                    ul_y,
-                    &ul_color,
-                    style.underline_shape,
-                );
+                if let Some(top) =
+                    crate::renderer::text_decoration::top_underline_geometry(style, font_size)
+                {
+                    self.draw_top_underline_canvas(x, y, x + text_width, &ul_color, &top);
+                } else {
+                    let ul_y = match style.underline {
+                        UnderlineType::Top => y - font_size + 1.0,
+                        _ => {
+                            y + font_size
+                                * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
+                        }
+                    };
+                    self.draw_line_shape_canvas(
+                        x,
+                        ul_y,
+                        x + text_width,
+                        ul_y,
+                        &ul_color,
+                        style.underline_shape,
+                    );
+                }
             }
 
             // 취소선 처리
@@ -3918,6 +3923,32 @@ impl WebCanvasRenderer {
             let _ = self.ctx.fill_text(number_str, cx, text_y);
         }
 
+        self.ctx.restore();
+    }
+
+    /// 공통 위 밑줄 기하를 그대로 그린다. 선 끝·파선의 원점도 공통 결과를 따른다.
+    fn draw_top_underline_canvas(
+        &self,
+        x1: f64,
+        baseline: f64,
+        x2: f64,
+        color: &str,
+        geometry: &super::text_decoration::TopUnderlineGeometry,
+    ) {
+        if x2 <= x1 {
+            return;
+        }
+        self.ctx.save();
+        self.ctx.set_line_cap("butt");
+        for stroke in &geometry.strokes {
+            let y = baseline + stroke.offset;
+            self.draw_single_canvas_line(x1, y, x2, y, color, stroke.width, &stroke.dash);
+        }
+        if let Some(dot) = &geometry.dots {
+            self.ctx.set_line_cap("round");
+            let y = baseline + dot.offset;
+            self.draw_single_canvas_line(x1, y, x2, y, color, 2.0 * dot.radius, &[0.0, dot.step]);
+        }
         self.ctx.restore();
     }
 

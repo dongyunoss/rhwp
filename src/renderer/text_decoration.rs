@@ -33,12 +33,111 @@ pub(crate) fn underline_multi_lines(shape: u8) -> Option<&'static [(f64, f64)]> 
     }
 }
 
+/// 위 밑줄의 독립 Print 계약. 좌표는 기준선에 대한 오프셋이며 길이 단위는 레이아웃 px다.
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct DecorationStroke {
+    pub offset: f64,
+    pub width: f64,
+    pub dash: Vec<f64>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct DecorationDots {
+    pub offset: f64,
+    pub radius: f64,
+    pub step: f64,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub(crate) struct TopUnderlineGeometry {
+    pub strokes: Vec<DecorationStroke>,
+    pub dots: Option<DecorationDots>,
+}
+
+impl TopUnderlineGeometry {
+    /// 기준선에 대한 잉크의 위·아래 경계. 모든 출력과 clip이 같은 기하를 사용한다.
+    pub fn vertical_bounds(&self) -> (f64, f64) {
+        self.strokes.iter().fold(
+            self.dots
+                .as_ref()
+                .map_or((f64::INFINITY, f64::NEG_INFINITY), |dot| {
+                    (dot.offset - dot.radius, dot.offset + dot.radius)
+                }),
+            |(top, bottom), stroke| {
+                (
+                    top.min(stroke.offset - stroke.width / 2.0),
+                    bottom.max(stroke.offset + stroke.width / 2.0),
+                )
+            },
+        )
+    }
+}
+
+/// 한컴 Print의 12/24/36/48pt 대조군에서 확인한 위 밑줄이다.
+/// 같은 줄의 비장식 큰 글자도 높이·굵기의 기준이며, 아래 밑줄의 표와 구분한다.
+pub(crate) fn top_underline_geometry(
+    style: &super::TextStyle,
+    font_size: f64,
+) -> Option<TopUnderlineGeometry> {
+    use crate::model::style::UnderlineType;
+    if style.underline != UnderlineType::Top || style.underline_shape > 10 {
+        return None;
+    }
+    let size = style
+        .top_underline_font_size
+        .filter(|size| size.is_finite() && *size > 0.0)
+        .unwrap_or(font_size);
+    if !(size * 2.0).is_finite() || size <= 0.0 {
+        return None;
+    }
+    let shape = style.underline_shape;
+    if shape == 6 {
+        return Some(TopUnderlineGeometry {
+            strokes: Vec::new(),
+            dots: Some(DecorationDots {
+                offset: -0.875 * size,
+                radius: 0.03 * size,
+                step: size / 7.0,
+            }),
+        });
+    }
+    let bands: &[(f64, f64)] = match shape {
+        7 => &[(0.955, 0.030), (0.865, 0.030)],
+        8 => &[(1.019, 0.048), (0.900, 0.100)],
+        9 => &[(0.993, 0.100), (0.874, 0.048)],
+        10 => &[(1.035, 0.030), (0.950, 0.080), (0.865, 0.030)],
+        _ => &[(0.870, 0.040)],
+    };
+    // 짧은 선·긴 선과 간격의 공통 비율. Print 장치의 600dpi 반올림은 넣지 않는다.
+    let pattern: &[f64] = match shape {
+        1 => &[2.0, 3.0],
+        2 => &[10.0, 6.0],
+        3 => &[20.0, 6.0, 2.0, 6.0],
+        4 => &[20.0, 6.0, 2.0, 6.0, 2.0, 6.0],
+        5 => &[20.0, 6.0],
+        _ => &[],
+    };
+    Some(TopUnderlineGeometry {
+        strokes: bands
+            .iter()
+            .map(|&(offset, width)| DecorationStroke {
+                offset: -offset * size,
+                width: width * size,
+                dash: pattern.iter().map(|value| value * size / 35.0).collect(),
+            })
+            .collect(),
+        dots: None,
+    })
+}
+
 /// 글줄 상자 위로 올라가는 장식(위 밑줄·강조점)의 잉크 범위다.
 ///
 /// 첫 줄의 이 잉크는 글줄 상자 밖, 본문 영역 위에 놓여 본문 clip에 잘린다.
 /// 글자·글줄 상자를 키우면 캐럿/선택도 바뀌므로 본문 clip 계산에만 쓴다.
-/// 위치는 SVG/Skia 백엔드의 그리기 기하(위 밑줄 `기준선 - 글꼴 + 1`, 강조점
-/// `기준선 - 1.05em` 에 0.3em 글자)와 같다. 회전·세로쓰기·글자겹침은 다루지 않는다.
+/// 위 밑줄은 공통 선 기하, 강조점은 현재 glyph 기하를 소비한다.
+/// 회전·세로쓰기·글자겹침은 다루지 않는다.
 pub(crate) fn raised_decoration_ink_bbox(
     bbox: super::render_tree::BoundingBox,
     run: &super::render_tree::TextRunNode,
@@ -65,17 +164,11 @@ pub(crate) fn raised_decoration_ink_bbox(
     let (font_size, baseline) = style.script_draw_metrics(base_size, bbox.y + run.baseline);
     let mut top = f64::INFINITY;
     let mut bottom = f64::NEG_INFINITY;
-    if top_underline {
-        // draw_line_shape 의 획 두께: 이중/삼중선(7~10)은 중심에서 최대 1.75px, 그 외 0.5px.
-        let half = match style.underline_shape {
-            7 => 1.35,
-            8 | 9 => 1.45,
-            10 => 1.75,
-            _ => 0.5,
-        };
-        let y = baseline - font_size + 1.0;
-        top = top.min(y - half);
-        bottom = bottom.max(y + half);
+    let geometry = top_underline_geometry(style, font_size);
+    if let Some(geometry) = &geometry {
+        let (ink_top, ink_bottom) = geometry.vertical_bounds();
+        top = top.min(baseline + ink_top);
+        bottom = bottom.max(baseline + ink_bottom);
     }
     if emphasis {
         // 강조점 글자의 em 상자(기준선 위 1em, 아래 0.25em)를 잉크 범위로 본다.
@@ -85,11 +178,10 @@ pub(crate) fn raised_decoration_ink_bbox(
         bottom = bottom.max(dot_y + dot_size * 0.25);
     }
     // 원형 점선(6)만 round cap 이라 선 양 끝이 획 반만큼 번진다.
-    let end_pad = if top_underline && style.underline_shape == 6 {
-        0.5
-    } else {
-        0.0
-    };
+    let end_pad = geometry
+        .as_ref()
+        .and_then(|g| g.dots.as_ref())
+        .map_or(0.0, |d| d.radius);
     let ink = super::render_tree::BoundingBox::new(
         bbox.x - end_pad,
         top,
