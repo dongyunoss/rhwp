@@ -18,7 +18,7 @@ mod text_style;
 use cartesian_layout::{CartesianLayout, CategoryLabelLayout, FRAME_PAD, TICK_GAP};
 use chart_3d::render_bars_3d;
 use legend_style::LegendFlow;
-use text_style::title_font_px;
+use text_style::{axis_line_height, title_font_px};
 
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
 ///
@@ -1931,7 +1931,7 @@ fn render_value_grid(
     let label_stride = if !horizontal && grid_lines > 0 {
         let spacing = ph.abs() / grid_lines as f64;
         if spacing > 0.0 {
-            (font * 2.0 / spacing)
+            (axis_line_height(font) / spacing)
                 .ceil()
                 .clamp(1.0, (grid_lines + 1) as f64) as usize
         } else {

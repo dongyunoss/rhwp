@@ -122,7 +122,7 @@ fn automatic_scale(min: f64, max: f64, length: f64, font: f64) -> ValueScale {
     let min = min.min(0.0);
     let max = max.max(0.0);
     let span = (max - min).max(f64::EPSILON);
-    let line_height = font * crate::legend_layout::TEXT_LINE_EM;
+    let line_height = axis_line_height(font);
     let budget = (1.0 + (length.abs() / (line_height * 2.0)).round()).clamp(3.0, 10.0);
     let raw_step = span / budget;
     let magnitude = 10.0_f64.powf(raw_step.log10().floor());
