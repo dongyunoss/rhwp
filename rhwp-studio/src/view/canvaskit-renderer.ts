@@ -4107,6 +4107,39 @@ export class CanvasKitLayerRenderer {
         return;
       }
       if (decoration.emphasisDot === 0) return;
+      if (decoration.emphasis) {
+        const geometry = decoration.emphasis;
+        if (!geometry.fontFamily || [...geometry.glyph].length !== 1
+          || ![geometry.fontSize, geometry.ratio, geometry.skewX, geometry.baselineOffset].every(Number.isFinite)
+          || geometry.fontSize <= 0 || geometry.ratio <= 0 || !Array.isArray(geometry.positions)
+          || geometry.positions.length > CanvasKitLayerRenderer.MAX_TEXT_SPECIAL_VISUAL_ITEMS
+          || geometry.positions.some(value => !Number.isFinite(value))) {
+          this.unsupportedOps.add('textDecoration:invalidGeometry');
+          return;
+        }
+        const style = {fontFamily: geometry.fontFamily, bold: geometry.bold, italic: false};
+        const prepared = this.findPreparedTypeface(geometry.fontFamily, style);
+        if (!prepared && this.requirePreparedFontFamilies) {
+          throw new Error(`CanvasKit font family가 준비되지 않았습니다: ${geometry.fontFamily}`);
+        }
+        const font = this.makeFont(prepared?.typeface ?? this.defaultTypeface, geometry.fontSize);
+        const paint = this.makeFillPaint(decoration.color);
+        try {
+          const adjustable = font as Font & {setScaleX?: (value: number) => void; setSkewX?: (value: number) => void; setEmbolden?: (value: boolean) => void};
+          adjustable.setScaleX?.(geometry.ratio);
+          adjustable.setSkewX?.(geometry.skewX * geometry.ratio);
+          adjustable.setEmbolden?.(prepared?.syntheticStyle?.bold ?? (geometry.bold && (prepared?.hostFace?.weight ?? 0) < 600));
+          const glyphs = font.getGlyphIDs(geometry.glyph);
+          if (glyphs.length !== 1 || glyphs[0] === 0) {
+            this.unsupportedOps.add('textDecoration:missingEmphasisGlyph');
+            return;
+          }
+          for (const x of geometry.positions) {
+            canvas.drawGlyphs(glyphs, [0, 0], originX + x, baselineY + geometry.baselineOffset, font, paint);
+          }
+        } finally {font.delete(); paint.delete();}
+        return;
+      }
       const dotSize = Math.max(1, decoration.fontSize * 0.3);
       let fillPaint: SkPaint | null = null;
       let strokePaint: SkPaint | null = null;

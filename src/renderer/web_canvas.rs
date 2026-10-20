@@ -2984,34 +2984,35 @@ impl Renderer for WebCanvasRenderer {
                 );
             }
         }
-        // 강조점 처리
-        if style.emphasis_dot > 0 {
-            let dot_char = match style.emphasis_dot {
-                1 => "●",
-                2 => "○",
-                3 => "ˇ",
-                4 => "˜",
-                5 => "･",
-                6 => "˸",
-                _ => "",
-            };
-            if !dot_char.is_empty() {
-                let dot_size = font_size * 0.3;
-                let dot_y = y - font_size * 1.05;
+        if let Some(geometry) = super::emphasis::geometry(text, &char_positions, style, font_size) {
+            self.ctx.save();
+            self.ctx.set_font(&format!(
+                "{} {}px \"{}\"",
+                if geometry.bold { "bold" } else { "normal" },
+                geometry.font_size,
+                geometry.font_family
+            ));
+            self.ctx.set_text_align("left");
+            self.ctx.set_fill_style_str(&color_to_css(style.color));
+            for position in &geometry.positions {
                 self.ctx.save();
-                self.ctx.set_font(&format!("{}px sans-serif", dot_size));
-                self.ctx.set_text_align("center");
-                self.ctx.set_fill_style_str(&color_to_css(style.color));
-                for index in 0..char_positions.len().saturating_sub(1) {
-                    let cx = visual_positions
-                        .as_ref()
-                        .and_then(|p| p.span_origin(index, index + 1))
-                        .unwrap_or(char_positions[index]);
-                    let dot_x = x + cx + (font_size * style.ratio * 0.5);
-                    self.ctx.fill_text(dot_char, dot_x, dot_y).ok();
-                }
+                let _ = self
+                    .ctx
+                    .translate(x + position, y + geometry.baseline_offset);
+                let _ = self.ctx.transform(
+                    geometry.ratio,
+                    0.0,
+                    geometry.skew_x * geometry.ratio,
+                    1.0,
+                    0.0,
+                    0.0,
+                );
+                let _ = self
+                    .ctx
+                    .fill_text(&geometry.browser_text, geometry.browser_offset, 0.0);
                 self.ctx.restore();
             }
+            self.ctx.restore();
         }
 
         // 탭 리더(채울 모양) 렌더링 — 12종

@@ -816,32 +816,44 @@ impl SkiaTextReplay<'_> {
                         );
                     }
                 }
-                if style.emphasis_dot > 0 {
-                    let dot = match style.emphasis_dot {
-                        1 => "●",
-                        2 => "○",
-                        3 => "ˇ",
-                        4 => "˜",
-                        5 => "･",
-                        6 => "˸",
-                        _ => "",
+                if let Some(geometry) = crate::renderer::emphasis::geometry(
+                    text,
+                    &char_positions,
+                    style,
+                    font_size as f64,
+                ) {
+                    let mark_style = TextStyle {
+                        font_family: geometry.font_family.to_owned(),
+                        bold: geometry.bold,
+                        ..TextStyle::default()
                     };
-                    if !dot.is_empty() {
-                        let dot_size = font_size * 0.3;
-                        let dot_y = y as f32 - font_size * 1.05;
-                        if let Some(font) = font_for_text(dot, dot_size) {
-                            let mut dot_paint = Paint::default();
-                            dot_paint.set_anti_alias(true);
-                            dot_paint.set_color(colorref_to_skia(style.color, 1.0));
-                            for index in 0..char_positions.len().saturating_sub(1) {
-                                let cx = span_x(index, index + 1);
-                                canvas.draw_str(
-                                    dot,
-                                    (bbox.x as f32 + cx as f32 + font_size * ratio * 0.5, dot_y),
-                                    &font,
-                                    &dot_paint,
-                                );
-                            }
+                    let (_, faces) = text_typeface_candidates(
+                        self.font_mgr,
+                        self.system_families,
+                        self.custom_typefaces,
+                        self.bundled_typefaces,
+                        geometry.font_family,
+                        font_style_for_text(&mark_style),
+                    );
+                    if let Some(mut font) = fonts::for_text(
+                        &faces,
+                        geometry.glyph,
+                        font_size,
+                        &mark_style,
+                        self.font_mgr,
+                    ) {
+                        font.set_scale_x(geometry.ratio as f32);
+                        font.set_skew_x((geometry.skew_x * geometry.ratio) as f32);
+                        let mut paint = Paint::default();
+                        paint.set_anti_alias(true);
+                        paint.set_color(colorref_to_skia(style.color, 1.0));
+                        for x in geometry.positions {
+                            canvas.draw_str(
+                                geometry.glyph,
+                                ((bbox.x + x) as f32, (y + geometry.baseline_offset) as f32),
+                                &font,
+                                &paint,
+                            );
                         }
                     }
                 }

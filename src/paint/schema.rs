@@ -15,8 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 31: 원본 글자 모양 구간의 topUnderline 파선 위상.
-    schema_minor_version: 31,
+    // 32: 실제 강조점 글리프의 공통 배치와 글꼴 역할.
+    schema_minor_version: 32,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
-        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 31);
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 32);
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,

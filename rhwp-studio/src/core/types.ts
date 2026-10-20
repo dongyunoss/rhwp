@@ -1599,6 +1599,19 @@ export interface LayerTextDecorationOp {
     emphasisDot: number;
     positions: number[];
     positionsComplete: boolean;
+    /** 본문과 독립된 강조점 face와 표시 자소 소속. */
+    emphasis?: {
+      fontFamily: string;
+      glyph: string;
+      fontSize: number;
+      bold: boolean;
+      ratio: number;
+      skewX: number;
+      baselineOffset: number;
+      positions: number[];
+      browserText: string;
+      browserOffset: number;
+    };
     /** 실제 글줄 메트릭과 독립 Print로 해소한 기하. 클라이언트에서 크기를 다시 추정하지 않는다. */
     topUnderline?: {
       phase?: number;

@@ -775,7 +775,7 @@ fn rotate_text(bounds: BoundingBox, logical: BoundingBox, run: &TextRunNode) -> 
 }
 
 fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
-    let (font_size, _) = effective_text_font_size_and_baseline(run);
+    let (font_size, baseline) = effective_text_font_size_and_baseline(run);
     // Character position moves ink, not the line's logical flow box. Keep both
     // extents in the conservative paint bounds so clipping/cache invalidation
     // cannot drop a raised/lowered glyph. Rotation still uses the original box.
@@ -819,6 +819,19 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
         }
     }
     let mut bounds = expand(painted, padding);
+    if let Some(ink) = crate::renderer::emphasis::geometry(text, &positions, &run.style, font_size)
+        .and_then(|g| g.ink_bounds())
+    {
+        bounds = union(
+            bounds,
+            BoundingBox::new(
+                logical.x + ink.x,
+                logical.y + baseline + ink.y,
+                ink.width,
+                ink.height,
+            ),
+        );
+    }
     if run.style.shadow_type != 0 {
         let offset = BoundingBox::new(
             painted.x + run.style.shadow_offset_x,
@@ -905,6 +918,25 @@ fn decoration_bounds(
     let end = positions.len().saturating_sub(trim.min(trailing));
     let width = positions.get(end.saturating_sub(1)).copied().unwrap_or(0.0);
     let (font_size, baseline) = effective_text_font_size_and_baseline(run);
+    if kind == TextDecorationKind::EmphasisDot {
+        let ink = crate::renderer::emphasis::geometry(&text, &positions, &run.style, font_size)
+            .and_then(|g| g.ink_bounds());
+        return rotate_text(
+            ink.map_or(logical, |ink| {
+                union(
+                    logical,
+                    BoundingBox::new(
+                        logical.x + ink.x,
+                        logical.y + baseline + ink.y,
+                        ink.width,
+                        ink.height,
+                    ),
+                )
+            }),
+            logical,
+            run,
+        );
+    }
     let top_geometry = (kind == TextDecorationKind::Underline)
         .then(|| crate::renderer::text_decoration::top_underline_geometry(&run.style, font_size))
         .flatten();
@@ -929,7 +961,7 @@ fn decoration_bounds(
             }
         }
         TextDecorationKind::Strikethrough => (baseline - font_size * 0.3, 1.0),
-        TextDecorationKind::EmphasisDot => (baseline - font_size * 1.2, font_size * 0.3),
+        TextDecorationKind::EmphasisDot => (baseline, 0.0),
     };
     rotate_text(
         union(

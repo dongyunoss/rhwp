@@ -3808,31 +3808,25 @@ impl Renderer for SvgRenderer {
                 );
             }
         }
-        // 강조점 처리
-        if style.emphasis_dot > 0 {
-            let dot_char = match style.emphasis_dot {
-                1 => "●",
-                2 => "○",
-                3 => "ˇ",
-                4 => "˜",
-                5 => "･",
-                6 => "˸",
-                _ => "",
-            };
-            if !dot_char.is_empty() {
-                let dot_size = font_size * 0.3;
-                let dot_y = y - font_size * 1.05;
-                for index in 0..char_positions.len().saturating_sub(1) {
-                    let cx = visual_positions
-                        .as_ref()
-                        .and_then(|p| p.span_origin(index, index + 1))
-                        .unwrap_or(char_positions[index]);
-                    let dot_x = x + cx + (font_size * style.ratio * 0.5);
-                    self.output.push_str(&format!(
-                        "<text x=\"{}\" y=\"{}\" font-size=\"{}\" text-anchor=\"middle\" fill=\"{}\">{}</text>\n",
-                        dot_x, dot_y, dot_size, color, dot_char,
-                    ));
+        if let Some(geometry) = super::emphasis::geometry(text, &char_positions, style, font_size) {
+            if self.font_embed_mode != FontEmbedMode::None {
+                self.font_codepoints
+                    .entry(geometry.font_family.to_owned())
+                    .or_default()
+                    .extend(geometry.browser_text.chars());
+                if geometry.bold {
+                    self.font_bold_families
+                        .insert(geometry.font_family.to_owned());
                 }
+            }
+            for position in &geometry.positions {
+                self.output.push_str(&format!(
+                    "<text transform=\"translate({} {}) matrix({} 0 {} 1 0 0)\" x=\"{}\" y=\"0\" font-family=\"{}\" font-size=\"{}\" font-weight=\"{}\" font-style=\"normal\" fill=\"{}\" xml:space=\"preserve\">{}</text>\n",
+                    x + position, y + geometry.baseline_offset, geometry.ratio,
+                    geometry.skew_x * geometry.ratio, geometry.browser_offset,
+                    geometry.font_family, geometry.font_size, if geometry.bold { "bold" } else { "normal" },
+                    color, geometry.browser_text,
+                ));
             }
         }
 

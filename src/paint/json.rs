@@ -2987,6 +2987,17 @@ fn write_text_decoration(
             );
         }
     }
+    if kind == TextDecorationKind::EmphasisDot {
+        if let Some(geometry) =
+            crate::renderer::emphasis::geometry(&bounded_text, &positions, &run.style, font_size)
+        {
+            let _ = write!(
+                buf,
+                ",\"emphasis\":{}",
+                serde_json::to_string(&geometry).unwrap()
+            );
+        }
+    }
     buf.push('}');
 }
 

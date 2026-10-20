@@ -234,7 +234,7 @@ pub(crate) fn resolve_page_phases(root: &mut super::render_tree::RenderNode) {
 ///
 /// 첫 줄의 이 잉크는 글줄 상자 밖, 본문 영역 위에 놓여 본문 clip에 잘린다.
 /// 글자·글줄 상자를 키우면 캐럿/선택도 바뀌므로 본문 clip 계산에만 쓴다.
-/// 위 밑줄은 공통 선 기하, 강조점은 현재 glyph 기하를 소비한다.
+/// 위 밑줄과 강조점의 공통 기하를 소비한다.
 /// 회전·세로쓰기·글자겹침은 다루지 않는다.
 pub(crate) fn raised_decoration_ink_bbox(
     bbox: super::render_tree::BoundingBox,
@@ -262,6 +262,8 @@ pub(crate) fn raised_decoration_ink_bbox(
     let (font_size, baseline) = style.script_draw_metrics(base_size, bbox.y + run.baseline);
     let mut top = f64::INFINITY;
     let mut bottom = f64::NEG_INFINITY;
+    let mut left = bbox.x;
+    let mut right = bbox.x + bbox.width;
     let geometry = top_underline_geometry(style, font_size);
     if let Some(geometry) = &geometry {
         let (ink_top, ink_bottom) = geometry.vertical_bounds();
@@ -269,11 +271,16 @@ pub(crate) fn raised_decoration_ink_bbox(
         bottom = bottom.max(baseline + ink_bottom);
     }
     if emphasis {
-        // 강조점 글자의 em 상자(기준선 위 1em, 아래 0.25em)를 잉크 범위로 본다.
-        let dot_size = font_size * 0.3;
-        let dot_y = baseline - font_size * 1.05;
-        top = top.min(dot_y - dot_size);
-        bottom = bottom.max(dot_y + dot_size * 0.25);
+        let text = run.display_or_text();
+        let positions = run.replay_positions_for(text);
+        if let Some(ink) = super::emphasis::geometry(text, &positions, style, font_size)
+            .and_then(|g| g.ink_bounds())
+        {
+            top = top.min(baseline + ink.y);
+            bottom = bottom.max(baseline + ink.y + ink.height);
+            left = left.min(bbox.x + ink.x);
+            right = right.max(bbox.x + ink.x + ink.width);
+        }
     }
     // 원형 점선(6)만 round cap 이라 선 양 끝이 획 반만큼 번진다.
     let end_pad = geometry
@@ -281,9 +288,9 @@ pub(crate) fn raised_decoration_ink_bbox(
         .and_then(|g| g.dots.as_ref())
         .map_or(0.0, |d| d.radius);
     let ink = super::render_tree::BoundingBox::new(
-        bbox.x - end_pad,
+        left - end_pad,
         top,
-        bbox.width + 2.0 * end_pad,
+        right - left + 2.0 * end_pad,
         bottom - top,
     );
     [ink.x, ink.y, ink.width, ink.height]

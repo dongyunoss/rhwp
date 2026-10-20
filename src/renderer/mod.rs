@@ -22,6 +22,7 @@ pub(crate) mod cell_paragraph_spacing;
 pub mod char_overlap;
 pub mod composer;
 mod conjoining_jamo;
+pub(crate) mod emphasis;
 pub(crate) mod endnote_spacing;
 pub mod equation;
 pub(crate) mod equation_tac_flow;
@@ -94,11 +95,8 @@ mod stroke_pattern;
 pub(crate) mod table_row_frame;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
-<<<<<<< HEAD
 pub(crate) mod anisotropic_sampling;
-=======
 pub(crate) mod contextual_text;
->>>>>>> c20ede9c64 (fix: 글줄 방향과 저장 그림 영역을 공통 출력에 전달)
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod cubic_sampling;
 pub mod native_pua_fonts;
@@ -121,11 +119,8 @@ pub mod svg_layer;
 pub(crate) mod tab_leader;
 pub(crate) mod text_decoration;
 pub(crate) mod text_direction;
-<<<<<<< HEAD
 pub(crate) mod text_transform;
-=======
 pub use text_direction::{BidiLayout, BidiVisualRun};
->>>>>>> c20ede9c64 (fix: 글줄 방향과 저장 그림 영역을 공통 출력에 전달)
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;

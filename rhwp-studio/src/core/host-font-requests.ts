@@ -136,6 +136,12 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         }
         continue;
       }
+      if (op.type === 'textDecoration' && op.decoration?.emphasis) {
+        const mark = op.decoration.emphasis;
+        const record = resolveLocalFontChain(mark.fontFamily, { bold: mark.bold, italic: false });
+        if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+        continue;
+      }
       if (op.type !== 'textRun' && op.type !== 'charOverlap' && op.type !== 'footnoteMarker') continue;
       const styles = [op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style];
       if (op.type === 'charOverlap' && op.composition && Array.isArray(op.composition.interior)) {
