@@ -250,29 +250,3 @@ pub(crate) fn candidates(text: &str) -> (Vec<Candidate>, bool) {
         (candidates, true)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn oversized_optional_program_does_not_abort_loading_or_reuse_stale_coverage() {
-        let mut coverage = FontCoverage::default();
-        coverage.faces.insert(
-            ("source face".into(), 400, false),
-            Arc::new([u64::MAX; WORDS]),
-        );
-        let text = "\u{1112}\u{119e}\u{11ab}";
-        assert_eq!(coverage.glyph("Source Face", text), Some('\u{f53a}'));
-        // 크기 상한은 보조 cmap 수집을 제한한다. 실제 FontFace 적재는 계속한다.
-        let oversized = vec![0; MAX_SOURCE_BYTES + 1];
-        assert_eq!(coverage.register("Source Face", &oversized, 0), Ok(false));
-        assert_eq!(coverage.glyph("Source Face", text), None);
-        // 다음 스타일을 알게 돼도 앞서 미검증인 스타일을 지워서 인정하지 않는다.
-        coverage.faces.insert(
-            ("source face".into(), 700, false),
-            Arc::new([u64::MAX; WORDS]),
-        );
-        assert_eq!(coverage.glyph("Source Face", text), None);
-    }
-}

@@ -230,3 +230,94 @@ CSS italic + CTM c=0으로 그려지고, 장식 점만 공통 c=-0.333을 소비
 Native045는 218.57초·exit 0이며 fmt 검사도 통과했다. 이 단계의 코드 변경은 CSS
 family 조회 1곳이다. Native 82조건 재검증과 같은 소스의 최적화 fresh WASM019를
 이어 수행한다. 45개 원 PR 모두 reviewer 요청이 지정되어 있음도303에서 재확인했다.
+
+### Native045 / fresh WASM019 결과
+
+제품 코드는 `38ef03ee969b482776b91db6abeeaa9d6d9ea90c`에 고정했다. 최적화 fresh
+WASM019는 708.97초·exit 0, Studio 동기화 해시 일치다. WASM SHA-256은
+`dd84451796df922a1b98579c7b0450c6effa8b661f3617702ccdad8f6f127b49`다.
+실제 Canvas 기록309에서 본문 H/a/나도 normal 프로그램과 CTM c=-0.333을 소비했다.
+
+82조건·242쪽의 Native045 결과는 Native044와 완전히 같다(80조건 통과·차트2조건
+미달). fresh WASM019는 81조건 통과·기존 chart-before87.98250% 미달이다.
+WASM018 대비 아래4조건만 개선됐고 다른 모든 쪽은 같다. 양쪽 모두 중간 제품 대비
+0.1%p 이상 하락이 없다(`native044-native045-intermediate-comparison-304.json`,
+`wasm018-wasm019-intermediate-comparison-319.json`). 고정 devel 전체 검증과 구분한다.
+
+| 조건 | WASM018 | WASM019 |
+| --- | ---: | ---: |
+| italic | 99.04077% | 100% |
+| bold-italic | 99.19506% | 100% |
+| 실제 Arial italic + 한글 fallback | 98.97001% | 100% |
+| 실제 Times italic + 한글 fallback | 99.35042% | 100% |
+
+실제 Canvas의 italic 전후 표준 패널314를 직접 판독했다. 여섯 강조 기호와 본문 H/a/나의
+기울기·위치가 Print와 맞는다. 이100%는2px raw이며 작은 가장자리 AA 잔차가 남는다.
+다른 세 개선 조건의 패널은320에 별도로 산출하고 확대 판독한다.
+
+#8064 전체179조건·2,082쪽의 Native045/fresh WASM019 보존 검증은 각각307/310에서
+진행한다. 같은 원본·Print·DPI·글꼴을 고정 devel5e2b와 대조한다. 일부 진행값을 전체
+통과로 쓰지 않으며, 두 실행의 최종 exit code·전쪽 비교·직접 판독을 확인해야 한다.
+
+### 공개 API 회귀와 source 단위 테스트 정책
+
+정책313에서 `pua_glyph.rs`에 추가한 cfg(test) 모듈1개 때문에 base 대비4102>4101로
+실패했다. 테스트를 `tests/cases/text_font_coverage_registration.rs`의 공개 API 계약2건으로
+옮겼다. 등록한 정체 face의 CSS 선택·잉크 변환 및 원문 HWP/HWPX 불변, 선택적32MiB
+상한의 비중단·이전 스타일 추론 무효화를 확인한다. 공개 Noto 프로그램을 명시적인
+FontFace 별칭으로 등록하는 계약 검사이며 그 별칭 문서의 한컴 형상 일치를 주장하지 않는다.
+
+초기 검사에서 미등록 family가 시스템의 알려진 fallback으로 가는 상태를, 등록된 프로그램을
+해석할 수 없어 추론을 중단하는 상태와 같다고 가정했다. 두 상태의 독립 계약에 맞게
+검사를 정리했고, 초기316은 같은 공개 API와 원본 프로그램으로 동결 Native044에서
+의도한 face 선택 실패2건, Native045에서2건 통과다. 양쪽 모두 -D warnings로 컴파일했다.
+추론을 하지 않는 상태에서 요청한 family 사다리와 선언 기울임을 유지하고, 뒤의 정상
+프로그램 등록이 그 미검증 상태를 양수로 덮지 않는지 검사한다.
+
+정책315는4101tests/296modules로 통과했다. source 삭제는 파일 끝의 cfg(test) 모듈뿐이며
+제품 prefix 바이트 동일성은317에 입증했다. 자동 수집은 regression_suite_019에 배정됐고
+manifest의 고정 base 검사도317에서 통과했다. 정식 Cargo 경로의 집중 실행318과 전체
+필수 Rust/lint 검증을 마쳐야 최종 제출 검증 완료로 판단한다.
+
+### 중첩 표·미주 실패의 다음 공통 프레임 보정 근거
+
+변경하지 않은 원본 #7833 입력은 Native04572.41579%/WASM01972.30346%다.
+중첩 표를 담는 저장 줄만 선언 본체6000HU+원본 바깥여백566HU와 일반 기준선으로
+바꾼 진단본, 해당 줄만 생략해 일반 재조판한 진단본은 양쪽 모두100%다(305/312).
+원본과 변경한 진단 입력은 SHA·범위를 구분하고 원본 보정 완료로 보고하지 않는다.
+원본 Native의 표준 review·overlay306도 판독했다. 앞/뒤 글자가 Print의 아래 기준선이
+아닌 위쪽에 배치되는 문제가 확인됐다.
+
+공통 소비 경로는 `recompose_cell_lines_with_nested_tables` → `FrameGeometry` →
+HeightMeasurer와 table_layout의 `paragraph_with_frame_geometry`다. 현재 저장 줄이 있는
+호스트는 이 프레임 재조판에서 제외된다. 다음 보정은 본체 크기 전달과 줄 흐름의 소유를
+구분해야 한다. 기존 `inline_table_heights`는 둘을 함께 의미하므로 저장 줄의 높이 보정만으로
+새 줄 나눔의 소유를 선언하지 않는다. private helper 이후의 실제 배치까지 함께 확인한다.
+
+기존 실패 검사는 생성 참조 번호를 셀의 직접 TextRun으로 가정한다. 현재 실제 출력은
+FnMarker와 원문 TextRun을 구분한다. 원본 형상 보정과 양쪽90% 이상을 먼저 완료한 뒤
+번호·원문·소스 주소의 독립 소유를 검증하는 회귀로 보완한다. 미달 상태에서 기대값을
+낮추거나 입력을 정상 진단본으로 교체하지 않는다. 차트 내부 자동 배치도 계속 미해결이다.
+
+정식 Cargo318에서 helper가 quick-xml0.42의 문자열 QName을 바이트로 취급해 컴파일이
+실패했다. 개별 컴파일이 캐시의0.41을 선택했던 점을 확인했고, helper를 실제0.42 API로
+보정했다.321에서 dependency .d의0.42 버전까지 고정해 -D warnings로 다시 컴파일했다.
+source SHA는 `0c5967a076a3b5c4cd6401ddba46cb8aced3fdb031dec0e20a8a76c043fd3627`다.
+
+기존 private 검사의 가시 PUA 재사용 금지도 공개 API로 유지했다. 공개 Noto 프로그램의
+H 윤곽을 가리키는 합성 format4 cmap를 메모리에만 만들고, 등록→실제 source PUA 방출→
+대용량 보조 정보 거절→후속 정상 등록에서도 과거 PUA 미재사용과 원문 HWP 불변을
+검사한다. 파일·glyph 윤곽·사설 프로그램을 추가하지 않는다. 이 검사는 물리 배치의
+정답지가 아니라 공급 프로그램과 원문 주소의 계약 검사다. 최종321의 동결 Native044는
+1PASS/2FAIL, Native045는3PASS다. PUA 자원 상한은 기존 정상 대조군이고 두 face 선택
+실패만 CSS 인용 결함의 검출 증거로 사용한다. 정식 Cargo는322에서 다시 실행한다.
+
+패널320의 bold-italic과 실제 Arial/Times italic도 같은 배율로 직접 판독했다.
+Latin의 실제 italic 프로그램과 한글 fallback의 합성 기울임이 함께 맞으며, 장식 기호의
+소속·간격과 본문 기준선이 보존된다. 가장자리 AA 잔차는 RGB 완전 일치로 보고하지 않는다.
+
+자동 배정이 source weight 변경 뒤019→003으로 바뀌었다.322는 이전 suite를 고정해
+0건 실행·exit4였으므로 통과로 세지 않는다. case 실행 wrapper로 실제 자동 배정을
+선택한324는 정식 nextest3건 모두 통과했다(컴파일12.00초·실행0.408초). 정책 Node323도
+35건 통과했고, manifest322는1652sources/7152static test attrs로 고정 base 검사를 통과했다.
+최종 제출 전 전체 nextest·필수 lint·전체 시각 대조와 남은 원본 보정을 계속한다.
