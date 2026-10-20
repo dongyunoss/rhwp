@@ -329,3 +329,43 @@ Print다. 범주 cache와 수식 범위를 함께 바꾸고 두 OOXML 표현도 
 범주 8개에서는 라벨 방향과 하단 예약 변화도 분리해 판독해야 한다. 772에서 너비·높이
 대조군의 숫자 0 잉크 크기는 약 5.8×9.9px로 유지돼 글꼴의 단순 가로 확대를 원인으로
 간주하지 않았다. 이 좌표 진단은 전체 Native/fresh gate를 대신하지 않는다.
+
+## 3D 범주 글줄 계획의 공통 소비
+
+774/775에서 범주 8개의 공식 Print는 45도 라벨과 추가 하단 예약을 사용하지만 064는
+수평 라벨과 종전 바닥을 유지했다. 전체 페이지 raw는 56.87050%다. 회전 판단에서
+`!chart.is_3d`를 요구하고, `render_bars_3d`가 `CategoryLabelLayout::default()`를
+별도로 넘겨 측정 결과를 버리는 두 경로를 확인했다.
+
+범주가 수평축에 놓이는 Column/Line/Stock은 2D/3D와 관계없이 같은 글줄 폭·가용 슬롯
+판단을 사용한다. Bar의 세로 범주와 Scatter의 수치축, Pie의 별도 라벨은 대상이 아니다.
+`CartesianLayout.category → bottom_reservation → plot_height`의 측정 결과를
+`render_bars → render_bars_3d → render_category_labels_at`의 실제 그리기까지 전달한다.
+축 범위도 같은 `CartesianLayout.scales`를 읽는다. 장면 투영과 깊이의 미달을 회전
+수정의 통과로 대신하지 않으며, 기존 126조건과 새 개수 대조군 4개를 함께 재검증한다.
+
+066은 215.88초에 빌드했다. 776의 130조건은 모두 한 쪽이며 96개가 90% 이상,
+34개가 미달이다. 781에서 같은 입력·독립 PDF의 SHA와 실제 Native PNG 바이트를
+대조했다. 129조건은 이미지도 같고, 범주 8개만 56.87050%→64.55035%로
+7.67985%p 개선됐다. 하락은 없으나 개선한 입력도 90% 미만이다. 779의 새 review와
+standalone overlay에서 45도 라벨·하단 예약이 반영되고 투영 폭·막대 위치 차이는
+남아 있음을 직접 판독했다. crop의 점수와 전쪽 TSV 수치를 구분한다.
+
+777의 기존 차트 단위 검사는 160 PASS·5 FAIL이다. 실패는 축 headroom·누적 축 간격·
+한 범주 가로 축 간격·범례 사각 키·누적 선 축의 기존 5개이며 기대값을 변경하지 않았다.
+최종 fresh WASM·고정 devel 비교·전체 Rust·#8064 기능 보존 검증은 아직 완료되지 않았고,
+이 중간 결과로 통합 PR 제출·승인·완료를 판정하지 않는다.
+
+784는 수정하지 않은 실제 3D 누적/묶은 세로 원본 HWP와 각각의 공식 Print를 다시
+600dpi로 측정한 진단이다. 변경한 개수 대조군과 원본 증거를 구분해 보존했다.
+783에서는 기존 `ole_container.rs`의 WMFC 청크 복원 계약대로 원본 preview의 EMF를
+재구성했다. preview는 bitmap 그리기이며 카메라 변환을 직접 얻을 수 있는 벡터 상태는
+없었다. 이를 편집 후 데이터 출력이나 투영 보정의 대용으로 쓰지 않는다.
+
+760/780의 원격 head 재조회는 열린 45개·Draft 10개이며 각 원 head가 검토 기록과
+일치했다. #7694는 오래된 초기 intake가 아니라 갱신 적용 기록 227과 대조했다.
+이 메타데이터 대조도 최종 검증·전체 체리픽 적용 입증을 대신하지 않는다.
+
+실행 로그는 `logs/cartesian-native066-candidate-776.log`,
+`logs/chart-existing-unit-native066-777.log`, `logs/chart-3d-label-boundary-native066-778.log`,
+`logs/chart-original-scene-geometry-784.log`, `logs/chart-preview-transforms-783.log`다.

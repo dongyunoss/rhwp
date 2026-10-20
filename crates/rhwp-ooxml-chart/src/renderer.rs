@@ -736,8 +736,7 @@ fn render_bars(
         // 플롯 rect 기준으로 이미 확정(#1882 앵커 무접촉). 배치·방·압출만
         // 투영 좌표로 수행. (C2b #2278 v2)
         render_bars_3d(
-            svg, chart, px, py, pw, ph, horizontal, stacked, percent, cat_count, ser_count, vmin,
-            vmax, vstep,
+            svg, chart, px, py, pw, ph, horizontal, stacked, percent, cat_count, ser_count, layout,
         );
         return;
     }
@@ -2269,10 +2268,9 @@ fn render_bars_3d(
     percent: bool,
     cat_count: usize,
     ser_count: usize,
-    vmin: f64,
-    vmax: f64,
-    vstep: f64,
+    layout: &CartesianLayout,
 ) {
+    let (vmin, vmax, vstep) = layout.scales.primary.tuple();
     let view = chart.view3d.clone().unwrap_or_default();
     // 두께 규칙 slot/(n_eff + gapWidth/100) — Excel gapWidth 의미(슬롯 내 여백을
     // 막대 폭 %로). 코퍼스 150: 누적 1/2.5=0.4, 묶은 3계열 3/4.5≈0.667 —
@@ -2426,7 +2424,7 @@ fn render_bars_3d(
         cat_count,
         horizontal,
         6.0,
-        CategoryLabelLayout::default(),
+        layout.category,
     );
 }
 

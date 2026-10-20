@@ -290,10 +290,10 @@ impl CategoryLabelLayout {
                 .max()
                 .unwrap_or(0),
         );
-        let needs_rotation = !chart.is_3d
-            && chart.chart_type != OoxmlChartType::Bar
-            && chart.chart_type != OoxmlChartType::Scatter
-            && count > 0
+        let needs_rotation = matches!(
+            chart.chart_type,
+            OoxmlChartType::Column | OoxmlChartType::Line | OoxmlChartType::Stock
+        ) && count > 0
             && maximum_advance + TICK_GAP * 2.0 > width / count as f64;
         let rotation_degrees = if !needs_rotation {
             0.0
