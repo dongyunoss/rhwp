@@ -13,8 +13,10 @@ use super::LineSpec;
 
 mod cartesian_layout;
 mod chart_3d;
+mod text_style;
 use cartesian_layout::{CartesianLayout, CategoryLabelLayout, FRAME_PAD, TICK_GAP};
 use chart_3d::render_bars_3d;
+use text_style::title_font_px;
 
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
 ///
@@ -42,7 +44,7 @@ pub(crate) fn palette(i: usize) -> u32 {
 /// 카테고리 라벨 잉크 y 226.5~239.5(≈10pt, 검정), 격자·축선 #8C8C8C 1px. 여백은 전부
 /// 글꼴 크기의 배수로 두어 차트 크기가 달라도 같은 비율을 유지한다.
 mod hancom_default {
-    /// 제목 글꼴(pt) — 차트 XML 의 `c:title` 에 `sz` 가 없을 때. 코퍼스 전건 미지정.
+    /// 기본 글자 10pt의 자동 제목 글꼴(pt). 다른 글자 크기는 text_style의 프리셋을 따른다.
     pub const TITLE_PT: f64 = 14.0;
     /// 축 라벨·범례 글꼴(pt) — `c:chartSpace > c:txPr` 에 `sz` 가 없을 때. 코퍼스 전건 1000.
     pub const LABEL_PT: f64 = 10.0;
@@ -157,11 +159,6 @@ fn data_label_font_px(chart: &OoxmlChart, series: &OoxmlSeries) -> f64 {
         .data_label_size_pt
         .map(|pt| pt * PX_PER_PT)
         .unwrap_or_else(|| label_font_px(chart))
-}
-
-/// 제목 글꼴 px — 제목 `sz`, 없으면 한컴 기본 14pt.
-fn title_font_px(chart: &OoxmlChart) -> f64 {
-    chart.title_size_pt.unwrap_or(hancom_default::TITLE_PT) * PX_PER_PT
 }
 
 /// 계열 선 굵기 px — `a:ln w`(EMU), 없으면 Office 기본 2.25pt.
