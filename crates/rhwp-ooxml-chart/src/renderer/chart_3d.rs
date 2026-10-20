@@ -2,8 +2,134 @@
 
 use super::*;
 
-const BAR3D_TOP_SHADE: f64 = 0.25;
-const BAR3D_SIDE_SHADE: f64 = -0.25;
+const BAR3D_TOP_SHADE: f64 = -0.25;
+const BAR3D_SIDE_SHADE: f64 = -0.5;
+
+/// 투영 전 데이터 면과 글줄 예약 후 viewport를 구분한다.
+/// 범주 글줄 회전은 viewport만 줄이며 같은 데이터 면의 종횡비를 바꾸지 않는다.
+pub(super) struct SceneFrame {
+    world_width: f64,
+    world_height: f64,
+    viewport: [f64; 4],
+    category_left_advance: Option<(f64, usize)>,
+}
+
+impl SceneFrame {
+    pub(super) fn new(
+        chart: &OoxmlChart,
+        [width, height]: [f64; 2],
+        [plot_width, plot_height]: [f64; 2],
+        [title_height, legend_height, legend_width]: [f64; 3],
+        has_title: bool,
+        category: CategoryLabelLayout,
+        scales: cartesian_layout::ChartScales,
+        measure: &dyn Fn(&str, f64, &str) -> f64,
+    ) -> Option<Self> {
+        let view = chart.view3d.as_ref()?;
+        // 계열 깊이 축·원근·반대쪽 카메라는 기존 경로를 보존하며 자동 2.5D와 혼동하지 않는다.
+        if !chart.is_3d
+            || !matches!(
+                chart.chart_type,
+                OoxmlChartType::Column | OoxmlChartType::Bar
+            )
+            || !view.r_ang_ax
+            || view.rot_x.to_radians().sin() < 0.0
+            || view.rot_y.to_radians().sin() < 0.0
+            || chart
+                .axes
+                .iter()
+                .any(|axis| axis.kind == crate::AxisKind::Series)
+        {
+            return None;
+        }
+        let horizontal = chart.chart_type == OoxmlChartType::Bar;
+        let font = label_font_px(chart);
+        let number_width = scales.primary.label_width(chart, 0, measure);
+        let world_title = if has_title {
+            FRAME_PAD * 2.0 + title_font_px(chart) * crate::legend_layout::TEXT_LINE_EM + font * 0.5
+        } else {
+            title_height
+        };
+        let (world_width, world_height, viewport) = if horizontal {
+            // 가로 값축의 마지막 숫자 반 폭과 세로 값축용 반 줄은 표시 여백이다.
+            // 이를 데이터 면에서도 빼면 긴 가로 차트의 종횡비와 등방 fit이 함께 줄어든다.
+            // 실제 숫자·범주 공간은 CartesianLayout과 viewport가 계속 예약한다.
+            (
+                plot_width + number_width * 0.5,
+                plot_height + font * 0.5,
+                [
+                    TICK_GAP * 0.5,
+                    TICK_GAP * 0.5,
+                    plot_width - TICK_GAP * 2.0,
+                    plot_height - TICK_GAP * 0.5 - ROOM_TICK_DOWN,
+                ],
+            )
+        } else {
+            (
+                width - legend_width - number_width - FRAME_PAD * 4.0,
+                height - world_title - legend_height - cartesian_layout::category_text_bottom(font),
+                [
+                    TICK_GAP,
+                    TICK_GAP * 0.5,
+                    plot_width - TICK_GAP - FRAME_PAD,
+                    plot_height - TICK_GAP,
+                ],
+            )
+        };
+        if world_width <= 0.0 || world_height <= 0.0 || viewport[2] <= 0.0 || viewport[3] <= 0.0 {
+            return None;
+        }
+        Some(Self {
+            world_width,
+            world_height,
+            viewport,
+            category_left_advance: if !horizontal && category.rotation_degrees > 0.0 {
+                let count = chart.categories.len().max(
+                    chart
+                        .series
+                        .iter()
+                        .map(|series| series.values.len())
+                        .max()
+                        .unwrap_or(0),
+                );
+                (count > 0).then_some((
+                    category.maximum_advance * category.rotation_degrees.to_radians().cos(),
+                    count,
+                ))
+            } else {
+                None
+            },
+        })
+    }
+
+    fn project(&self, view: &View3D, x: f64, y: f64, depth: f64) -> ShearProj {
+        let ox = depth * view.rot_y.to_radians().sin();
+        let oy = depth * view.rot_x.to_radians().sin();
+        let [vx, vy, vw, vh] = self.viewport;
+        let mut scale = (vw / (self.world_width + ox)).min(vh / (self.world_height + oy));
+        let mut left_overhang = 0.0;
+        if let Some((advance, count)) = self.category_left_advance {
+            let first_center = self.world_width / (count as f64 * 2.0);
+            // 끝 정렬한 회전 글줄의 시작은 첫 범주 중심보다 왼쪽으로 나간다.
+            // 고정 글자 폭과 투영되는 데이터 폭을 분리해 같은 fit에서 수용한다.
+            if advance > first_center * scale {
+                let label_fit = (vw - advance) / (self.world_width + ox - first_center);
+                if label_fit > 0.0 {
+                    scale = scale.min(label_fit);
+                    left_overhang = (advance - first_center * scale).max(0.0);
+                }
+            }
+        }
+        ShearProj {
+            fx: x + vx + (vw - (self.world_width + ox) * scale + left_overhang) * 0.5,
+            fy: y + vy + (vh - (self.world_height + oy) * scale) * 0.5 + oy * scale,
+            fw: self.world_width * scale,
+            fh: self.world_height * scale,
+            dxf: ox * scale,
+            dyf: oy * scale,
+        }
+    }
+}
 
 /// rAngAx=1(직각 축 — 한컴 차트 스펙 rev1.2 표 100 ProjectionType=1
 /// "2.5차원: 회전·상승해도 XY 면 불변"과 동계) 시어 투영 사전계산.
@@ -41,7 +167,7 @@ fn shear_proj(view: &View3D, px: f64, py: f64, pw: f64, ph: f64, depth: f64) -> 
 }
 
 /// 3D 막대 1개(또는 누적 세그먼트 1개) — 압출 벡터 (+dx, −dy) 3면:
-/// top 평행사변형(밝게) + right 평행사변형(어둡게) + front rect(원색).
+/// 위·옆 평행사변형(앞면보다 어둡게)과 앞 사각형(원색)을 그린다.
 /// dx, dy ≥ 0 전제(shear_proj 클램프 — 음수 성분은 페인트 순서 은면 제거와
 /// 상충하여 정의역 밖). 은면 제거는 호출측 페인트 순서(누적: 아래→위/왼→오른쪽)가
 /// 담당하므로 루프 순서 변경 금지. w/h ≤ 0(0값 세그먼트)이면 무방출 — 누적에서
@@ -74,13 +200,13 @@ fn push_bar_3d(svg: &mut String, x: f64, y: f64, w: f64, h: f64, dx: f64, dy: f6
 }
 
 /// 3D 방 선 스타일 — 정답지 임베드(2702px) 픽셀 실측: 축선·조그·격자·틱 전부
-/// #808080 균일(gray 126~148)·0.72pt≈0.75. 2D의 축/격자 명암 구분(#e8e8e8)과
+/// #808080 균일(gray 126~148)·0.75pt=1px. 2D의 축/격자 명암 구분(#e8e8e8)과
 /// 다른 3D 전용 실측 규칙 (시각판정 피드백 2026-07-19).
-const ROOM_LINE_STYLE: &str = "stroke=\"#808080\" stroke-width=\"0.75\"";
+const ROOM_LINE_STYLE: &str = "stroke=\"#808080\" stroke-width=\"1\"";
 /// 값·카테고리 좌측 틱 길이(pt) — 실측 44/38px ÷ 8.34px/pt ≈ 5.3/4.6
-const ROOM_TICK_LEFT: f64 = 5.0;
+const ROOM_TICK_LEFT: f64 = 5.0 * PX_PER_PT;
 /// 하단 틱 길이(pt) — 실측 31~37px ≈ 3.7~4.4
-const ROOM_TICK_DOWN: f64 = 4.0;
+const ROOM_TICK_DOWN: f64 = 4.0 * PX_PER_PT;
 
 /// 3D 방 + 값축 격자·라벨 — 시어 투영 기반: 뒷벽(z=D, 격자 포함) + 눈금별
 /// 바닥 조그 + 바닥 평행사변형 + 값·카테고리 틱. 격자는 `<line>` 2개(조그+뒷벽)로
@@ -166,9 +292,12 @@ fn render_value_grid_3d(
                 fy + fh + ROOM_TICK_DOWN
             ));
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-after-edge\">{}</text>\n",
                 gx,
-                fy + fh + ROOM_TICK_DOWN + font,
+                // 눈금 끝·라벨 간격·글줄 상자를 차례로 예약한다.
+                // 범주 글줄의 아래끝을 쓰면 3D 가로 값축 숫자가 눈금 쪽으로 당겨진다.
+                fy + fh + ROOM_TICK_DOWN + FRAME_PAD + TICK_GAP
+                    + font * crate::legend_layout::TEXT_LINE_EM,
                 font,
                 hancom_default::TEXT_COLOR,
                 xml_escape(&label(v))
@@ -199,7 +328,7 @@ fn render_value_grid_3d(
             ));
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\">{}</text>\n",
-                fx - ROOM_TICK_LEFT - 1.0,
+                fx - FRAME_PAD - TICK_GAP,
                 gy + font * 0.35,
                 font,
                 hancom_default::TEXT_COLOR,
@@ -268,16 +397,31 @@ pub(super) fn render_bars_3d(
     // (mod.rs View3D 주석 참조).
     let slot0 = (if horizontal { ph } else { pw }) / cat_count as f64;
     let bar_w0 = slot0 / (n_eff + gap_w / 100.0);
-    let b_depth = bar_w0 * view.depth_percent.max(0.0) / 100.0;
-    let d_scene = b_depth
-        * (1.0
-            + chart
-                .gap_depth
-                .unwrap_or(OOXML_DEFAULT_GAP_PERCENT)
-                .max(0.0)
-                / 100.0);
-
-    let proj = shear_proj(&view, px, py, pw, ph, d_scene);
+    let depth_slots = 1.0
+        + chart
+            .gap_depth
+            .unwrap_or(OOXML_DEFAULT_GAP_PERCENT)
+            .max(0.0)
+            / 100.0;
+    let (b_depth, d_scene, proj) = if let Some(scene) = &layout.scene {
+        // 자동 2.5D 장면은 범주 간격의 3/4 깊이를 사용한다. 원본·개수·크기 Print 대조로
+        // 확인한 기본값이며 막대군의 폭·계열 수·z 여백으로 장면을 다시 늘리지 않는다.
+        let category_span = if horizontal {
+            scene.world_height
+        } else {
+            scene.world_width
+        } / cat_count as f64;
+        let depth = category_span * 0.75;
+        (
+            depth / depth_slots,
+            depth,
+            scene.project(&view, px, py, depth),
+        )
+    } else {
+        let bar_depth = bar_w0 * view.depth_percent.max(0.0) / 100.0;
+        let depth = bar_depth * depth_slots;
+        (bar_depth, depth, shear_proj(&view, px, py, pw, ph, depth))
+    };
 
     // 막대 깊이 센터링: z ∈ [z0, z0+b], z0 = (D−b)/2 — gapDepth 여백을 앞뒤로
     // 분할(Excel/한컴 관례, v2 설계 리뷰). d_scene ≤ ε 퇴화(depthPercent=0)는
@@ -405,7 +549,8 @@ pub(super) fn render_bars_3d(
         fh,
         cat_count,
         horizontal,
-        6.0,
+        FRAME_PAD + TICK_GAP,
+        false,
         layout.category,
     );
 }

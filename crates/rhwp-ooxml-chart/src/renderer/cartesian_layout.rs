@@ -334,6 +334,7 @@ pub(super) struct CartesianLayout {
     pub height: f64,
     pub scales: ChartScales,
     pub category: CategoryLabelLayout,
+    pub scene: Option<super::chart_3d::SceneFrame>,
 }
 
 impl CartesianLayout {
@@ -344,6 +345,7 @@ impl CartesianLayout {
         title_height: f64,
         legend_height: f64,
         legend_width: f64,
+        has_title: bool,
         measure: &dyn Fn(&str, f64, &str) -> f64,
     ) -> Self {
         let font = label_font_px(chart);
@@ -416,6 +418,16 @@ impl CartesianLayout {
                     height: plot_height,
                     scales,
                     category,
+                    scene: super::chart_3d::SceneFrame::new(
+                        chart,
+                        [width, height],
+                        [plot_width, plot_height],
+                        [title_height, legend_height, legend_width],
+                        has_title,
+                        category,
+                        scales,
+                        measure,
+                    ),
                 };
             }
             left = left.max(needed_left);

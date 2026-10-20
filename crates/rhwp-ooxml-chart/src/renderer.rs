@@ -402,7 +402,16 @@ pub fn render_chart_svg_with_text_measure(
     } else {
         0.0
     };
-    let layout = CartesianLayout::new(chart, w, h, title_h, legend_h, legend_w, measure);
+    let layout = CartesianLayout::new(
+        chart,
+        w,
+        h,
+        title_h,
+        legend_h,
+        legend_w,
+        effective_title.is_some(),
+        measure,
+    );
     let plot_x = x + layout.left;
     let plot_y = y + title_h;
     let plot_w = layout.width;
@@ -2045,6 +2054,7 @@ fn render_category_labels(
         cat_count,
         horizontal,
         FRAME_PAD + TICK_GAP,
+        true,
         layout,
     );
 }
@@ -2061,6 +2071,7 @@ fn render_category_labels_at(
     cat_count: usize,
     horizontal: bool,
     left_gap: f64,
+    paint_axis: bool,
     layout: CategoryLabelLayout,
 ) {
     let cat_span = if horizontal {
@@ -2084,9 +2095,11 @@ fn render_category_labels_at(
     let axis_y = layout.axis_y(py, ph);
     let axis_x = px + pw * layout.axis_fraction;
     let font = label_font_px(chart);
-    let tick_len = font * hancom_default::TICK_EM;
-    if horizontal {
-        svg.push_str(&format!(
+    // 3D는 투영한 방이 축·눈금을 이미 소유한다. 라벨 이후에 축을 덮어쓰지 않는다.
+    if paint_axis {
+        let tick_len = font * hancom_default::TICK_EM;
+        if horizontal {
+            svg.push_str(&format!(
             "<line class=\"hwp-chart-cat-axis\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
             axis_x,
             py,
@@ -2094,20 +2107,20 @@ fn render_category_labels_at(
             py + ph,
             line_attr(cat_axis.line, hancom_default::GRID_STYLE)
         ));
-        for i in 0..=cat_count {
-            let y = py + cat_span * i as f64;
-            push_tick(
-                svg,
-                cat_axis.major_tick_mark,
-                axis_x,
-                y,
-                -1.0,
-                0.0,
-                tick_len,
-            );
-        }
-    } else {
-        svg.push_str(&format!(
+            for i in 0..=cat_count {
+                let y = py + cat_span * i as f64;
+                push_tick(
+                    svg,
+                    cat_axis.major_tick_mark,
+                    axis_x,
+                    y,
+                    -1.0,
+                    0.0,
+                    tick_len,
+                );
+            }
+        } else {
+            svg.push_str(&format!(
             "<line class=\"hwp-chart-cat-axis\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
             px,
             axis_y,
@@ -2115,9 +2128,10 @@ fn render_category_labels_at(
             axis_y,
             line_attr(cat_axis.line, hancom_default::GRID_STYLE)
         ));
-        for i in 0..=cat_count {
-            let x = px + cat_span * i as f64;
-            push_tick(svg, cat_axis.major_tick_mark, x, axis_y, 0.0, 1.0, tick_len);
+            for i in 0..=cat_count {
+                let x = px + cat_span * i as f64;
+                push_tick(svg, cat_axis.major_tick_mark, x, axis_y, 0.0, 1.0, tick_len);
+            }
         }
     }
     for (ci, cat) in chart.categories.iter().enumerate() {
