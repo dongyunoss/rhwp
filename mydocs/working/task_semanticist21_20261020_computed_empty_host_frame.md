@@ -132,3 +132,31 @@ y159.044/y239.116과 같은 줄에 놓였다. 잉크 bbox와 줄의 font box는 
 
 이 commit은 Native에서 확인한 구현 단계의 고정이며 최종 PR 승인이 아니다. 같은 소스의
 fresh WASM·직접 review/overlay 판독·고정 devel 양쪽 전쪽 비교 뒤 정식 회귀를 추가한다.
+
+## fresh025와 정식 회귀
+
+제품 commit은 `bc649064faaa2193380c1ab5b2567b4470f2472e`다. Native052의 빌드 시작 시점은
+부모 commit·dirty였고, 이후 commit의 실제 소스 바이트와 일치함을 `native052-committed-source-equivalence-537.json`으로
+확인했다. fresh025는 같은 commit·같은 소스 지문으로752.1초에 최적화·Studio public 동기화를
+마쳤다. 18입력의 전쪽1쪽은 Native/fresh 모두 raw100%다. 고정 devel의 양쪽36조건도 실제
+재출력했고0.1%p 이상 하락은 없다. 기존116조건410쪽 Native는 이전cf7e3e1d22와 raw가 모두 같다.
+별도 기존116조건의 fresh 대조는 계속 진행한다. 이 결과를 전체 PR 완료로 바꾸어 적지 않는다.
+
+대표 작은 글자/양수 offset·큰 빈 줄·앞 간격 대조의 review와 standalone overlay를 양쪽에서
+직접 열어 표 외곽·앞뒤 글줄·gap과 겹침을 확인했다. 격자와 줄 위치는 일치하며 얇은 선의
+raster 농도 차이는 남는다. 원본0.36pt 선을 점수를 위해1px로 바꾸지 않았다.
+
+`mydocs/pr/assets/computed_empty_host_line_20261020`에 새 회귀의14입력·독립 Print PDF14개,
+양쪽 후보/고정 devel TSV56개·글꼴 공급 기록·원본/PDF/TSV SHA·대표 review/overlay12개를
+보존했다. 공개 API의 기존 원점4입력은18조건에 함께 검사했고, 새 회귀 입력14개와 구분한다.
+HWP의 스크립트 비활성화 전처리와 HWPX의 전처리 없음은 provenance에 기록했다.
+
+새 이름 `tests/cases/computed_empty_host_line_and_float_frame.rs`의5검사는 표/문단 소유,
+행열·내용 순서/누락/중복, gap에 들어가는 줄·큰 빈 줄·표 배제·앞 간격 중복 방지 관계를 보호한다.
+완료100%쪽은 독립 Print의 격자 선 중심·뒤 텍스트 잉크 bbox를96DPI 종이 원점±2px로 추가
+보호한다. 같은 정식 파일의 strict rustc 검증은 Native050에서 의도한4FAIL·정상1PASS,
+Native052에서5PASS다. 빌드 실패나0개 실행을 결함 재현으로 세지 않았다.
+명령·정식 소스 SHA·실제 로그는 `emphasis-metric-current-failure-focus-553.json`에 있다.
+
+큰 None 표, RowBreak 컷/여백, 현대 편집 차트와 다른 전체 Rust 실패는 여전히 남아 있다.
+원 PR과 실제 통합 근거를 따라 보정을 계속하며, 로컬 PR 필수 검증이 끝나기 전 원격으로 제출하지 않는다.
