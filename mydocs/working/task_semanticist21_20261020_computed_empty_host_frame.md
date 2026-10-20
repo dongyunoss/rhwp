@@ -59,3 +59,76 @@ strict rustc로 실제70검사를 실행해0FAIL을 확인했다: 원점2, 보�
 `char-overlap-native-build-050-result.json`, `emphasis-metric-current-failure-focus-484.json`,
 `save-origin-current-api-488-computed-host-fixed-native/results.json`에 실제 명령·SHA·결과를 보존했다.
 fresh WASM, 직접 판독과 넓은 대조는 다음 검증 단계이며 아직 전체 PR gate가 통과한 상태는 아니다.
+
+## 원 PR·실제 통합의 추가 대조와 반례
+
+추가 조회에서 원 #2101은 #2108(`a12b42ab643b6a166f57d286b02b9abd26b69476`),
+원 #2109·#2133은 #2135(`bb87b367a546b7f9b3482aa772effbc0abfd3d71`)로 통합됐음을 확인했다.
+#2123은 #2109를 충돌 때문에 제외한 자료 보강 PR이다. 원 PR의 연결 이슈만 보고 실제 통합으로
+분류하지 않는다. #2101의 선언-fit은 선언 높이가 들어가는 None 표의 과분할 방지이며,
+선언 자체가 본문보다 큰 표를 잘라야 한다는 근거가 아니다. #2109는 광역 반증 뒤 범위를 좁혔고,
+#2135에서 기존 None 게이트와 충돌을 해소했다. #2512의 실제 저장 호스트·반복 여백 계약도
+유지한다. 원문·커밋 조회는 ignored `none-table-integration2108-516.json`,
+`rowbreak-integration2123-516.json`, `rowbreak-actual-integration-517.json`,
+`rowbreak-integration2135-518.json`에 보존한다.
+
+Native050/fresh024에서 원 API4입력은 양쪽100%이며, 기존116조건은 Native112/116,
+fresh113/116이 수치 gate를 충족했다. 이것은 직접 판독·base 무회귀나 전체 PR 완료 판정이 아니다.
+미달에는 원 #8055 None 입력과 CELL 진단, #7694 편집 차트가 남아 있다.
+
+공개 API로 호스트 글자 크기·양수 offset을 바꾼12입력을 독립2020 Print로 출력했다.
+Native/fresh 모두90% 이상이지만, 작은2.5pt 호스트의 양수 offset에서는 뒤 문단이 표 위 공간에
+들어가는 Print와 달리 표 아래로 밀렸고,40pt HWPX는 빈 줄의 점유를 잃어 뒤 문단이43.6px
+앞당겨졌다. 원 입력의 통과만으로 계산 빈 호스트 일반 계약이 입증되지 않는다.
+`computed-host-height-geometry-audit-509.json`과 양쪽504/505 TSV가 수정 전 근거다.
+
+### 다음 보정의 공통 결과와 소비 경로
+
+- `computed_host_frame::resolve`가 실제 저장 줄과 계산 줄/줄 부재를 구분한다. 계산 경로는
+  기존 NO_LS 복원보다 먼저 format 결과를 사용한다. 유효한 원본 저장 줄은 이 경로에 넣지 않는다.
+- `ComputedEmptyHost.line_advance`는 호스트 줄의 흐름 끝, `table_top/occupied_bottom`은 물리
+  표 상자다. 같은 호스트에 있어도 뒤 문단의 자연 줄 원점과 표 점유 하단을 같다고 가정하지 않는다.
+- 통째 표 확정 뒤 `place_table_with_text`는 계산 줄 끝을 소비하고 표 상자를 배제 영역에 등록한다.
+  `resolve_computed_float_first_line`은 문단 앞 간격을 포함한 자연 첫 줄 원점과 실제 줄 높이를
+  표 상자와 비교한다. 앞 간격 자체를 잉크로 간주하지 않고, 들어가는 줄은 표 위 공간을 사용한다.
+- 첫 줄의 문단 원점과 앞 간격은 `FloatPushedFirstLine`으로 단 결과에 보존한다. 기존 #7330의
+  간격 기록은 원점을 강제하지 않는 상태를 유지한다. 전체/첫 부분 문단 출력은 이 확정 원점을
+  사용하고, 계산 호스트의 문단 완료·lane 끝도 같은 `paragraph_end`를 소비한다.
+- 이 수정에는 좌표 상수·글자 크기·문서 ID·행 개수 분기가 없다. 기존 저장 줄의 범위는 유지한다.
+  분할 표의 마지막 원점·여백은 별도 원래 계약으로 대조하며 통째 보정의 통과로 대신하지 않는다.
+
+Native051 빌드와 원70검사, 새12입력·정상 대조군을 먼저 실행하고, fresh 재빌드·직접 판독 뒤
+정식 회귀를 추가한다. 현재 이 추가 보정은 검증 진행 중이다.
+
+### 대조군의 실제 저장 속성 확인
+
+모델에서 `flow_with_text`만 바꾼506 진단 입력은 HWP와 HWPX의 같은 속성을 보장하지 않았다.
+HWP의 CTRL_HEADER bit13은 두 경우 모두false, HWPX는 설정대로false/true였다.
+`unsplit-wire-flow-519.json`이 실제 바이트 근거다. 이 차이를 한컴 형식별 배치 규칙 차이로
+해석하지 않는다. 공개 `restrictInPage` 편집 명령으로 의미 값과 raw를 함께 갱신한 대조군을
+다시 만들고 저장 비트 확인 후 독립 Print를 수행한다. 앞선 원본·PDF는 실패 증거로 보존한다.
+
+## 계산 줄 보완 뒤 Native052 확인
+
+Native051의 수치 검사는 원70검사와18입력을 통과했지만, 작은 글자 HWP의 뒤 문단 위치는
+여전히 달랐다. HWP에 남은 구현 태그 LineSeg는 글자 크기250HU와 달리 옛1000HU 높이를
+가졌다. 이를 유효한 저장 높이로 사용할 수 없다. `computed_empty_table_host`의 동일한
+판정을 formatter와 개체 프레임 생성이 공유하고, 계산 빈 줄은 현재 글자·문단 속성으로
+메트릭을 다시 구성한다. `reflow_empty_table_host`의 줄 부재 계약은 유지한다.
+
+Native052 빌드는217.35초 exit0, 변경하지 않은 원70검사0FAIL이다. 원 API4개·글자 크기/offset
+반례12개·앞 간격 대조2개의 전쪽18개는 모두 raw100%다. 작은 글자/양수 offset 뒤 문단은
+두 형식 모두 y158.9로 재개하고,40pt 호스트 뒤 문단은 y238.9로 재개해 Print 잉크 위치
+y159.044/y239.116과 같은 줄에 놓였다. 잉크 bbox와 줄의 font box는 동일한 값이라고
+간주하지 않는다. `computed-host-height-geometry-audit-536.json`,
+`emphasis-metric-current-failure-focus-530.json`, `computed-line-boundaries-531-computed-line-final-native/results.json`이
+실제 관측 기록이다. 전체116조건 Native 대조는 별도로 진행하며 기존 미달을 완료로 바꾸지 않는다.
+
+공개 `restrictInPage` 명령으로 다시 만든522 입력6개는 HWP bit13과 HWPX flowWithText가
+모두true임을 확인했다. 독립 Print6개도 모두 성공했다. 큰 None 표는 두 형식 모두 다음 쪽으로
+통째 이동하고 뒤 본문은 앞쪽에 남는다. 모델만 수정한506 입력의 형식 차이는 저장 속성
+불일치였으며, 렌더러의 형식별 예외 근거로 쓰지 않는다. `unsplit-public-wire-flow-525.json`,
+`unsplit-public-print-geometry-529.json`이 근거다. 큰 None 표와 RowBreak 분할 보정은 아직 남아 있다.
+
+이 commit은 Native에서 확인한 구현 단계의 고정이며 최종 PR 승인이 아니다. 같은 소스의
+fresh WASM·직접 review/overlay 판독·고정 devel 양쪽 전쪽 비교 뒤 정식 회귀를 추가한다.

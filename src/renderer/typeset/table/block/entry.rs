@@ -1992,6 +1992,11 @@ impl TypesetEngine {
                     self.dpi,
                 )
             });
+        // 저장 줄 없는 문단과 계산 줄은 같은 format 결과를 소비한다. 뒤의
+        // 저장 호스트 복원 경로가 계산한 빈 줄 높이를 덮어쓰지 않게 한다.
+        let unconstrained_host_placement =
+            super::computed_host_frame::resolve(input, placement_para_start_height, self.dpi)
+                .or(unconstrained_host_placement);
         let unconstrained_host_placement = unconstrained_host_placement
             .or_else(|| {
                 // 공백 호스트 줄도 표 뒤에서 자기 줄 상자를 점유할 수 있다.
@@ -2223,9 +2228,6 @@ impl TypesetEngine {
             )
         })();
         let unconstrained_host_placement = empty_sibling_placement.or(unconstrained_host_placement);
-        let unconstrained_host_placement = unconstrained_host_placement.or_else(|| {
-            super::computed_host_frame::resolve(input, placement_para_start_height, self.dpi)
-        });
         let constrain_host_placement = HostPlacementConstraint {
             table,
             has_preceding_coanchored_float,

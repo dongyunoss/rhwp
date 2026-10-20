@@ -2,7 +2,9 @@
 
 mod column_frame;
 mod column_ole;
+mod first_line;
 pub use column_frame::StoredColumnFrame;
+pub use first_line::FloatPushedFirstLine;
 pub(crate) mod restarted_tac;
 mod stored_column_spacing;
 pub(crate) use column_ole::column_ole_placement;
@@ -3653,6 +3655,11 @@ pub enum ParagraphFloatFlow {
     /// A control-only anchor consumes the formatted object box, including its
     /// after-space. It has no separate host text line to emit on a budget miss.
     EmptyHost,
+    /// 계산한 빈 글줄은 표와 독립적으로 흐름을 전진한다. 표의 실제 상자는
+    /// 배제 영역으로 남겨 다음 줄이 그 위의 빈 공간을 사용할 수 있게 한다.
+    ComputedEmptyHost {
+        line_advance: f64,
+    },
     /// The trailing object cannot fit in the host line's remaining inline space.
     NextLine,
     /// The saved successor line starts at the picture's occupied bottom. Its
@@ -5636,6 +5643,7 @@ impl ParagraphFloatPlacement {
         match self.flow {
             ParagraphFloatFlow::Exclusion | ParagraphFloatFlow::StoredSquareWrap => text_flow_end,
             ParagraphFloatFlow::EmptyHost => self.occupied_bottom,
+            ParagraphFloatFlow::ComputedEmptyHost { line_advance } => self.anchor_y + line_advance,
             ParagraphFloatFlow::NextLine => {
                 // A certified successor line at or below the accepted frame
                 // bottom already closes this paragraph. Adding the host's
@@ -7629,6 +7637,12 @@ pub(crate) fn split_float_successor_spacing_before(
 /// whitespace hosts retain their own line boxes; negative/absolute positions
 /// and saved frames have different origins.
 pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
+    para.line_segs.is_empty() && computed_empty_table_host(para, table)
+}
+
+/// 계산 줄은 현재 글자·문단 모양에서 구성한다. 캐시에 남은 옛 줄 높이는
+/// 독립 저장 사다리가 아니며, 줄 부재와 같은 재조판 계약으로 처리한다.
+pub(crate) fn computed_empty_table_host(para: &Paragraph, table: &Table) -> bool {
     // 구역·단 설정은 표 앵커와 함께 저장되지만 가시 글줄이나 개체가 아니다.
     // 글앞·글뒤 장식도 흐름을 점유하지 않는다.
     // 실제 표 하나만 이 빈 호스트의 포맷 상자를 소유한다.
@@ -7639,7 +7653,9 @@ pub(crate) fn reflow_empty_table_host(para: &Paragraph, table: &Table) -> bool {
     para.text.is_empty()
         // An implementation-tagged LineSeg still describes a computed line.
         // Lack of a trustworthy saved anchor does not erase that line box.
-        && para.line_segs.is_empty()
+        && para.line_segs.iter().all(|line| {
+            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        })
         && only_table
         && is_para_topbottom_float(&table.common)
         && matches!(table.common.vert_align, VertAlign::Top)
@@ -7735,8 +7751,12 @@ pub(crate) fn empty_table_host_uses_shared_formatted_box(
     table: &Table,
     placement: Option<&ParagraphFloatPlacement>,
 ) -> bool {
-    placement.is_some_and(|plan| plan.flow == ParagraphFloatFlow::EmptyHost)
-        || empty_table_host_uses_formatted_box(para, table)
+    placement.is_some_and(|plan| {
+        matches!(
+            plan.flow,
+            ParagraphFloatFlow::EmptyHost | ParagraphFloatFlow::ComputedEmptyHost { .. }
+        )
+    }) || empty_table_host_uses_formatted_box(para, table)
         || (saved_whole_empty_table_anchor(para, table)
             && placement.is_some_and(|plan| {
                 plan.flow == ParagraphFloatFlow::Exclusion && plan.stored_host_origin.is_some()

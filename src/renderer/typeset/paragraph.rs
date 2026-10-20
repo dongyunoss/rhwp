@@ -817,7 +817,7 @@ pub(super) fn prepare_fit_budget(
         prev_is_partial_table,
         layout_drift_safety_px,
     );
-    let exclusion_probe_height = fit::exclusion_probe_height(fmt);
+    let exclusion_probe_height = fit::exclusion_probe_height(fmt, st.profile.hwpx_stored_layout());
     // [#7687] 띠 아래로 보낸 첫 줄은 앞 간격을 띠 안에서 흡수한다 — 저장 사다리가 있는 HWP5
     // (#6761 90/90)와 저장 줄이 없어 재조판하는 문단(합성 H6 정본). 저장 줄이 있는 HWPX 는
     // 생성기별로 갈려 종전(미흡수)을 유지한다. 배치 `band_absorbed_spacing_before` 와 같은 조건.
@@ -833,6 +833,7 @@ pub(super) fn prepare_fit_budget(
         absorbed_spacing_before,
         Some(para_idx),
     );
+    st.resolve_computed_float_first_line(para_idx, fmt);
     let footnote_margin_addback =
         st.take_paragraph_footnote_margin_addback(strict_after_empty_host_float);
     let tail_overflow =

@@ -917,6 +917,10 @@ impl TypesetState {
         };
         let mut jump_to = current_height;
         for zone in &self.data.visible_float_exclusions {
+            // 계산 호스트의 첫 줄은 자체 앞 간격·높이 계약에서 밴드를 소비한다.
+            if self.computed_float_owns_band(zone.para_index) {
+                continue;
+            }
             if hits(jump_to, zone.top, zone.bottom) {
                 let target = (zone.bottom - absorbed_spacing_before.max(0.0)).max(zone.top);
                 jump_to = jump_to.max(target);

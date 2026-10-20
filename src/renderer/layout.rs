@@ -144,7 +144,8 @@ struct ColumnItemCtx<'a> {
         usize,
         crate::renderer::float_placement::StoredColumnTopSpacing,
     >,
-    float_pushed_line_spacings: &'a std::collections::HashMap<usize, f64>,
+    float_pushed_line_spacings:
+        &'a std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
 }
 
 impl ColumnItemCtx<'_> {
@@ -10358,6 +10359,7 @@ impl LayoutEngine {
                             placement.flow,
                             super::float_placement::ParagraphFloatFlow::StoredPicture { .. }
                                 | super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }
+                                | super::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
                         )
                     {
                         new_y =
@@ -11167,7 +11169,10 @@ impl LayoutEngine {
             usize,
             crate::renderer::float_placement::StoredColumnTopSpacing,
         >,
-        float_pushed_line_spacings: &std::collections::HashMap<usize, f64>,
+        float_pushed_line_spacings: &std::collections::HashMap<
+            usize,
+            super::float_placement::FloatPushedFirstLine,
+        >,
     ) -> (f64, bool) {
         if matches!(
             item,
@@ -11700,6 +11705,15 @@ impl LayoutEngine {
                         );
                         let final_comp = numbered_comp.as_ref().or(comp);
 
+                        if let Some(origin) = ctx
+                            .float_pushed_line_spacings
+                            .get(para_index)
+                            .and_then(|line| line.origin)
+                        {
+                            // fit이 수용한 문단 원점을 사용한다. 저장 앵커나 float
+                            // 배제 영역에서 앞 간격을 다시 계상하지 않는다.
+                            y_offset = col_area.y + origin;
+                        }
                         para_start_y.insert(*para_index, y_offset);
                         // [#4610 · #4599 ④] 공백-전용 TAC 캐리어 문단은 렌더 y 만 저장 vpos 로
                         // 되돌리고(paint 변위) 흐름 전진량은 변위 전과 동일하게 보존한다
@@ -11732,7 +11746,7 @@ impl LayoutEngine {
                             // 분할 자리차지 표 조각 뒤 문단은 typeset 이 확정한 앞 간격을 쓴다.
                             ctx.float_pushed_line_spacings
                                 .get(para_index)
-                                .copied()
+                                .map(|line| line.spacing_before)
                                 .or_else(|| {
                                     ctx.stored_column_top_spacings
                                         .get(para_index)
@@ -12057,6 +12071,14 @@ impl LayoutEngine {
                     } else {
                         y_offset
                     };
+                    let pp_y_in = if *start_line == 0 {
+                        ctx.float_pushed_line_spacings
+                            .get(para_index)
+                            .and_then(|line| line.origin)
+                            .map_or(pp_y_in, |origin| col_area.y + origin)
+                    } else {
+                        pp_y_in
+                    };
                     // 문단 첫 부분을 먼저 그린 경우 뒤 개체의 문단 기준점은
                     // 그 글줄의 원점이다. 소비한 줄 끝으로 앵커를 새로 만들지 않는다.
                     if *start_line == 0 {
@@ -12068,7 +12090,7 @@ impl LayoutEngine {
                         .then(|| {
                             ctx.float_pushed_line_spacings
                                 .get(para_index)
-                                .copied()
+                                .map(|line| line.spacing_before)
                                 .or_else(|| {
                                     ctx.stored_column_top_spacings
                                         .get(para_index)
@@ -15138,7 +15160,15 @@ impl LayoutEngine {
                 {
                     // 같은 수용 프레임이 실제 배치 원점과 흐름 끝을 함께 소유한다.
                     // 뒤의 앵커·호스트 꼬리 분기가 이 끝점을 덮어쓰지 않아야 한다.
-                    col_area.y + placement.occupied_bottom
+                    col_area.y
+                        + if matches!(
+                            placement.flow,
+                            super::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
+                        ) {
+                            placement.paragraph_end(global_y_before - col_area.y, 0.0)
+                        } else {
+                            placement.occupied_bottom
+                        }
                 } else if let Some(bottom) = deferred_empty_offset_float_bottom {
                     // 생성 본문을 먼저 gap에 배치한 뒤에는 offset을 뺀 예약 높이가 아니라
                     // 실제 표 하단과 바깥 아래 여백까지 흐름을 진행해야 다음 문단이 표와
@@ -17110,7 +17140,7 @@ pub(crate) struct EndnoteColumnPlacements {
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
-    pub(crate) float_pushed_line_spacings: std::collections::HashMap<usize, f64>,
+    pub(crate) float_pushed_line_spacings: std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
     pub(crate) page_band_flow_starts: std::collections::HashMap<usize, f64>,
 }
 

@@ -525,7 +525,11 @@ impl TypesetState {
         self.data.current_height += spacing;
         self.data
             .float_pushed_line_spacings
-            .insert(para_idx, spacing);
+            .entry(para_idx)
+            .and_modify(|line| line.spacing_before = spacing)
+            .or_insert_with(|| {
+                crate::renderer::float_placement::FloatPushedFirstLine::spacing(spacing)
+            });
     }
     /// [#7677] 흐름이 이미 전진한 몫(마지막 표 조각 뒤 바깥 아래 여백)을 host 첫 글줄의 확정
     /// 앞 간격으로 **기록만** 한다 — 배치는 조각 하단에서 그만큼 내려 같은 자리에 줄을 둔다.
@@ -536,7 +540,11 @@ impl TypesetState {
     ) {
         self.data
             .float_pushed_line_spacings
-            .insert(para_idx, spacing);
+            .entry(para_idx)
+            .and_modify(|line| line.spacing_before = spacing)
+            .or_insert_with(|| {
+                crate::renderer::float_placement::FloatPushedFirstLine::spacing(spacing)
+            });
     }
     pub(in crate::renderer::typeset) fn record_paragraph_float_placement(
         &mut self,
@@ -909,6 +917,15 @@ impl TypesetState {
         spacing_after: f64,
     ) {
         for (&(owner, _), placement) in &self.data.paragraph_float_placements {
+            if owner == para_idx
+                && matches!(
+                    placement.flow,
+                    crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
+                )
+            {
+                self.data.current_height =
+                    placement.paragraph_end(self.data.current_height, spacing_after);
+            }
             if owner == para_idx
                 && matches!(
                     placement.flow,

@@ -558,8 +558,13 @@ fn resolve_line_metrics(
             }
             // [#5854] 통짜 합성 사다리 문서는 저장 `line_height` 가 글자 크기보다
             // 크든 작든 실측이 아니다 — 항상 글꼴·문단 스타일로 다시 뽑는다.
+            let computed_empty_host = para.controls.iter().any(|control| {
+                matches!(control, Control::Table(table)
+                    if crate::renderer::float_placement::computed_empty_table_host(para, table))
+            });
             let recompute_lh = text_before_picture_line
-                || (max_fs > 0.0 && (raw_lh < max_fs || ctx.uniform_filler_ladder()));
+                || (max_fs > 0.0
+                    && (raw_lh < max_fs || ctx.uniform_filler_ladder() || computed_empty_host));
             let (lh, line_spacing_px) = if recompute_lh {
                 // [Task #1042 Stage 6c] HWP3/HWP5 line_segs 의 (line_height=base,
                 // line_spacing=extra) 의미와 정합되게 분해 — 종전 처럼 ls_val/100 전체를

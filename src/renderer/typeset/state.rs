@@ -1122,6 +1122,7 @@ impl TypesetState {
 }
 
 mod commands;
+mod computed_float_line;
 mod data;
 mod empty_run;
 pub(super) mod finalize;

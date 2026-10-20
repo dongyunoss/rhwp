@@ -5281,7 +5281,19 @@ impl TypesetEngine {
         {
             // 빈 저장 호스트도 닫힌 원본 프레임을 소유할 수 있다.
             // 수용한 물리 하단을 소비하며 호스트·안내 줄을 다시 전진시키지 않는다.
-            st.align_flow_to(placement.occupied_bottom);
+            if matches!(
+                placement.flow,
+                crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
+            ) {
+                st.add_visible_float_exclusion(VisibleFloatExclusion {
+                    para_index: para_idx,
+                    top: placement.table_top,
+                    bottom: placement.occupied_bottom,
+                });
+                st.align_flow_to(placement.paragraph_end(st.current_height, fmt.spacing_after));
+            } else {
+                st.align_flow_to(placement.occupied_bottom);
+            }
         } else if let Some(end) = computed_table_row_end {
             st.align_flow_to(end);
         } else if tac_wrap_split {
