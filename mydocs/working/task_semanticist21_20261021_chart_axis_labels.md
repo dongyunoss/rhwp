@@ -100,3 +100,63 @@ Native075와 같은 소스의 최적화 fresh028에서 한꺼번에 재검증한
 추가 로그는 `logs/chart-axis-label-boundaries-1011-print.log`,
 `logs/chart-axis-label-bands-1013.log`, `logs/chart-axis-label-contract-1016.log`,
 `logs/chart-axis-native-before-panels-1015.log`, `logs/chart-axis-line-height-1008-*.log`다.
+
+## 실제 제품 재검증과 새 관계형 회귀
+
+Native075의186조건은166조건 통과·20조건 미달로 끝났다. 최적화 fresh028은739.34초에
+빌드 성공했고 Native075와 기록된 제품 소스180개가 같으며 Studio 동기화도 일치했다.
+fresh028의186조건 실행은 진행 중이다. source SHA는 두 제품 모두 `a19d7c3d164807d69ef85b40a75908957cb0b2d8`다.
+
+여섯 높이 입력에 한정한 전쪽 검증은 Native/fresh 모두 끝났다. 전체 쪽수는각1=1,
+누락0, 최저 raw는 Native97.24897%·fresh96.34703%다. 1024의 같은 영역 review와
+독립 overlay를 양쪽에서 여섯 입력 모두 직접 열어 표시 숫자 보존을 확인했다.
+이 확대 crop의 진단 점수를 전쪽 TSV 점수로 바꾸지 않았다.
+
+독립 Print의0·6/0·4를 기대값으로 새 파일
+`tests/cases/chart_axis_label_line_occupancy.rs`에 관계형 회귀6함수를 추가했다.
+기존 검사·이름·기대값·골든을 교체하지 않았다. 실제 문서 출력의 숫자 내용·순서·
+비겹침과 항목4개·범례3개·제목의 소유·보존·앞뒤 관계를 검사하며 절대 px는 고정하지 않는다.
+입력 HWPX6개·독립 PDF6개와 해시는 `mydocs/pr/assets/chart_axis_label_occupancy_20261021/`에 보존했다.
+
+1026에서 한 번 컴파일한 같은 검사를 Native074/075에 연결했다. 이전 제품은 숫자
+assertion에서6FAIL, 이후 제품은6PASS였다. Cargo가 정한 현재 실행 파일의 nextest도
+6PASS였다. 빌드·환경 오류를 수정 전 실패로 세지 않았다. 공용 `target/pr-review`,
+빌드 잡8개를 사용했고 생성된 suite·manifest는 커밋 대상이 아니다.
+
+## 대조군에서 확인한 추가 결함
+
+1027은 같은 입력·PDF·글꼴 조건180개를 Native074/075에서 대조한 결과이며 최신
+`upstream/devel` 대비 검증은 아직 아니다. 0.1%p 이상 하락2건을 확인했다.
+
+| 입력 | Native074 | Native075 | 직접 판독 |
+| --- | ---: | ---: | --- |
+| `chart-small-budget-700-small-height150-explicit14` | 99.30492% | 98.54921% | PDF0·6을 현재0·4로 바꾼 실제 회귀 |
+| `rotated-label-1800-times` | 51.02683% | 50.54393% | PDF는 가로 범주·0·2·4·6, 현재 회전 범주·0·4 |
+
+1028의 실제 전후 출력·review·standalone overlay로 대조했다. 여섯 경계의 통과만으로
+1.3em을 모든 배치의 완성 규칙이라고 판단하지 않는다. 범례 예약·실제 축 공간과 글줄
+점유를 함께 추적하며 새 분기·배수를 추가하기 전에 반례를 확보한다. 이를 해결하기 위해
+1030에서 오른쪽 범례10pt·높이160/165, 하단 범례18pt·높이229의 세 입력을 높이만 바꾸고
+공식2020 Print로 출력했다. 실제 제품·Print 결과의 대조를 계속한다. 추가 미달·하락과
+최신 devel 대비 검증이 남아 있으므로 PR·push·원격 review를 수행하지 않는다.
+
+별도 표식 진단1021/1023은 원본 HLC/OHLC에서 그리기 순서·크기·흰 외곽선을 나누어
+관측했다. 순서 변경의 국소 오차 감소만으로 표식 전체의 정합을 판정하지 않는다. 선언한
+`c:size`의 단위나 국소 RMSE를 근거로 제품의 표식 반경·파서·paint 순서를 바꾸지 않았다.
+
+새 근거는 `chart-axis-regression-1026-{results,binaries}.json`,
+`chart-axis-native074-native075-1027.{json,tsv}`, `chart-axis-label-declines-1028/`,
+`chart-axis-pitch-counterexamples-1030/manifest.json`, `mcp-chart-axis-pitch-counterexamples-1030/`다.
+로그는 `logs/chart-axis-regression-1026-{build,before,after,current}.log`,
+`logs/chart-axis-label-declines-1028.log`, `logs/chart-axis-pitch-counterexamples-1030-print.log`다.
+
+1032의 세 review·독립 overlay를 열어 높이 160/165의 PDF는 0·4, 높이 229의 PDF는
+0·6임을 확인했다. 현재 제품은 세 입력 모두 0·4이므로 229에서도 숫자가 잘못됐다.
+전쪽 raw 94.24968%를 숫자 일치로 간주하지 않는다. 1033에서 독립 PDF의 긴 중성색
+격자 밴드를 600dpi로 측정해 Native의 축 높이와 분리했다. 이 결과와 작은 높이 150의
+기존 Print는 후속 공통 규칙 검토의 반례로 유지한다. 예상과 다른 자료를 제외하지 않는다.
+
+1029 focused Clippy는 exit101이었다. 새 회귀 함수의 실행 실패가 아니라 root lib의
+`src/renderer/pua_glyph.rs:193` 수동 find와 `src/renderer/render_tree.rs:400` 큰 enum 오류다.
+경고 허용·예외로 우회하지 않고 다음 코드 단계에서 보정한다. 새 테스트와 입력·PDF를
+보존한 뒤 같은 공유 target에서 관련 lint와 회귀를 재실행한다. PR 준비 완료가 아니다.
