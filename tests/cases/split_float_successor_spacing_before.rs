@@ -1,14 +1,13 @@
-//! 분할된 자리차지 표의 이어지는 조각 바로 뒤 문단은 앞 간격을 조각 안에서 소비한다.
+//! 실제 한컴 저장 RowBreak 표의 마지막 조각 뒤에서 문단 앞 간격을 중복 소비하지 않는다.
 //!
-//! 이어지는 조각은 단 위끝에서 시작하고 뒤 문단의 상단도 그 단 위끝이다. 앞 간격은 문단
-//! 상단에서 재므로 첫 글줄은 `max(단 위끝 + 앞 간격, 조각 끝)` = 조각 끝에 놓인다. 한/글
-//! 저장 vpos 가 그 자리를 적을 때 그대로 따른다(교육부 보도자료 2쪽: 조각 끝 404.8px 에
-//! 첫 줄, rhwp 는 앞 간격 20px 를 더 내려 닫는 표 둘이 3쪽으로 밀렸다).
+//! 원 #8055 factory는 None 표와 수동 LineSeg로 분할을 가정했다. 원본은 같은 asset에
+//! 보존하고 실제 분할 계약은 한컴 저장 RowBreak와 그 자체의 독립 Print로 확인한다.
+//! 전쪽 Native/fresh raw100%와 확대 판독 근거는 float_fragment_frames_20261020에 있다.
 #![cfg(not(target_arch = "wasm32"))]
 
+use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
-use rhwp::wasm_api::HwpDocument;
 
 fn collect(
     node: &RenderNode,
@@ -17,12 +16,12 @@ fn collect(
 ) {
     match &node.node_type {
         RenderNodeType::Table(_) => {
-            tables.push(node.bbox.clone());
+            tables.push(node.bbox);
             return;
         }
         RenderNodeType::TextLine(line) => {
             if let Some(pi) = line.para_index {
-                lines.push((pi, node.bbox.clone()));
+                lines.push((pi, node.bbox));
             }
         }
         _ => {}
@@ -34,45 +33,30 @@ fn collect(
 
 #[test]
 fn paragraph_after_split_float_continuation_absorbs_spacing_before() {
-    let mut doc = HwpDocument::create_empty();
-    doc.create_blank_document_native().unwrap();
-    doc.create_table_native(0, 0, 0, 60, 2).unwrap();
-    let (host_para, table_ctrl) = doc.document().sections[0]
-        .paragraphs
+    let input = include_bytes!(
+        "../../mydocs/pr/assets/float_fragment_frames_20261020/inputs/hwp/public-rowbreak-normalized-2020.hwp"
+    );
+    let doc = DocumentCore::from_bytes(input).unwrap();
+    let source = &doc.document().sections[0].paragraphs;
+    let (host, table) = source
         .iter()
         .enumerate()
         .find_map(|(pi, para)| {
-            para.controls
-                .iter()
-                .position(|c| matches!(c, Control::Table(_)))
-                .map(|ci| (pi, ci))
+            para.controls.iter().find_map(|control| match control {
+                Control::Table(table) => Some((pi, table)),
+                _ => None,
+            })
         })
         .unwrap();
-    doc.set_table_properties_native(
-        0,
-        host_para,
-        table_ctrl,
-        r#"{"treatAsChar":false,"textWrap":"TopAndBottom","vertRelTo":"Para","vertAlign":"Top","vertOffset":0}"#,
-    )
-    .unwrap();
-    let next = host_para + 1;
-    doc.insert_text_native(0, next, 0, "다음 문단").unwrap();
-    doc.apply_para_format_native(0, next, r#"{"spacingBefore":3000}"#)
+    assert_eq!(format!("{:?}", table.page_break), "RowBreak");
+    assert_eq!(source[host].line_segs.len(), 1);
+    assert_eq!(source[host].line_segs[0].tag & 0x8000_0000, 0);
+    let next = source
+        .iter()
+        .position(|p| p.text.contains("다음 문단"))
         .unwrap();
-    // 저장본으로 다시 열고, 한/글 저장 사다리처럼 뒤 문단 첫 줄을 표 바깥 상자 바로 뒤에 둔다.
-    let mut doc = HwpDocument::from_bytes(&doc.export_hwpx_native().unwrap()).unwrap();
-    let mut model = doc.document().clone();
-    let paragraphs = &mut model.sections[0].paragraphs;
-    let Control::Table(table) = &paragraphs[host_para].controls[table_ctrl] else {
-        unreachable!()
-    };
-    let box_end = paragraphs[host_para].line_segs[0].vertical_pos
-        + table.outer_margin_top as i32
-        + table.common.height as i32
-        + table.outer_margin_bottom as i32;
-    paragraphs[next].line_segs[0].vertical_pos = box_end;
-    doc.set_document(model);
-    assert_eq!(doc.page_count(), 2, "60행 표는 두 쪽에 걸친다");
+    assert!(next > host);
+    assert_eq!(doc.page_count(), 2, "독립 Print의 50행·10행 두 쪽");
 
     let tree = doc.build_page_render_tree(1).unwrap();
     let (mut tables, mut lines) = (Vec::new(), Vec::new());
@@ -88,8 +72,10 @@ fn paragraph_after_split_float_continuation_absorbs_spacing_before() {
         .1
         .clone();
     let gap = line.y - fragment_bottom;
+    let source_unit = rhwp::renderer::hwpunit_to_px(1, 96.0);
+    let outer_bottom = rhwp::renderer::hwpunit_to_px(i32::from(table.outer_margin_bottom), 96.0);
     assert!(
-        (-0.5..5.0).contains(&gap),
-        "뒤 문단 첫 줄은 앞 간격 없이 조각 끝에 놓여야 한다: 조각 끝 {fragment_bottom:.1}, 글줄 {line:?}"
+        gap >= -source_unit && gap <= outer_bottom + source_unit,
+        "뒤 글줄은 마지막 조각 뒤 바깥여백 안에 놓인다: gap={gap}, margin={outer_bottom}"
     );
 }

@@ -90,3 +90,45 @@ priority607의7조건, 전14쪽은 모두raw100%·독립 Print 쪽수 일치다.
 EOF2쪽의 Table 실제 배출과 앞쪽 호스트·뒤 본문 보존까지 확인했다. 일반54경계·기존116조건과
 fresh·같은 고정 devel의 전쪽 비교·대표 review/overlay 직접 판독은 이어서 완료한다.
 fmt와 diff-check도 통과했다. 이 Native 결과만으로 신규 렌더링 회귀나 PR 완료를 선언하지 않는다.
+
+## Native058·fresh WASM026의 선행 검증과 정식 회귀
+
+fresh026은 source `646bd3538a9f13b4b31ca9b08ea05580d06e593a`에서 최적화까지760.97초에
+성공했다. Native058의 빌드 직전 dirty snapshot은614의 파일별 비교에서 이 커밋과 바이트가
+같음을 확인했다. 이후 runtime 변경 없이 테스트·증적만 추가했다.
+
+36개 입력·각64쪽은 양쪽 모두 raw100%, 전체 쪽수 일치다. 594·626의 같은 고정 base
+`5e2b9bfbf08573a31fa1e11a2445ff63fc0755c0`와 입력/PDF·글꼴·래스터·sweep 계약까지
+대조했으며0.1pp 이상 하락은 없다.623의 대표 review/overlay와628의 전 입력 확대4쌍을
+직접 판독했다. 실제 한컴 저장 RowBreak의 행 소유는50/10이고, 앞 본문이 있는 공개 분할
+대조는49/11이다. 제한 None은 호스트·뒤 본문을 앞쪽에 두고 온전한 표만 다음 쪽에 배출한다.
+NoSplit의 용지 밖 부분은 독립 Print와 같은 물리 쪽에서 잘리며 원본 행을 삭제하지 않는다.
+
+같은0.36pt 벡터 선이 PDFium에서 더 진하게 보이는 현상은625의 원 PDF 벡터·같은 PDF의
+별도 래스터 진단으로 확인했다. 경계·선폭은 같으며 기준 PDFium·gate·펜 폭을 변경하지 않았다.
+RGB 완전 일치로 보고하지 않는다. 제출 자료는
+`mydocs/pr/assets/float_fragment_frames_20261020/README.md`와 provenance에 연결했다.
+정확한 입력36개·자체 Print36개·base/후보 Native/fresh 원본 TSV144개를 함께 보존했다.
+실행 로그·중간 JSON은 ignored output에 남겼다.
+
+원 #8055의 None factory와 수동 LineSeg를 분할 저장본으로 간주하지 않는다. 그 축약 원본은
+변경 없이 asset에 보존하고, 기존 간격 검사는 실제 한컴 저장 RowBreak와 그 자체 Print를
+사용하도록 수정했다. 이 검사의 before 실패는 표가 온전히 첫쪽에 수용되는 원인이므로,
+작성자가 주장한 실제 교육부 문서의 앞 간격 결함을 검출했다는 증거로 바꾸어 쓰지 않는다.
+
+새 `source_owned_float_fragment_frames.rs`는 쪽·본문 소유, 원본 행의 완전한 비중복 보존,
+실제 셀의 표 안 포함, 정상2행 비겹침, EOF의 표만 있는 쪽, 실제 마지막 조각 뒤 간격을
+검사한다. 양쪽100%와 직접 판독을 마친64쪽의 주요 경계·본문 원점은 독립 PDF의96DPI
+좌표±2px도 함께 검사한다. 관계 검사는 유지한다.
+
+634의 같은 테스트 소스를 Native052와058에 strict `-D warnings`로 연결했다. 새6검사는
+수정 전5FAIL·정상 대조1PASS에서 수정 후6PASS다. 수정한 기존 간격 검사도 전FAIL/후PASS다.
+초기633의 새 검사 작성 과정의 u32/usize 컴파일 오류는 자체 작성 오류로 보존했으며,
+결함 재현 증거로 세지 않는다. 수정 뒤634에서 양쪽 실제 컴파일·실행을 완료했다.
+636은 원 선언-fit·#7095 등 기존 계약을 포함한15모듈96검사를 모두 통과했다.
+637의 prepare 뒤 고정 base manifest 검사도 통과했다. 파생 harness·manifest는 커밋하지 않는다.
+
+로그는 `output/pr-review/semanticist21-20261019/logs/float-frame-before-after-634.log`,
+`logs/native058-focused-96-636.log`, `logs/float-frame-manifest-check-637.log`다.
+#8064의 전179조건2082쪽 보존과 기존116조건의 나머지 차트 확대 보정은 별도로 계속한다.
+수동 정책만 바꾼 `split-policy-cell` 진단의 미달을 정상 한컴 저장본의 통과로 대신하지 않았다.
