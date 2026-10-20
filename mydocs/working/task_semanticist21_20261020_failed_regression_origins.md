@@ -124,3 +124,41 @@ MCP 실패로 정본 없이13.2px 움직였다고 원문에 남았다. 이번에
 강조점 전 단계의 Native048/fresh WASM022는88조건 모두90% 이상으로 완료됐다.
 정식 강조점 회귀3건과 입력·독립 PDF·원문 TSV·review/overlay는 `b0a85b6b88`에 있다.
 현재의 새 형제 표 보정은 그 이후의 별도 제품 단계다.
+
+## 원 PR 대조 후 형제 표와 보충 측정 검증 완료
+
+GitHub API로 #7119의 merge `922946438f`, #7430의 실제 merge `eb321165ec`를 다시 확인했다.
+#7538은 closed·unmerged이며, 그 설명과 실제 반영된 통합·보정 커밋을 구분한다.
+`original-pr-recheck-474.json`에 본문과 조회 결과를 보존했다.
+
+제품 `345d0b5202`의 Native049/fresh WASM023 실제 소스145개를 커밋 바이트와 대조했다.
+Native 빌드 전 HEAD는 `b0a85b6b88`·dirty이며 이를 clean HEAD 빌드로 오기하지 않는다.
+WASM 최적화·Studio public 동기화가 완료됐고 실행 artifact SHA도 검증했다.
+
+- 원본 HWP/HWPX와 여백3대조군은 각 전체2쪽 Native/fresh 모두100%다.
+- 같은 입력·Print·글꼴을 고정 devel `5e2b9bfbf0`과 대조한20쪽에서0.1%p 이상 하락0쪽이다.
+  기준 원본2쪽은 Native14.08322%, fresh14.13750%다. 기준 미달의 exit1과 gate를 그대로 보존했다.
+- 원본2쪽 전체와 표 사이 위·아래 여백을 양쪽 review/standalone overlay로 직접 판독했다.
+  컬러 이모지와 raster 농도 차이는 남으며 RGB 완전 일치를 주장하지 않는다.
+- 새 `coanchored_float_outer_frame.rs`7건은 원문 소유·행열·내용 순서/보존·2쪽 소속·여백 관계를 검사한다.
+  원본 완료2쪽은 양쪽100%이므로 독립 PDF 외곽 좌표±2px를 관계 검사와 함께 추가했다.
+  정식 소스 strict rustc로 수정 전 Native048은6FAIL·정상1PASS, Native049는7PASS다.
+  최초 진단의 page 인덱스 타입 오류와 부동소수점 동등 경계 검사 오류도 로그467/468에 남겼다.
+- #7084의32검사는 같은 소스에서 수정 전 Native047은16FAIL·16PASS, Native049는32PASS다.
+  마지막2건은 보편0.5em 폭 핀·특정 fallback 문자열 대신 독립 provider 폭의 적용,
+  뒤 문자 상대 간격·원문 경계 보존과 다중 scalar 자소의 측정 출처 격리를 검사한다.
+  IR 불변·실제 backend 적용·서식 격리 검사를 유지한다. 제어된 provider 값27.5를
+  한컴 이모지의 실제 폭으로 주장하지 않는다.
+
+최종 입력·독립 Print PDF·전쪽 원문 TSV·대표 PNG·출처는
+`mydocs/pr/assets/coanchored_float_outer_frame_20261020/README.md`에 연결했다.
+실행 원문은 ignored `coanchored-base-comparison-471.json`,
+`emphasis-metric-coanchored-before-after-476.json`,
+`emphasis-metric-current-failure-focus-470.json`에 있다.
+이는 전체 Rust 재실행 완료가 아니다. #7559 live API 저장 원점과 #8055 등의 필수 보정은 계속한다.
+
+#7559의 현재 공개 API 입력을 Native049에서 그대로 생성해 live/native HWP/adapter HWP/HWPX를
+대조했다. 두 HWP export 바이트는 동일하다. offset의 live/HWP는176.2666667,
+HWPX 재열기는180.04다. 이전 저장 fixture와의 차이는 생성 LineSeg의 synthetic tag다.
+따라서 옛 fixture의100%만으로 현재 API의 실패를 해소했다고 판정하지 않는다.
+현재 입력4개는 새 독립 MCP Print를 요청했고 `save-origin-current-api-print-475.log`에 기록한다.
