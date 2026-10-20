@@ -621,3 +621,163 @@ review·standalone overlay에서 직접 확인했고, 이 입력도 현재 보�
 추가 로그는 `logs/chart-new-title-contract-891-final.log`,
 `logs/chart-title-preset-boundaries-native070-893.log`,
 `logs/chart-title-preset-boundaries-native069-893.log`, `logs/chart-large-2d-frame-895-raster.log`다.
+
+## 회전 글줄 상자 가정의 기각과 범례 잉크의 독립 계측
+
+897·901·908의 공식 2020 Print는 모두 성공했다. Times New Roman의 `Label 1`~`Label 4`는
+한컴에서는 수평인데 Native070은 45도로 표시한다. Arial·함초롬돋움의 같은 입력은 양쪽 모두
+45도다. 실제 face와 hmtx·공백·kern을 대조했고, 누락된 공백이나 잘못된 글자 크기로
+설명할 수 없었다. 범주 역순과 첫 범주 반복 입력도 원래 18pt와 같은 축 높이를 유지한다.
+기본 10pt의 너비 20150·20300HU Print는 여전히 45도여서, 고정 간격 하나만 줄여 수평
+전환을 맞추는 가설도 채택하지 않는다.
+
+910~916은 글줄 1.3em의 중심과 투영 상자를 예약·표시에 공유하는 진단이다. 2D 18pt는
+모듈 조각 대조에서 72.03718%→83.25888%로 개선됐지만, 3D 범주 8개가
+94.30524%→89.06810%로 하락했다. 3D의 왼쪽 투영 변경만 빼도 15pt는
+81.12010%→79.90518%, 20pt는 62.93958%→62.63404%로 하락했다. 2D의 개선으로
+후퇴를 상쇄하지 않는다. 후보 패치를 `chart-rotated-line-box-rejected-920.patch`로 보존하고
+제품 소스 179개를 Native070 시점과 바이트 대조해 복원했다. 912는 진단 입력 두 개의 폭이
+잘못됐던 실행이며, 이를 바로잡은 913·914·915·916으로 대체했다. 전체 Native를 기각한
+가설로 재빌드하거나 기대값을 바꾸지 않았다.
+
+918·919·924~929는 같은 Print의 범례 잉크와 글자를 600dpi에서 따로 계측한다. 작은 잉크를
+항목 전진 폭으로 사용하면 데이터 면까지 바뀌므로, 기존 논리 슬롯과 실제 잉크의 위치·크기를
+구분한다. 5~24pt, Arial·함초롬돋움·Times New Roman, 명시 18pt에서 확인했다.
+
+| 선언 크기 | Print 사각 키 폭(96dpi 환산) | 해당 크기에서 관측한 서식 |
+| --- | ---: | --- |
+| 5pt | 4.16 | 약 0.6em |
+| 8pt | 6.56 | 약 0.6em |
+| 10pt | 8.16 | 약 0.6em |
+| 14pt | 11.36 | 약 0.6em |
+| 15pt | 12.16 | 약 0.6em |
+| 15.99·16pt | 12.96 | 약 0.6em |
+| 16.01pt | 9.12 | 약 0.42em |
+| 16.99·17pt | 9.60 | 약 0.42em |
+| 18pt·명시 18pt | 10.24 | 약 0.42em |
+| 20pt | 11.36 | 약 0.42em |
+| 24pt | 13.60 | 약 0.42em |
+
+0.16px 정도의 600dpi 래스터 양 끝 양자화는 고정 기대값으로 사용하지 않는다. 16pt와
+16.01pt 사이의 전환과, 글자 자체는 선언 크기를 유지하는 것을 구별했다. 작은 글자의 우측
+행 간격은 약 1.35em, 큰 글자는 약 1.3em이다. 서로 다른 face에서도 키 크기는 같았다.
+
+다음 후보는 기본 사각 키의 잉크 bearing·크기·글자 시작점과 우측 행 간격을 공통 서식으로
+분리한다. 논리 전진 폭과 플롯 예약은 그대로 소비하며, 사각 면·테두리 있는 사각 면·가로/우측
+범례의 실제 소비 위치를 함께 확인한다. 선·산점도 마커·빈 stock 키는 기존 glyph 계약을
+유지한다. 새 Native/fresh 검증·확대 판독이 끝나기 전 완료 판정이나 회귀 기대값 변경은 하지 않는다.
+
+로그는 ignored output의 `logs/chart-rotated-line-box-913-replay.log`,
+`logs/chart-rotated-line-box-914-panels-attempt02.log`, `logs/chart-rotated-line-box-916-panels.log`,
+`logs/chart-rotated-label-origins-917.log`, `logs/chart-legend-style-controls-921-print.log`,
+`logs/chart-legend-key-metrics-924.log`, `logs/chart-legend-text-metrics-925.log`,
+`logs/chart-legend-key-metrics-926.log`, `logs/chart-legend-text-metrics-927.log`,
+`logs/chart-legend-style-controls-928-print.log`, `logs/chart-legend-key-metrics-929.log`에 있다.
+
+## 범례 논리 슬롯과 실제 잉크의 분리
+
+929의 16.01·16.99pt Print도 성공해 전환이 16pt 초과에서 일어남을 확인했다. 사각 키의
+논리 슬롯 폭은 그대로 두고 기본 키 잉크를 작은 글자 `(left=-0.1em, top=-0.25em,
+side=0.6em)`와 큰 글자 `(left=0.225em, top=-0.375em, side=0.42em)`로 구분한다.
+사각 키 뒤 글자의 실제 시작은 각각 슬롯의 0.8em·0.85em이다. 임의의 외곽 여백을 추가해
+차트 폭을 맞추지 않는다. 같은 기준의 명시 크기와 상속 크기·세 face를 함께 확인했다.
+
+소비 경로는 `SquareLegendInk` → 사각 면/테두리 있는 면의 실제 잉크와
+`SwatchKind::paint_text_offset` → 가로·우측 글자 원점이다. `SwatchKind::text_offset`의
+논리 전진 폭은 항목 폭·행 나눔·`legend_w`·`CartesianLayout`·`SceneFrame`에 계속 전달한다.
+같은 슬롯의 전진과 그 안의 잉크 bearing을 혼동하지 않는다. 935의 모듈 66조건에서 범례
+시작 전 제목·축·데이터·범주 조각은 전부 바이트가 같았다.
+
+Native071은 source 180개를 동결해 231.61초에 빌드했다. 동일 입력·Print·compat·글꼴과
+검증 스크립트의 전쪽 56조건·56쪽을 Native070과 대조했다. 90% 이상은 35→38조건이다.
+16.01pt는 89.71733%→91.12693%, 16.99pt는 89.15070%→90.43475%로 개선됐다.
+그러나 `samples/chart/기타/고가저가종가.hwp`가 99.12461%→98.93414%로
+0.19047%p 하락해 Native071을 최종 후보로 채택하지 않는다. 나머지 55조건에서
+0.1%p 이상 하락은 없었다. 이는 새 devel 기준 전체·fresh 검증을 완료했다는 뜻이 아니다.
+
+938의 원본 Print를 직접 계측한 주식형 행 간격은 약 19.2px였고, 기존 마커/빈 키 행의
+18.67px를 사각 키의 18px로 줄인 것이 후퇴였다. 사각 키에서 확인한 행 서식을 모든 키에
+적용한 가정을 제거한다. 각 키가 요구하는 행 높이의 최댓값으로 혼합 범례를 구성하며,
+선·마커·빈 stock 키의 기존 행 계약을 보존한다. 939의 주식형과 표식 있는 꺾은선형은
+수정 뒤 전체 모듈 조각이 Native070과 바이트가 같았다. 이 보정의 실제 엔진 검증은
+Native072에서 다시 수행한다.
+
+937의 기존 차트 Rust 검사는 157개 통과·8개 실패다. 878의 이전 실행과 실패 함수 8개가
+같은 것을 941로 대조했다. 새 실패를 기존 실패로 숨기지 않으며, 이 단계에서 회귀 검사·
+기대값·골든은 수정하지 않았다. 사전 통합의 전체 Rust·lint·fresh·시각 gate는 계속 남아 있다.
+
+931의 원본 코퍼스 crop은 서로 다른 실제 프레임 위치에 고정 원점을 사용한 진단이므로
+판정 근거로 사용하지 않는다. 계측한 프레임의 합성·경계 입력 20조건만 다시 고른 932와,
+원본 전체 페이지의 933·936·940 TSV로 대체한다. 932에서 0.1%p 이상 하락은 없었지만
+조각 점수를 전쪽 gate로 승격하지 않는다.
+
+추가 증거는 ignored output의 `chart-legend-native070-native071-940.tsv`,
+`chart-legend-ink-outside-legend-audit-935.json`, `stock-legend-row-metrics-938/measurements.json`,
+`chart-legend-row-kind-939-preservation.json`, `chart-existing-failure-equivalence-941.json`이다.
+실행 로그는 `logs/char-overlap-native-build-071-attempt01.log`,
+`logs/chart-legend-ink-native070-933.log`, `logs/chart-legend-ink-native071-936.log`,
+`logs/chart-legend-ink-937-crate-tests.log`, `logs/chart-legend-row-kind-939-build.log`,
+`logs/chart-legend-row-kind-939-replay.log`, `logs/chart-legend-native-940-compare.log`에 있다.
+
+## 가로 행의 공통 메트릭과 옆 범례 없는 프레임
+
+Native072는 211.50초에 빌드했다. 942의 본문 10pt/범례 18pt와 반대 입력을 추가한
+58조건·58쪽에서 90% 이상은 Native070 37개→Native072 40개였다. 0.1%p 이상 하락은
+없었다. 주식형·표식 있는 꺾은선형의 실제 PNG도 Native070과 SHA-256이 같았다.
+전체 차트 코퍼스의 나머지 114조건을 별도로 실행해 합계 172조건을 확인했다. Native072의
+90% 이상은 152조건이며, 가로·감싼 범례 2개가 각각 0.38164%p·0.11490%p 하락했다.
+이 상태를 최종 수용하거나 높은 평균값으로 상쇄하지 않는다.
+
+949·963의 새로운 공식 Print는 10·18pt 가로 범례와 선/마커·주식형의 가로 범례다.
+954~957에서 사각 키 크기는 세로와 같지만 가로 셀의 전진 간격·키/글자 시작점이 다름을
+확인했다. 가로 셀을 세로의 정렬 슬롯으로 측정한 가정과, 실제 잉크가 이동한 뒤에도 이전
+논리 폭을 그대로 사용한 가정을 제거한다. `LegendFlow`와 같은 `SquareLegendInk` 결과에서
+가로 항목의 전진·키·글자 원점을 함께 만든다. 16pt 이하의 가로 셀 전진은 1.1em,
+키 왼쪽은 0.25em, 글자 시작은 1.15em이다. 큰 글자는 각각 0.75em·0.15em·0.8em이다.
+이 값을 페이지 px 좌표나 문서 ID 조건으로 사용하지 않는다. 세로 키/글자 서식은 그대로다.
+
+하단 텍스트를 alphabetic 기준선에 직접 놓던 표시도 text-after-edge로 바꾼다. 높이 예약에
+이미 포함한 아래 여백을 `LegendLayout.bottom_padding`에 한 번 계산해 높이와 표시가
+동시에 소비한다. 실제 글꼴의 descent를 SVG/Native/fresh 출력이 소비하며, 글자 크기마다
+수직 위치를 수동 보정하지 않는다. 960에서 기존 세로 66조건은 939와 전부 바이트가 같았다.
+
+주식형의 새 반례를 직접 판독하니 실제 가격 줄/마커와 날짜의 오른쪽 배치도 달랐다.
+969의 막대·선·주식형, 10·18pt 독립 Print는 옆 범례가 없을 때 오른쪽 여백이 약
+7.92~8.40px였다. 측정값을 좌표 핀으로 쓰지 않고, 기본 프레임의 바깥 여백과 옆 범례와의
+분리 여백을 구분한다. `legend_right` → `CartesianLayout::has_side_legend` → 기본 오른쪽
+예약 → 최종 plot 폭/범주·scale·3D viewport → 실제 축/막대/가격 줄로 연결했다.
+옆 범례가 없는 빈 가장자리는 `FRAME_PAD * 0.6`을 소비한다. 보조 수치축·가로 값축·분산형
+끝 숫자·원형의 별도 점유는 앞선 분기가 계속 소유하며 이 기본 여백 분기에 들어오지 않는다.
+
+970~973의 모듈 진단은 다음과 같다. 전체 Native/fresh gate를 대신하는 수치는 아니다.
+
+| 입력 | Native072에 해당하는 조각 | 가로 행·프레임 보정 조각 |
+| --- | ---: | ---: |
+| 기존 가로 범례 | 91.39199% | 98.22302% |
+| 기존 감싼 범례 | 91.67471% | 97.02667% |
+| 새 10pt 가로 범례 | 91.39199% | 98.22302% |
+| 새 18pt 가로 범례 | 84.29272% | 94.27246% |
+| 선/마커 가로 범례 | 93.94350% | 96.26139% |
+| 주식형 가로 범례 | 83.15743% | 91.64062% |
+
+가로 셀 폭은 측정 시 만든 `LegendLayout.widths`·행 범위로 감싸기와 공간 예약에 사용하고,
+실제 표시도 그 행·폭을 소비한다. 그 뒤 별도 폭 재추정이나 좌표 clamp를 추가하지 않았다.
+주식형의 날짜/가격 줄과 마커가 보존되는지도 review·standalone overlay로 직접 확인했다.
+세밀한 마커 차이와 남은 미달은 전체 검증에서 계속 보정하며 수치 통과로 면제하지 않는다.
+
+별도로 962에서 세로 범례 키와 격자 사이를 읽었지만 16pt/16.01pt·본문/범례 크기가 다른
+반례는 단일 고정 간격 가설을 지지하지 않았다. 그 가설로 세로 데이터 면을 다시 줄이거나
+늘리지 않는다. 큰 글자의 열/축 배치와 3D 미달은 남은 보정 범위로 유지한다.
+
+Clippy는 이전 3D 눈금의 배수 검사만 지적했다. 같은 의미의 `usize::is_multiple_of`로 바꿨고
+948·964의 차트 전체 target Clippy는 통과했다. 964의 기존 Rust 검사는 157개 통과·8개 실패로
+이전 함수 목록과 같다. 새 회귀·기대값·golden은 추가/변경하지 않았다. 코드 단계의 소스를
+커밋한 뒤 Native073과 176조건 전체를 같은 입력·독립 Print로 다시 실행한다. 최종 fresh,
+새 devel 기준 비교·전체 Rust/lint와 다른 통합 PR 범위까지 완료하기 전 PR은 제출하지 않는다.
+
+추가 로그는 `logs/chart-legend-ink-native072-945.log`, `logs/chart-legend-extended-native072-947.log`,
+`logs/chart-legend-key-metrics-943.log`, `logs/chart-legend-bottom-949-print.log`,
+`logs/chart-legend-bottom-key-metrics-955.log`, `logs/chart-legend-bottom-text-metrics-957.log`,
+`logs/chart-inline-legend-961-panels.log`, `logs/chart-legend-glyph-bottom-963-print.log`,
+`logs/chart-no-side-legend-frame-969.log`, `logs/chart-no-side-frame-972-panels.log`,
+`logs/chart-no-side-glyph-973-panels.log`, `logs/chart-legend-final-974-*.log`다.

@@ -190,7 +190,7 @@ fn fit_3d_vertical_ticks(scale: &mut ValueScale, height: f64, font: f64) -> bool
         return false;
     }
     let factor = (2..=intervals)
-        .find(|factor| intervals % factor == 0 && intervals / factor <= capacity)
+        .find(|factor| intervals.is_multiple_of(*factor) && intervals / factor <= capacity)
         .unwrap_or(intervals);
     scale.step *= factor as f64;
     true
@@ -402,6 +402,7 @@ impl CartesianLayout {
         legend_height: f64,
         legend_width: f64,
         has_title: bool,
+        has_side_legend: bool,
         measure: &dyn Fn(&str, f64, &str) -> f64,
     ) -> Self {
         let font = label_font_px(chart);
@@ -462,8 +463,12 @@ impl CartesianLayout {
                     + FRAME_PAD * 1.3
             } else if pie {
                 font * hancom_default::PIE_RIGHT_PAD_EM
-            } else {
+            } else if has_side_legend {
                 FRAME_PAD
+            } else {
+                // 옆 범례와의 분리 여백은 범례가 있을 때만 필요하다.
+                // 하단 범례·범례 없음은 기본 바깥 여백을 소비한다.
+                FRAME_PAD * 0.6
             };
             // 같은 숫자 예산과 라벨 방향에는 같은 글자들이 생긴다. 필요한 여백만
             // 단조롭게 예약하여 축 간격 변경이 앞선 측정 결과를 무효화하지 않게 한다.

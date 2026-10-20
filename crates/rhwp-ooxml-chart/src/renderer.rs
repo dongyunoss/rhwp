@@ -13,9 +13,11 @@ use super::LineSpec;
 
 mod cartesian_layout;
 mod chart_3d;
+mod legend_style;
 mod text_style;
 use cartesian_layout::{CartesianLayout, CategoryLabelLayout, FRAME_PAD, TICK_GAP};
 use chart_3d::render_bars_3d;
+use legend_style::LegendFlow;
 use text_style::title_font_px;
 
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
@@ -375,7 +377,7 @@ pub fn render_chart_svg_with_text_measure(
             legend_items(chart)
                 .iter()
                 .map(|(label, _, kind)| {
-                    kind.text_offset(legend_font)
+                    kind.text_offset(legend_font, LegendFlow::Horizontal)
                         + measure(label, legend_font, legend_family(chart))
                 })
                 .collect()
@@ -391,7 +393,8 @@ pub fn render_chart_svg_with_text_measure(
         let max_w = legend_items(chart)
             .iter()
             .map(|(label, _, kind)| {
-                kind.text_offset(legend_font) + measure(label, legend_font, legend_family(chart))
+                kind.text_offset(legend_font, LegendFlow::Vertical)
+                    + measure(label, legend_font, legend_family(chart))
             })
             .fold(0.0f64, f64::max);
         // 범례 키·간격은 선언 글꼴 한 칸, 바깥 여백은 기본 프레임 여백이다.
@@ -407,6 +410,7 @@ pub fn render_chart_svg_with_text_measure(
         legend_h,
         legend_w,
         effective_title.is_some(),
+        legend_right,
         measure,
     );
     let plot_x = x + layout.left;
@@ -2214,6 +2218,25 @@ enum SwatchKind {
 }
 
 impl SwatchKind {
+    fn right_row_height(self, font: f64) -> f64 {
+        if matches!(self, Self::Square | Self::OutlinedSquare { .. }) {
+            legend_style::square_row_height(font)
+        } else {
+            // 빈 키도 같은 계열의 마커 슬롯을 보존한다. 사각 키의 잉크
+            // 프리셋으로 선·마커·stock 행의 기존 점유를 줄이지 않는다.
+            font * (crate::legend_layout::TEXT_LINE_EM + 0.1)
+        }
+    }
+
+    /// 키의 잉크가 슬롯 안에서 이동해도 다음 항목의 전진 폭은 보존한다.
+    fn paint_text_offset(self, font: f64, flow: LegendFlow) -> f64 {
+        if matches!(self, Self::Square | Self::OutlinedSquare { .. }) {
+            legend_style::SquareLegendInk::new(font, flow).text
+        } else {
+            self.text_offset(font, flow)
+        }
+    }
+
     fn key_width(self, font: f64) -> f64 {
         match self {
             Self::LineOnly
@@ -2225,7 +2248,12 @@ impl SwatchKind {
         }
     }
 
-    fn text_offset(self, font: f64) -> f64 {
+    fn text_offset(self, font: f64, flow: LegendFlow) -> f64 {
+        if matches!(flow, LegendFlow::Horizontal)
+            && matches!(self, Self::Square | Self::OutlinedSquare { .. })
+        {
+            return legend_style::SquareLegendInk::new(font, flow).advance;
+        }
         // 선과 중앙 마커는 면색 키보다 긴 가로 공간이 필요하다.
         self.key_width(font)
             + font
@@ -2338,7 +2366,16 @@ fn legend_items(chart: &OoxmlChart) -> Vec<(String, u32, SwatchKind)> {
 }
 
 /// 범례 키의 크기와 중심은 선언 글꼴에서 정한다. 플롯 마커와 범례 키의 소속도 구분한다.
-fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: SwatchKind, font: f64) {
+fn push_legend_swatch(
+    svg: &mut String,
+    ix: f64,
+    cy: f64,
+    color: u32,
+    kind: SwatchKind,
+    font: f64,
+    flow: LegendFlow,
+) {
+    let square = legend_style::SquareLegendInk::new(font, flow);
     let swatch_line = |svg: &mut String| {
         svg.push_str(&format!(
             "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
@@ -2354,20 +2391,20 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
         SwatchKind::Square => {
             svg.push_str(&format!(
                 "<rect x=\"{:.2}\" y=\"{:.2}\" class=\"hwp-chart-legend-key\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
-                ix,
-                cy - font * 0.3,
-                font * 0.6,
-                font * 0.6,
+                ix + square.left,
+                cy + square.top,
+                square.side,
+                square.side,
                 color_hex(color)
             ));
         }
         SwatchKind::OutlinedSquare { rgb, width_emu } => {
             svg.push_str(&format!(
                 "<rect x=\"{:.2}\" y=\"{:.2}\" class=\"hwp-chart-legend-key\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                ix,
-                cy - font * 0.3,
-                font * 0.6,
-                font * 0.6,
+                ix + square.left,
+                cy + square.top,
+                square.side,
+                square.side,
                 color_hex(color),
                 line_attr(LineSpec::Solid { rgb, width_emu }, "stroke=\"none\"")
             ));
@@ -2429,16 +2466,16 @@ fn render_legend(
     let start_x = x + (w - layout.width) / 2.0;
     for (row_index, row) in layout.rows.iter().enumerate() {
         let mut ix = start_x;
-        let baseline = y + h
-            - layout.frame_padding
+        let text_bottom = y + h
+            - layout.bottom_padding
             - layout.row_height * (layout.rows.len() - 1 - row_index) as f64;
-        let cy = baseline - font * 0.35;
+        let cy = text_bottom - font * 0.5;
         for i in row.items.clone() {
             let (label, color, kind) = &items[i];
-            push_legend_swatch(svg, ix, cy, *color, *kind, font);
+            push_legend_swatch(svg, ix, cy, *color, *kind, font, LegendFlow::Horizontal);
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
-                ix + kind.text_offset(font), baseline, font,
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" dominant-baseline=\"text-after-edge\">{}</text>\n",
+                ix + kind.paint_text_offset(font, LegendFlow::Horizontal), text_bottom, font,
                 hancom_default::TEXT_COLOR, xml_escape(label)
             ));
             ix += layout.widths[i];
@@ -2455,8 +2492,11 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
     }
     let items = legend_items(chart);
     let font = legend_font_px(chart);
-    // 우측 항목은 글줄 상자 사이에 여유를 더 둔다. 하단 범례의 문단 줄 나눔과 구분한다.
-    let row_h = font * (crate::legend_layout::TEXT_LINE_EM + 0.1);
+    // 혼합 범례는 모든 키가 필요한 행 공간을 수용한다.
+    let row_h = items
+        .iter()
+        .map(|(_, _, kind)| kind.right_row_height(font))
+        .fold(0.0_f64, f64::max);
     let total_h = row_h * items.len() as f64;
     let start_y = y + ((h - total_h) / 2.0).max(0.0);
 
@@ -2466,10 +2506,10 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
     ));
     for (i, (label, color, kind)) in items.iter().enumerate() {
         let cy = start_y + row_h * i as f64 + row_h / 2.0;
-        push_legend_swatch(svg, x, cy, *color, *kind, font);
+        push_legend_swatch(svg, x, cy, *color, *kind, font, LegendFlow::Vertical);
         svg.push_str(&format!(
             "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" dominant-baseline=\"text-after-edge\">{}</text>\n",
-            x + kind.text_offset(font),
+            x + kind.paint_text_offset(font, LegendFlow::Vertical),
             cy + font * 0.5,
             font,
             hancom_default::TEXT_COLOR,

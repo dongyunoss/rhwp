@@ -14,7 +14,7 @@ pub(crate) struct LegendLayout {
     pub rows: Vec<LegendRow>,
     pub width: f64,
     pub row_height: f64,
-    pub frame_padding: f64,
+    pub bottom_padding: f64,
 }
 
 impl LegendLayout {
@@ -44,7 +44,7 @@ impl LegendLayout {
             rows,
             width,
             row_height: font_size * TEXT_LINE_EM,
-            frame_padding,
+            bottom_padding: frame_padding * 0.8,
         }
     }
 
@@ -52,7 +52,7 @@ impl LegendLayout {
         if self.rows.is_empty() {
             0.0
         } else {
-            self.rows.len() as f64 * self.row_height + self.frame_padding * 0.8
+            self.rows.len() as f64 * self.row_height + self.bottom_padding
         }
     }
 }
