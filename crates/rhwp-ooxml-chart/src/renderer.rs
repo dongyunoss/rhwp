@@ -59,8 +59,8 @@ mod hancom_default {
     /// 원형: 원 하단 → 프레임 하단 = 1.1 × 라벨 글꼴 (실측 252.5 − 237.5 = 15px).
     /// 원형은 축 라벨 예약 없이 이 아래 여백을 쓴다. 왼쪽 여백도 0.
     pub const PIE_BOTTOM_PAD_EM: f64 = 1.1;
-    /// 라벨 오른끝 → 플롯 왼쪽 = 1.3 × 라벨 글꼴 (실측 라인 27.5 − 8 ≈ 19, 가로막대 69.7 − 53 ≈ 17).
-    pub const LEFT_GAP_EM: f64 = 1.3;
+    /// 축이 없는 원형 플롯과 우측 범례 사이의 반 글줄 간격.
+    pub const PIE_RIGHT_PAD_EM: f64 = 0.6;
     /// 한글 한 글자 폭 (em 비율). 숫자·라틴은 `DIGIT_EM`.
     pub const CJK_EM: f64 = 0.9;
     pub const DIGIT_EM: f64 = 0.55;
@@ -431,8 +431,9 @@ pub fn render_chart_svg_with_text_measure(
         if legend_visible && !legend_right {
             legend_items(chart)
                 .iter()
-                .map(|(label, _, _)| {
-                    legend_font + measure(label, legend_font, legend_family(chart))
+                .map(|(label, _, kind)| {
+                    kind.text_offset(legend_font)
+                        + measure(label, legend_font, legend_family(chart))
                 })
                 .collect()
         } else {
@@ -446,10 +447,12 @@ pub fn render_chart_svg_with_text_measure(
     let legend_w = if legend_right {
         let max_w = legend_items(chart)
             .iter()
-            .map(|(label, _, _)| measure(label, legend_font, legend_family(chart)))
+            .map(|(label, _, kind)| {
+                kind.text_offset(legend_font) + measure(label, legend_font, legend_family(chart))
+            })
             .fold(0.0f64, f64::max);
         // 범례 키·간격은 선언 글꼴 한 칸, 바깥 여백은 기본 프레임 여백이다.
-        max_w + legend_font + FRAME_PAD * 0.8
+        max_w + FRAME_PAD * 0.6
     } else {
         0.0
     };
@@ -519,7 +522,7 @@ pub fn render_chart_svg_with_text_measure(
                 render_line(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, &layout)
             }
             OoxmlChartType::Scatter => {
-                render_scatter(&mut svg, chart, plot_x, plot_y, plot_w, plot_h)
+                render_scatter(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, &layout)
             }
             OoxmlChartType::Stock => {
                 render_stock(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, &layout)
@@ -565,61 +568,6 @@ fn series_color(s: &OoxmlSeries, idx: usize) -> String {
     color_hex(s.color.unwrap_or_else(|| palette(idx)))
 }
 
-/// 지정한 axis_group의 최대 라벨 길이(문자 수) 기반으로 여백 추정
-fn estimate_axis_label_width(chart: &OoxmlChart, axis_group: u8) -> f64 {
-    let font = label_font_px(chart);
-    let series: Vec<&OoxmlSeries> = chart
-        .series
-        .iter()
-        .filter(|s| s.axis_group == axis_group)
-        .collect();
-    if series.is_empty() {
-        return font * hancom_default::LEFT_GAP_EM;
-    }
-    let (vmin, vmax, _) = value_range_for(series.iter().cloned(), VERTICAL_AXIS_TICKS);
-    let axis = axis_at(
-        chart,
-        if axis_group == 0 {
-            AxisPos::Left
-        } else {
-            AxisPos::Right
-        },
-    );
-    let fmt = axis
-        .format_code
-        .as_deref()
-        .or_else(|| series.first().and_then(|s| s.format_code.as_deref()));
-    let min_label = format_value_axis_num(axis.minimum.unwrap_or(vmin), fmt);
-    let max_label = format_value_axis_num(axis.maximum.unwrap_or(vmax), fmt);
-    let max_w = label_text_width(&min_label, font).max(label_text_width(&max_label, font));
-    // 라벨 폭 + 라벨~축 간격 (한/글 실측: 한 자리 값축 라벨 차트의 플롯 왼쪽 27.5px)
-    (max_w + font * hancom_default::LEFT_GAP_EM).max(2.0 * font)
-}
-
-/// 기본 값축의 마지막(최대) 라벨 폭(px) — 가로 값축 오른쪽 여백 산정용. 분산형은 X 값 범위.
-fn value_axis_max_label_width(chart: &OoxmlChart) -> f64 {
-    let font = label_font_px(chart);
-    if chart.chart_type == OoxmlChartType::Scatter {
-        let (_, xmax, _) =
-            scatter_range(chart.series.iter().flat_map(|s| s.x_values.iter().copied()));
-        return label_text_width(&format_num(xmax, None), font);
-    }
-    let series: Vec<&OoxmlSeries> = chart.series.iter().filter(|s| s.axis_group == 0).collect();
-    if series.is_empty() {
-        return 0.0;
-    }
-    let (_, vmax, _) = value_range_for(series.iter().cloned(), VERTICAL_AXIS_TICKS);
-    let axis = axis_at(chart, AxisPos::Bottom);
-    let fmt = axis
-        .format_code
-        .as_deref()
-        .or_else(|| series.first().and_then(|s| s.format_code.as_deref()));
-    label_text_width(
-        &format_value_axis_num(axis.maximum.unwrap_or(vmax), fmt),
-        font,
-    )
-}
-
 /// 시리즈 부분집합의 원시 값 범위 (0-baseline clamp + 퇴화 방어, nice 반올림 전)
 fn raw_value_bounds<'a>(series: impl Iterator<Item = &'a OoxmlSeries>) -> (f64, f64) {
     let mut min = f64::INFINITY;
@@ -647,17 +595,6 @@ fn raw_value_bounds<'a>(series: impl Iterator<Item = &'a OoxmlSeries>) -> (f64, 
         max = min + 1.0;
     }
     (min, max)
-}
-
-/// 시리즈 부분집합에 대한 값 범위 `(min, max, step)`. `target_ticks`는 축 방향별
-/// 눈금 밀도(`VERTICAL_AXIS_TICKS`/`HORIZONTAL_AXIS_TICKS`).
-fn value_range_for<'a>(
-    series: impl Iterator<Item = &'a OoxmlSeries>,
-    target_ticks: f64,
-) -> (f64, f64, f64) {
-    let (min, max) = raw_value_bounds(series);
-    // Nice number 반올림 (눈금을 깔끔하게, 경계 headroom 포함)
-    nice_axis(min, max, target_ticks)
 }
 
 /// raw 간격에 가장 가까운 "깔끔한" 눈금 간격 (1/2/5/10 × 10^n, 반올림 임계 1.5/3/7)
@@ -712,7 +649,7 @@ fn nice_axis_no_headroom(min: f64, max: f64, target_ticks: f64) -> (f64, f64, f6
 
 /// 분산형 수치축 범위 `(min, max, step)`. 양수 데이터는 **0 기준선으로 clamp**한다 —
 /// 한컴 분산형 PDF 정합(정답지 X·Y 모두 0부터: 표식만있는분산형 X 0~3·Y 0~5).
-/// 막대/선 축(`value_range_for`)과 동일한 0-baseline 동작이라 차트 종류 간 일관성도
+/// 막대·선의 공통 축 계획과 동일한 0-baseline 동작이라 차트 종류 간 일관성도
 /// 확보. nice_axis로 눈금 정리(경계 headroom 포함, C1c #1882 갭④). — C1b #1660.
 fn scatter_range(vals: impl Iterator<Item = f64>) -> (f64, f64, f64) {
     let mut min = f64::INFINITY;
@@ -1306,7 +1243,15 @@ fn render_stock(
 
 // ---------------- Scatter (분산형, 2 수치축) ----------------
 
-fn render_scatter(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
+fn render_scatter(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    layout: &CartesianLayout,
+) {
     // 전 시리즈가 (x,y) 쌍을 못 만들면 격자도 의미 없음 → 조기 종료.
     // (상위 <g class="hwp-ooxml-chart">는 이미 출력되어 placeholder는 안 뜸)
     if chart
@@ -1317,10 +1262,8 @@ fn render_scatter(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f6
         return;
     }
 
-    let (xmin, xmax, xstep) =
-        scatter_range(chart.series.iter().flat_map(|s| s.x_values.iter().copied()));
-    let (ymin, ymax, ystep) =
-        scatter_range(chart.series.iter().flat_map(|s| s.values.iter().copied()));
+    let (xmin, xmax, xstep) = layout.scales.secondary.tuple();
+    let (ymin, ymax, ystep) = layout.scales.primary.tuple();
     let xspan = (xmax - xmin).max(1e-9);
     let yspan = (ymax - ymin).max(1e-9);
 
@@ -2029,6 +1972,20 @@ fn render_value_grid(
     // 눈금은 `c:majorTickMark` 방향으로 (한/글 실측: 값축 축선 있음, 눈금 out 약 3px,
     // 주식형은 격자 없음). 셋 다 격자선과 같은 선 스타일.
     let font = label_font_px(chart);
+    // 격자는 원래 간격을 보존하고 숫자 글줄만 겹치지 않는 배수로 표시한다.
+    // 아주 낮은 프레임도 0 라벨을 보존하며 중복된 숫자를 같은 원점에 쌓지 않는다.
+    let label_stride = if !horizontal && grid_lines > 0 {
+        let spacing = ph.abs() / grid_lines as f64;
+        if spacing > 0.0 {
+            (font * 2.0 / spacing)
+                .ceil()
+                .clamp(1.0, (grid_lines + 1) as f64) as usize
+        } else {
+            grid_lines + 1
+        }
+    } else {
+        1
+    };
     let axis = axis_at(
         chart,
         match (horizontal, secondary) {
@@ -2107,6 +2064,9 @@ fn render_value_grid(
             }
             if !secondary {
                 push_tick(svg, axis.major_tick_mark, px, gy, -1.0, 0.0, tick_len);
+            }
+            if i % label_stride != 0 {
+                continue;
             }
             let v = vmin + step * i as f64;
             let gap = FRAME_PAD;
@@ -2588,11 +2548,11 @@ fn render_category_labels_at(
             ));
         } else {
             let cx = px + cat_span * ci as f64 + cat_span / 2.0;
-            if layout.rotate {
+            if layout.rotation_degrees > 0.0 {
                 let label_y = axis_y + font;
                 svg.push_str(&format!(
-                    "<text x=\"{:.2}\" y=\"{:.2}\" transform=\"rotate(-90 {:.2} {:.2})\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\" dominant-baseline=\"central\">{}</text>\n",
-                    cx, label_y, cx, label_y, font, hancom_default::TEXT_COLOR, xml_escape(cat)
+                    "<text x=\"{:.2}\" y=\"{:.2}\" transform=\"rotate(-{:.0} {:.2} {:.2})\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\" dominant-baseline=\"central\">{}</text>\n",
+                    cx, label_y, layout.rotation_degrees, cx, label_y, font, hancom_default::TEXT_COLOR, xml_escape(cat)
                 ));
             } else {
                 svg.push_str(&format!(
@@ -2650,6 +2610,26 @@ enum SwatchKind {
     GlyphOnly(usize),
     /// stock 시/고/저 (`c:symbol val="none"`): 스와치 없음 — 텍스트 정렬은 유지
     Blank,
+}
+
+impl SwatchKind {
+    fn key_width(self, font: f64) -> f64 {
+        match self {
+            Self::Square | Self::OutlinedSquare { .. } => font * 0.6,
+            _ => font * 1.05,
+        }
+    }
+
+    fn text_offset(self, font: f64) -> f64 {
+        // 선과 중앙 마커는 면색 키보다 긴 가로 공간이 필요하다.
+        self.key_width(font)
+            + font
+                * if matches!(self, Self::Square | Self::OutlinedSquare { .. }) {
+                    0.4
+                } else {
+                    0.3
+                }
+    }
 }
 
 /// 계열별 스와치 형태 결정. 실측 근거: 표식 라인 = 선+글리프 / 분산형 = 스타일
@@ -2745,7 +2725,7 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
             "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
             ix,
             cy,
-            ix + font * 0.6,
+            ix + kind.key_width(font),
             cy,
             color_hex(color),
             hancom_default::SERIES_LINE_PT * PX_PER_PT
@@ -2780,7 +2760,7 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
                 svg,
                 "hwp-legend-glyph",
                 si,
-                ix + font * 0.3,
+                ix + kind.key_width(font) * 0.5,
                 cy,
                 font * 0.225,
                 &color_hex(color),
@@ -2791,7 +2771,7 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
                 svg,
                 "hwp-legend-glyph",
                 si,
-                ix + font * 0.3,
+                ix + kind.key_width(font) * 0.5,
                 cy,
                 font * 0.2625,
                 &color_hex(color),
@@ -2839,7 +2819,7 @@ fn render_legend(
             push_legend_swatch(svg, ix, cy, *color, *kind, font);
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
-                ix + font, baseline, font,
+                ix + kind.text_offset(font), baseline, font,
                 hancom_default::TEXT_COLOR, xml_escape(label)
             ));
             ix += layout.widths[i];
@@ -2856,7 +2836,8 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
     }
     let items = legend_items(chart);
     let font = legend_font_px(chart);
-    let row_h = font * 1.3;
+    // 우측 항목은 글줄 상자 사이에 여유를 더 둔다. 하단 범례의 문단 줄 나눔과 구분한다.
+    let row_h = font * (crate::legend_layout::TEXT_LINE_EM + 0.1);
     let total_h = row_h * items.len() as f64;
     let start_y = y + ((h - total_h) / 2.0).max(0.0);
 
@@ -2868,9 +2849,9 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
         let cy = start_y + row_h * i as f64 + row_h / 2.0;
         push_legend_swatch(svg, x, cy, *color, *kind, font);
         svg.push_str(&format!(
-            "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
-            x + font,
-            cy + font * 0.35,
+            "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" dominant-baseline=\"text-after-edge\">{}</text>\n",
+            x + kind.text_offset(font),
+            cy + font * 0.5,
             font,
             hancom_default::TEXT_COLOR,
             xml_escape(label)

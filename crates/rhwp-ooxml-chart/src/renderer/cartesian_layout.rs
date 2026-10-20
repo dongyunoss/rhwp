@@ -8,12 +8,27 @@ pub(super) const FRAME_PAD: f64 = hancom_default::LABEL_PT * PX_PER_PT;
 pub(super) const TICK_GAP: f64 = FRAME_PAD * 0.25;
 
 pub(super) fn title_height(chart: &OoxmlChart, has_title: bool) -> f64 {
-    let text = if has_title {
-        title_font_px(chart) * 1.2 + TICK_GAP
-    } else {
-        0.0
-    };
-    FRAME_PAD * 2.0 + text.max(FRAME_PAD * 1.2) + label_font_px(chart) * 0.5
+    let horizontal = chart.chart_type == OoxmlChartType::Bar && !chart.is_combo() && !chart.is_3d;
+    if !has_title {
+        // 제목이 없으면 제목 글줄을 만들지 않는다. 프레임 안쪽 여백과
+        // 세로 값축의 최상단 라벨 반 줄만 남긴다.
+        return FRAME_PAD
+            + if horizontal {
+                0.0
+            } else {
+                label_font_px(chart) * 0.5
+            };
+    }
+    let text = title_font_px(chart) * 1.2 + if horizontal { 0.0 } else { TICK_GAP };
+    // 세로 값축의 최상단 숫자는 격자 밖으로 반 줄을 차지한다.
+    // 가로 차트의 범주 라벨은 각 밴드 안에 있으므로 같은 공간을 예약하지 않는다.
+    FRAME_PAD * 2.0
+        + text.max(FRAME_PAD * 1.2)
+        + if horizontal {
+            0.0
+        } else {
+            label_font_px(chart) * 0.5
+        }
 }
 
 pub(super) fn category_text_bottom(font: f64) -> f64 {
@@ -84,7 +99,7 @@ impl ValueScale {
         (0..=steps)
             .map(|i| {
                 let value = self.min + i as f64 * self.step;
-                let text = if percent && fmt.is_none() {
+                let text = if percent {
                     format!("{}%", value.round() as i64)
                 } else {
                     format_value_axis_num(value, fmt)
@@ -95,7 +110,7 @@ impl ValueScale {
     }
 }
 
-/// 라벨의 두 줄 높이를 최소 눈금 간격으로 보고, 원 데이터에는 최대 열 칸을 배정한다.
+/// 두 글줄 사이에 들어가는 눈금 수와 양 끝을 포함해 원 데이터에 최대 열 칸을 배정한다.
 /// 10% 범위 여유는 표시 범위에 포함하며 원 데이터의 최대값을 축 끝에 붙이지 않는다.
 fn automatic_scale(min: f64, max: f64, length: f64, font: f64) -> ValueScale {
     if length <= 0.0 {
@@ -104,7 +119,8 @@ fn automatic_scale(min: f64, max: f64, length: f64, font: f64) -> ValueScale {
     let min = min.min(0.0);
     let max = max.max(0.0);
     let span = (max - min).max(f64::EPSILON);
-    let budget = (length / (font * 2.0)).floor().clamp(1.0, 10.0);
+    let line_height = font * crate::legend_layout::TEXT_LINE_EM;
+    let budget = (1.0 + (length / (line_height * 2.0)).round()).clamp(3.0, 10.0);
     let raw_step = span / budget;
     let magnitude = 10.0_f64.powf(raw_step.log10().floor());
     let step = [1.0, 2.0, 5.0, 10.0]
@@ -138,6 +154,16 @@ impl ChartScales {
     pub fn new(chart: &OoxmlChart, width: f64, height: f64) -> Self {
         let font = label_font_px(chart);
         let (min, max) = raw_value_bounds(chart.series.iter());
+        if chart.chart_type == OoxmlChartType::Scatter {
+            return Self {
+                primary: ValueScale::from_tuple(scatter_range(
+                    chart.series.iter().flat_map(|s| s.values.iter().copied()),
+                )),
+                secondary: ValueScale::from_tuple(scatter_range(
+                    chart.series.iter().flat_map(|s| s.x_values.iter().copied()),
+                )),
+            };
+        }
         let mut primary = automatic_scale(min, max, height, font);
         let secondary = if chart.is_combo() || chart.has_secondary_axis {
             let pri: Vec<_> = chart.series.iter().filter(|s| s.axis_group == 0).collect();
@@ -239,7 +265,7 @@ impl ChartScales {
 
 #[derive(Clone, Copy, Default)]
 pub(super) struct CategoryLabelLayout {
-    pub rotate: bool,
+    pub rotation_degrees: f64,
     pub maximum_advance: f64,
     pub axis_fraction: f64,
 }
@@ -261,13 +287,21 @@ impl CategoryLabelLayout {
                 .max()
                 .unwrap_or(0),
         );
-        let rotate = !chart.is_3d
+        let needs_rotation = !chart.is_3d
             && chart.chart_type != OoxmlChartType::Bar
             && chart.chart_type != OoxmlChartType::Scatter
             && count > 0
-            && maximum_advance > width / count as f64;
+            && maximum_advance + TICK_GAP * 2.0 > width / count as f64;
+        let rotation_degrees = if !needs_rotation {
+            0.0
+        } else if (maximum_advance + font) * std::f64::consts::FRAC_1_SQRT_2 <= width / count as f64
+        {
+            45.0
+        } else {
+            90.0
+        };
         Self {
-            rotate,
+            rotation_degrees,
             maximum_advance,
             axis_fraction: 0.0,
         }
@@ -277,8 +311,9 @@ impl CategoryLabelLayout {
         let font = label_font_px(chart);
         if crosses_inside {
             FRAME_PAD + font * 0.5
-        } else if self.rotate {
-            FRAME_PAD + font + self.maximum_advance
+        } else if self.rotation_degrees > 0.0 {
+            let radians = self.rotation_degrees.to_radians();
+            FRAME_PAD + font + self.maximum_advance * radians.sin() + font * radians.cos()
         } else {
             FRAME_PAD + category_text_bottom(font)
         }
@@ -319,19 +354,19 @@ impl CartesianLayout {
             && axis_at(chart, AxisPos::Left).minimum.unwrap_or(raw_min) < 0.0;
         let mut left: f64 = 0.0;
         let mut right: f64 = 0.0;
-        let mut rotated = false;
+        let mut rotation_degrees: f64 = 0.0;
         loop {
             let plot_width = (width - left - right - legend_width).max(0.0);
             let mut category = CategoryLabelLayout::new(chart, plot_width, measure);
-            if category.rotate && !rotated {
+            if category.rotation_degrees > rotation_degrees {
                 // 방향이 바뀌면 이전 방향의 숫자 라벨 예약은 다시 계산한다.
                 // 이 이후의 너비 감소로 이미 세운 글줄을 수평으로 되돌리지는 않는다.
-                rotated = true;
+                rotation_degrees = category.rotation_degrees;
                 left = 0.0;
                 right = 0.0;
                 continue;
             }
-            category.rotate = rotated;
+            category.rotation_degrees = rotation_degrees;
             let bottom = if pie {
                 font * hancom_default::PIE_BOTTOM_PAD_EM
             } else {
@@ -346,8 +381,6 @@ impl CartesianLayout {
                 0.0
             } else if horizontal {
                 category.maximum_advance + FRAME_PAD * 2.05
-            } else if chart.chart_type == OoxmlChartType::Scatter {
-                estimate_axis_label_width(chart, 0)
             } else {
                 scales.primary.label_width(chart, 0, measure) + FRAME_PAD * 1.8
             };
@@ -360,7 +393,11 @@ impl CartesianLayout {
                 let family = chart.text_font_family.as_deref().unwrap_or("sans-serif");
                 measure(&text, font, family) * 0.5 + FRAME_PAD * 1.3
             } else if chart.chart_type == OoxmlChartType::Scatter {
-                value_axis_max_label_width(chart) * 0.5 + FRAME_PAD * 1.3
+                let family = chart.text_font_family.as_deref().unwrap_or("sans-serif");
+                measure(&format_num(scales.secondary.max, None), font, family) * 0.5
+                    + FRAME_PAD * 1.3
+            } else if pie {
+                font * hancom_default::PIE_RIGHT_PAD_EM
             } else {
                 FRAME_PAD
             };

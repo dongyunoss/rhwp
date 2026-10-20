@@ -2,6 +2,8 @@
 
 use std::ops::Range;
 
+pub(crate) const TEXT_LINE_EM: f64 = 1.3;
+
 pub(crate) struct LegendRow {
     pub items: Range<usize>,
     pub width: f64,
@@ -41,7 +43,7 @@ impl LegendLayout {
             widths,
             rows,
             width,
-            row_height: font_size * 1.3,
+            row_height: font_size * TEXT_LINE_EM,
             frame_padding,
         }
     }
