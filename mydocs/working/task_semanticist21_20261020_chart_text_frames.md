@@ -781,3 +781,70 @@ Clippy는 이전 3D 눈금의 배수 검사만 지적했다. 같은 의미의 `u
 `logs/chart-inline-legend-961-panels.log`, `logs/chart-legend-glyph-bottom-963-print.log`,
 `logs/chart-no-side-legend-frame-969.log`, `logs/chart-no-side-frame-972-panels.log`,
 `logs/chart-no-side-glyph-973-panels.log`, `logs/chart-legend-final-974-*.log`다.
+
+## Native073 전쪽 완료와 fresh027의 실제 후속 결함
+
+제품 소스 커밋은 `3d8f2a3e1c7179c1b4dff16dee43e672df6bd1bd`다. Native073은
+213초대 빌드 후 180개 기록 소스를 해당 커밋 바이트와 대조했다. 977의 동결 증명과
+`source-snapshots/native073/`을 보존한다. 이 절의 실행 근거는 모두
+`output/pr-review/semanticist21-20261019/` 아래다.
+
+978의 176조건·176쪽 Native 검증은 종료했다. 모든 입력에서 독립 Print와 전체 한 쪽이
+일치했다. Native070의 151조건 통과에서 156조건 통과로 증가했고, 같은 입력·PDF·조판
+세대·공급 글꼴과 등록 SHA를 대조한 980에서 0.1%p 이상 하락은 없었다. 이 비교는 이전
+중간 후보 Native070과의 비교이며 최신 `upstream/devel` 대비 최종 판정을 대신하지 않는다.
+
+| 입력 | Native070 | Native073 |
+| --- | ---: | ---: |
+| 18pt 가로 범례 | 85.08955% | 95.48358% |
+| 16.01pt 자동 범례 | 89.71733% | 91.12693% |
+| 16.99pt 자동 범례 | 89.15070% | 90.43475% |
+| 17pt 자동 범례 | 89.86056% | 91.12963% |
+| 주식형 가로 범례 | 87.24448% | 95.26969% |
+| 기존 줄바꿈 범례 | 91.99017% | 97.58022% |
+
+미달은 20조건이다. 3D 카메라 `rAngAx=0`, 3D 누적 세로막대 원본 HWP/HWPX 두 경로,
+큰/작은 글자와 값 크기의 3D 반례, 큰 글자의 2D 회전·서로 다른 face가 남았다.
+980의 전체 TSV와 JSON에 파일별 값을 보존했다. 실루엣 모드의 `not_evaluated`를 시각
+승인으로 바꾸지 않았으며, 기존 실패 검사·기대값·골든도 변경하지 않았다.
+
+987의 최신 Native review·standalone overlay에서 범례 개선을 확인했다. 그러나 18pt 가로
+범례의 값축은 RHWP가 `0·6`, 독립 Print가 `0·4`를 표시했다. 95.48358%라는 전체 점수로
+숫자 생략 간격 차이를 면제하지 않는다. 현재 `render_value_grid`의 `ceil(2font/spacing)`이
+표시 글줄 간격을 결정하므로, 격자·범위와 실제 숫자 표시 간격을 독립 Print로 분리해 검증한다.
+
+fresh027은 같은 180개 소스로 최적화까지 745.93초에 성공했다. `target/pr-review`, 빌드 잡8,
+`codegen-units=16`, 최적화 작업자8을 사용했다. package 해시와 Studio JS/WASM 동기화가
+일치했다. receipt는 `char-overlap-fresh-wasm-build-027-result.json`이다. 989의 전체176조건
+fresh 검증은 계속 실행 중이며, 우선 실행한 실제 결과에서 18pt 가로 범례는 95.68179%였다.
+이 중간 값이나 Native 완료를 fresh 전체 완료로 보고하지 않는다.
+
+반면 주식형 원본 `samples/chart/기타/고가저가종가.hwp`는 Native99.12461%에 비해
+fresh85.33333%였다. 990의 두 backend 각각 review와 standalone overlay를 열었다.
+991의 동일 마스크 분석은 Native의 미대응64픽셀과 fresh의946픽셀을 확인했다. fresh의
+850픽셀은 차트 아래 외곽선 두 줄에 집중됐다. 같은 위치의 RGB는 Native223/244,
+fresh243/236, PDF134/134였다. 고정된 내용 판정 `<232`에서 fresh 아래 선이 빠졌다.
+임계값·DPI·영역을 완화하지 않고 SVG 외곽선과 viewport/래스터 경로를 조사한다.
+
+992의 600dpi 독립 Print에서 주식형 원본과 10·18pt 가로 범례 모두 위·왼쪽 외곽선의
+짙은 밴드는 약0.8px, 아래는1.28px, 오른쪽은0.96px였다. 조각의 XML에는
+`chartSpace/spPr`가 없어 명시 선이 아닌 기본 서식 경로다. 이 래스터 밴드 폭을 곧바로
+기본 선 굵기의 새 핀으로 쓰지 않는다. 명시 선 굵기 대조군과 브라우저/Native의 경계
+피복률을 비교해 기본 서식과 클리핑·재표본화를 구분한 뒤 공통 원인을 보정한다.
+
+축 진단의 981~983은 눈금 끝·회색 막대를 축선으로 혼동할 수 있어 superseded로 표시했다.
+984가 세로 축선의 연속 밴드와 실제 숫자 잉크를 사용한 대체 기록이다. 같은18pt 본문에서
+범례만10pt로 줄인 Print는 축 왼쪽40.08px, 18pt 범례의 회전 입력은42.96px였다. 글자 크기
+차이와 범주 회전에 의한 추가 예약을 구분해야 한다. 측정만으로 좌표 보정을 추가하지 않았다.
+
+985의 제목1.25배 가설도 채택하지 않았다. 988의 같은15pt 축 글꼴·제목18/21pt Print는 축
+윗끝69.92→74.72px, 즉 제목 글자 크기4px 증가에4.8px 이동했다. 기존1.2배와 일치하므로
+제목 줄 높이를 늘려 축 글줄의 여백 결함을 숨기지 않는다. 자동/명시18pt의 윗끝도 같았다.
+
+새 실행 로그는 `logs/chart-legend-native073-978.log`,
+`logs/chart-legend-native-comparison-980.log`, `logs/chart-legend-native-panels-987.log`,
+`logs/char-overlap-fresh-wasm-build-027.log`, `logs/chart-legend-wasm027-989.log`,
+`logs/chart-stock-wasm-panels-990.log`, `logs/chart-label-frame-984.log`,
+`logs/chart-title-reservation-985.log`, `logs/chart-fixed-label-title-pitch-988.log`,
+`logs/chart-frame-strokes-992.log`다. 남은 출력 결함·fresh 전체·최신 base 비교·기존 Rust
+실패·전체 통합 검증을 해결하기 전 PR을 제출하지 않는다.
