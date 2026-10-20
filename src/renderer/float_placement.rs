@@ -7,6 +7,7 @@ pub use column_frame::StoredColumnFrame;
 pub use first_line::FloatPushedFirstLine;
 pub(crate) mod restarted_tac;
 mod stored_column_spacing;
+mod stored_row_grid;
 pub(crate) use column_ole::column_ole_placement;
 mod overlay_outer_frame;
 pub(crate) use overlay_outer_frame::overlay_table_outer_margin_left_hu;
@@ -7666,6 +7667,11 @@ pub(crate) fn computed_empty_table_host(para: &Paragraph, table: &Table) -> bool
 /// 같은 물리 프레임은 행 경계에서 나뉜 각 조각에서도 위·아래 여백을 소유한다.
 pub(crate) fn computed_rowbreak_owns_outer_frame(para: &Paragraph, table: &Table) -> bool {
     table.page_break == TablePageBreak::RowBreak && computed_empty_table_host(para, table)
+}
+
+/// 선언이 실제 저장 행 점유의 비끝 prefix를 소유하면, 전체 표 높이가 아니다.
+pub(crate) fn stored_rowbreak_owns_fragment_outer_frame(para: &Paragraph, table: &Table) -> bool {
+    stored_row_grid::owns_fragment_outer_frame(para, table)
 }
 
 /// 빈 개체 앵커는 글줄을 점유하지 않고 표 포맷의 앞/뒤 간격을 소비한다.

@@ -5581,6 +5581,8 @@ impl LayoutEngine {
                 self.profile.get(), para, outer_table,
         ) || crate::renderer::float_placement::computed_rowbreak_owns_outer_frame(
                 para, outer_table,
+        ) || crate::renderer::float_placement::stored_rowbreak_owns_fragment_outer_frame(
+                para, outer_table,
         ) || matches!(
             outer_table.page_break,
             crate::model::table::TablePageBreak::CellBreak

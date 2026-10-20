@@ -467,17 +467,22 @@ impl TypesetState {
         }
     }
 
+    /// 본문 항목 외에 이 쪽에서 실제 방출할 개체·어울림도 단의 내용이다.
+    /// 일반 전환과 문서 끝 확정이 같은 소유 판정을 사용한다.
+    pub(in crate::renderer::typeset) fn has_column_content(&self) -> bool {
+        !self.data.current_items.is_empty()
+            || !self.data.current_column_wrap_around_paras.is_empty()
+            || !self.data.page_start_square_pictures.is_empty()
+            || !self.data.page_start_stored_frames.is_empty()
+    }
+
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
     pub(in crate::renderer::typeset) fn flush_column(&mut self) {
         self.data.pending_paragraph_origins.clear();
         // [#4090] 쪽이 끝나면 어울림 밴드도 끝난다 — 개체 높이를 used 에 반영한다.
         self.close_square_band();
         self.data.inline_box_flow_bottom = 0.0;
-        if self.data.current_items.is_empty()
-            && self.data.current_column_wrap_around_paras.is_empty()
-            && self.data.page_start_square_pictures.is_empty()
-            && self.data.page_start_stored_frames.is_empty()
-        {
+        if !self.has_column_content() {
             return;
         }
         let col_content = ColumnContent {

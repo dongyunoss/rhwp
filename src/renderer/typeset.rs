@@ -278,7 +278,7 @@ struct DeferredSquarePictureControl {
     wrap_anchor: crate::renderer::pagination::WrapAnchorRef,
 }
 
-/// 완전한 저장 프레임으로 다음 쪽 상단 소유가 확인된 개체.
+/// 저장 정보 또는 확정한 계산 프레임으로 다음 쪽 상단 소유가 확인된 개체.
 #[derive(Debug, Clone)]
 enum DeferredStoredFrameKind {
     Picture,

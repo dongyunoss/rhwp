@@ -105,6 +105,9 @@ impl TypesetEngine {
             composed_all,
             ..
         } = input;
+        if super::deferred_float::try_defer(st, input, self.dpi) {
+            return None;
+        }
         // 원본 개체의 다음 쪽 상자와 본문 재시작은 같은 계획을 소비한다.
         // 현재 호스트를 flush하지 않아 앞쪽에 속한 뒤 글줄을 보존한다.
         if st.col_count == 1
