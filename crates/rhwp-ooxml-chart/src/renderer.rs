@@ -45,17 +45,17 @@ mod hancom_default {
     pub const SERIES_LINE_PT: f64 = 2.25;
     /// 제목·라벨·범례 글자색.
     pub const TEXT_COLOR: &str = "#000000";
-    /// 프레임 상단 → 제목 baseline = 1.9 × 제목 글꼴 (실측 35.5px = 위 여백 18 + 한글 잉크 17.5).
-    pub const TITLE_BASELINE_EM: f64 = 1.9;
-    /// 제목 baseline → 플롯 상단 = 1.36 × 제목 글꼴 (실측 61 − 35.5 = 25.5px).
+    /// 프레임 상단 → 제목 줄 하단 앵커 = 1.9 × 제목 글꼴 (실측 35.5px = 위 여백 18 + 한글 잉크 17.5).
+    pub const TITLE_TEXT_BOTTOM_EM: f64 = 1.9;
+    /// 제목 줄 하단 → 플롯 상단 = 1.36 × 제목 글꼴 (실측 61 − 35.5 = 25.5px).
     pub const TITLE_PLOT_GAP_EM: f64 = 1.36;
     /// 제목이 없을 때 프레임 상단 → 플롯 상단 (라벨 글꼴 배수, 코퍼스에 표본 없음).
     pub const NO_TITLE_TOP_EM: f64 = 1.0;
     /// 플롯 하단 → 프레임 하단 = 3.1 × 라벨 글꼴 (실측 250 − 209 = 41px).
     pub const BOTTOM_PAD_EM: f64 = 3.1;
-    /// 플롯 하단 → 카테고리 라벨 baseline = 2.3 × 라벨 글꼴 (실측 239.5 − 209 = 30.5px).
-    pub const CATEGORY_LABEL_BASELINE_EM: f64 = 2.3;
-    /// 원형: 제목 baseline → 원 상단 = 1.0 × 제목 글꼴 (실측 2차원원형 원 상단 54.5 = 35.5 + 19).
+    /// 플롯 하단 → 카테고리 라벨 줄 하단 = 2.3 × 라벨 글꼴 (실측 239.5 − 209 = 30.5px).
+    pub const CATEGORY_LABEL_TEXT_BOTTOM_EM: f64 = 2.3;
+    /// 원형: 제목 줄 하단 → 원 상단 = 1.0 × 제목 글꼴 (실측 2차원원형 원 상단 54.5 = 35.5 + 19).
     pub const PIE_TITLE_GAP_EM: f64 = 1.0;
     /// 원형: 원 하단 → 프레임 하단 = 1.1 × 라벨 글꼴 (실측 252.5 − 237.5 = 15px).
     /// 축 라벨이 없으므로 `BOTTOM_PAD_EM` 대신 쓴다. 왼쪽 여백도 0.
@@ -399,7 +399,7 @@ pub fn render_chart_svg_with_text_measure(
         })
     });
 
-    // 영역 분할 — 한/글 기본 서식(`hancom_default`, #6624): 제목 baseline 1.9T, 제목→플롯 1.36T,
+    // 영역 분할 — 한/글 기본 서식(`hancom_default`, #6624): 제목 줄 하단 1.9T, 제목→플롯 1.36T,
     // 플롯 아래 3.1L, 라벨 폭 + 1.3L 왼쪽 여백 (T=제목 글꼴, L=라벨 글꼴).
     let title_font = title_font_px(chart);
     let label_font = label_font_px(chart);
@@ -409,10 +409,10 @@ pub fn render_chart_svg_with_text_measure(
     let is_pie = chart.chart_type == OoxmlChartType::Pie;
     let title_h = match (effective_title.is_some(), is_pie) {
         (true, false) => {
-            title_font * (hancom_default::TITLE_BASELINE_EM + hancom_default::TITLE_PLOT_GAP_EM)
+            title_font * (hancom_default::TITLE_TEXT_BOTTOM_EM + hancom_default::TITLE_PLOT_GAP_EM)
         }
         (true, true) => {
-            title_font * (hancom_default::TITLE_BASELINE_EM + hancom_default::PIE_TITLE_GAP_EM)
+            title_font * (hancom_default::TITLE_TEXT_BOTTOM_EM + hancom_default::PIE_TITLE_GAP_EM)
         }
         (false, _) => label_font * hancom_default::NO_TITLE_TOP_EM,
     };
@@ -425,6 +425,15 @@ pub fn render_chart_svg_with_text_measure(
     // `w * 0.30 >= 50.0` 가드: 폭이 좁으면(<167px) 하단 폴백 — 아래 clamp의
     // min(50)>max(w*0.30) 패닉 방지 (w는 문서 데이터가 결정). NaN도 false → 폴백.
     let legend_right = legend_visible && chart.legend_pos == LegendPos::Right && w * 0.30 >= 50.0;
+    // 우측 범례는 제목 줄 하단부터 차트 프레임 바닥까지의 가용 영역에서 가운데 놓는다.
+    // 플롯의 격자·하단 축 라벨 예약을 범례의 세로 정렬에 다시 적용하지 않는다.
+    let title_bottom = if effective_title.is_some() {
+        title_font * hancom_default::TITLE_TEXT_BOTTOM_EM
+    } else {
+        0.0
+    };
+    let right_legend_y = y + title_bottom;
+    let right_legend_h = h - title_bottom;
     let legend_layout = crate::legend_layout::LegendLayout::new(
         if legend_visible && !legend_right {
             legend_items(chart)
@@ -485,9 +494,9 @@ pub fn render_chart_svg_with_text_measure(
     if let Some(ref title) = effective_title {
         // 한컴 제목은 regular weight (정답지 PDF 실측 — C1c #1882 갭①), 14pt 검정 (#6624)
         svg.push_str(&format!(
-            "<text class=\"hwp-chart-title\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"{}\" font-size=\"{:.2}\" font-weight=\"400\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+            "<text class=\"hwp-chart-title\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"{}\" font-size=\"{:.2}\" font-weight=\"400\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-after-edge\">{}</text>\n",
             x + w / 2.0,
-            y + title_font * hancom_default::TITLE_BASELINE_EM,
+            y + title_font * hancom_default::TITLE_TEXT_BOTTOM_EM,
             xml_escape(chart.title_font_family.as_deref().unwrap_or("inherit")),
             title_font,
             hancom_default::TEXT_COLOR,
@@ -505,7 +514,13 @@ pub fn render_chart_svg_with_text_measure(
             render_pie(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
         }
         if legend_right {
-            render_legend_right(&mut svg, chart, x + w - legend_w + 4.0, plot_y, plot_h);
+            render_legend_right(
+                &mut svg,
+                chart,
+                x + w - legend_w + 4.0,
+                right_legend_y,
+                right_legend_h,
+            );
         } else {
             render_legend(
                 &mut svg,
@@ -542,7 +557,13 @@ pub fn render_chart_svg_with_text_measure(
     }
 
     if legend_right {
-        render_legend_right(&mut svg, chart, x + w - legend_w + 4.0, plot_y, plot_h);
+        render_legend_right(
+            &mut svg,
+            chart,
+            x + w - legend_w + 4.0,
+            right_legend_y,
+            right_legend_h,
+        );
     } else {
         render_legend(
             &mut svg,
@@ -2103,9 +2124,9 @@ fn render_value_grid(
             }
             let v = vmin + step * i as f64;
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-after-edge\">{}</text>\n",
                 gx,
-                py + ph + font * hancom_default::CATEGORY_LABEL_BASELINE_EM,
+                py + ph + font * hancom_default::CATEGORY_LABEL_TEXT_BOTTOM_EM,
                 font,
                 hancom_default::TEXT_COLOR,
                 xml_escape(&label(v))
@@ -2584,9 +2605,9 @@ fn render_category_labels_at(
         } else {
             let cx = px + cat_span * ci as f64 + cat_span / 2.0;
             svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-after-edge\">{}</text>\n",
                 cx,
-                py + ph + font * hancom_default::CATEGORY_LABEL_BASELINE_EM,
+                py + ph + font * hancom_default::CATEGORY_LABEL_TEXT_BOTTOM_EM,
                 font,
                 hancom_default::TEXT_COLOR,
                 xml_escape(cat)
@@ -2833,7 +2854,7 @@ fn render_legend(
     svg.push_str("</g></g>\n");
 }
 
-/// 우측 세로 범례 (legendPos=r — 한컴 코퍼스 전 샘플). 플롯 세로 중앙 정렬.
+/// 우측 세로 범례 (legendPos=r — 한컴 코퍼스 전 샘플). 전달한 가용 프레임의 세로 중앙 정렬.
 /// C1c #1882 갭③.
 fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: f64) {
     if chart.series.is_empty() {
