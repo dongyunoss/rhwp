@@ -5579,6 +5579,8 @@ impl LayoutEngine {
             para, outer_table,
         ) || crate::renderer::float_placement::stored_repeated_header_rowbreak_outer_frame(
                 self.profile.get(), para, outer_table,
+        ) || crate::renderer::float_placement::computed_rowbreak_owns_outer_frame(
+                para, outer_table,
         ) || matches!(
             outer_table.page_break,
             crate::model::table::TablePageBreak::CellBreak

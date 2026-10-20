@@ -260,6 +260,12 @@ pub(super) fn place_split_paragraph(
         };
         if cursor_line == 0 {
             record_stored_column_top_spacing(st, paragraphs, para_idx, fmt, styles, dpi);
+            // 통째 fit 실패 뒤 새 단에서 전체 문단을 수용하는 재시도도
+            // 같은 첫 줄 계약을 쓴다. 항목 이름이 FullParagraph여도
+            // 이 경로는 place_fitted_paragraph를 통과하지 않는다.
+            if st.starts_after_overheight_whole_float(paragraphs, para_idx, dpi) {
+                st.record_float_pushed_line_spacing(para_idx, sp_b);
+            }
         }
         content::record_first_fragment_origin(st, &fragment.item, paragraphs);
         st.commit_split_paragraph_fragment(fragment);
@@ -369,6 +375,8 @@ pub(super) fn place_fitted_paragraph(
         _ => None,
     };
     record_stored_column_top_spacing(st, paragraphs, para_idx, fmt, styles, dpi);
+    let after_overheight_whole_float =
+        st.starts_after_overheight_whole_float(paragraphs, para_idx, dpi);
     st.insert_fitted_paragraph(para_idx, defer_preceding_float);
     let stored_successor_flow =
         content::stored_successor_flow(st, para, fmt, paragraphs, styles, para_idx, dpi);
@@ -393,6 +401,16 @@ pub(super) fn place_fitted_paragraph(
                 st.vpos_page_base.is_none(),
             )
         });
+    // 앞 단의 통째 표 뒤에서 새로 수용한 앞 간격이다. 이전 단의 저장 vpos를
+    // 새 단의 원점으로 해석하거나 출력 단계의 상단 트림으로 버리지 않는다.
+    // 흐름이 이미 이 간격을 포함하므로 다시 더하지 않고 확정값만 공유한다.
+    if after_overheight_whole_float
+        && stored_successor_flow.is_none()
+        && stored_guide_advance.is_none()
+        && advance + dpi / 7200.0 >= fmt.total_height
+    {
+        st.record_float_pushed_line_spacing(para_idx, fmt.spacing_before);
+    }
     // 분할 자리차지 표 조각이 앞 간격을 품었으면 흐름에서 그만큼 덜 전진하고, 출력에
     // 같은 확정 앞 간격을 넘긴다. 트림·저장 끝이 이미 정한 전진은 건드리지 않는다.
     let absorbed_spacing_before = split_float_spacing_before

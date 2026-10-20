@@ -109,7 +109,7 @@ impl TypesetEngine {
             crate::renderer::float_placement::stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
                 self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                 para, table,
-            );
+            ) || crate::renderer::float_placement::computed_rowbreak_owns_outer_frame(para, table);
         let repeated_header_outer_frame =
             crate::renderer::float_placement::stored_repeated_header_rowbreak_outer_frame(
                 st.profile, para, table,

@@ -1130,6 +1130,7 @@ mod notes;
 mod paragraph_fragment;
 mod stored_tac;
 mod transition;
+mod whole_float_successor;
 
 pub(super) struct TypesetState {
     data: data::StateView,

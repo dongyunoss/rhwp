@@ -2410,10 +2410,24 @@ impl TypesetEngine {
                 }
             })
         });
-        if !painted_rowbreak_exceeds_paper
-            && complete_caption_fits
-            && resolved_host_placement.map_or(legacy_whole_fits, |p| {
-                p.occupied_bottom <= whole_frame_budget
+        let unrestricted_whole_object = super::unrestricted_float::owns_whole_object(input);
+        let resolved_host_placement = resolved_host_placement.or_else(|| {
+            (!legacy_whole_fits && unrestricted_whole_object)
+                .then(|| {
+                    super::unrestricted_float::missing_frame(
+                        input,
+                        placement_para_start_height,
+                        self.dpi,
+                    )
+                })
+                .flatten()
+                .map(|placement| constrain_host_placement.constrain(placement, st))
+        });
+        if unrestricted_whole_object
+            || (!painted_rowbreak_exceeds_paper
+                && complete_caption_fits
+                && resolved_host_placement.map_or(legacy_whole_fits, |p| {
+                    p.occupied_bottom <= whole_frame_budget
                     // None split 개체의 본체는 종이 안에 들어가면 body 아래 여백을
                     // 사용할 수 있다. 뒤 바깥 여백은 후속 흐름에 예약하지만 본체를
                     // 다음 쪽으로 밀 이유가 아니다(독립 Print의 작은 용지 대조).
@@ -2422,7 +2436,7 @@ impl TypesetEngine {
                         && ft.table_footnotes.is_empty()
                         && st.current_footnote_height <= 0.0
                         && p.table_top + ft.effective_height <= available + below_body_slack)
-            })
+                }))
         {
             if let Some(placement) = resolved_host_placement {
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);

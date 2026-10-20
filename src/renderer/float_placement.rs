@@ -7662,6 +7662,12 @@ pub(crate) fn computed_empty_table_host(para: &Paragraph, table: &Table) -> bool
         && signed_hwpunit(table.common.vertical_offset) >= 0
 }
 
+/// 재조판한 빈 호스트에는 표 바깥 상자를 대신 소유하는 저장 줄이 없다.
+/// 같은 물리 프레임은 행 경계에서 나뉜 각 조각에서도 위·아래 여백을 소유한다.
+pub(crate) fn computed_rowbreak_owns_outer_frame(para: &Paragraph, table: &Table) -> bool {
+    table.page_break == TablePageBreak::RowBreak && computed_empty_table_host(para, table)
+}
+
 /// 빈 개체 앵커는 글줄을 점유하지 않고 표 포맷의 앞/뒤 간격을 소비한다.
 /// 폭 0 저장 줄의 vpos는 이전 흐름 위치일 수 있으므로 새 단의 원점을 덮지 않는다.
 /// 이 전환은 명시적 쪽·단 나누기로 새 프레임을 여는 통째 표에 적용한다.

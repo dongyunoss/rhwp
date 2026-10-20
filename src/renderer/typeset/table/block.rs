@@ -12,6 +12,7 @@ mod computed_host_frame;
 mod entry;
 pub(in crate::renderer::typeset) mod host_placement;
 mod prepare;
+mod unrestricted_float;
 mod whole_fit;
 
 #[derive(Clone, Copy)]
