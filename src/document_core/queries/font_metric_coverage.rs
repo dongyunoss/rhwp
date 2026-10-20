@@ -470,7 +470,7 @@ fn classify_decision(
         }
         // 선언된 paint 대체 face의 실제 glyph hit도 해당 face의 메트릭 측정이다.
         // 원래 face의 결측 때문에 선택됐다는 이유로 집계에서 제외하지 않는다.
-        "embeddedMetric" | "metricHalfSpace" | "declaredGlyphFallbackMetric" => {
+        "embeddedMetric" | "metricHalfSpace" | "declaredGlyphFallbackMetric" | "canonicalHangulMetric" => {
             if decision.character_match != "hit" || metric_entry.is_none() {
                 return Err(coverage_error(format!(
                     "metric widthSource requires a metric character hit: {}",

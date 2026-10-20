@@ -40,6 +40,13 @@ mod math_symbol_blocks;
 #[path = "font_metric_contextual_scripts.rs"]
 mod contextual_scripts;
 
+#[path = "font_metric_hangul_jamo.rs"]
+mod hangul_jamo;
+
+pub(crate) fn uses_hangul_jamo_overlay(metric: &FontMetric, character: char) -> bool {
+    hangul_jamo::width(metric, character).is_some()
+}
+
 pub(crate) use legacy_hft::{
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
@@ -88,6 +95,9 @@ pub struct LatinRange {
 impl FontMetric {
     pub fn get_width(&self, ch: char) -> Option<u16> {
         let code = ch as u32;
+        if let Some(width) = hangul_jamo::width(self, ch) {
+            return Some(width);
+        }
         // 한글 음절 (U+AC00~U+D7A3)
         if code >= 0xAC00 && code <= 0xD7A3 {
             if let Some(h) = self.hangul {

@@ -1256,7 +1256,8 @@ export interface LayerTextRunOp {
   text: string;
   displayText?: string;
   /** 주소·전진은 원 표시 자소 기준이다. 실제 face에 가시 glyph가 있을 때만 선택한다. */
-  puaGlyphCandidates?: Array<{start: number; end: number; glyph: string}>;
+  puaGlyphCandidates?: Array<{start: number; end: number; glyph: string; fallbackGlyph?: string}>;
+  puaGlyphCandidatesComplete?: boolean;
   /** Run-local baseline offset from bbox.y when placement is absent. */
   baseline?: number;
   rotation?: number;
@@ -1613,6 +1614,7 @@ export interface LayerTextDecorationOp {
       positions: number[];
       browserText: string;
       browserOffset: number;
+      browserAlignEnd?: boolean;
     };
     /** 실제 글줄 메트릭과 독립 Print로 해소한 기하. 클라이언트에서 크기를 다시 추정하지 않는다. */
     topUnderline?: {

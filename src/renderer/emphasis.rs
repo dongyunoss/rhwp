@@ -1,8 +1,92 @@
 //! 한컴 Print의 강조점 글리프 역할과 표시 자소별 배치 결과.
 use super::{render_tree::BoundingBox, text_direction::VisualTextPositions, TextStyle};
+use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
 use unicode_segmentation::UnicodeSegmentation;
 
 pub(crate) const FONT_FAMILY: &str = "HCR Batang";
+
+/// 원문 scalar 주소의 자소 소속이다. run 분할·글꼴·좌표로 소속을 추측하지 않는다.
+pub(crate) struct SourceGraphemes {
+    characters: Vec<char>,
+    starts: Vec<bool>,
+    rendered_sources: Vec<Option<usize>>,
+}
+impl SourceGraphemes {
+    pub fn new(para: &crate::model::paragraph::Paragraph) -> Self {
+        use crate::model::control::Control;
+        let characters = para.text.chars().collect::<Vec<_>>();
+        let positions = para.control_text_positions();
+        let mut controls = para
+            .controls
+            .iter()
+            .zip(positions)
+            .filter(|(control, _)| control.is_logical_inline())
+            .collect::<Vec<_>>();
+        controls.sort_by_key(|(_, position)| *position);
+        let mut controls = controls.into_iter().peekable();
+        let mut surface = String::new();
+        let mut surface_sources = Vec::new();
+        let mut rendered_sources = Vec::new();
+        for index in 0..=characters.len() {
+            while controls
+                .peek()
+                .is_some_and(|(_, position)| *position == index)
+            {
+                let (control, _) = controls.next().unwrap();
+                // 객체는 자소를 끊는다. 선두 주석 번호는 줄 밖 prefix여서 본문
+                // 런 주소에 없지만, 원문 자소 경계에서는 여전히 별도 소유자다.
+                // U+FFFC에는 뒤 결합 문자가 붙으므로 자소 투영에는 GB4/GB5의
+                // 제어 경계를 쓴다. 이 문자열은 표시·저장하지 않는다.
+                surface.push('\0');
+                surface_sources.push(None);
+                if index != 0 || !matches!(control, Control::Footnote(_) | Control::Endnote(_)) {
+                    rendered_sources.push(None);
+                }
+            }
+            if let Some(&ch) = characters.get(index) {
+                surface.push(ch);
+                surface_sources.push(Some(index));
+                rendered_sources.push(Some(index));
+            }
+        }
+        let mut starts = vec![false; characters.len()];
+        let mut offset = 0;
+        for cluster in surface.graphemes(true) {
+            if let Some(index) = surface_sources[offset] {
+                starts[index] = true;
+            }
+            offset += cluster.chars().count();
+        }
+        Self {
+            characters,
+            starts,
+            rendered_sources,
+        }
+    }
+
+    /// 전용 인라인 표 경로는 원문 scalar 위치를 이미 보유한다.
+    pub fn apply_source_style(&self, start: usize, style: &mut TextStyle) {
+        if style.emphasis_dot != 0 {
+            style.emphasis_skip_first_cluster = !self.starts.get(start).copied().unwrap_or(true);
+        }
+    }
+    pub fn apply(&self, run: &mut super::render_tree::TextRunNode) {
+        use super::render_tree::FieldMarkerType;
+        if run.style.emphasis_dot == 0 || run.field_marker != FieldMarkerType::None {
+            return;
+        }
+        let Some(start) = run
+            .char_start
+            .and_then(|start| self.rendered_sources.get(start).copied().flatten())
+        else {
+            return;
+        };
+        // 생성 표시값은 별도 소유자다. 실제 원문과 대응하는 run에만 적용한다.
+        if self.characters.get(start).copied() == run.text.chars().next() {
+            self.apply_source_style(start, &mut run.style);
+        }
+    }
+}
 
 pub(crate) fn glyph(kind: u8) -> Option<&'static str> {
     match kind {
@@ -30,6 +114,8 @@ pub(crate) struct EmphasisGeometry {
     /// 브라우저의 방점 셰이핑에서 보조 원 삽입을 막는 잉크 없는 문맥.
     pub browser_text: String,
     pub browser_offset: f64,
+    /// 빈 문맥 자소의 실제 전진을 문자열 끝점 정렬로 상쇄한다.
+    pub browser_align_end: bool,
 }
 
 impl EmphasisGeometry {
@@ -71,10 +157,14 @@ pub(crate) fn geometry(
     for cluster in text.graphemes(true) {
         let end = start + cluster.chars().count();
         let width = positions[end] - positions[start];
-        if width > 0.0
-            && cluster
-                .chars()
-                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{fffc}')
+        if width >= 0.0
+            && !(start == 0 && style.emphasis_skip_first_cluster)
+            && cluster.chars().any(|ch| {
+                !ch.is_whitespace()
+                    && !ch.is_control()
+                    && ch.general_category() != GeneralCategory::Format
+                    && ch != '\u{fffc}'
+            })
         {
             let left = visual
                 .as_ref()
@@ -97,7 +187,11 @@ pub(crate) fn geometry(
         font_size,
         bold: style.is_visually_bold(),
         ratio,
-        skew_x: if style.italic { -0.333 } else { 0.0 },
+        skew_x: if style.italic {
+            super::text_italic::SKEW_X
+        } else {
+            0.0
+        },
         baseline_offset: if tone { 0.0 } else { -font_size * 0.37 },
         positions: origins,
         browser_text: if tone {
@@ -105,6 +199,7 @@ pub(crate) fn geometry(
         } else {
             glyph.to_owned()
         },
-        browser_offset: if tone { -font_size * 0.5 } else { 0.0 },
+        browser_offset: 0.0,
+        browser_align_end: tone,
     })
 }

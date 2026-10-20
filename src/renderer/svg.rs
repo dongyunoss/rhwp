@@ -28,6 +28,8 @@ use crate::paint::{PaintOp, TextDecorationKind};
 use std::fmt::Write as _;
 
 mod char_overlap;
+#[cfg(not(target_arch = "wasm32"))]
+mod italic_fonts;
 mod pua_glyph;
 mod stroke_pattern;
 
@@ -146,6 +148,8 @@ pub struct SvgRenderer {
     /// 추가 폰트 탐색 경로
     pub font_paths: Vec<std::path::PathBuf>,
     pub(crate) source_font_coverage: super::pua_glyph::FontCoverage,
+    #[cfg(not(target_arch = "wasm32"))]
+    source_font_coverage_requests: std::collections::HashSet<(String, bool, bool)>,
     /// 사용된 폰트별 codepoint 수집 (font_family → codepoints)
     font_codepoints: std::collections::HashMap<String, std::collections::HashSet<char>>,
     /// 실제 Bold face가 필요한 폰트 family.
@@ -154,6 +158,7 @@ pub struct SvgRenderer {
     /// 일반 face 하나만 `@font-face`로 임베드하면 브라우저가 synthetic bold를
     /// 적용해 획 두께와 글리프 폭이 기준 PDF와 달라진다.
     font_bold_families: std::collections::HashSet<String>,
+    font_italic_styles: std::collections::HashSet<(String, bool)>,
     /// [#4709] 배치에 쓴 내장 메트릭 face를 출력에 주석으로 남길지 (옵트인).
     ///
     /// 켜면 각 `<text>`에 `data-metric-font`, 루트 `<svg>`에 페이지에서 쓰인
@@ -263,8 +268,11 @@ impl SvgRenderer {
             font_embed_mode: FontEmbedMode::None,
             font_paths: Vec::new(),
             source_font_coverage: Default::default(),
+            #[cfg(not(target_arch = "wasm32"))]
+            source_font_coverage_requests: Default::default(),
             font_codepoints: std::collections::HashMap::new(),
             font_bold_families: std::collections::HashSet::new(),
+            font_italic_styles: std::collections::HashSet::new(),
             annotate_metric_font: false,
             metric_faces: std::collections::BTreeSet::new(),
             soft_wrap_decoration_trim: None,
@@ -838,7 +846,10 @@ impl SvgRenderer {
                         attrs.push_str(" font-weight=\"500\"");
                     }
                     if run.style.italic {
-                        attrs.push_str(" font-style=\"italic\"");
+                        attrs.push_str(&format!(
+                            " font-style=\"{}\"",
+                            super::text_italic::CSS_STYLE
+                        ));
                     }
                     for c in run.display_or_text().chars() {
                         if c == ' ' {
@@ -2640,7 +2651,10 @@ impl SvgRenderer {
             font_attrs.push_str(" font-weight=\"500\"");
         }
         if style.italic {
-            font_attrs.push_str(" font-style=\"italic\"");
+            font_attrs.push_str(&format!(
+                " font-style=\"{}\"",
+                super::text_italic::CSS_STYLE
+            ));
         }
 
         if chars.len() > 1 {
@@ -2764,7 +2778,10 @@ impl SvgRenderer {
             font_attrs.push_str(" font-weight=\"500\"");
         }
         if style.italic {
-            font_attrs.push_str(" font-style=\"italic\"");
+            font_attrs.push_str(&format!(
+                " font-style=\"{}\"",
+                super::text_italic::CSS_STYLE
+            ));
         }
 
         let cx = bbox_x + box_size / 2.0;
@@ -2974,7 +2991,7 @@ impl SvgRenderer {
                 "<text x=\"{:.3}\" y=\"{:.3}\" font-size=\"{:.3}\" fill=\"{}\" font-family=\"{}\" font-weight=\"{}\" font-style=\"{}\">{}</text>\n",
                 label.x, label.baseline, label.font_size, escape_xml(&label.color),
                 escape_xml(&label.font_family), if label.bold { "bold" } else { "normal" },
-                if label.italic { "italic" } else { "normal" }, escape_xml(&label.text)));
+                if label.italic { super::text_italic::CSS_STYLE } else { "normal" }, escape_xml(&label.text)));
         }
     }
 
@@ -3359,6 +3376,17 @@ impl Renderer for SvgRenderer {
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스.
         // 한/글 2010 이전 옛한글 PUA 인코딩을 표준 자모로 변환 (KTUG 매핑).
         let text = &expand_pua_old_hangul(text);
+        if self.font_embed_mode != FontEmbedMode::None && style.italic {
+            for family in style
+                .font_family
+                .split(',')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+            {
+                self.font_italic_styles
+                    .insert((family.to_owned(), style.is_visually_bold()));
+            }
+        }
         self.prepare_pua_glyphs(text, style);
         let source_coverage = self.source_font_coverage.clone();
 
@@ -3398,7 +3426,10 @@ impl Renderer for SvgRenderer {
             }
         }
         if style.italic {
-            base_attrs.push_str(" font-style=\"italic\"");
+            base_attrs.push_str(&format!(
+                " font-style=\"{}\"",
+                super::text_italic::CSS_STYLE
+            ));
         }
         // [#4709] 옵트인: 이 run 의 배치 폭을 계산한 내장 메트릭 face 주석.
         // 임베드 호스트가 함초롬 등 미설치 폰트의 자간 불일치를 보정할 근거.
@@ -3414,7 +3445,11 @@ impl Renderer for SvgRenderer {
         }
         let attrs_for_cluster = |cluster_str: &str, fill: &str| {
             let glyph = pua_glyph::display(&source_coverage, cluster_str, style);
-            let cluster_font_family = if super::contains_old_hangul_jamo(&glyph) {
+            let cluster_font_family = if source_coverage
+                .glyph(&style.font_family, cluster_str)
+                .is_none()
+                && super::contains_old_hangul_jamo(&glyph)
+            {
                 &old_hangul_font_family
             } else {
                 &font_family
@@ -3828,11 +3863,11 @@ impl Renderer for SvgRenderer {
             }
             for position in &geometry.positions {
                 self.output.push_str(&format!(
-                    "<text transform=\"translate({} {}) matrix({} 0 {} 1 0 0)\" x=\"{}\" y=\"0\" font-family=\"{}\" font-size=\"{}\" font-weight=\"{}\" font-style=\"normal\" fill=\"{}\" xml:space=\"preserve\">{}</text>\n",
+                    "<text transform=\"translate({} {}) matrix({} 0 {} 1 0 0)\" x=\"{}\" y=\"0\" font-family=\"{}\" font-size=\"{}\" font-weight=\"{}\" font-style=\"normal\" fill=\"{}\" text-anchor=\"{}\" xml:space=\"preserve\">{}</text>\n",
                     x + position, y + geometry.baseline_offset, geometry.ratio,
                     geometry.skew_x * geometry.ratio, geometry.browser_offset,
                     geometry.font_family, geometry.font_size, if geometry.bold { "bold" } else { "normal" },
-                    color, geometry.browser_text,
+                    color, if geometry.browser_align_end { "end" } else { "start" }, geometry.browser_text,
                 ));
             }
         }
@@ -5304,6 +5339,7 @@ pub fn generate_font_style(
     }
 
     fallback_fonts::append_missing_serif_font_css(&mut css, renderer, font_paths, embedded_fonts);
+    italic_fonts::append_font_css(&mut css, renderer, font_paths);
     css
 }
 

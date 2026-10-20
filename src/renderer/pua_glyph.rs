@@ -6,13 +6,39 @@ use std::{
 
 const FIRST: u32 = 0xe000;
 const LAST: u32 = 0xf8ff;
-const WORDS: usize = ((LAST - FIRST + 1) / 64) as usize;
+const HANGUL_FIRST: u32 = 0xac00;
+const HANGUL_LAST: u32 = 0xd7a3;
+const PUA_BITS: u32 = LAST - FIRST + 1;
+const RANGES: [(u32, u32); 5] = [
+    (FIRST, LAST),
+    (HANGUL_FIRST, HANGUL_LAST),
+    (0x1100, 0x11ff),
+    (0xa960, 0xa97f),
+    (0xd7b0, 0xd7ff),
+];
+const WORDS: usize =
+    ((PUA_BITS + HANGUL_LAST - HANGUL_FIRST + 1 + 256 + 32 + 80).div_ceil(64)) as usize;
 // 보조 cmap 비트만 보관한다. 실제 공급 catalog의 별칭·스타일도 유한하게 수용한다.
 const MAX_FACES: usize = 4096;
 const MAX_SOURCE_BYTES: usize = 32 * 1024 * 1024;
 
 /// 모호한 역매핑은 선택하지 않는다. 원문·표시 문자열·문자 주소는 변경하지 않는다.
 pub(crate) fn candidate(cluster: &str) -> Option<char> {
+    if let Some(syllable) = modern_syllable(cluster) {
+        return Some(syllable);
+    }
+    if super::contains_old_hangul_jamo(cluster) && cluster.chars().count() == 1 {
+        return cluster.chars().next();
+    }
+    pua_candidate(cluster)
+}
+
+/// 단독 자소의 원 cmap가 없을 때도 유일한 원 PUA가 있으면 사용한다.
+pub(crate) fn fallback_candidate(cluster: &str) -> Option<char> {
+    pua_candidate(cluster).filter(|glyph| Some(*glyph) != candidate(cluster))
+}
+
+fn pua_candidate(cluster: &str) -> Option<char> {
     if !super::contains_old_hangul_jamo(cluster) {
         return None;
     }
@@ -34,6 +60,39 @@ pub(crate) fn candidate(cluster: &str) -> Option<char> {
         .get(cluster)
         .copied()
         .flatten()
+}
+
+/// Unicode Hangul L/V/T의 정규 합성. paint 후보만 반환하며 원문을 정규화하지 않는다.
+pub(crate) fn modern_syllable(cluster: &str) -> Option<char> {
+    let mut chars = cluster.chars();
+    let leading = (chars.next()? as u32)
+        .checked_sub(0x1100)
+        .filter(|n| *n < 19)?;
+    let vowel = (chars.next()? as u32)
+        .checked_sub(0x1161)
+        .filter(|n| *n < 21)?;
+    let trailing = match chars.next() {
+        Some(ch) => (ch as u32)
+            .checked_sub(0x11a7)
+            .filter(|n| (1..28).contains(n))?,
+        None => 0,
+    };
+    if chars.next().is_some() {
+        return None;
+    }
+    char::from_u32(HANGUL_FIRST + (leading * 21 + vowel) * 28 + trailing)
+}
+
+fn bit_index(ch: char) -> Option<usize> {
+    let cp = ch as u32;
+    let mut offset = 0;
+    for (first, last) in RANGES {
+        if (first..=last).contains(&cp) {
+            return Some(offset + (cp - first) as usize);
+        }
+        offset += (last - first + 1) as usize;
+    }
+    None
 }
 
 type FaceKey = (String, u16, bool);
@@ -97,7 +156,7 @@ impl FontCoverage {
             return Ok(self.disable_family(key.0));
         }
         let mut coverage = [0u64; WORDS];
-        for cp in FIRST..=LAST {
+        for cp in RANGES.into_iter().flat_map(|(first, last)| first..=last) {
             let Some(glyph) = face.glyph_index(char::from_u32(cp).unwrap()) else {
                 continue;
             };
@@ -105,7 +164,7 @@ impl FontCoverage {
             if glyph.0 == 0 || face.glyph_bounding_box(glyph).is_none() {
                 continue;
             }
-            let bit = (cp - FIRST) as usize;
+            let bit = bit_index(char::from_u32(cp).unwrap()).unwrap();
             coverage[bit / 64] |= 1 << (bit % 64);
         }
         if self
@@ -120,15 +179,30 @@ impl FontCoverage {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) fn has_family(&self, family: &str) -> bool {
+    pub(crate) fn has_style(&self, family: &str, bold: bool, italic: bool) -> bool {
         let family = primary(family);
-        self.faces.keys().any(|(name, _, _)| name == &family)
+        self.faces.keys().any(|(name, weight, slanted)| {
+            name == &family && (*weight >= 600) == bold && *slanted == italic
+        })
     }
 
     pub(crate) fn glyph(&self, family: &str, cluster: &str) -> Option<char> {
-        let glyph = candidate(cluster)?;
+        for glyph in candidate(cluster)
+            .into_iter()
+            .chain(fallback_candidate(cluster))
+        {
+            if self.covers(family, glyph) {
+                return Some(glyph);
+            }
+        }
+        None
+    }
+
+    fn covers(&self, family: &str, glyph: char) -> bool {
         let family = primary(family);
-        let bit = (glyph as u32 - FIRST) as usize;
+        let Some(bit) = bit_index(glyph) else {
+            return false;
+        };
         let mut found = false;
         for ((name, _, _), coverage) in &self.faces {
             if name != &family {
@@ -137,32 +211,41 @@ impl FontCoverage {
             found = true;
             // 실제 공급한 스타일들이 모두 같은 호환 글리프를 가질 때만 고른다.
             if coverage[bit / 64] & (1 << (bit % 64)) == 0 {
-                return None;
+                return false;
             }
         }
-        found.then_some(glyph)
+        found
     }
 }
 
 #[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct Candidate {
     pub start: usize,
     pub end: usize,
     pub glyph: char,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fallback_glyph: Option<char>,
 }
 
-pub(crate) fn candidates(text: &str) -> Vec<Candidate> {
-    super::layout::split_into_clusters(text)
+pub(crate) fn candidates(text: &str) -> (Vec<Candidate>, bool) {
+    let candidates = super::layout::split_into_clusters(text)
         .into_iter()
-        .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
         .filter_map(|(start, cluster)| {
             candidate(&cluster).map(|glyph| Candidate {
                 start,
                 end: start + cluster.chars().count(),
                 glyph,
+                fallback_glyph: fallback_candidate(&cluster),
             })
         })
-        .collect()
+        .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN + 1)
+        .collect::<Vec<_>>();
+    if candidates.len() > crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN {
+        (Vec::new(), false)
+    } else {
+        (candidates, true)
+    }
 }
 
 #[cfg(test)]

@@ -3069,6 +3069,10 @@ export class CanvasKitLayerRenderer {
     }
     const replayText = op.displayText ?? op.text;
     let replayPositions = op.displayText !== undefined ? op.displayPositions : op.positions;
+    if (op.puaGlyphCandidatesComplete === false) {
+      this.unsupportedOps.add('textRun:compatibilityGlyphLimitExceeded');
+      return;
+    }
     if (!replayText) return;
     const replayCodePoints: string[] = [];
     for (const character of replayText) {
@@ -3197,12 +3201,14 @@ export class CanvasKitLayerRenderer {
         };
         font = this.makeFont(typeface, fontSize);
         adjustFont(font);
+        const sourceGlyphIndices = new Set<number>();
         if (hasLayoutPositions && op.puaGlyphCandidates?.length && !op.isVertical) {
           const view = compatibilityGlyphView(codePoints, replayPositions!, op.puaGlyphCandidates, font);
           if (!view) {this.unsupportedOps.add('textRun:invalidCompatibilityGlyph'); return;}
           codePoints.splice(0, codePoints.length, ...view.points);
           replayPositions = view.positions;
           glyphReplayText = view.text;
+          for (const index of view.sourceIndices) sourceGlyphIndices.add(index);
           replayUtf16Offsets = new Uint32Array(codePoints.length + 1);
           for (let index = 0; index < codePoints.length; index++) replayUtf16Offsets[index + 1] = replayUtf16Offsets[index] + codePoints[index].length;
           hasOldHangul = codePoints.some(ch => /[\u1100-\u11ff\ua960-\ua97f\ud7b0-\ud7ff]/.test(ch));
@@ -3264,9 +3270,9 @@ export class CanvasKitLayerRenderer {
             // 위치/전진은 공통 positions가 소유한다. TAB·공백은 font가 visible gid를 갖고 있어도 글리프 잉크가 아니다.
             if (/^\s$/u.test(codePoint)) return -3;
             const code = codePoint.codePointAt(0) ?? 0;
-            if ((code >= 0x1100 && code <= 0x11ff)
+            if (!sourceGlyphIndices.has(index) && ((code >= 0x1100 && code <= 0x11ff)
               || (code >= 0xa960 && code <= 0xa97f)
-              || (code >= 0xd7b0 && code <= 0xd7ff)) {
+              || (code >= 0xd7b0 && code <= 0xd7ff))) {
               return -2;
             }
             const candidateIndex = candidateGlyphIds.findIndex(ids => (ids[index] ?? 0) !== 0);

@@ -1024,7 +1024,7 @@ impl WebCanvasRenderer {
             } else {
                 ""
             };
-            let font_style_str = if run.style.italic { "italic " } else { "" };
+            let font_style_str = super::text_italic::css_prefix(run.style.italic);
             let font_size = run.style.effective_font_size();
             let font_family = super::canvas_text_font::family_chain(&run.style);
             let font = format!(
@@ -2510,7 +2510,11 @@ impl WebCanvasRenderer {
             let family = label.font_family.replace('\\', "\\\\").replace('\'', "\\'");
             self.ctx.set_font(&format!(
                 "{} {} {}px '{}'",
-                if label.italic { "italic" } else { "normal" },
+                if label.italic {
+                    super::text_italic::CSS_STYLE
+                } else {
+                    "normal"
+                },
                 if label.bold { "bold" } else { "normal" },
                 label.font_size,
                 family
@@ -2729,14 +2733,17 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.fill();
                         continue;
                     }
-                    let glyph_text = self.glyph_display(cluster_str, style);
-                    if super::contains_old_hangul_jamo(&glyph_text) {
+                    let source_glyph = self
+                        .source_glyph(cluster_str, style)
+                        .map(|ch| ch.to_string());
+                    let glyph_text = source_glyph.as_deref().unwrap_or(cluster_str);
+                    if source_glyph.is_none() && super::contains_old_hangul_jamo(glyph_text) {
                         self.ctx.set_font(old_hangul_font);
                     } else {
                         self.ctx.set_font(font);
                     }
                     let measured_descriptor =
-                        super::supplemental_metrics::canvas_measured_descriptor(style, &glyph_text);
+                        super::supplemental_metrics::canvas_measured_descriptor(style, glyph_text);
                     if measured_descriptor.is_some_and(|descriptor| descriptor != self.ctx.font()) {
                         self.metric_descriptor_mismatch.set(true);
                     }
@@ -2806,7 +2813,7 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.save();
                         let fallback_font = format!(
                             "{}{}{:.3}px 'Malgun Gothic','맑은 고딕',sans-serif",
-                            if style.italic { "italic " } else { "" },
+                            super::text_italic::css_prefix(style.italic),
                             if style.is_visually_bold() {
                                 "bold "
                             } else {
@@ -2881,7 +2888,7 @@ impl Renderer for WebCanvasRenderer {
                         let fit = if measured_descriptor.is_some() || contextual {
                             None
                         } else if cluster_advance > 0.0 {
-                            self.ctx.measure_text(&glyph_text).ok().and_then(|metrics| {
+                            self.ctx.measure_text(glyph_text).ok().and_then(|metrics| {
                                 let ink_width = metrics.actual_bounding_box_left()
                                     + metrics.actual_bounding_box_right();
                                 super::canvas_cluster_fit(
@@ -2901,10 +2908,10 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.save();
                         self.ctx.translate(char_x + fit_dx, y).unwrap_or(());
                         self.ctx.scale(ratio * fit_scale, 1.0).unwrap_or(());
-                        if !self.draw_hft_outline(&glyph_text, style, font_size) {
+                        if !self.draw_hft_outline(glyph_text, style, font_size) {
                             Self::fill_positioned_text(
                                 &self.ctx,
-                                &glyph_text,
+                                glyph_text,
                                 0.0,
                                 0.0,
                                 style,
@@ -2995,7 +3002,11 @@ impl Renderer for WebCanvasRenderer {
                 geometry.font_size,
                 geometry.font_family
             ));
-            self.ctx.set_text_align("left");
+            self.ctx.set_text_align(if geometry.browser_align_end {
+                "right"
+            } else {
+                "left"
+            });
             self.ctx.set_fill_style_str(&color_to_css(style.color));
             for position in &geometry.positions {
                 self.ctx.save();
@@ -3484,13 +3495,14 @@ impl WebCanvasRenderer {
                 {
                     continue;
                 }
-                let glyph_text = self.glyph_display(cs, style);
-                if super::contains_old_hangul_jamo(&glyph_text) {
+                let source_glyph = self.source_glyph(cs, style).map(|ch| ch.to_string());
+                let glyph_text = source_glyph.as_deref().unwrap_or(cs);
+                if source_glyph.is_none() && super::contains_old_hangul_jamo(glyph_text) {
                     ctx.set_font(old_hangul_font);
                 } else {
                     ctx.set_font(font);
                 }
-                if super::supplemental_metrics::canvas_measured_descriptor(style, &glyph_text)
+                if super::supplemental_metrics::canvas_measured_descriptor(style, glyph_text)
                     .is_some_and(|descriptor| descriptor != ctx.font())
                 {
                     self.metric_descriptor_mismatch.set(true);
@@ -3529,15 +3541,15 @@ impl WebCanvasRenderer {
                     ctx.save();
                     ctx.translate(char_x, char_y).unwrap_or(());
                     ctx.scale(ratio, 1.0).unwrap_or(());
-                    let _ = ctx.fill_text(&glyph_text, 0.0, 0.0);
+                    let _ = ctx.fill_text(glyph_text, 0.0, 0.0);
                     if paint_stroke {
-                        let _ = ctx.stroke_text(&glyph_text, 0.0, 0.0);
+                        let _ = ctx.stroke_text(glyph_text, 0.0, 0.0);
                     }
                     ctx.restore();
                 } else {
-                    let _ = ctx.fill_text(&glyph_text, char_x, char_y);
+                    let _ = ctx.fill_text(glyph_text, char_x, char_y);
                     if paint_stroke {
-                        let _ = ctx.stroke_text(&glyph_text, char_x, char_y);
+                        let _ = ctx.stroke_text(glyph_text, char_x, char_y);
                     }
                 }
             }
@@ -3634,7 +3646,7 @@ impl WebCanvasRenderer {
         } else {
             ""
         };
-        let font_style = if style.italic { "italic " } else { "" };
+        let font_style = super::text_italic::css_prefix(style.italic);
         let font_family = super::canvas_text_font::family_chain(style);
         let number_font_size = (font_size * 0.5).max(1.0);
 
@@ -3724,7 +3736,7 @@ impl WebCanvasRenderer {
         } else {
             ""
         };
-        let font_style_str = if style.italic { "italic " } else { "" };
+        let font_style_str = super::text_italic::css_prefix(style.italic);
         let font = format!(
             "{}{}{:.3}px {}",
             font_style_str, font_weight, inner_font_size, font_family
@@ -3905,7 +3917,7 @@ impl WebCanvasRenderer {
         } else {
             ""
         };
-        let font_style_str = if style.italic { "italic " } else { "" };
+        let font_style_str = super::text_italic::css_prefix(style.italic);
         let font = format!(
             "{}{}{:.3}px {}",
             font_style_str, font_weight, inner_font_size, font_family

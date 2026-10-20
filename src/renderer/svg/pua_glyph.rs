@@ -9,13 +9,33 @@ impl SvgRenderer {
             return;
         }
         #[cfg(not(target_arch = "wasm32"))]
-        if !self.source_font_coverage.has_family(&style.font_family) {
+        if !self.source_font_coverage.has_style(
+            &style.font_family,
+            style.is_visually_bold(),
+            style.italic,
+        ) && self.source_font_coverage_requests.insert((
+            style.font_family.clone(),
+            style.is_visually_bold(),
+            style.italic,
+        )) {
+            let primary = style.font_family.split(',').next().unwrap_or("").trim();
             let plan = super::plan_svg_font_file_lookup(
-                &style.font_family,
+                primary,
                 &self.font_paths,
                 style.is_visually_bold(),
             );
-            if let Some(file) = super::find_font_file(&plan) {
+            let italic = style
+                .italic
+                .then(|| {
+                    super::system_fonts::italic_family_file(
+                        &self.font_paths,
+                        &[primary.to_owned()],
+                        style.is_visually_bold(),
+                        &std::collections::HashSet::new(),
+                    )
+                })
+                .flatten();
+            if let Some(file) = italic.or_else(|| super::find_font_file(&plan)) {
                 if file.metadata().is_ok_and(|m| m.len() <= 32 * 1024 * 1024) {
                     if let Ok(bytes) = std::fs::read(file) {
                         let _ = self

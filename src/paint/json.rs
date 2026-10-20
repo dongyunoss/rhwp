@@ -726,9 +726,12 @@ impl PaintOp {
                 if let Some(display_text) = &display_text {
                     let _ = write!(buf, ",\"displayText\":{}", json_escape(display_text));
                 }
-                let pua_candidates = crate::renderer::pua_glyph::candidates(
+                let (pua_candidates, complete) = crate::renderer::pua_glyph::candidates(
                     display_text.as_deref().unwrap_or(&run.text),
                 );
+                if !complete {
+                    buf.push_str(",\"puaGlyphCandidatesComplete\":false");
+                }
                 if !pua_candidates.is_empty() {
                     let _ = write!(
                         buf,

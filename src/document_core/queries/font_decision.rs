@@ -442,6 +442,7 @@ fn metric_alias_provenance(
 
 fn metric_entry_provenance(
     metric: &crate::renderer::font_metrics_data::MetricLookupDecision<'_>,
+    character: char,
 ) -> Result<ProvenanceDecision, HwpError> {
     if let Some((source, symbol)) =
         crate::renderer::font_metrics_data::core14_metric_source(metric.metric)
@@ -463,21 +464,27 @@ fn metric_entry_provenance(
         provenance.known_limitations.push("Published advances do not establish the installed paint font or recover a missing PDF font program.".into());
         return Ok(provenance);
     }
+    let mut identity = json!({
+        "sourceBoundaryId": "rust-metric.metric-table",
+        "candidateKind": "metric-entry",
+        "sourceFace": metric.metric.name,
+        "targetOrPolicy": format!("metric-entry:{}", metric.entry_index),
+        "conditions": {
+            "bold": metric.metric.bold,
+            "italic": metric.metric.italic,
+            "emSize": metric.metric.em_size,
+            "latinRangeSymbol": format!("FONT_{}_LATIN_RANGES", metric.entry_index),
+            "hangulSymbol": metric.metric.hangul.as_ref().map(|_| format!("FONT_{}_HANGUL", metric.entry_index)),
+        },
+        "order": null,
+    });
+    if crate::renderer::font_metrics_data::uses_hangul_jamo_overlay(metric.metric, character) {
+        identity["conditions"]["latinRangeSymbol"] = serde_json::Value::Null;
+        identity["conditions"]["hangulJamoModule"] =
+            json!("src/renderer/font_metric_hangul_jamo.rs");
+    }
     linked_provenance(
-        json!({
-            "sourceBoundaryId": "rust-metric.metric-table",
-            "candidateKind": "metric-entry",
-            "sourceFace": metric.metric.name,
-            "targetOrPolicy": format!("metric-entry:{}", metric.entry_index),
-            "conditions": {
-                "bold": metric.metric.bold,
-                "italic": metric.metric.italic,
-                "emSize": metric.metric.em_size,
-                "latinRangeSymbol": format!("FONT_{}_LATIN_RANGES", metric.entry_index),
-                "hangulSymbol": metric.metric.hangul.as_ref().map(|_| format!("FONT_{}_HANGUL", metric.entry_index)),
-            },
-            "order": null,
-        }),
+        identity,
         "rust-metric",
         "metric-entry",
         "verified-by-test",
@@ -990,7 +997,10 @@ impl DocumentCore {
                             })?,
                         )?);
                     }
-                    provenance.push(metric_entry_provenance(&metric)?);
+                    provenance.push(metric_entry_provenance(
+                        &metric,
+                        width.measurement_character.unwrap_or(ch),
+                    )?);
                 }
                 let requested_face = width
                     .metric
@@ -1034,6 +1044,7 @@ impl DocumentCore {
                     metric_entry: width.metric.map(|metric| metric.entry_index),
                     character_match: width.character_match.into(),
                     width_source: width.width_source.into(),
+                    measurement_character: width.measurement_character.map(|ch| ch.to_string()),
                     base_advance_hwpunit: Some(px_to_hwpunit(width.base_width_px, self.dpi)),
                     transforms: transform_steps(run, ch, width),
                     final_advance_hwpunit: Some(px_to_hwpunit(width.final_width_px, self.dpi)),

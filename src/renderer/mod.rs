@@ -94,6 +94,7 @@ pub(crate) mod stored_frame_boundary;
 pub(crate) mod stored_picture_metrics;
 mod stroke_pattern;
 pub(crate) mod table_row_frame;
+pub(crate) mod text_italic;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
 pub(crate) mod anisotropic_sampling;
@@ -362,6 +363,8 @@ pub struct TextStyle {
     /// 글줄 전체에서 계산한 표시 방향. 모델/저장 스타일과 논리 전진은 바꾸지 않는다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bidi_layout: Option<BidiLayout>,
+    /// 앞 run에서 시작한 같은 원문 자소의 첫 조각에는 강조점을 중복하지 않는다.
+    pub emphasis_skip_first_cluster: bool,
     /// 실제 글줄의 최대 글꼴 크기. 위 밑줄은 비장식 글자도 포함한 이 크기를 따른다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub top_underline_font_size: Option<f64>,
@@ -816,6 +819,7 @@ impl Default for TextStyle {
     fn default() -> Self {
         Self {
             bidi_layout: None,
+            emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
             top_underline_phase: None,
             supplemental_metrics: None,

@@ -8,9 +8,13 @@ use skia_safe::{font, Font, FontMgr, Typeface};
 use std::{cell::RefCell, collections::HashMap};
 
 pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) -> Option<char> {
-    let ch = crate::renderer::pua_glyph::candidate(text)?;
-    let glyph = font.typeface().unichar_to_glyph(ch as i32);
-    (glyph != 0 && font.get_path(glyph).is_some_and(|path| !path.is_empty())).then_some(ch)
+    crate::renderer::pua_glyph::candidate(text)
+        .into_iter()
+        .chain(crate::renderer::pua_glyph::fallback_candidate(text))
+        .find(|ch| {
+            let glyph = font.typeface().unichar_to_glyph(*ch as i32);
+            glyph != 0 && font.get_path(glyph).is_some_and(|path| !path.is_empty())
+        })
 }
 
 thread_local! {

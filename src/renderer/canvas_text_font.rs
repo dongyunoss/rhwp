@@ -24,7 +24,7 @@ impl CanvasTextFont {
         let family = family_chain(style);
         let prefix = format!(
             "{}{}{:.3}px ",
-            if style.italic { "italic " } else { "" },
+            super::text_italic::css_prefix(style.italic),
             if style.is_visually_bold()
                 && super::faux_bold_stroke_width(style, draw_size).is_none()
             {

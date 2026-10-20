@@ -884,6 +884,7 @@ pub(crate) fn resolved_to_text_style(
                 })
                 .flatten(),
             bidi_layout: None,
+            emphasis_skip_first_cluster: false,
             top_underline_font_size: None,
             top_underline_phase: None,
             fixed_glyph_advances: false,
@@ -1477,6 +1478,7 @@ pub(crate) fn area_dot_fallback_width(font_family: &str, font_size: f64) -> Opti
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct CharWidthDecision<'a> {
     pub(crate) width_source: &'static str,
+    pub(crate) measurement_character: Option<char>,
     pub(crate) base_width_px: f64,
     pub(crate) final_width_px: f64,
     /// 실제 전진 중 원점에만 적용한 옛 프로그램의 굵은 자간.
@@ -1772,6 +1774,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     if cluster_len[i] == 0 {
         return CharWidthDecision {
             width_source: "clusterContinuation",
+            measurement_character: None,
             base_width_px: 0.0,
             final_width_px: 0.0,
             bold_tracking_px: 0.0,
@@ -1803,6 +1806,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     if c == '\u{FFFC}' {
         return CharWidthDecision {
             width_source: "inlineObjectPlaceholder",
+            measurement_character: None,
             base_width_px: 0.0,
             final_width_px: 0.0,
             bold_tracking_px: 0.0,
@@ -1850,6 +1854,7 @@ fn char_width_decision_with_hft_tracking<'a>(
             } else {
                 "figureSpace"
             },
+            measurement_character: None,
             base_width_px,
             final_width_px,
             bold_tracking_px: 0.0,
@@ -1876,6 +1881,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 글리프 전진폭 / 글자 크기. 메트릭 갈래는 HU 로 내리기 전 값을 쓴다.
     let mut em_exact: Option<f64> = None;
     let mut source_hft_metric = false;
+    let mut measurement_character = None;
     let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
     {
         (w, "useFontSpace", None, "notApplicable")
@@ -1913,6 +1919,17 @@ fn char_width_decision_with_hft_tracking<'a>(
             style.bold,
             style.regenerated_font_metrics,
         );
+        // 현대 L/V/T는 같은 합성 음절의 메트릭을 소비한다. 자모 주소는 유지한다.
+        let metric_character = if cluster_len[i] > 1 {
+            crate::renderer::pua_glyph::modern_syllable(
+                &chars[i..i + usize::from(cluster_len[i])]
+                    .iter()
+                    .collect::<String>(),
+            )
+            .unwrap_or(c)
+        } else {
+            c
+        };
         let original_glyph_face = latin
             .map_or(style.original_glyph_metric_family.as_deref(), |slot| {
                 slot.original_glyph_metric_family.as_deref()
@@ -1955,12 +1972,16 @@ fn char_width_decision_with_hft_tracking<'a>(
                 measured_family,
                 measured_bold,
                 style.italic,
-                c,
+                metric_character,
                 font_size,
                 latin.map_or(style.font_metric_trusted, |l| l.font_metric_trusted),
                 latin.is_none() && style.hft_hangul_face,
             )
         };
+        if original_glyph_em.is_none() && metric_character != c && embedded.width_px.is_some() {
+            embedded.width_source = "canonicalHangulMetric";
+            measurement_character = Some(metric_character);
+        }
         if let Some(em) = contextual_advance {
             // 기본 cmap 글자의 hmtx가 아닌 실제 GSUB 결합형·합자의 전진을 소비한다.
             embedded.width_px = Some(quantize_hwp_px(font_size * em));
@@ -2346,6 +2367,11 @@ fn char_width_decision_with_hft_tracking<'a>(
     }
     CharWidthDecision {
         width_source,
+        measurement_character: if width_source == "canonicalHangulMetric" {
+            measurement_character
+        } else {
+            None
+        },
         base_width_px,
         final_width_px,
         bold_tracking_px: final_width_px - without_bold_tracking_px,

@@ -3812,7 +3812,14 @@ impl LayoutEngine {
                 Some(*n)
             }))
             .collect();
+        let source_emphasis_graphemes =
+            std::cell::OnceCell::<crate::renderer::emphasis::SourceGraphemes>::new();
         let with_stored_tabs = |mut ts: TextStyle, start_char: usize| -> TextStyle {
+            if ts.emphasis_dot != 0 {
+                source_emphasis_graphemes
+                    .get_or_init(|| crate::renderer::emphasis::SourceGraphemes::new(para))
+                    .apply_source_style(start_char, &mut ts);
+            }
             let first = tabs_before.get(start_char).copied().unwrap_or(0);
             ts.inline_tabs = para
                 .tab_extended
@@ -6184,6 +6191,8 @@ impl LayoutEngine {
                     .collect()
             })
             .unwrap_or_default();
+        let source_emphasis_graphemes =
+            std::cell::OnceCell::<crate::renderer::emphasis::SourceGraphemes>::new();
         for line_idx in start_line..end {
             let source_line_tacs;
             let tac_offsets_px = if let Some(assign) = stored_tac_assignment.as_ref() {
@@ -7881,6 +7890,20 @@ impl LayoutEngine {
             pending_right_leader_digit_render = emit_state.pending_right_leader_digit_render;
             current_line_reserved_tac_picture_height =
                 emit_state.current_line_reserved_tac_picture_height;
+
+            if let Some(para) = para {
+                for child in &mut line_node.children {
+                    if let RenderNodeType::TextRun(run) = &mut child.node_type {
+                        if run.style.emphasis_dot != 0 {
+                            source_emphasis_graphemes
+                                .get_or_init(|| {
+                                    crate::renderer::emphasis::SourceGraphemes::new(para)
+                                })
+                                .apply(run);
+                        }
+                    }
+                }
+            }
 
             if let Some(label_right) =
                 viewtext_table_suffix_label_right(para, comp_line, x_start, self.dpi)
