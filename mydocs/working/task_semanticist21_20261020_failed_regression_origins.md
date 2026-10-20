@@ -77,3 +77,50 @@ Native048의88조건은 전부90% 이상이며 최저92.67157%다. 이전 통합
   원본을 바꾸지 않고 Print와 대조한다. 진단용 HWPX3개는 같은 host의 바깥 여백만
   0/0,283/0,0/283HU로 바꿨다. `float-outer-controls-428/manifest.json`에 차이를
   명시했고 별도 MCP Print를 요청했다. 이 진단 대조군을 원본 완료 증거로 쓰지 않는다.
+
+## Native HWP의 형제 표 공유 경로 보정 착수
+
+원본의 바깥 여백만 바꾼 독립 Print 대조에서 Native048의2쪽 raw는
+0/0HU=100%,283/0HU=27.56303%,0/283HU=24.10151%다. 모든 입력은2쪽이다.
+`float-outer-controls-432`와 MCP job 원문을 보존한다. 임의의 고정 gap을 더하지 않는다.
+
+`host_spacing::resolve`는 위·아래 바깥 여백을 이미 `before`·`after`에 계산하고
+`after_for_fit`에서 마지막 아래 여백의 fit 면제만 분리한다. 그런데 같은 host의
+형제 표를 확정하는 `empty_float::prepare`의 공통 resolved 결과는 HWPX 저장 프로필만
+선택했다. Native HWP 및 HWP 유래 HWPX는 이 결과를 소비하지 않고 렌더의 별도 lane으로
+가서 앞 표의 아래 여백과 다음 표의 위 여백이 빠진다.
+
+프로필 제한을 제거해 기존 `before → table_top → effective_height + after → occupied_bottom`
+결과를 두 형식이 함께 소비하도록 한다. `commit_empty_float_table`의 같은 lane 예약과
+`layout_table_control_block`의 확정 원점 우선 소비는 유지한다. Square 표·TAC·단일 표와
+저장 사다리로 입증한 별도 outer-box 결과는 기존 분기를 유지한다. Native049에서 원본 두 형식,
+여백 대조군과 기존 분할·형제 표·본문 간격 검사를 함께 실행한 뒤 판정한다.
+이 문단은 보정 방향이며 아직 수정 후 실행으로 통과를 입증한 결과가 아니다.
+
+#7559가 참조한 #7265는 셀 글자 서식 갱신 이슈이며 원 해결은 #7400, 실제 통합은
+#7430이다. #7430은 HWP5 계보 HWPX 첫 표의 outer_top 소비를 메인터너가 보정했다.
+#7538은 #4068의 단 맨 위 paint 원점 보정 PR이며, 뒤 문단 흐름에서는 inset을
+되돌리고 같은 host 형제 표는 실물 아래에 쌓는 계약을 명시했다. 당시 labnote4건은
+MCP 실패로 정본 없이13.2px 움직였다고 원문에 남았다. 이번에는 새 Print가 있으므로
+그 기록을 통과 근거로 대신하지 않고 원본과 공통 프레임을 실제 재검증한다.
+
+## Native049 원본 재검증
+
+잡8개·공유 target의 빌드는263초에 exit0으로 끝났다. 변경한 제품 소스는
+`empty_float.rs`의 형제 표 공유 경로 프로필 제한뿐이다.
+
+- 같은 원본 HWP·HWPX의 전체2쪽 Native raw가 각각100%다.2쪽은14.18126→100%다.
+- 여백0/0,283/0,0/283HU의 세 대조군도 각각 전쪽100%다.
+- 새 강조점 관계 검사3건은 동결 Native048/049 양쪽에서3PASS로 유지됐다.
+  `emphasis-metric-before-after-444.json`에 정식 테스트 파일 SHA와 strict build를 기록했다.
+- `supplemental-originals-panels-443`의 원본2쪽 review와 standalone overlay를 직접 열었다.
+  앞 표·34행 표·서명 표의 여백과 격자·내용 원점을 같은 독립 Print에 대조했다.
+  컬러 이모지와 raster 경계 농도 차이는 RGB 완전 일치로 바꾸어 주장하지 않는다.
+-101조건 Native 일괄 대조는 계속 실행 중이다. #7819 원본89.02659%, #8055 원본1.22674%의
+  기존 미달도 그대로 기록하며 이 보정의 통과로 전체 검증 완료를 선언하지 않는다.
+- fresh WASM023에서 같은 원본과 대조군을 다시 확인해야 한다. 새 형제 표 회귀는
+  양쪽 전쪽90% 이상·직접 판독 뒤에만 정식 추가한다. 기존 기대값은 아직 바꾸지 않았다.
+
+강조점 전 단계의 Native048/fresh WASM022는88조건 모두90% 이상으로 완료됐다.
+정식 강조점 회귀3건과 입력·독립 PDF·원문 TSV·review/overlay는 `b0a85b6b88`에 있다.
+현재의 새 형제 표 보정은 그 이후의 별도 제품 단계다.
