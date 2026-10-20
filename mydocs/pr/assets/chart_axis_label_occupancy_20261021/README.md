@@ -60,4 +60,7 @@ CARGO_BUILD_JOBS=8 node scripts/run-rust-test.mjs chart_axis_label_line_occupanc
 1026 실행에서 같은 검사 바이너리는 Native074에서 숫자 assertion으로 **6FAIL**, Native075에서
 **6PASS**였다. 일반 nextest도 **6PASS**였다. 이후 실행한 focused Clippy는 새 테스트에 도달하기
 전에 root lib의 `pua_glyph.rs:193` 수동 find와 `render_tree.rs:400` 큰 enum 두 오류로 실패했다.
-이 검증과 별도로 lint 보정 및 최종 전체 검증을 완료해야 하며 PR 제출 gate는 통과하지 않았다.
+1035에서 이 두 오류를 보정한 뒤 focused Clippy와 PUA 3건+차트 6건의 nextest 9건이 통과했다.
+1039에서 생성기로 수집 상태를 다시 맞춘 뒤 manifest·fmt check도 통과했다. 관련 기록은
+`mydocs/working/task_semanticist21_20261021_renderer_lint.md`를 참조한다. 최종 전체 검증과
+차트 범위의 추가 보정이 남아 있으며 PR 제출 gate는 통과하지 않았다.

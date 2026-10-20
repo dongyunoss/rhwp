@@ -190,15 +190,10 @@ impl FontCoverage {
     }
 
     pub(crate) fn glyph(&self, family: &str, cluster: &str) -> Option<char> {
-        for glyph in candidate(cluster)
+        candidate(cluster)
             .into_iter()
             .chain(fallback_candidate(cluster))
-        {
-            if self.covers(family, glyph) {
-                return Some(glyph);
-            }
-        }
-        None
+            .find(|&glyph| self.covers(family, glyph))
     }
 
     fn covers(&self, family: &str, glyph: char) -> bool {

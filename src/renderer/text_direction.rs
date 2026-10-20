@@ -19,10 +19,10 @@ pub struct BidiLayout {
     scalar_count: usize,
     logical_width: f64,
     #[serde(skip)]
-    source_text: String,
+    source_text: Box<str>,
     #[serde(skip)]
-    source_positions: Vec<f64>,
-    runs: Vec<BidiVisualRun>,
+    source_positions: Box<[f64]>,
+    runs: Box<[BidiVisualRun]>,
 }
 
 fn has_rtl(text: &str) -> bool {
@@ -81,7 +81,8 @@ impl<'a> VisualTextPositions<'a> {
         style: &'a super::TextStyle,
     ) -> Option<Self> {
         if let Some(layout) = &style.bidi_layout {
-            if layout.source_text == text && layout.source_positions.as_slice() == positions {
+            if layout.source_text.as_ref() == text && layout.source_positions.as_ref() == positions
+            {
                 return Some(Self {
                     positions,
                     runs: Cow::Borrowed(&layout.runs),
@@ -237,15 +238,15 @@ pub(crate) fn resolve_page(root: &mut RenderNode) {
                     rtl: r.rtl,
                 })
             })
-            .collect();
+            .collect::<Vec<_>>();
         layouts.push((
             index,
             BidiLayout {
                 scalar_count: end - start,
                 logical_width: local.last().unwrap() - local.first().unwrap(),
-                source_text,
-                source_positions: local,
-                runs: spans,
+                source_text: source_text.into_boxed_str(),
+                source_positions: local.into_boxed_slice(),
+                runs: spans.into_boxed_slice(),
             },
         ));
     }

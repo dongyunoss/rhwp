@@ -115,7 +115,10 @@ fn check_axis_labels(height_hu: u32) {
         }),
         "표시 숫자의 위아래 순서와 글자 크기 대비 비겹침"
     );
-    let frame = chart.descendants().find(|n| n.has_tag_name("rect")).unwrap();
+    let frame = chart
+        .descendants()
+        .find(|n| n.has_tag_name("rect"))
+        .unwrap();
     for label in &labels {
         assert!(number(*label, "x") > number(frame, "x"));
         assert!(number(*label, "y") > number(frame, "y"));
@@ -127,23 +130,35 @@ fn check_axis_labels(height_hu: u32) {
         .filter(|n| n.text().is_some_and(|t| t.starts_with("항목 ")))
         .collect::<Vec<_>>();
     assert_eq!(
-        categories.iter().map(|n| n.text().unwrap()).collect::<Vec<_>>(),
+        categories
+            .iter()
+            .map(|n| n.text().unwrap())
+            .collect::<Vec<_>>(),
         ["항목 1", "항목 2", "항목 3", "항목 4"],
         "항목 내용·순서·누락·중복"
     );
-    assert!(categories.windows(2).all(|p| number(p[0], "x") < number(p[1], "x")));
-    assert!(categories.iter().all(|n| number(*n, "y") > number(axis, "y2")));
+    assert!(categories
+        .windows(2)
+        .all(|p| number(p[0], "x") < number(p[1], "x")));
+    assert!(categories
+        .iter()
+        .all(|n| number(*n, "y") > number(axis, "y2")));
     let legends = texts
         .iter()
         .copied()
         .filter(|n| n.text().is_some_and(|t| t.starts_with("계열 ")))
         .collect::<Vec<_>>();
     assert_eq!(
-        legends.iter().map(|n| n.text().unwrap()).collect::<Vec<_>>(),
+        legends
+            .iter()
+            .map(|n| n.text().unwrap())
+            .collect::<Vec<_>>(),
         ["계열 1", "계열 2", "계열 3"],
         "범례 내용·순서·누락·중복"
     );
-    assert!(legends.windows(2).all(|p| number(p[0], "x") < number(p[1], "x")));
+    assert!(legends
+        .windows(2)
+        .all(|p| number(p[0], "x") < number(p[1], "x")));
     assert!(legends.iter().all(|n| {
         categories.iter().all(|c| number(*n, "y") > number(*c, "y"))
             && number(*n, "y") < number(frame, "y") + number(frame, "height")
