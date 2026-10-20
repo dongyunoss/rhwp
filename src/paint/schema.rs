@@ -16,6 +16,7 @@ pub struct LayerTreeSchema {
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
     // 29: rectangle-owned text transforms; imagePaintBBox/strokeJoin remain additive contracts.
+    // 29: rectangle-owned affine transforms; optional bidiLayout and paintClip.
     schema_minor_version: 29,
     resource_table_version: 1,
     resource_table_minor_version: 6,

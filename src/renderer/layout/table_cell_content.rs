@@ -1316,6 +1316,8 @@ impl LayoutEngine {
                                         crate::renderer::image_geometry::picture_pre_rotation_ratio(
                                             pic,
                                         ),
+                                    source_rect:
+                                        crate::renderer::image_geometry::picture_source_rect(pic),
                                     content_inset:
                                         crate::renderer::layout::utils::picture_content_inset(pic),
                                 }),

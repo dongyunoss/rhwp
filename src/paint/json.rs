@@ -1106,7 +1106,7 @@ impl PaintOp {
                 write_bbox(buf, image.paint_bbox(bbox));
                 buf.push_str(",\"imagePaintBBox\":");
                 write_bbox(buf, image.transformed_paint_bbox(bbox));
-                if image.pre_rotation_ratio.is_some() {
+                if image.pre_rotation_ratio.is_some() || image.source_rect.is_some() {
                     // bbox는 기존 외접 프레임 계약을 유지한다. 실제 그릴 크기는 별도로 전달한다.
                     buf.push_str(",\"paintBbox\":");
                     write_bbox(buf, image.transformed_paint_bbox(bbox));
@@ -1129,6 +1129,14 @@ impl PaintOp {
                     )
                 }) {
                     buf.push_str(",\"imageAnisotropicReduction\":true");
+                }
+                if let Some(clip) = image.source_clip_bbox(bbox) {
+                    buf.push_str(",\"paintClip\":");
+                    write_bbox(buf, clip);
+                    buf.push_str(",\"paintClipPath\":");
+                    buf.push_str(
+                        &serde_json::to_string(&image.source_clip_path(bbox).unwrap()).unwrap(),
+                    );
                 }
                 if resolved
                     .map(|payload| payload.data.as_slice())
@@ -1821,6 +1829,10 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
         buf.push_str(",\"kerning\":true");
     }
     write_synthetic_italic_skew(buf, style.italic);
+    if let Some(layout) = &style.bidi_layout {
+        buf.push_str(",\"bidiLayout\":");
+        buf.push_str(&serde_json::to_string(layout).expect("방향 결과의 유한 좌표"));
+    }
     buf.push('}');
 }
 

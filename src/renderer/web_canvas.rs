@@ -5,7 +5,7 @@
 
 #[cfg(target_arch = "wasm32")]
 mod char_overlap;
-mod contextual_text;
+use super::contextual_text;
 #[cfg(target_arch = "wasm32")]
 mod cubic_reduction;
 #[cfg(target_arch = "wasm32")]
@@ -1055,22 +1055,33 @@ impl WebCanvasRenderer {
             let font_size = run.style.effective_font_size();
             if !run.text.is_empty() && !is_marker {
                 let char_positions = run.replay_positions_for(&run.text);
+                let visual = super::text_direction::VisualTextPositions::for_style(
+                    &run.text,
+                    &char_positions,
+                    &run.style,
+                );
+                let origin = |i: usize| {
+                    visual
+                        .as_ref()
+                        .and_then(|p| p.span_origin(i, i + 1))
+                        .unwrap_or(char_positions[i])
+                };
                 let mark_font_size = font_size * 0.5;
                 self.ctx.set_fill_style_str("#0066FF");
                 self.ctx
                     .set_font(&format!("{:.3}px sans-serif", mark_font_size));
                 for (i, c) in run.text.chars().enumerate() {
                     if c == ' ' {
-                        let cx = bbox.x + char_positions[i];
+                        let cx = bbox.x + origin(i);
                         let next_x = if i + 1 < char_positions.len() {
-                            bbox.x + char_positions[i + 1]
+                            cx + char_positions[i + 1] - char_positions[i]
                         } else {
                             bbox.x + bbox.width
                         };
                         let mid_x = (cx + next_x) / 2.0 - mark_font_size * 0.25;
                         let _ = self.ctx.fill_text("\u{2228}", mid_x, bbox.y + run.baseline);
                     } else if c == '\t' {
-                        let cx = bbox.x + char_positions[i];
+                        let cx = bbox.x + origin(i);
                         let _ = self.ctx.fill_text("\u{2192}", cx, bbox.y + run.baseline);
                     }
                 }
@@ -1328,6 +1339,17 @@ impl WebCanvasRenderer {
     ) {
         // [#7193] 그림은 틀(bbox)에서 안쪽 여백을 뺀 자리에 그린다.
         let eff_bbox = img.transformed_paint_bbox(bbox);
+        let source_clip = img.source_clip_path(bbox);
+        if let Some(points) = source_clip {
+            self.ctx.save();
+            self.ctx.begin_path();
+            self.ctx.move_to(points[0][0], points[0][1]);
+            for point in &points[1..] {
+                self.ctx.line_to(point[0], point[1]);
+            }
+            self.ctx.close_path();
+            self.ctx.clip();
+        }
         self.open_shape_transform(&img.transform, &eff_bbox);
         if img.data.is_none() && img.external_path.is_some() {
             self.ctx.set_fill_style_str("#f0f0f0");
@@ -1444,6 +1466,9 @@ impl WebCanvasRenderer {
         }
         if restore_transform {
             self.close_shape_transform_if_needed(&img.transform);
+            if source_clip.is_some() {
+                self.ctx.restore();
+            }
         }
     }
 
@@ -1735,6 +1760,9 @@ impl WebCanvasRenderer {
             _ => return,
         };
         self.close_shape_transform_if_needed(transform);
+        if matches!(node_type, RenderNodeType::Image(image) if image.source_rect.is_some()) {
+            self.ctx.restore();
+        }
     }
 
     /// PaintOp 직접 replay 경로에서는 leaf payload 렌더 직후 transform 을 복원한다.
@@ -2601,7 +2629,7 @@ impl Renderer for WebCanvasRenderer {
         let char_positions =
             super::replay_positions_or_compute(metric_text, style, layout_positions);
         let visual_positions =
-            super::text_direction::VisualTextPositions::new(text, &char_positions);
+            super::text_direction::VisualTextPositions::for_style(text, &char_positions, style);
         let cluster_x = |start: usize, cluster: &str| {
             visual_positions
                 .as_ref()
@@ -2619,8 +2647,14 @@ impl Renderer for WebCanvasRenderer {
                 if text_width > 0.0 {
                     self.ctx
                         .set_fill_style_str(&color_to_css(style.shade_color));
-                    self.ctx
-                        .fill_rect(x, y - font_size, text_width, font_size * 1.2);
+                    let spans = visual_positions
+                        .as_ref()
+                        .map(|p| p.segments(text.chars().count()))
+                        .unwrap_or_else(|| vec![(0.0, text_width)]);
+                    for (left, right) in spans {
+                        self.ctx
+                            .fill_rect(x + left, y - font_size, right - left, font_size * 1.2);
+                    }
                 }
             }
 
@@ -2666,6 +2700,11 @@ impl Renderer for WebCanvasRenderer {
                 // 기본 렌더링 (효과 없음)
                 self.ctx.set_fill_style_str(&color_to_css(style.color));
                 for (char_idx, cluster_str) in clusters.iter() {
+                    let painted = visual_positions
+                        .as_ref()
+                        .map(|p| p.mirrored(cluster_str, *char_idx))
+                        .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
+                    let cluster_str = painted.as_ref();
                     // 공백의 저장 전진폭·장식은 유지하되 글꼴의 잘못된 NBSP 윤곽선은 그리지 않는다.
                     if cluster_str.chars().all(char::is_whitespace) {
                         continue;
@@ -2885,50 +2924,61 @@ impl Renderer for WebCanvasRenderer {
                 .copied()
                 .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
         };
-        // 밑줄 처리
-        if !matches!(style.underline, UnderlineType::None) {
-            let text_width = decoration_width;
-            let ul_color = if style.underline_color != 0 {
-                color_to_css(style.underline_color)
-            } else {
-                color_to_css(style.color)
-            };
-            // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측, 고정
-            // 2.0px 은 큰 글꼴에서 디센더 관통). 선 모양 내부 기하는 캔버스 경로
-            // 현행 유지 — 오프셋만 SVG/Skia 와 같은 계약을 쓴다.
-            let ul_y = match style.underline {
-                UnderlineType::Top => y - font_size + 1.0,
-                _ => y + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO,
-            };
-            self.draw_line_shape_canvas(
-                x,
-                ul_y,
-                x + text_width,
-                ul_y,
-                &ul_color,
-                style.underline_shape,
-            );
-        }
+        let decoration_end = text.chars().count()
+            - self
+                .active_decoration_trim
+                .min(text.chars().rev().take_while(|ch| *ch == ' ').count());
+        let segments = visual_positions
+            .as_ref()
+            .map(|p| p.segments(decoration_end))
+            .unwrap_or_else(|| vec![(0.0, decoration_width)]);
+        for (left, right) in segments {
+            let x = x + left;
+            let decoration_width = right - left;
+            // 밑줄 처리
+            if !matches!(style.underline, UnderlineType::None) {
+                let text_width = decoration_width;
+                let ul_color = if style.underline_color != 0 {
+                    color_to_css(style.underline_color)
+                } else {
+                    color_to_css(style.color)
+                };
+                // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측, 고정
+                // 2.0px 은 큰 글꼴에서 디센더 관통). 선 모양 내부 기하는 캔버스 경로
+                // 현행 유지 — 오프셋만 SVG/Skia 와 같은 계약을 쓴다.
+                let ul_y = match style.underline {
+                    UnderlineType::Top => y - font_size + 1.0,
+                    _ => y + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO,
+                };
+                self.draw_line_shape_canvas(
+                    x,
+                    ul_y,
+                    x + text_width,
+                    ul_y,
+                    &ul_color,
+                    style.underline_shape,
+                );
+            }
 
-        // 취소선 처리
-        if style.strikethrough {
-            let text_width = decoration_width;
-            let strike_y = y - font_size * 0.3;
-            let st_color = if style.strike_color != 0 {
-                color_to_css(style.strike_color)
-            } else {
-                color_to_css(style.color)
-            };
-            self.draw_line_shape_canvas(
-                x,
-                strike_y,
-                x + text_width,
-                strike_y,
-                &st_color,
-                style.strike_shape,
-            );
+            // 취소선 처리
+            if style.strikethrough {
+                let text_width = decoration_width;
+                let strike_y = y - font_size * 0.3;
+                let st_color = if style.strike_color != 0 {
+                    color_to_css(style.strike_color)
+                } else {
+                    color_to_css(style.color)
+                };
+                self.draw_line_shape_canvas(
+                    x,
+                    strike_y,
+                    x + text_width,
+                    strike_y,
+                    &st_color,
+                    style.strike_shape,
+                );
+            }
         }
-
         // 강조점 처리
         if style.emphasis_dot > 0 {
             let dot_char = match style.emphasis_dot {
@@ -2947,7 +2997,11 @@ impl Renderer for WebCanvasRenderer {
                 self.ctx.set_font(&format!("{}px sans-serif", dot_size));
                 self.ctx.set_text_align("center");
                 self.ctx.set_fill_style_str(&color_to_css(style.color));
-                for &cx in &char_positions[..char_positions.len().saturating_sub(1)] {
+                for index in 0..char_positions.len().saturating_sub(1) {
+                    let cx = visual_positions
+                        .as_ref()
+                        .and_then(|p| p.span_origin(index, index + 1))
+                        .unwrap_or(char_positions[index]);
                     let dot_x = x + cx + (font_size * style.ratio * 0.5);
                     self.ctx.fill_text(dot_char, dot_x, dot_y).ok();
                 }
@@ -3405,7 +3459,10 @@ impl WebCanvasRenderer {
                 });
             }
             for (char_idx, cluster_str) in clusters {
-                let cs: &str = cluster_str;
+                let painted = visual_positions
+                    .map(|p| p.mirrored(cluster_str, *char_idx))
+                    .unwrap_or(std::borrow::Cow::Borrowed(cluster_str.as_str()));
+                let cs = painted.as_ref();
                 if cs == " " || cs == "\t" || cs == "\u{2007}" {
                     continue;
                 }

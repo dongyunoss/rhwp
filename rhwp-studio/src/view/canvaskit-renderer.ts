@@ -2259,9 +2259,31 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('image:decodeFailed');
       return;
     }
-    const paintOp = (op.imagePaintBBox ?? op.paintBbox) ? { ...op, bbox: (op.imagePaintBBox ?? op.paintBbox)! } : op;
-    this.withImageTransform(canvas, paintOp.bbox, paintOp.transform,
-      () => this.drawImageOp(canvas, image, paintOp, undefined, profile));
+    const frame = op.imagePaintBBox ?? op.paintBbox;
+    const drawOp = frame ? { ...op, bbox: frame } : op;
+    const sourceClip = op.paintClipPath;
+    if (sourceClip !== undefined && (!Array.isArray(sourceClip) || sourceClip.length !== 4
+      || !sourceClip.every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)))) {
+      this.unsupportedOps.add('image:invalidGeometry');
+      return;
+    }
+    const clipPath = sourceClip && this.canvasKit.Path.MakeFromSVGString(
+      `M${sourceClip.map(([x,y]) => `${x} ${y}`).join(' L')} Z`);
+    if (sourceClip && !clipPath) {
+      this.unsupportedOps.add('image:invalidGeometry');
+      return;
+    }
+    if (op.paintClip || clipPath) {
+      canvas.save();
+      if (op.paintClip) canvas.clipRect(this.rect(op.paintClip), this.canvasKit.ClipOp?.Intersect ?? 0, true);
+      if (clipPath) canvas.clipPath(clipPath, this.canvasKit.ClipOp?.Intersect ?? 0, true);
+    }
+    try {
+      this.withImageTransform(canvas, drawOp.bbox, drawOp.transform, () => this.drawImageOp(canvas, image, drawOp, undefined, profile));
+    } finally {
+      if (op.paintClip || clipPath) canvas.restore();
+      clipPath?.delete();
+    }
   }
 
   private printMetafileBytes(op: LayerImageOp): Uint8Array | null {
@@ -3056,6 +3078,12 @@ export class CanvasKitLayerRenderer {
       replayCodePoints.push(character);
     }
     const style = op.style ?? {};
+    // 줄 방향 문맥을 가진 legacy run은 기존 complex-script fallback을 사용한다.
+    // 명시적 glyphRun의 위치는 producer가 이미 해소하므로 이 분기를 거치지 않는다.
+    if (style.bidiLayout) {
+      this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
+      return;
+    }
     if (this.recordTextRunCoverageGaps(op, replayCodePoints)) return;
     const ratio = style.ratio ?? 1;
     const outlineType = style.outlineType ?? 0;

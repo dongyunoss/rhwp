@@ -1653,6 +1653,9 @@ pub struct ImageNode {
     /// 저장 계약이 확인된 그림의 회전 전 크기 / 회전 후 프레임 크기.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pre_rotation_ratio: Option<[f64; 2]>,
+    /// 저장 그림 영역과 bitmap 자체 원점. 공통 기하 결과가 크기·clip을 함께 만든다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_rect: Option<super::image_geometry::PictureSourceRect>,
 }
 
 /// [Task #825] 머리말/꼬리말 안 그림의 outer 위치 + 종류.
@@ -1712,6 +1715,7 @@ impl ImageNode {
             cell_context: None,
             content_inset: None,
             pre_rotation_ratio: None,
+            source_rect: None,
         }
     }
 
@@ -1733,11 +1737,35 @@ impl ImageNode {
 
     /// 회전·대칭을 적용하기 전 실제 그림 출력 사각형. 모든 backend가 한 번만 소비한다.
     pub fn transformed_paint_bbox(&self, frame: &BoundingBox) -> BoundingBox {
-        super::image_geometry::pre_rotation_bbox(
+        self.paint_geometry(frame).bitmap
+    }
+
+    pub fn source_clip_path(&self, frame: &BoundingBox) -> Option<[[f64; 2]; 4]> {
+        self.paint_geometry(frame).clip
+    }
+
+    pub fn source_clip_bbox(&self, frame: &BoundingBox) -> Option<BoundingBox> {
+        let points = self.source_clip_path(frame)?;
+        let min_x = points.iter().map(|p| p[0]).fold(f64::INFINITY, f64::min);
+        let min_y = points.iter().map(|p| p[1]).fold(f64::INFINITY, f64::min);
+        let max_x = points
+            .iter()
+            .map(|p| p[0])
+            .fold(f64::NEG_INFINITY, f64::max);
+        let max_y = points
+            .iter()
+            .map(|p| p[1])
+            .fold(f64::NEG_INFINITY, f64::max);
+        Some(BoundingBox::new(min_x, min_y, max_x - min_x, max_y - min_y))
+    }
+
+    fn paint_geometry(&self, frame: &BoundingBox) -> super::image_geometry::PicturePaintGeometry {
+        let base = super::image_geometry::pre_rotation_bbox(
             &self.paint_bbox(frame),
             self.transform,
             self.pre_rotation_ratio,
-        )
+        );
+        super::image_geometry::source_geometry(base, self.transform, self.source_rect)
     }
 }
 

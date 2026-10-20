@@ -27,15 +27,32 @@ impl PaintOp {
                 expand(logical, background.border_width * 0.5)
             }
             Self::TextRun { run, .. } => text_bounds(logical, run),
-            Self::GlyphRun { run, .. } => expand(
-                logical,
-                run.paint_style
-                    .font_size
-                    .max(1.0)
+            Self::GlyphRun { run, .. } => {
+                let size = run.paint_style.font_size.max(1.0);
+                let padding = size
                     .max(run.paint_style.shadow_offset_x.abs())
                     .max(run.paint_style.shadow_offset_y.abs())
-                    * 0.2,
-            ),
+                    * 0.2;
+                let mut bounds = expand(logical, padding);
+                // 줄 방향을 해소한 glyph는 논리 런 밖에도 놓일 수 있다.
+                for position in &run.positions {
+                    if position.x.is_finite() && position.y.is_finite() {
+                        bounds = union(
+                            bounds,
+                            affine_bounds(
+                                BoundingBox::new(
+                                    position.x - size * 0.2,
+                                    position.y - size,
+                                    size * 1.4,
+                                    size * 1.4,
+                                ),
+                                Some(run.placement.run_to_page),
+                            ),
+                        );
+                    }
+                }
+                bounds
+            }
             Self::GlyphOutline { outline, .. } => {
                 let padding = outline
                     .paint_style
@@ -788,13 +805,26 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
     if run.style.emphasis_dot != 0 {
         padding = padding.max(font_size * 0.35);
     }
-    let mut bounds = expand(positioned, padding);
+    let text = run.display_or_text();
+    let positions = run.replay_positions_for(text);
+    let mut painted = positioned;
+    if let Some(visual) = crate::renderer::text_direction::VisualTextPositions::for_style(
+        text, &positions, &run.style,
+    ) {
+        for (left, right) in visual.segments(text.chars().count()) {
+            painted = union(
+                painted,
+                BoundingBox::new(logical.x + left, positioned.y, right - left, positioned.height),
+            );
+        }
+    }
+    let mut bounds = expand(painted, padding);
     if run.style.shadow_type != 0 {
         let offset = BoundingBox::new(
-            positioned.x + run.style.shadow_offset_x,
-            positioned.y + run.style.shadow_offset_y,
-            positioned.width,
-            positioned.height,
+            painted.x + run.style.shadow_offset_x,
+            painted.y + run.style.shadow_offset_y,
+            painted.width,
+            painted.height,
         );
         bounds = union(
             bounds,

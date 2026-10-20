@@ -2026,6 +2026,18 @@ impl SkiaLayerRenderer {
                                 .flatten();
                             let resolved = resolved.as_deref().or(fallback.as_ref());
                             let effective_bbox = image.transformed_paint_bbox(bbox);
+                            // 저장 viewport는 그림 변환 바깥의 페이지 좌표 clip이다.
+                            let _source_clip_restore = image.source_clip_path(bbox).map(|points| {
+                                let restore = skia_safe::AutoCanvasRestore::guard(canvas, true);
+                                let mut path = skia_safe::PathBuilder::new();
+                                path.move_to((points[0][0] as f32, points[0][1] as f32));
+                                for point in &points[1..] {
+                                    path.line_to((point[0] as f32, point[1] as f32));
+                                }
+                                path.close();
+                                canvas.clip_path(&path.detach(), None, true);
+                                restore
+                            });
                             if image.transform.has_transform() {
                                 open_shape_transform(image.transform, &effective_bbox);
                             }

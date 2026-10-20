@@ -4846,6 +4846,7 @@ impl LayoutEngine {
             });
         }
 
+        super::text_direction::resolve_page(&mut tree.root);
         tree
     }
 

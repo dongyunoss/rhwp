@@ -596,6 +596,7 @@ impl LayoutEngine {
                 pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
                     picture,
                 ),
+                source_rect: crate::renderer::image_geometry::picture_source_rect(picture),
                 header_footer_ref: header_footer_ref.clone(),
                 cell_index: cei,
                 cell_para_index: cpi,
@@ -930,6 +931,7 @@ impl LayoutEngine {
                 pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(
                     picture,
                 ),
+                source_rect: crate::renderer::image_geometry::picture_source_rect(picture),
                 ..ImageNode::new(bin_data_id, image_data)
             })
         };
@@ -2595,6 +2597,12 @@ impl LayoutEngine {
             bbox.width + 2.0 * outset,
             bbox.height + 2.0 * outset,
         );
+        let bbox = crate::renderer::image_geometry::source_geometry(
+            bbox,
+            transform,
+            crate::renderer::image_geometry::picture_source_rect(picture),
+        )
+        .viewport;
         let mut rectangle = RectangleNode::new(0.0, style, None);
         rectangle.picture_border = true;
         rectangle.round_stroke_join = !matches!((picture.border_attr.attr >> 6) & 0x0f, 1 | 2);

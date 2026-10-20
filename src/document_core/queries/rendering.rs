@@ -2592,7 +2592,16 @@ impl DocumentCore {
                             };
                             // 보이는 영역이 없으면 소비자가 그릴 것도 없다. 교차 결과는 가시성
                             // 판정에만 쓰고, 직렬화에는 canonical 한 조상 clip 을 그대로 넘긴다.
-                            if intersect(clip, *bbox).is_none() {
+                            let image_clip = if let Some(source_clip) = image.source_clip_bbox(bbox)
+                            {
+                                let Some(clip) = intersect(clip, source_clip) else {
+                                    continue;
+                                };
+                                Some(clip)
+                            } else {
+                                clip
+                            };
+                            if intersect(image_clip, op.visual_bounds()).is_none() {
                                 continue;
                             }
                             let key = crate::paint::source_image_key(self.epoch, image);
@@ -2603,7 +2612,8 @@ impl DocumentCore {
                             self.write_image(
                                 image.paint_bbox(bbox),
                                 image.transformed_paint_bbox(bbox),
-                                clip,
+                                image_clip,
+                                image.source_clip_path(bbox),
                                 image,
                                 resolved.as_deref(),
                                 data,
@@ -2619,6 +2629,7 @@ impl DocumentCore {
                 bbox: BoundingBox,
                 paint_bbox: BoundingBox,
                 clip: Option<BoundingBox>,
+                source_clip_path: Option<[[f64; 2]; 4]>,
                 image: &crate::renderer::render_tree::ImageNode,
                 resolved: Option<&crate::paint::ResolvedImagePayload>,
                 data: &[u8],
@@ -2632,7 +2643,7 @@ impl DocumentCore {
                 write_bbox(buf, bbox);
                 buf.push_str(",\"imagePaintBBox\":");
                 write_bbox(buf, paint_bbox);
-                if image.pre_rotation_ratio.is_some() {
+                if image.pre_rotation_ratio.is_some() || image.source_rect.is_some() {
                     buf.push_str(",\"paintBbox\":");
                     write_bbox(buf, paint_bbox);
                 }
@@ -2646,6 +2657,10 @@ impl DocumentCore {
                 if let Some(clip) = clip {
                     buf.push_str(",\"clip\":");
                     write_bbox(buf, clip);
+                }
+                if let Some(path) = source_clip_path {
+                    buf.push_str(",\"paintClipPath\":");
+                    buf.push_str(&serde_json::to_string(&path).unwrap());
                 }
                 let mime = crate::renderer::image_resolver::emitted_image_mime(
                     data,

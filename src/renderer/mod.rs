@@ -94,7 +94,11 @@ mod stroke_pattern;
 pub(crate) mod table_row_frame;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.
+<<<<<<< HEAD
 pub(crate) mod anisotropic_sampling;
+=======
+pub(crate) mod contextual_text;
+>>>>>>> c20ede9c64 (fix: 글줄 방향과 저장 그림 영역을 공통 출력에 전달)
 #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod cubic_sampling;
 pub mod native_pua_fonts;
@@ -117,7 +121,11 @@ pub mod svg_layer;
 pub(crate) mod tab_leader;
 pub(crate) mod text_decoration;
 pub(crate) mod text_direction;
+<<<<<<< HEAD
 pub(crate) mod text_transform;
+=======
+pub use text_direction::{BidiLayout, BidiVisualRun};
+>>>>>>> c20ede9c64 (fix: 글줄 방향과 저장 그림 영역을 공통 출력에 전달)
 pub mod typeset;
 #[cfg(target_arch = "wasm32")]
 pub mod web_canvas;
@@ -355,6 +363,9 @@ pub struct TextStyle {
     /// 호스트가 실제 paint에 준비한 글꼴의 원 PUA 표시·전진 계약이다.
     #[serde(skip)]
     pub native_pua_metrics: Option<std::sync::Arc<native_pua_fonts::NativePuaMetrics>>,
+    /// 글줄 전체에서 계산한 표시 방향. 모델/저장 스타일과 논리 전진은 바꾸지 않는다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bidi_layout: Option<BidiLayout>,
     /// Session-only glyph metrics; never part of document/style serialization.
     #[serde(skip)]
     pub supplemental_metrics:
@@ -802,6 +813,7 @@ pub fn halfwidth_punct_paint_scale(advance: f64, glyph_width: f64) -> f64 {
 impl Default for TextStyle {
     fn default() -> Self {
         Self {
+            bidi_layout: None,
             supplemental_metrics: None,
             isolated_jamo_font: None,
             font_family: String::new(),

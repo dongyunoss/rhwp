@@ -2,6 +2,112 @@
 use super::render_tree::{BoundingBox, ShapeTransform};
 use crate::model::image::Picture;
 
+/// 그림 좌표계의 viewport와 그 안에서 시작하는 bitmap 원점. 둘은 다른 값이다.
+#[derive(Debug, Clone, Copy, serde::Serialize)]
+pub struct PictureSourceRect {
+    min_x: f64,
+    min_y: f64,
+    width: f64,
+    height: f64,
+    origin_x: f64,
+    origin_y: f64,
+}
+
+pub(crate) fn picture_source_rect(picture: &Picture) -> Option<PictureSourceRect> {
+    let shape = &picture.shape_attr;
+    if shape.group_level != 0
+        || shape.original_width == 0
+        || shape.original_height == 0
+        || picture
+            .border_x
+            .iter()
+            .chain(&picture.border_y)
+            .all(|x| *x == 0)
+    {
+        return None;
+    }
+    let [x0, y0, x1, y1] = picture.border_x.map(f64::from);
+    let [x2, y2, x3, y3] = picture.border_y.map(f64::from);
+    let w = f64::from(shape.original_width);
+    let h = f64::from(shape.original_height);
+    let min_x = x0.min(x1).min(x2).min(x3);
+    let min_y = y0.min(y1).min(y2).min(y3);
+    let width = x0.max(x1).max(x2).max(x3) - min_x;
+    let height = y0.max(y1).max(y2).max(y3) - min_y;
+    if x0 == 0.0 && y0 == 0.0 && min_x == 0.0 && min_y == 0.0 && width == w && height == h {
+        return None;
+    }
+    Some(PictureSourceRect {
+        min_x: min_x / w,
+        min_y: min_y / h,
+        width: width / w,
+        height: height / h,
+        origin_x: x0 / w,
+        origin_y: y0 / h,
+    })
+}
+
+pub(crate) struct PicturePaintGeometry {
+    pub bitmap: BoundingBox,
+    pub viewport: BoundingBox,
+    pub clip: Option<[[f64; 2]; 4]>,
+}
+
+/// 이미 여백과 회전 전 크기를 해소한 사각형에서 실제 그리기와 viewport를 구한다.
+/// 논리 개체 틀은 수정하지 않으며, viewport의 원점과 bitmap의 자체 원점을 각각 소비한다.
+pub(crate) fn source_geometry(
+    base: BoundingBox,
+    transform: ShapeTransform,
+    source: Option<PictureSourceRect>,
+) -> PicturePaintGeometry {
+    let Some(s) = source else {
+        return PicturePaintGeometry {
+            bitmap: base,
+            viewport: base,
+            clip: None,
+        };
+    };
+    let (sin, cos) = transform.rotation.to_radians().sin_cos();
+    let offset = |x: f64, y: f64| {
+        let x = x * base.width * if transform.horz_flip { -1.0 } else { 1.0 };
+        let y = y * base.height * if transform.vert_flip { -1.0 } else { 1.0 };
+        [cos * x - sin * y, sin * x + cos * y]
+    };
+    let w = base.width * s.width;
+    let h = base.height * s.height;
+    let [dx, dy] = offset(
+        s.min_x + s.origin_x + (s.width - 1.0) / 2.0,
+        s.min_y + s.origin_y + (s.height - 1.0) / 2.0,
+    );
+    let bitmap = BoundingBox::new(
+        base.x + (base.width - w) / 2.0 + dx,
+        base.y + (base.height - h) / 2.0 + dy,
+        w,
+        h,
+    );
+    let [vx, vy] = offset(
+        s.min_x + (s.width - 1.0) / 2.0,
+        s.min_y + (s.height - 1.0) / 2.0,
+    );
+    let cx = base.x + base.width / 2.0 + vx;
+    let cy = base.y + base.height / 2.0 + vy;
+    let viewport = BoundingBox::new(cx - w / 2.0, cy - h / 2.0, w, h);
+    // Print의 clip은 회전 영역의 계단형 스캔 변환이다. 외접 AABB로 대체하면
+    // viewport 모서리 바깥의 bitmap까지 보이므로 실제 네 꼭짓점을 전달한다.
+    let clip = [
+        [-w / 2.0, -h / 2.0],
+        [w / 2.0, -h / 2.0],
+        [w / 2.0, h / 2.0],
+        [-w / 2.0, h / 2.0],
+    ]
+    .map(|[x, y]| [cx + cos * x - sin * y, cy + sin * x + cos * y]);
+    PicturePaintGeometry {
+        bitmap,
+        viewport,
+        clip: Some(clip),
+    }
+}
+
 /// 저장본은 실제 합성 행렬이 그림의 방향을 정한다.
 /// 편집 중에는 아직 저장 행렬이 없으므로 편집 플래그를 사용한다.
 pub(crate) fn picture_transform(picture: &Picture) -> ShapeTransform {

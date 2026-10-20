@@ -1,6 +1,4 @@
-use skia_safe::{
-    font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathEffect, Rect, Typeface,
-};
+use skia_safe::{font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, Rect, Typeface};
 
 use crate::model::style::UnderlineType;
 use crate::paint::LayerOutputOptions;
@@ -21,6 +19,7 @@ use super::renderer::colorref_to_skia;
 use super::synthetic_typeface::{draw_synthetic_bold_paths, unemboldened_typeface};
 
 mod fonts;
+mod lines;
 mod marks;
 mod overlap;
 
@@ -291,9 +290,10 @@ impl SkiaTextReplay<'_> {
                     layout_positions,
                     &char_positions,
                 );
-                let visual_positions = crate::renderer::text_direction::VisualTextPositions::new(
+                let visual_positions = crate::renderer::text_direction::VisualTextPositions::for_style(
                     text,
                     &char_positions,
+                    style,
                 );
                 let span_x = |start: usize, end: usize| {
                     visual_positions
@@ -320,11 +320,16 @@ impl SkiaTextReplay<'_> {
                 } else {
                     super::text_shaping::prepare_shaped_spans(
                         &clusters,
+                        visual_positions.as_ref(),
                         self.text_shaper,
                         self.font_mgr,
                         |text| font_for_text(text, font_size),
                     )
                 };
+                let segments = visual_positions
+                    .as_ref()
+                    .map(|p| p.segments(text.chars().count().saturating_sub(trim)))
+                    .unwrap_or_else(|| vec![(0.0, f64::from(text_width))]);
                 if !suppress_glyphs
                     && crate::model::color::char_shade(style.shade_color).is_some()
                     && text_width > 0.0
@@ -333,109 +338,20 @@ impl SkiaTextReplay<'_> {
                     shade.set_anti_alias(true);
                     shade.set_style(paint::Style::Fill);
                     shade.set_color(colorref_to_skia(style.shade_color, 1.0));
-                    canvas.draw_rect(
-                        Rect::from_xywh(
-                            bbox.x as f32,
-                            y as f32 - font_size,
-                            text_width,
-                            font_size * 1.2,
-                        ),
-                        &shade,
-                    );
+                    for &(left, right) in &segments {
+                        canvas.draw_rect(
+                            Rect::from_xywh(
+                                bbox.x as f32 + left as f32,
+                                y as f32 - font_size,
+                                (right - left) as f32,
+                                font_size * 1.2,
+                            ),
+                            &shade,
+                        );
+                    }
                 }
 
-                let draw_styled_line = |x1: f32,
-                                        y: f32,
-                                        x2: f32,
-                                        color: Color,
-                                        width: f32,
-                                        dash: &[f32],
-                                        round: bool| {
-                    if x2 <= x1 {
-                        return;
-                    }
-                    let mut line_paint = Paint::default();
-                    line_paint.set_anti_alias(true);
-                    line_paint.set_style(paint::Style::Stroke);
-                    line_paint.set_stroke_width(width);
-                    line_paint.set_color(color);
-                    if round {
-                        line_paint.set_stroke_cap(paint::Cap::Round);
-                    }
-                    if !dash.is_empty() {
-                        if let Some(effect) = PathEffect::dash(dash, 0.0) {
-                            line_paint.set_path_effect(effect);
-                        }
-                    }
-                    canvas.draw_line((x1, y), (x2, y), &line_paint);
-                };
-                let draw_line_shape =
-                    |x1: f32, y: f32, x2: f32, color: Color, shape: u8| match shape {
-                        7 => {
-                            draw_styled_line(x1, y - 1.0, x2, color, 0.7, &[], false);
-                            draw_styled_line(x1, y + 1.0, x2, color, 0.7, &[], false);
-                        }
-                        8 => {
-                            draw_styled_line(x1, y - 1.2, x2, color, 0.5, &[], false);
-                            draw_styled_line(x1, y + 0.8, x2, color, 1.2, &[], false);
-                        }
-                        9 => {
-                            draw_styled_line(x1, y - 0.8, x2, color, 1.2, &[], false);
-                            draw_styled_line(x1, y + 1.2, x2, color, 0.5, &[], false);
-                        }
-                        10 => {
-                            draw_styled_line(x1, y - 1.5, x2, color, 0.5, &[], false);
-                            draw_styled_line(x1, y, x2, color, 0.5, &[], false);
-                            draw_styled_line(x1, y + 1.5, x2, color, 0.5, &[], false);
-                        }
-                        11 | 12 => {
-                            if ![x1, y, x2].iter().all(|value| value.is_finite()) || x2 <= x1 {
-                                return;
-                            }
-                            if x2 - x1 > 6.0 * 4096.0 {
-                                draw_styled_line(x1, y, x2, color, 1.0, &[], false);
-                                return;
-                            }
-                            let offsets: &[f32] = if shape == 12 { &[-1.0, 1.0] } else { &[0.0] };
-                            for offset in offsets {
-                                let mut path = skia_safe::PathBuilder::new();
-                                path.move_to((x1, y + offset));
-                                let segments = ((x2 - x1) / 6.0).ceil() as usize;
-                                for index in 0..segments {
-                                    let left = x1 + index as f32 * 6.0;
-                                    let right = (left + 6.0).min(x2);
-                                    let control_y =
-                                        y + offset + if index % 2 == 0 { -1.5 } else { 1.5 };
-                                    path.quad_to(
-                                        ((left + right) / 2.0, control_y),
-                                        (right, y + offset),
-                                    );
-                                }
-                                let mut wave = Paint::default();
-                                wave.set_anti_alias(true);
-                                wave.set_style(paint::Style::Stroke);
-                                wave.set_stroke_width(if shape == 12 { 0.5 } else { 0.7 });
-                                wave.set_color(color);
-                                canvas.draw_path(&path.detach(), &wave);
-                            }
-                        }
-                        1 => draw_styled_line(x1, y, x2, color, 1.0, &[3.0, 3.0], false),
-                        2 => draw_styled_line(x1, y, x2, color, 1.0, &[1.0, 2.0], false),
-                        3 => draw_styled_line(x1, y, x2, color, 1.0, &[6.0, 2.0, 1.0, 2.0], false),
-                        4 => draw_styled_line(
-                            x1,
-                            y,
-                            x2,
-                            color,
-                            1.0,
-                            &[6.0, 2.0, 1.0, 2.0, 1.0, 2.0],
-                            false,
-                        ),
-                        5 => draw_styled_line(x1, y, x2, color, 1.0, &[8.0, 4.0], false),
-                        6 => draw_styled_line(x1, y, x2, color, 1.0, &[0.1, 2.5], true),
-                        _ => draw_styled_line(x1, y, x2, color, 1.0, &[], false),
-                    };
-
+                let lines = lines::TextLines { canvas };
                 // 연속 하이픈은 낱글자로 그리되 원 획이 저장 간격보다 넓어
                 // 겹치는 경우에는 낱글자별 짧은 획을 사용한다.
                 let cluster_advance = |char_idx: usize, cluster: &str| -> f32 {
@@ -479,6 +395,11 @@ impl SkiaTextReplay<'_> {
                             }
                             continue;
                         }
+                        let painted = visual_positions
+                            .as_ref()
+                            .map(|p| p.mirrored(cluster, *char_idx))
+                            .unwrap_or(std::borrow::Cow::Borrowed(cluster.as_str()));
+                        let cluster = painted.as_ref();
                         // 공백·개체 마커는 원문 위치와 장식을 보존하되 글리프를 그리지 않는다.
                         // U+FFFC의 실제 개체는 별도 paint op가 소유한다. 문자 인덱스를
                         // 제거하면 뒤 cluster의 저장 위치가 달라지므로 그대로 건너뛴다.
@@ -838,62 +759,59 @@ impl SkiaTextReplay<'_> {
                     draw_text_pass(colorref_to_skia(style.color, 1.0), 0.0, 0.0, 0.0);
                 }
 
-                if !matches!(style.underline, UnderlineType::None) && text_width > 0.0 {
-                    // COLORREF 0 은 미지정이 아니라 검정 — svg.rs 와 같은 계약.
-                    let color = colorref_to_skia(style.underline_color, 1.0);
-                    // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측) —
-                    // 이중/삼중선(shape 7~10)은 em 비례 실측표를 따른다.
-                    // SVG 백엔드(renderer/svg.rs)와 같은 표(text_decoration)를 소비한다.
-                    let multi = if matches!(style.underline, UnderlineType::Top) {
-                        None
-                    } else {
-                        crate::renderer::text_decoration::underline_multi_lines(
-                            style.underline_shape,
-                        )
-                    };
-                    if let Some(lines) = multi {
-                        for (dy_em, width_em) in lines {
-                            draw_styled_line(
-                                bbox.x as f32,
-                                y as f32 + font_size * *dy_em as f32,
-                                bbox.x as f32 + text_width,
-                                color,
-                                (font_size * *width_em as f32).max(0.3),
-                                &[],
-                                false,
-                            );
-                        }
-                    } else {
-                        let line_y =
-                            match style.underline {
+                for &(left, right) in &segments {
+                    let start_x = bbox.x as f32 + left as f32;
+                    let end_x = bbox.x as f32 + right as f32;
+                    if !matches!(style.underline, UnderlineType::None) && text_width > 0.0 {
+                        // COLORREF 0 은 미지정이 아니라 검정 — svg.rs 와 같은 계약.
+                        let color = colorref_to_skia(style.underline_color, 1.0);
+                        // [#5730] 아래 밑줄은 기준선 + 0.17em (한글 2022 프로브 실측) —
+                        // 이중/삼중선(shape 7~10)은 em 비례 실측표를 따른다.
+                        // SVG 백엔드(renderer/svg.rs)와 같은 표(text_decoration)를 소비한다.
+                        let multi = if matches!(style.underline, UnderlineType::Top) {
+                            None
+                        } else {
+                            crate::renderer::text_decoration::underline_multi_lines(
+                                style.underline_shape,
+                            )
+                        };
+                        if let Some(multi_lines) = multi {
+                            for (dy_em, width_em) in multi_lines {
+                                lines.styled(
+                                    start_x,
+                                    y as f32 + font_size * *dy_em as f32,
+                                    end_x,
+                                    color,
+                                    (font_size * *width_em as f32).max(0.3),
+                                    &[],
+                                    false,
+                                );
+                            }
+                        } else {
+                            let line_y = match style.underline {
                                 UnderlineType::Top => y as f32 - font_size + 1.0,
                                 _ => y as f32
                                     + font_size
                                         * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
                                             as f32,
                             };
-                        draw_line_shape(
-                            bbox.x as f32,
-                            line_y,
-                            bbox.x as f32 + text_width,
+                            lines.shape(start_x, line_y, end_x, color, style.underline_shape);
+                        }
+                    }
+                    if style.strikethrough && text_width > 0.0 {
+                        let color = if style.strike_color != 0 {
+                            colorref_to_skia(style.strike_color, 1.0)
+                        } else {
+                            colorref_to_skia(style.color, 1.0)
+                        };
+                        lines.shape(
+                            start_x,
+                            y as f32 - font_size * 0.3,
+                            end_x,
                             color,
-                            style.underline_shape,
+                            style.strike_shape,
                         );
                     }
-                }
-                if style.strikethrough && text_width > 0.0 {
-                    let color = if style.strike_color != 0 {
-                        colorref_to_skia(style.strike_color, 1.0)
-                    } else {
-                        colorref_to_skia(style.color, 1.0)
-                    };
-                    draw_line_shape(
-                        bbox.x as f32,
-                        y as f32 - font_size * 0.3,
-                        bbox.x as f32 + text_width,
-                        color,
-                        style.strike_shape,
-                    );
                 }
                 if style.emphasis_dot > 0 {
                     let dot = match style.emphasis_dot {
@@ -912,10 +830,11 @@ impl SkiaTextReplay<'_> {
                             let mut dot_paint = Paint::default();
                             dot_paint.set_anti_alias(true);
                             dot_paint.set_color(colorref_to_skia(style.color, 1.0));
-                            for cx in &char_positions[..char_positions.len().saturating_sub(1)] {
+                            for index in 0..char_positions.len().saturating_sub(1) {
+                                let cx = span_x(index, index + 1);
                                 canvas.draw_str(
                                     dot,
-                                    (bbox.x as f32 + *cx as f32 + font_size * ratio * 0.5, dot_y),
+                                    (bbox.x as f32 + cx as f32 + font_size * ratio * 0.5, dot_y),
                                     &font,
                                     &dot_paint,
                                 );
@@ -934,8 +853,8 @@ impl SkiaTextReplay<'_> {
                     let line_y = y as f32 - font_size * 0.35;
                     let color = colorref_to_skia(style.color, 1.0);
                     match leader.fill_type {
-                        1 => draw_styled_line(x1, line_y, x2, color, 0.5, &[], false),
-                        2 => draw_styled_line(x1, line_y, x2, color, 0.5, &[3.0, 3.0], false),
+                        1 => lines.styled(x1, line_y, x2, color, 0.5, &[], false),
+                        2 => lines.styled(x1, line_y, x2, color, 0.5, &[3.0, 3.0], false),
                         3 => {
                             if let Some(dots) = crate::renderer::tab_leader::dot_geometry(
                                 font_size as f64,
@@ -958,7 +877,7 @@ impl SkiaTextReplay<'_> {
                                 crate::renderer::render_tree::tab_dot_leader_stroke(
                                     font_size as f64,
                                 );
-                            draw_styled_line(
+                            lines.styled(
                                 x1,
                                 line_y,
                                 x2,
@@ -968,16 +887,8 @@ impl SkiaTextReplay<'_> {
                                 true,
                             )
                         }
-                        4 => draw_styled_line(
-                            x1,
-                            line_y,
-                            x2,
-                            color,
-                            0.5,
-                            &[6.0, 2.0, 1.0, 2.0],
-                            false,
-                        ),
-                        5 => draw_styled_line(
+                        4 => lines.styled(x1, line_y, x2, color, 0.5, &[6.0, 2.0, 1.0, 2.0], false),
+                        5 => lines.styled(
                             x1,
                             line_y,
                             x2,
@@ -986,11 +897,11 @@ impl SkiaTextReplay<'_> {
                             &[6.0, 2.0, 1.0, 2.0, 1.0, 2.0],
                             false,
                         ),
-                        6 => draw_styled_line(x1, line_y, x2, color, 0.5, &[8.0, 4.0], false),
+                        6 => lines.styled(x1, line_y, x2, color, 0.5, &[8.0, 4.0], false),
                         7 => {
                             let (w, dash, gap) =
                                 crate::renderer::render_tree::tab_circle_leader_stroke();
-                            draw_styled_line(
+                            lines.styled(
                                 x1,
                                 line_y,
                                 x2,
@@ -1001,23 +912,23 @@ impl SkiaTextReplay<'_> {
                             )
                         }
                         8 => {
-                            draw_styled_line(x1, line_y - 1.0, x2, color, 0.3, &[], false);
-                            draw_styled_line(x1, line_y + 1.0, x2, color, 0.3, &[], false);
+                            lines.styled(x1, line_y - 1.0, x2, color, 0.3, &[], false);
+                            lines.styled(x1, line_y + 1.0, x2, color, 0.3, &[], false);
                         }
                         9 => {
-                            draw_styled_line(x1, line_y - 1.2, x2, color, 0.3, &[], false);
-                            draw_styled_line(x1, line_y + 0.8, x2, color, 0.8, &[], false);
+                            lines.styled(x1, line_y - 1.2, x2, color, 0.3, &[], false);
+                            lines.styled(x1, line_y + 0.8, x2, color, 0.8, &[], false);
                         }
                         10 => {
-                            draw_styled_line(x1, line_y - 0.8, x2, color, 0.8, &[], false);
-                            draw_styled_line(x1, line_y + 1.2, x2, color, 0.3, &[], false);
+                            lines.styled(x1, line_y - 0.8, x2, color, 0.8, &[], false);
+                            lines.styled(x1, line_y + 1.2, x2, color, 0.3, &[], false);
                         }
                         11 => {
-                            draw_styled_line(x1, line_y - 2.0, x2, color, 0.3, &[], false);
-                            draw_styled_line(x1, line_y, x2, color, 0.8, &[], false);
-                            draw_styled_line(x1, line_y + 2.0, x2, color, 0.3, &[], false);
+                            lines.styled(x1, line_y - 2.0, x2, color, 0.3, &[], false);
+                            lines.styled(x1, line_y, x2, color, 0.8, &[], false);
+                            lines.styled(x1, line_y + 2.0, x2, color, 0.3, &[], false);
                         }
-                        _ => draw_styled_line(x1, line_y, x2, color, 0.5, &[1.0, 2.0], false),
+                        _ => lines.styled(x1, line_y, x2, color, 0.5, &[1.0, 2.0], false),
                     }
                 }
                 if effective_rotation != 0.0 {

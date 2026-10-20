@@ -11616,6 +11616,7 @@ fn make_picture_image_node(
             external_path: pic.image_attr.external_path.clone(),
             content_inset: crate::renderer::layout::utils::picture_content_inset(pic),
             pre_rotation_ratio: crate::renderer::image_geometry::picture_pre_rotation_ratio(pic),
+            source_rect: crate::renderer::image_geometry::picture_source_rect(pic),
             ..ImageNode::new(bin_data_id, image_data)
         }),
         bbox,

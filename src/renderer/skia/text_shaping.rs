@@ -38,6 +38,7 @@ fn shaping_profile(text: &str) -> (bool, bool) {
 
 pub(super) fn prepare_shaped_spans(
     clusters: &[(usize, String)],
+    visual: Option<&crate::renderer::text_direction::VisualTextPositions<'_>>,
     shaper: &OnceCell<Option<Shaper>>,
     font_mgr: &FontMgr,
     make_font: impl Fn(&str) -> Option<Font>,
@@ -70,6 +71,12 @@ pub(super) fn prepare_shaped_spans(
         .iter()
         .map(|(_, text)| (eligible(text), shaping_profile(text)))
         .collect();
+    let scopes: Vec<_> = clusters
+        .iter()
+        .map(|(start, text)| {
+            visual.and_then(|v| v.span_scope(*start, *start + text.chars().count()))
+        })
+        .collect();
     // 이웃의 기본 글꼴로 묶은 뒤 OS가 별도 폴백을 고르게 하지 않는다.
     // 각 cluster에 대해 본문과 같은 후보 체인이 선택한 실제 face를 보존한다.
     let fonts: Vec<_> = clusters.iter().map(|(_, text)| make_font(text)).collect();
@@ -98,6 +105,7 @@ pub(super) fn prepare_shaped_spans(
         let mut text = String::new();
         while index < clusters.len()
             && profiles[index].0
+            && scopes[index] == scopes[start]
             && (index == start || profiles[index].1 .0 || next_complex(index))
             && fonts[index]
                 .as_ref()
@@ -113,7 +121,7 @@ pub(super) fn prepare_shaped_spans(
         let Some((blob, _)) = shaper.shape_text_blob(
             &text,
             font,
-            !shaping_profile(&text).1,
+            !scopes[start].map_or_else(|| shaping_profile(&text).1, |(_, _, rtl)| rtl),
             1_000_000.0,
             (0.0, 0.0),
         ) else {

@@ -1182,6 +1182,12 @@ export interface LayerPageBackgroundOp {
 }
 
 export interface LayerTextStyle {
+  /** 줄 전체에서 해소한 방향. 논리 positions와 원문 주소는 유지한다. */
+  bidiLayout?: {
+    scalarCount: number;
+    logicalWidth: number;
+    runs: { start: number; end: number; x: number; rtl: boolean }[];
+  };
   fontFamily?: string;
   fontSize?: number;
   color?: string;
@@ -1408,6 +1414,10 @@ export interface LayerImageOp {
   imagePaintBBox?: LayerBounds;
   /** 회전 전 출력 크기. 없으면 기존 bbox 계약을 사용한다. */
   paintBbox?: LayerBounds;
+  /** 그림 변환 바깥에서 적용하는 페이지 좌표의 저장 viewport. */
+  paintClip?: LayerBounds;
+  /** 저장 viewport의 실제 네 꼭짓점. 회전 외접 상자로 대체하지 않는다. */
+  paintClipPath?: [number, number][];
   /** Explicit source sampling; absent preserves the output profile policy. */
   imageInterpolation?: 'nearest' | 'linear';
   /** 실제 Print 색 전달 payload의 축소 재구성 계약. */

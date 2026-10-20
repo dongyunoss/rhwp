@@ -1,4 +1,4 @@
-//! 문맥에 따라 이어지는 글자를 Canvas의 한 shaping 입력으로 전달한다.
+//! 문맥에 따라 이어지는 글자를 출력 경로의 한 shaping 입력으로 전달한다.
 
 use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
 
@@ -29,7 +29,7 @@ fn script(text: &str) -> Option<u32> {
     }
 }
 
-pub(super) fn coalesce(clusters: Vec<(usize, String)>) -> Vec<(usize, String)> {
+pub(crate) fn coalesce(clusters: Vec<(usize, String)>) -> Vec<(usize, String)> {
     let mut result: Vec<(usize, String)> = Vec::with_capacity(clusters.len());
     let mut previous = None;
     for (index, text) in clusters {
@@ -49,6 +49,6 @@ pub(super) fn coalesce(clusters: Vec<(usize, String)>) -> Vec<(usize, String)> {
     result
 }
 
-pub(super) fn is_contextual(text: &str) -> bool {
+pub(crate) fn is_contextual(text: &str) -> bool {
     script(text).is_some()
 }
