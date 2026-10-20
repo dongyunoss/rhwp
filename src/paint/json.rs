@@ -726,6 +726,16 @@ impl PaintOp {
                 if let Some(display_text) = &display_text {
                     let _ = write!(buf, ",\"displayText\":{}", json_escape(display_text));
                 }
+                let pua_candidates = crate::renderer::pua_glyph::candidates(
+                    display_text.as_deref().unwrap_or(&run.text),
+                );
+                if !pua_candidates.is_empty() {
+                    let _ = write!(
+                        buf,
+                        ",\"puaGlyphCandidates\":{}",
+                        serde_json::to_string(&pua_candidates).unwrap()
+                    );
+                }
                 buf.push_str(",\"placement\":");
                 write_text_run_placement(buf, *bbox, run);
                 buf.push_str(",\"clusters\":");

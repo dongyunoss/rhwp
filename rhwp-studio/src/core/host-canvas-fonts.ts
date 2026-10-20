@@ -13,6 +13,10 @@ interface CanvasHostFace {
   ownership: Map<string, boolean>;
 }
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
+interface CanvasFontSourceOwner {
+  registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
+  registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
+}
 let nextSession = 0;
 let currentSession: HostCanvasFontSession | null = null;
 
@@ -62,7 +66,8 @@ export class HostCanvasFontSession {
     return this.generation === getHostFontState().generation && this.faces.has(localFontFaceKey(record));
   }
 
-  async prepare(records: readonly LocalFontRecord[]): Promise<void> {
+  async prepare(records: readonly LocalFontRecord[], sourceOwner: CanvasFontSourceOwner | null = null,
+    isCurrent: () => boolean = () => true): Promise<void> {
     const generation = getHostFontState().generation;
     if (this.generation !== generation) {
       this.reset(); this.generation = generation;
@@ -72,9 +77,21 @@ export class HostCanvasFontSession {
     this.fontSet = document.fonts;
     const epoch = this.epoch;
     for (const record of records) {
-      if (epoch !== this.epoch) return;
+      if (epoch !== this.epoch || !isCurrent()) return;
       const key = localFontFaceKey(record);
-      if (!record.hostReference || this.faces.has(key) || this.failures.has(key)) continue;
+      if (!record.hostReference || this.failures.has(key)) continue;
+      const register = (loaded: CanvasHostFace) => {
+        if (!isCurrent()) return;
+        for (const family of new Set([record.family, ...record.aliases])) {
+          sourceOwner?.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
+          if (Number(record.hostReference!.face.weight ?? 400) === 400
+            && (record.hostReference!.face.slant ?? 'normal') === 'normal') {
+            sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(loaded.bytes), 0);
+          }
+        }
+      };
+      const loaded = this.faces.get(key);
+      if (loaded) { register(loaded); continue; }
       let pending = this.pending.get(key);
       if (!pending) {
         const stale = () => epoch !== this.epoch || generation !== getHostFontState().generation;
@@ -110,6 +127,8 @@ export class HostCanvasFontSession {
         this.pending.set(key, pending);
       }
       await pending;
+      const prepared = this.faces.get(key);
+      if (prepared && epoch === this.epoch) register(prepared);
     }
   }
 

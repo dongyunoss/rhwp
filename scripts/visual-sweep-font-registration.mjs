@@ -40,6 +40,9 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
     sourceOwner.registerMetafileFont(family, new Uint8Array(bytes), 0);
   }
   // 브라우저와 같은 프로그램만 paint 세션에 전달한다.
+  if (typeof sourceOwner?.registerTextFontGlyphCoverage === 'function') {
+    sourceOwner.registerTextFontGlyphCoverage(family, new Uint8Array(bytes), 0);
+  }
   if (typeof sourceOwner?.registerHftOutlineFont === 'function'
       && String(descriptors.weight || '400') === '400'
       && (descriptors.style || 'normal') === 'normal') {

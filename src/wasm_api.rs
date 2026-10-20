@@ -746,6 +746,18 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    /// 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+    #[wasm_bindgen(js_name = registerTextFontGlyphCoverage)]
+    pub fn register_text_font_glyph_coverage(
+        &mut self,
+        family: &str,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<bool, JsValue> {
+        self.register_text_font_glyph_coverage_native(family, bytes, face_index)
+            .map_err(JsValue::from)
+    }
+
     /// 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
     #[wasm_bindgen(js_name = registerMetafileFont)]
     pub fn register_metafile_font(

@@ -18,7 +18,7 @@ use super::font_lookup::{
 use super::renderer::colorref_to_skia;
 use super::synthetic_typeface::{draw_synthetic_bold_paths, unemboldened_typeface};
 
-mod fonts;
+pub(super) mod fonts;
 mod lines;
 mod marks;
 mod overlap;
@@ -107,6 +107,20 @@ impl SkiaTextReplay<'_> {
                 })
                 .flatten();
                 let font_for_text = |sample: &str, size: f32| {
+                    if let Some(pua) = crate::renderer::pua_glyph::candidate(sample) {
+                        if let Some(primary) = typeface_chain.first() {
+                            let font = Font::new(primary.typeface.clone(), size);
+                            if fonts::compatibility_glyph(&font, sample).is_some() {
+                                return fonts::for_text(
+                                    &typeface_chain[..1],
+                                    &pua.to_string(),
+                                    size,
+                                    style,
+                                    self.font_mgr,
+                                );
+                            }
+                        }
+                    }
                     fonts::for_text(&typeface_chain, sample, size, style, self.font_mgr)
                 };
                 let baseline_y = if baseline > 0.0 {
@@ -610,6 +624,9 @@ impl SkiaTextReplay<'_> {
                             });
                             let glyph_paint = bold_paint.as_ref().unwrap_or(&text_paint);
                             let char_y = y as f32 + dy;
+                            let compatibility =
+                                fonts::compatibility_glyph(&font, cluster).map(|ch| ch.to_string());
+                            let glyph_text = compatibility.as_deref().unwrap_or(cluster);
                             // 측정에서 폭을 소유한 경로가 paint의 축소도 결정한다.
                             // Unicode 범위만으로 이미 좁은 자연 글리프를 다시 줄이지 않는다.
                             let needs_halfwidth_scale = !has_ratio
@@ -638,21 +655,21 @@ impl SkiaTextReplay<'_> {
                                     - char_positions.get(*char_idx).copied().unwrap_or(0.0);
                                 let scale = crate::renderer::halfwidth_punct_paint_scale(
                                     advance,
-                                    f64::from(font.measure_str(cluster, None).0),
+                                    f64::from(font.measure_str(glyph_text, None).0),
                                 ) as f32;
                                 if synthetic_bold {
                                     // 글자 윤곽선만 반각으로 하고 사용자 좌표 획은 유지한다.
                                     font.set_scale_x(scale);
                                     if !draw_synthetic_bold_paths(
                                         canvas,
-                                        cluster,
+                                        glyph_text,
                                         &font,
                                         (char_x, char_y),
                                         glyph_paint,
                                         self.raster_target,
                                     ) {
                                         canvas.draw_str(
-                                            cluster,
+                                            glyph_text,
                                             (char_x, char_y),
                                             &font,
                                             glyph_paint,
@@ -663,7 +680,7 @@ impl SkiaTextReplay<'_> {
                                 canvas.save();
                                 canvas.translate((char_x, char_y));
                                 canvas.scale((scale, 1.0));
-                                canvas.draw_str(cluster, (0.0, 0.0), &font, glyph_paint);
+                                canvas.draw_str(glyph_text, (0.0, 0.0), &font, glyph_paint);
                                 canvas.restore();
                                 continue;
                             }
@@ -679,7 +696,7 @@ impl SkiaTextReplay<'_> {
                                 .and_then(|start| {
                                     let end = *char_idx + cluster.chars().count();
                                     let advance = fit_positions.get(end)? - start;
-                                    let (natural_width, ink) = font.measure_str(cluster, None);
+                                    let (natural_width, ink) = font.measure_str(glyph_text, None);
                                     crate::renderer::canvas_cluster_fit(
                                         style,
                                         cluster,
@@ -695,14 +712,14 @@ impl SkiaTextReplay<'_> {
                                 font.set_scale_x(ratio * fit_scale);
                                 if !draw_synthetic_bold_paths(
                                     canvas,
-                                    cluster,
+                                    glyph_text,
                                     &font,
                                     (char_x + fit_dx, char_y),
                                     glyph_paint,
                                     self.raster_target,
                                 ) {
                                     canvas.draw_str(
-                                        cluster,
+                                        glyph_text,
                                         (char_x + fit_dx, char_y),
                                         &font,
                                         glyph_paint,
@@ -718,15 +735,21 @@ impl SkiaTextReplay<'_> {
                                 canvas.translate((char_x + fit_dx, char_y));
                                 canvas.scale((ratio * fit_scale, 1.0));
                                 if !hft_outline.as_ref().is_some_and(|outline| {
-                                    outline.draw(canvas, cluster, &font, (0.0, 0.0), glyph_paint)
+                                    outline.draw(canvas, glyph_text, &font, (0.0, 0.0), glyph_paint)
                                 }) {
-                                    canvas.draw_str(cluster, (0.0, 0.0), &font, glyph_paint);
+                                    canvas.draw_str(glyph_text, (0.0, 0.0), &font, glyph_paint);
                                 }
                                 canvas.restore();
                             } else if !hft_outline.as_ref().is_some_and(|outline| {
-                                outline.draw(canvas, cluster, &font, (char_x, char_y), glyph_paint)
+                                outline.draw(
+                                    canvas,
+                                    glyph_text,
+                                    &font,
+                                    (char_x, char_y),
+                                    glyph_paint,
+                                )
                             }) {
-                                canvas.draw_str(cluster, (char_x, char_y), &font, glyph_paint);
+                                canvas.draw_str(glyph_text, (char_x, char_y), &font, glyph_paint);
                             }
                         }
                     }

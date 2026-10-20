@@ -7,6 +7,12 @@ use crate::renderer::{internal_font_family_members, TextStyle};
 use skia_safe::{font, Font, FontMgr, Typeface};
 use std::{cell::RefCell, collections::HashMap};
 
+pub(in crate::renderer::skia) fn compatibility_glyph(font: &Font, text: &str) -> Option<char> {
+    let ch = crate::renderer::pua_glyph::candidate(text)?;
+    let glyph = font.typeface().unichar_to_glyph(ch as i32);
+    (glyph != 0 && font.get_path(glyph).is_some_and(|path| !path.is_empty())).then_some(ch)
+}
+
 thread_local! {
     static OWN_HEAVY_FACES: RefCell<HashMap<(u32, String), bool>> = RefCell::new(HashMap::new());
 }

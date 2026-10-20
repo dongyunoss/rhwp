@@ -1675,6 +1675,7 @@ impl DocumentCore {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let mut renderer = SvgRenderer::new();
+        renderer.source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.debug_overlay = self.debug_overlay;
@@ -1700,6 +1701,14 @@ impl DocumentCore {
         let profile = layer_tree.profile;
 
         let mut renderer = SvgLayerRenderer::new();
+        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        let embedded_fonts = self.collect_embedded_font_bytes_by_name();
+        for (family, bytes) in &embedded_fonts {
+            let _ = renderer
+                .inner_mut()
+                .source_font_coverage
+                .register(family, bytes, 0);
+        }
         // WASM에서도 문서 내장 face 사용량을 수집한다. 실제 CSS 생성은 아래의
         // embedded-only 경로가 담당하므로 시스템 font file I/O는 발생하지 않는다.
         renderer.inner_mut().font_embed_mode = crate::renderer::svg::FontEmbedMode::Style;
@@ -1710,7 +1719,6 @@ impl DocumentCore {
         // [#2524/#3126] print/profile SVG도 브라우저가 문서 내장 폰트를 직접
         // 해석할 수 있게 원본 font bytes를 data URI로 포함한다. Layer SVG가
         // TextRun fallback을 재생하더라도 Blink에서 두부(□)가 되지 않는다.
-        let embedded_fonts = self.collect_embedded_font_bytes_by_name();
         let style_css =
             crate::renderer::svg::generate_embedded_font_style(renderer.inner(), &embedded_fonts);
         if !style_css.is_empty() {
@@ -1963,6 +1971,14 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
         let mut renderer = SvgLayerRenderer::new();
+        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        let embedded_fonts = self.collect_embedded_font_bytes_by_name();
+        for (family, bytes) in &embedded_fonts {
+            let _ = renderer
+                .inner_mut()
+                .source_font_coverage
+                .register(family, bytes, 0);
+        }
         renderer.inner_mut().font_embed_mode = font_embed_mode;
         renderer.inner_mut().font_paths = font_paths.to_vec();
         renderer.inner_mut().annotate_metric_font = self.annotate_metric_font;
@@ -1973,7 +1989,6 @@ impl DocumentCore {
         if font_embed_mode != crate::renderer::svg::FontEmbedMode::None {
             // [#2524] 문서 임베디드(BinData) 폰트를 face명 → bytes 로 수집해
             // @font-face 직접 임베딩에 쓴다(미설치 임베디드 폰트 chrome 두부 해소).
-            let embedded_fonts = self.collect_embedded_font_bytes_by_name();
             let style_css = crate::renderer::svg::generate_font_style(
                 renderer.inner(),
                 font_paths,

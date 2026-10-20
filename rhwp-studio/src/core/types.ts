@@ -1255,6 +1255,8 @@ export interface LayerTextRunOp {
   bbox: LayerBounds;
   text: string;
   displayText?: string;
+  /** 주소·전진은 원 표시 자소 기준이다. 실제 face에 가시 glyph가 있을 때만 선택한다. */
+  puaGlyphCandidates?: Array<{start: number; end: number; glyph: string}>;
   /** Run-local baseline offset from bbox.y when placement is absent. */
   baseline?: number;
   rotation?: number;

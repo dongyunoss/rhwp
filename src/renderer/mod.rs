@@ -74,6 +74,7 @@ pub mod pdf;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod pdf_raster_fidelity;
 mod physical_units;
+pub(crate) mod pua_glyph;
 pub mod pua_oldhangul;
 pub mod raster_pixels;
 pub(crate) mod raster_stroke;

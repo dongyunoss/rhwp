@@ -82,7 +82,8 @@ pub(crate) fn geometry(
                 .unwrap_or(positions[start]);
             origins.push(
                 left + if tone {
-                    font_size * ratio * 0.89
+                    // 방점 원점은 물리 em 오프셋이며 glyph 장평과 별개다.
+                    font_size * 0.89
                 } else {
                     width / 2.0 + font_size * ratio * 0.225
                 },

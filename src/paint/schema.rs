@@ -15,8 +15,8 @@ pub struct LayerTreeSchema {
 
 pub const LAYER_TREE_SCHEMA: LayerTreeSchema = LayerTreeSchema {
     schema_version: 1,
-    // 32: 실제 강조점 글리프의 공통 배치와 글꼴 역할.
-    schema_minor_version: 32,
+    // 33: 표시 자소 주소를 유지하는 호환 PUA 글리프 후보.
+    schema_minor_version: 33,
     resource_table_version: 1,
     resource_table_minor_version: 6,
     unit: "px",
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn layer_tree_schema_constants_match_schema() {
-        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 32);
+        assert_eq!(LAYER_TREE_SCHEMA.schema_minor_version, 33);
         assert_eq!(LAYER_TREE_SCHEMA.resource_table_minor_version, 6);
         assert_eq!(
             LAYER_TREE_SCHEMA,

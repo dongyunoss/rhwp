@@ -28,6 +28,7 @@ use crate::paint::{PaintOp, TextDecorationKind};
 use std::fmt::Write as _;
 
 mod char_overlap;
+mod pua_glyph;
 mod stroke_pattern;
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
@@ -144,6 +145,7 @@ pub struct SvgRenderer {
     pub font_embed_mode: FontEmbedMode,
     /// 추가 폰트 탐색 경로
     pub font_paths: Vec<std::path::PathBuf>,
+    pub(crate) source_font_coverage: super::pua_glyph::FontCoverage,
     /// 사용된 폰트별 codepoint 수집 (font_family → codepoints)
     font_codepoints: std::collections::HashMap<String, std::collections::HashSet<char>>,
     /// 실제 Bold face가 필요한 폰트 family.
@@ -260,6 +262,7 @@ impl SvgRenderer {
             defs_ids: std::collections::HashSet::new(),
             font_embed_mode: FontEmbedMode::None,
             font_paths: Vec::new(),
+            source_font_coverage: Default::default(),
             font_codepoints: std::collections::HashMap::new(),
             font_bold_families: std::collections::HashSet::new(),
             annotate_metric_font: false,
@@ -3356,6 +3359,8 @@ impl Renderer for SvgRenderer {
         // [Task #528] Hanyang-PUA 옛한글 → KS X 1026-1:2007 자모 시퀀스.
         // 한/글 2010 이전 옛한글 PUA 인코딩을 표준 자모로 변환 (KTUG 매핑).
         let text = &expand_pua_old_hangul(text);
+        self.prepare_pua_glyphs(text, style);
+        let source_coverage = self.source_font_coverage.clone();
 
         let color = color_to_svg(style.color);
         let base_font_size = style.effective_font_size();
@@ -3408,7 +3413,8 @@ impl Renderer for SvgRenderer {
             }
         }
         let attrs_for_cluster = |cluster_str: &str, fill: &str| {
-            let cluster_font_family = if super::contains_old_hangul_jamo(cluster_str) {
+            let glyph = pua_glyph::display(&source_coverage, cluster_str, style);
+            let cluster_font_family = if super::contains_old_hangul_jamo(&glyph) {
                 &old_hangul_font_family
             } else {
                 &font_family
@@ -3545,7 +3551,7 @@ impl Renderer for SvgRenderer {
                         ratio,
                         shadow_attrs,
                         length_attrs,
-                        escape_xml(cluster_str),
+                        escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
                     ));
                 } else {
                     self.output.push_str(&format!(
@@ -3554,7 +3560,7 @@ impl Renderer for SvgRenderer {
                         char_y,
                         shadow_attrs,
                         length_attrs,
-                        escape_xml(cluster_str),
+                        escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
                     ));
                 }
             }
@@ -3681,6 +3687,7 @@ impl Renderer for SvgRenderer {
                     ratio,
                 );
                 let common_attrs = attrs_for_cluster(cluster_str, &color);
+                let glyph_text = pua_glyph::display(&source_coverage, cluster_str, style);
 
                 if has_ratio {
                     self.output.push_str(&format!(
@@ -3690,7 +3697,7 @@ impl Renderer for SvgRenderer {
                         ratio,
                         common_attrs,
                         length_attrs,
-                        escape_xml(cluster_str),
+                        escape_xml(&glyph_text),
                     ));
                 } else {
                     self.output.push_str(&format!(
@@ -3699,7 +3706,7 @@ impl Renderer for SvgRenderer {
                         y,
                         common_attrs,
                         length_attrs,
-                        escape_xml(cluster_str),
+                        escape_xml(&glyph_text),
                     ));
                 }
             }

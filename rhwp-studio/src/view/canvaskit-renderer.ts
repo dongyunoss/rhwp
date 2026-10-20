@@ -1,4 +1,5 @@
 import { replayComposedCharOverlap } from './canvaskit-char-overlap';
+import { compatibilityGlyphView } from './canvaskit/compatibility-glyph-view.ts';
 import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
 import { parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
@@ -3067,7 +3068,7 @@ export class CanvasKitLayerRenderer {
       return;
     }
     const replayText = op.displayText ?? op.text;
-    const replayPositions = op.displayText !== undefined ? op.displayPositions : op.positions;
+    let replayPositions = op.displayText !== undefined ? op.displayPositions : op.positions;
     if (!replayText) return;
     const replayCodePoints: string[] = [];
     for (const character of replayText) {
@@ -3112,13 +3113,13 @@ export class CanvasKitLayerRenderer {
       && op.orientation !== 'vertical-sideways'
       ? VERTICAL_PRESENTATION_BASE_TEXT.get(replayText)
       : undefined;
-    const glyphReplayText = verticalPresentationText ?? replayText;
+    let glyphReplayText = verticalPresentationText ?? replayText;
     const codePoints = verticalPresentationText === undefined
       ? replayCodePoints
       : [verticalPresentationText];
-    const replayUtf16Offsets = new Uint32Array(codePoints.length + 1);
+    let replayUtf16Offsets = new Uint32Array(codePoints.length + 1);
     for (let index = 0; index < codePoints.length; index++) replayUtf16Offsets[index + 1] = replayUtf16Offsets[index] + codePoints[index].length;
-    const hasOldHangul = codePoints.some((codePoint) => {
+    let hasOldHangul = codePoints.some((codePoint) => {
       const code = codePoint.codePointAt(0) ?? 0;
       return (code >= 0x1100 && code <= 0x11ff)
         || (code >= 0xa960 && code <= 0xa97f)
@@ -3196,6 +3197,16 @@ export class CanvasKitLayerRenderer {
         };
         font = this.makeFont(typeface, fontSize);
         adjustFont(font);
+        if (hasLayoutPositions && op.puaGlyphCandidates?.length && !op.isVertical) {
+          const view = compatibilityGlyphView(codePoints, replayPositions!, op.puaGlyphCandidates, font);
+          if (!view) {this.unsupportedOps.add('textRun:invalidCompatibilityGlyph'); return;}
+          codePoints.splice(0, codePoints.length, ...view.points);
+          replayPositions = view.positions;
+          glyphReplayText = view.text;
+          replayUtf16Offsets = new Uint32Array(codePoints.length + 1);
+          for (let index = 0; index < codePoints.length; index++) replayUtf16Offsets[index + 1] = replayUtf16Offsets[index] + codePoints[index].length;
+          hasOldHangul = codePoints.some(ch => /[\u1100-\u11ff\ua960-\ua97f\ud7b0-\ud7ff]/.test(ch));
+        }
         const candidateFonts = [font];
         const candidateFontSources: CanvasKitFontSubstitutionDiagnostic['source'][] = [
           'unregisteredDefault',

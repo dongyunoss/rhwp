@@ -376,7 +376,7 @@ export class WasmBridge {
         }
         return [...selected.values()];
       });
-      await this.hostCanvasFonts.prepare(records);
+      await this.hostCanvasFonts.prepare(records, doc, current);
       if (!current() || generation !== getHostFontState().generation) return false;
       const puaFontGeneration = this.canvasFontGeneration;
       if (!await this.nativePuaFonts.prepare(doc as unknown as NativePuaFontDocument | null,

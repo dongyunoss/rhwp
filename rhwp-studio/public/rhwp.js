@@ -12533,6 +12533,9 @@ function __wbg_get_imports() {
         __wbg_set_lineCap_ec484c1489fa48bc: function(arg0, arg1, arg2) {
             arg0.lineCap = getStringFromWasm0(arg1, arg2);
         },
+        __wbg_set_lineDashOffset_77617c80be8af018: function(arg0, arg1) {
+            arg0.lineDashOffset = arg1;
+        },
         __wbg_set_lineJoin_645744ec04386dd0: function(arg0, arg1, arg2) {
             arg0.lineJoin = getStringFromWasm0(arg1, arg2);
         },

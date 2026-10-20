@@ -108,6 +108,8 @@ use super::layout::split_into_clusters;
 mod hft_outline;
 #[cfg(target_arch = "wasm32")]
 mod middle_dot;
+#[cfg(target_arch = "wasm32")]
+mod pua_glyph;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
 // WASM 단일 스레드이므로 thread_local 안전
@@ -2727,13 +2729,14 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.fill();
                         continue;
                     }
-                    if super::contains_old_hangul_jamo(cluster_str) {
+                    let glyph_text = self.glyph_display(cluster_str, style);
+                    if super::contains_old_hangul_jamo(&glyph_text) {
                         self.ctx.set_font(old_hangul_font);
                     } else {
                         self.ctx.set_font(font);
                     }
                     let measured_descriptor =
-                        super::supplemental_metrics::canvas_measured_descriptor(style, cluster_str);
+                        super::supplemental_metrics::canvas_measured_descriptor(style, &glyph_text);
                     if measured_descriptor.is_some_and(|descriptor| descriptor != self.ctx.font()) {
                         self.metric_descriptor_mismatch.set(true);
                     }
@@ -2878,7 +2881,7 @@ impl Renderer for WebCanvasRenderer {
                         let fit = if measured_descriptor.is_some() || contextual {
                             None
                         } else if cluster_advance > 0.0 {
-                            self.ctx.measure_text(cluster_str).ok().and_then(|metrics| {
+                            self.ctx.measure_text(&glyph_text).ok().and_then(|metrics| {
                                 let ink_width = metrics.actual_bounding_box_left()
                                     + metrics.actual_bounding_box_right();
                                 super::canvas_cluster_fit(
@@ -2898,10 +2901,10 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.save();
                         self.ctx.translate(char_x + fit_dx, y).unwrap_or(());
                         self.ctx.scale(ratio * fit_scale, 1.0).unwrap_or(());
-                        if !self.draw_hft_outline(cluster_str, style, font_size) {
+                        if !self.draw_hft_outline(&glyph_text, style, font_size) {
                             Self::fill_positioned_text(
                                 &self.ctx,
-                                cluster_str,
+                                &glyph_text,
                                 0.0,
                                 0.0,
                                 style,
@@ -3481,12 +3484,13 @@ impl WebCanvasRenderer {
                 {
                     continue;
                 }
-                if super::contains_old_hangul_jamo(cs) {
+                let glyph_text = self.glyph_display(cs, style);
+                if super::contains_old_hangul_jamo(&glyph_text) {
                     ctx.set_font(old_hangul_font);
                 } else {
                     ctx.set_font(font);
                 }
-                if super::supplemental_metrics::canvas_measured_descriptor(style, cs)
+                if super::supplemental_metrics::canvas_measured_descriptor(style, &glyph_text)
                     .is_some_and(|descriptor| descriptor != ctx.font())
                 {
                     self.metric_descriptor_mismatch.set(true);
@@ -3525,15 +3529,15 @@ impl WebCanvasRenderer {
                     ctx.save();
                     ctx.translate(char_x, char_y).unwrap_or(());
                     ctx.scale(ratio, 1.0).unwrap_or(());
-                    let _ = ctx.fill_text(cs, 0.0, 0.0);
+                    let _ = ctx.fill_text(&glyph_text, 0.0, 0.0);
                     if paint_stroke {
-                        let _ = ctx.stroke_text(cs, 0.0, 0.0);
+                        let _ = ctx.stroke_text(&glyph_text, 0.0, 0.0);
                     }
                     ctx.restore();
                 } else {
-                    let _ = ctx.fill_text(cs, char_x, char_y);
+                    let _ = ctx.fill_text(&glyph_text, char_x, char_y);
                     if paint_stroke {
-                        let _ = ctx.stroke_text(cs, char_x, char_y);
+                        let _ = ctx.stroke_text(&glyph_text, char_x, char_y);
                     }
                 }
             }

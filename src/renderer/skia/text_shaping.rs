@@ -28,6 +28,7 @@ fn shaping_profile(text: &str) -> (bool, bool) {
         needs_shaping |= matches!(
             codepoint,
             0x0300..=0x036F | 0x0900..=0x0DFF | 0x0E00..=0x0E7F
+                | 0x1100..=0x11FF | 0xA960..=0xA97F | 0xD7B0..=0xD7FF
                 | 0x1780..=0x17FF | 0x1AB0..=0x1AFF | 0x1DC0..=0x1DFF
                 | 0x200C..=0x200D | 0x20D0..=0x20FF | 0xFE00..=0xFE0F
                 | 0xFE20..=0xFE2F | 0x1F1E6..=0x1FAFF | 0xE0100..=0xE01EF
@@ -67,9 +68,18 @@ pub(super) fn prepare_shaped_spans(
                 || crate::renderer::boxed_pua_number(character).is_some()
         })
     };
+    let fonts: Vec<_> = clusters.iter().map(|(_, text)| make_font(text)).collect();
     let profiles: Vec<_> = clusters
         .iter()
-        .map(|(_, text)| (eligible(text), shaping_profile(text)))
+        .enumerate()
+        .map(|(index, (_, text))| {
+            // 가시 호환 글리프가 있는 source face는 nominal 경로에서 한 번 그린다.
+            let compatibility = fonts[index]
+                .as_ref()
+                .and_then(|font| super::text_replay::fonts::compatibility_glyph(font, text))
+                .is_some();
+            (eligible(text) && !compatibility, shaping_profile(text))
+        })
         .collect();
     let scopes: Vec<_> = clusters
         .iter()
@@ -79,7 +89,6 @@ pub(super) fn prepare_shaped_spans(
         .collect();
     // 이웃의 기본 글꼴로 묶은 뒤 OS가 별도 폴백을 고르게 하지 않는다.
     // 각 cluster에 대해 본문과 같은 후보 체인이 선택한 실제 face를 보존한다.
-    let fonts: Vec<_> = clusters.iter().map(|(_, text)| make_font(text)).collect();
     let next_complex = |index: usize| {
         profiles
             .get(index + 1)
