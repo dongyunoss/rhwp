@@ -4070,8 +4070,9 @@ export class CanvasKitLayerRenderer {
         if (decoration.underline === 'top' && decoration.topUnderline) {
           if (textWidth <= 0) return;
           const geometry = decoration.topUnderline;
+          const phase = geometry.phase ?? 0;
           const dots = geometry.dots;
-          if (!Array.isArray(geometry.strokes)
+          if (!Number.isFinite(phase) || !Array.isArray(geometry.strokes)
             || geometry.strokes.some(stroke => !Number.isFinite(stroke.offset)
               || !Number.isFinite(stroke.width) || stroke.width <= 0
               || !Array.isArray(stroke.dash)
@@ -4085,12 +4086,12 @@ export class CanvasKitLayerRenderer {
           for (const stroke of geometry.strokes) {
             const y = baselineY + stroke.offset;
             this.drawTextVisualStroke(canvas, originX, y, originX + textWidth, y,
-              decoration.color, stroke.width, stroke.dash);
+              decoration.color, stroke.width, stroke.dash, false, 0, 0, phase);
           }
           if (dots) {
             const y = baselineY + dots.offset;
             this.drawTextVisualStroke(canvas, originX, y, originX + textWidth, y,
-              decoration.color, dots.radius * 2, [0, dots.step], true);
+              decoration.color, dots.radius * 2, [0, dots.step], true, 0, 0, phase);
           }
           return;
         }
@@ -4191,6 +4192,7 @@ export class CanvasKitLayerRenderer {
     roundCap = false,
     waveHeight = 0,
     waveWidth = 0,
+    dashPhase = 0,
   ): void {
     const paint = this.makeStrokePaint(color, width);
     let effect: ReturnType<typeof this.canvasKit.PathEffect.MakeDash> | null = null;
@@ -4198,7 +4200,7 @@ export class CanvasKitLayerRenderer {
     try {
       if (roundCap) paint.setStrokeCap(this.canvasKit.StrokeCap.Round);
       if (dash.length > 0) {
-        effect = this.canvasKit.PathEffect.MakeDash(dash, 0);
+        effect = this.canvasKit.PathEffect.MakeDash(dash, dashPhase);
         if (effect) paint.setPathEffect(effect);
       }
       if (waveHeight > 0 && waveWidth > 0) {

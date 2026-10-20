@@ -2802,6 +2802,7 @@ impl SvgRenderer {
         x2: f64,
         color: &str,
         geometry: &super::text_decoration::TopUnderlineGeometry,
+        phase_delta: f64,
     ) {
         if x2 <= x1 {
             return;
@@ -2815,15 +2816,15 @@ impl SvgRenderer {
                 .join(" ");
             let y = baseline + stroke.offset;
             self.output.push_str(&format!(
-                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-dasharray=\"{dash}\"/>\n",
-                stroke.width,
+                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-dasharray=\"{dash}\" stroke-dashoffset=\"{}\"/>\n",
+                stroke.width, geometry.phase + phase_delta,
             ));
         }
         if let Some(dot) = &geometry.dots {
             let y = baseline + dot.offset;
             self.output.push_str(&format!(
-                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-linecap=\"round\" stroke-dasharray=\"0 {}\"/>\n",
-                dot.radius * 2.0, dot.step,
+                "<line x1=\"{x1}\" y1=\"{y}\" x2=\"{x2}\" y2=\"{y}\" stroke=\"{color}\" stroke-width=\"{}\" stroke-linecap=\"round\" stroke-dasharray=\"0 {}\" stroke-dashoffset=\"{}\"/>\n",
+                dot.radius * 2.0, dot.step, geometry.phase + phase_delta,
             ));
         }
     }
@@ -3755,7 +3756,7 @@ impl Renderer for SvgRenderer {
                     crate::renderer::text_decoration::underline_multi_lines(style.underline_shape)
                         .filter(|_| style.underline != UnderlineType::Top);
                 if let Some(top) = top {
-                    self.draw_top_underline(x, y, x + text_width, &ul_color, &top);
+                    self.draw_top_underline(x, y, x + text_width, &ul_color, &top, left);
                 } else if let Some(lines) = multi {
                     for (dy_em, width_em) in lines {
                         let ly = y + font_size * dy_em;

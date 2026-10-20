@@ -123,9 +123,21 @@ pub(crate) fn picture_transform(picture: &Picture) -> ShapeTransform {
     let (sin, cos) = transform.rotation.to_radians().sin_cos();
     // 직교·축 정렬 계약이 성립하는 사각형만 분해한다. 전단·묶음 행렬을
     // 두 개의 flip 플래그로 근사하지 않으며 기존 별도 경로를 유지한다.
-    let along_u = u[0] * cos + u[1] * sin;
+    // 물리 bbox는 양수 길이다. 저장 current size의 음수 축을 행렬에서 함께
+    // 정규화해야 프레임의 방향을 그림 자체의 반전으로 두 번 해석하지 않는다.
+    let frame_x = if (shape.current_width as i32) < 0 {
+        -1.0
+    } else {
+        1.0
+    };
+    let frame_y = if (shape.current_height as i32) < 0 {
+        -1.0
+    } else {
+        1.0
+    };
+    let along_u = (u[0] * cos + u[1] * sin) * frame_x;
     let across_u = -u[0] * sin + u[1] * cos;
-    let along_v = -v[0] * sin + v[1] * cos;
+    let along_v = (-v[0] * sin + v[1] * cos) * frame_y;
     let across_v = v[0] * cos + v[1] * sin;
     if ![along_u, across_u, along_v, across_v]
         .iter()
@@ -147,7 +159,10 @@ pub(crate) fn picture_transform(picture: &Picture) -> ShapeTransform {
 pub(crate) fn picture_pre_rotation_ratio(picture: &Picture) -> Option<[f64; 2]> {
     let shape = &picture.shape_attr;
     let angle = shape.rotation_angle.rem_euclid(360);
-    let (w, h) = (shape.current_width as f64, shape.current_height as f64);
+    let (w, h) = (
+        (shape.current_width as i32).unsigned_abs() as f64,
+        (shape.current_height as i32).unsigned_abs() as f64,
+    );
     let (fw, fh) = (picture.common.width as f64, picture.common.height as f64);
     if angle == 0 || w <= 0.0 || h <= 0.0 || fw <= 0.0 || fh <= 0.0 {
         return None;

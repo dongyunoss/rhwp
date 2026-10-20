@@ -52,6 +52,7 @@ pub(crate) struct DecorationDots {
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub(crate) struct TopUnderlineGeometry {
+    pub phase: f64,
     pub strokes: Vec<DecorationStroke>,
     pub dots: Option<DecorationDots>,
 }
@@ -93,8 +94,13 @@ pub(crate) fn top_underline_geometry(
         return None;
     }
     let shape = style.underline_shape;
+    let phase = style
+        .top_underline_phase
+        .filter(|phase| phase.is_finite())
+        .unwrap_or(0.0);
     if shape == 6 {
         return Some(TopUnderlineGeometry {
+            phase,
             strokes: Vec::new(),
             dots: Some(DecorationDots {
                 offset: -0.875 * size,
@@ -120,6 +126,7 @@ pub(crate) fn top_underline_geometry(
         _ => &[],
     };
     Some(TopUnderlineGeometry {
+        phase,
         strokes: bands
             .iter()
             .map(|&(offset, width)| DecorationStroke {
@@ -130,6 +137,97 @@ pub(crate) fn top_underline_geometry(
             .collect(),
         dots: None,
     })
+}
+
+/// 언어별 렌더링 런 경계는 원본 글자 모양 구간의 펜 경계가 아니다.
+/// 글꼴·크기·색을 실제로 바꾼 원본 구간과 비장식 간격에서는 위상을 다시 시작한다.
+pub(crate) fn resolve_page_phases(root: &mut super::render_tree::RenderNode) {
+    use super::render_tree::{RenderNodeType, TextRunNode};
+    use super::text_direction::VisualTextPositions;
+    use crate::model::style::UnderlineType;
+    for child in &mut root.children {
+        resolve_page_phases(child);
+    }
+    if !matches!(root.node_type, RenderNodeType::TextLine(_)) {
+        return;
+    }
+    type Key = (u32, u8, u32);
+    struct Group {
+        key: Key,
+        baseline: f64,
+        end: f64,
+        origin: f64,
+        runs: Vec<usize>,
+    }
+    let mut groups: Vec<Group> = Vec::new();
+    let mut active = false;
+    for (index, node) in root.children.iter().enumerate() {
+        let RenderNodeType::TextRun(run) = &node.node_type else {
+            active = false;
+            continue;
+        };
+        let TextRunNode { style, .. } = run;
+        let Some(id) = run.char_shape_id.filter(|_| {
+            style.underline == UnderlineType::Top
+                && run.rotation == 0.0
+                && !run.is_vertical
+                && run.char_overlap.is_none()
+                && !run.display_or_text().contains('\u{fffc}')
+        }) else {
+            active = false;
+            continue;
+        };
+        let text = run.display_or_text();
+        let positions = run.replay_positions_for(text);
+        let (Some(&start), Some(&end)) = (positions.first(), positions.last()) else {
+            active = false;
+            continue;
+        };
+        let (_, baseline) =
+            style.script_draw_metrics(style.effective_font_size(), node.bbox.y + run.baseline);
+        let start = node.bbox.x + start;
+        let end = node.bbox.x + end;
+        let origin = VisualTextPositions::for_style(text, &positions, style)
+            .map(|v| {
+                v.segments(text.chars().count())
+                    .into_iter()
+                    .map(|(left, _)| node.bbox.x + left)
+                    .fold(f64::INFINITY, f64::min)
+            })
+            .unwrap_or(start);
+        if ![start, end, origin, baseline].iter().all(|x| x.is_finite()) || end <= start {
+            active = false;
+            continue;
+        }
+        let key = (id, style.underline_shape, style.underline_color);
+        if active
+            && groups.last().is_some_and(|g| {
+                g.key == key && (g.baseline - baseline).abs() < 1e-6 && (g.end - start).abs() < 1e-6
+            })
+        {
+            let g = groups.last_mut().unwrap();
+            g.end = end;
+            g.origin = g.origin.min(origin);
+            g.runs.push(index);
+        } else {
+            groups.push(Group {
+                key,
+                baseline,
+                end,
+                origin,
+                runs: vec![index],
+            });
+        }
+        active = true;
+    }
+    for group in groups {
+        for index in group.runs {
+            let node = &mut root.children[index];
+            if let RenderNodeType::TextRun(run) = &mut node.node_type {
+                run.style.top_underline_phase = Some(node.bbox.x - group.origin);
+            }
+        }
+    }
 }
 
 /// 글줄 상자 위로 올라가는 장식(위 밑줄·강조점)의 잉크 범위다.

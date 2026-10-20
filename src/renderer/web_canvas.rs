@@ -2945,7 +2945,7 @@ impl Renderer for WebCanvasRenderer {
                 if let Some(top) =
                     crate::renderer::text_decoration::top_underline_geometry(style, font_size)
                 {
-                    self.draw_top_underline_canvas(x, y, x + text_width, &ul_color, &top);
+                    self.draw_top_underline_canvas(x, y, x + text_width, &ul_color, &top, left);
                 } else {
                     let ul_y = match style.underline {
                         UnderlineType::Top => y - font_size + 1.0,
@@ -3934,11 +3934,13 @@ impl WebCanvasRenderer {
         x2: f64,
         color: &str,
         geometry: &super::text_decoration::TopUnderlineGeometry,
+        phase_delta: f64,
     ) {
         if x2 <= x1 {
             return;
         }
         self.ctx.save();
+        self.ctx.set_line_dash_offset(geometry.phase + phase_delta);
         self.ctx.set_line_cap("butt");
         for stroke in &geometry.strokes {
             let y = baseline + stroke.offset;

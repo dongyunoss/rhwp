@@ -44,6 +44,7 @@ fn project_placeholder(
                 if offset > 0 {
                     let mut before = run.clone();
                     before.text = chars[..offset].iter().collect();
+                    before.display_text = run.display_for_model_range(0, offset);
                     parts.push(before);
                 }
                 let mut marker = run.clone();
@@ -55,6 +56,7 @@ fn project_placeholder(
                 if offset + 1 < chars.len() {
                     let mut after = run.clone();
                     after.text = chars[offset + 1..].iter().collect();
+                    after.display_text = run.display_for_model_range(offset + 1, chars.len());
                     parts.push(after);
                 }
                 line.runs.splice(index..=index, parts);

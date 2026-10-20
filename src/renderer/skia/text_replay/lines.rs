@@ -11,10 +11,11 @@ impl TextLines<'_> {
         x2: f32,
         color: Color,
         geometry: &crate::renderer::text_decoration::TopUnderlineGeometry,
+        phase_delta: f64,
     ) {
         for stroke in &geometry.strokes {
             let dash: Vec<f32> = stroke.dash.iter().map(|x| *x as f32).collect();
-            self.styled(
+            self.styled_with_phase(
                 x1,
                 baseline + stroke.offset as f32,
                 x2,
@@ -22,10 +23,11 @@ impl TextLines<'_> {
                 stroke.width as f32,
                 &dash,
                 false,
+                geometry.phase as f32 + phase_delta as f32,
             );
         }
         if let Some(dot) = &geometry.dots {
-            self.styled(
+            self.styled_with_phase(
                 x1,
                 baseline + dot.offset as f32,
                 x2,
@@ -33,6 +35,7 @@ impl TextLines<'_> {
                 (dot.radius * 2.0) as f32,
                 &[0.0, dot.step as f32],
                 true,
+                geometry.phase as f32 + phase_delta as f32,
             );
         }
     }
@@ -47,6 +50,20 @@ impl TextLines<'_> {
         dash: &[f32],
         round: bool,
     ) {
+        self.styled_with_phase(x1, y, x2, color, width, dash, round, 0.0);
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn styled_with_phase(
+        &self,
+        x1: f32,
+        y: f32,
+        x2: f32,
+        color: Color,
+        width: f32,
+        dash: &[f32],
+        round: bool,
+        phase: f32,
+    ) {
         if x2 <= x1 {
             return;
         }
@@ -59,7 +76,7 @@ impl TextLines<'_> {
             line_paint.set_stroke_cap(paint::Cap::Round);
         }
         if !dash.is_empty() {
-            if let Some(effect) = PathEffect::dash(dash, 0.0) {
+            if let Some(effect) = PathEffect::dash(dash, phase) {
                 line_paint.set_path_effect(effect);
             }
         }

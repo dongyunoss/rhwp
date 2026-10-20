@@ -777,7 +777,7 @@ impl SkiaTextReplay<'_> {
                         )
                         .filter(|_| style.underline != UnderlineType::Top);
                         if let Some(top) = top {
-                            lines.top_underline(start_x, y as f32, end_x, color, &top);
+                            lines.top_underline(start_x, y as f32, end_x, color, &top, left);
                         } else if let Some(multi_lines) = multi {
                             for (dy_em, width_em) in multi_lines {
                                 lines.styled(
