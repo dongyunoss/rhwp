@@ -12,6 +12,7 @@ pub(super) struct SceneFrame {
     world_height: f64,
     viewport: [f64; 4],
     category_left_advance: Option<(f64, usize)>,
+    category_count: usize,
 }
 
 impl SceneFrame {
@@ -43,6 +44,17 @@ impl SceneFrame {
             return None;
         }
         let horizontal = chart.chart_type == OoxmlChartType::Bar;
+        let category_count = chart.categories.len().max(
+            chart
+                .series
+                .iter()
+                .map(|series| series.values.len())
+                .max()
+                .unwrap_or(0),
+        );
+        if category_count == 0 {
+            return None;
+        }
         let font = label_font_px(chart);
         let number_width = scales.primary.label_width(chart, 0, measure);
         let world_title = if has_title {
@@ -83,23 +95,39 @@ impl SceneFrame {
             world_width,
             world_height,
             viewport,
+            category_count,
             category_left_advance: if !horizontal && category.rotation_degrees > 0.0 {
-                let count = chart.categories.len().max(
-                    chart
-                        .series
-                        .iter()
-                        .map(|series| series.values.len())
-                        .max()
-                        .unwrap_or(0),
-                );
-                (count > 0).then_some((
+                Some((
                     category.maximum_advance * category.rotation_degrees.to_radians().cos(),
-                    count,
+                    category_count,
                 ))
             } else {
                 None
             },
         })
+    }
+
+    fn depth(&self, horizontal: bool) -> f64 {
+        let span = if horizontal {
+            self.world_height
+        } else {
+            self.world_width
+        };
+        span / self.category_count as f64 * 0.75
+    }
+
+    pub(super) fn projected_size(&self, chart: &OoxmlChart) -> [f64; 2] {
+        let view = chart
+            .view3d
+            .as_ref()
+            .expect("3D 장면은 카메라를 확인한 뒤 생성한다");
+        let projection = self.project(
+            view,
+            0.0,
+            0.0,
+            self.depth(chart.chart_type == OoxmlChartType::Bar),
+        );
+        [projection.fw, projection.fh]
     }
 
     fn project(&self, view: &View3D, x: f64, y: f64, depth: f64) -> ShearProj {
@@ -263,7 +291,7 @@ fn render_value_grid_3d(
     let label = |v: f64| format_grid_value(v, format_code, percent, decimal);
     let span = (vmax - vmin).max(1e-9);
     let step = if step > 0.0 { step } else { span / 5.0 };
-    let grid_lines = (span / step).round().max(1.0) as usize;
+    let grid_lines = ((span / step) + 1e-9).floor().max(0.0) as usize;
     for i in 0..=grid_lines {
         let t = (step * i as f64) / span;
         let v = vmin + step * i as f64;
@@ -406,12 +434,7 @@ pub(super) fn render_bars_3d(
     let (b_depth, d_scene, proj) = if let Some(scene) = &layout.scene {
         // 자동 2.5D 장면은 범주 간격의 3/4 깊이를 사용한다. 원본·개수·크기 Print 대조로
         // 확인한 기본값이며 막대군의 폭·계열 수·z 여백으로 장면을 다시 늘리지 않는다.
-        let category_span = if horizontal {
-            scene.world_height
-        } else {
-            scene.world_width
-        } / cat_count as f64;
-        let depth = category_span * 0.75;
+        let depth = scene.depth(horizontal);
         (
             depth / depth_slots,
             depth,

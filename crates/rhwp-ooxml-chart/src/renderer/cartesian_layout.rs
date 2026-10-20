@@ -92,8 +92,8 @@ impl ValueScale {
         let font = label_font_px(chart);
         let family = chart.text_font_family.as_deref().unwrap_or("sans-serif");
         let steps = if self.step > 0.0 {
-            ((self.max - self.min) / self.step)
-                .round()
+            (((self.max - self.min) / self.step) + 1e-9)
+                .floor()
                 .clamp(0.0, 2000.0) as usize
         } else {
             0
@@ -145,6 +145,55 @@ fn automatic_scale(min: f64, max: f64, length: f64, font: f64) -> ValueScale {
         },
         step,
     }
+}
+
+/// 3D 세로 축은 최대 다섯 칸을 두고 큰 글줄에는 더 성긴 단위를 고른다.
+/// 묶은 막대의 원래 최댓값이 눈금에 닿으면 그 범위를 유지한다.
+fn automatic_3d_vertical(min: f64, max: f64, height: f64, font: f64) -> ValueScale {
+    let min = min.min(0.0);
+    let max = max.max(0.0);
+    if max <= min {
+        return ValueScale::from_tuple((min, max, 1.0));
+    }
+    let line_height = font * crate::legend_layout::TEXT_LINE_EM;
+    let budget = (1.0 + (height.abs() / (line_height * 2.0)).round()).clamp(3.0, 5.0);
+    let raw_step = (max - min) / budget;
+    let magnitude = 10.0_f64.powf(raw_step.log10().floor());
+    let step = [1.0, 2.0, 5.0, 10.0]
+        .into_iter()
+        .map(|n| n * magnitude)
+        .find(|step| *step >= raw_step * (1.0 - 1e-9))
+        .unwrap_or(magnitude * 10.0);
+    ValueScale {
+        min: (min / step).floor() * step,
+        max: (max / step).ceil() * step,
+        step,
+    }
+}
+
+/// 범위의 양 끝을 유지하며 기존 눈금의 부분집합으로 글줄 겹침을 피한다.
+fn fit_3d_vertical_ticks(scale: &mut ValueScale, height: f64, font: f64) -> bool {
+    let span = scale.max - scale.min;
+    if span <= 0.0 || scale.step <= 0.0 {
+        return false;
+    }
+    let count = span / scale.step;
+    let intervals = count.round();
+    if (count - intervals).abs() > 1e-7 || !(2.0..=2000.0).contains(&intervals) {
+        return false;
+    }
+    let intervals = intervals as usize;
+    let capacity = (height / (font * crate::legend_layout::TEXT_LINE_EM))
+        .floor()
+        .max(1.0) as usize;
+    if intervals <= capacity {
+        return false;
+    }
+    let factor = (2..=intervals)
+        .find(|factor| intervals % factor == 0 && intervals / factor <= capacity)
+        .unwrap_or(intervals);
+    scale.step *= factor as f64;
+    true
 }
 
 #[derive(Clone, Copy)]
@@ -226,8 +275,11 @@ impl ChartScales {
                     automatic_scale(negative, positive.max(f64::EPSILON), length, font)
                 };
             } else if chart.is_3d && bars {
-                primary =
-                    ValueScale::from_tuple(nice_axis_no_headroom(min, max, HORIZONTAL_AXIS_TICKS));
+                primary = if horizontal {
+                    ValueScale::from_tuple(nice_axis_no_headroom(min, max, HORIZONTAL_AXIS_TICKS))
+                } else {
+                    automatic_3d_vertical(min, max, height, font)
+                };
             } else if chart.chart_type == OoxmlChartType::Stock {
                 let (min, max, step) = nice_axis_no_headroom(min, max, VERTICAL_AXIS_TICKS);
                 primary = ValueScale::from_tuple((min, max + step, step));
@@ -257,7 +309,11 @@ impl ChartScales {
                     } else {
                         ticks
                     };
-                    primary.step = (primary.max - primary.min) / intervals;
+                    primary.step = if chart.is_3d && !horizontal {
+                        automatic_3d_vertical(primary.min, primary.max, height, font).step
+                    } else {
+                        (primary.max - primary.min) / intervals
+                    };
                 }
             }
             ValueScale::from_tuple((0.0, 1.0, 0.2))
@@ -383,7 +439,7 @@ impl CartesianLayout {
             } else {
                 remaining_height
             };
-            let scales = ChartScales::new(chart, plot_width, plot_height);
+            let mut scales = ChartScales::new(chart, plot_width, plot_height);
             if crosses_inside || (horizontal && !chart.is_3d) {
                 category.axis_fraction = scales.primary.zero_fraction();
             }
@@ -412,13 +468,8 @@ impl CartesianLayout {
             // 같은 숫자 예산과 라벨 방향에는 같은 글자들이 생긴다. 필요한 여백만
             // 단조롭게 예약하여 축 간격 변경이 앞선 측정 결과를 무효화하지 않게 한다.
             if needed_left <= left + 1e-7 && needed_right <= right + 1e-7 {
-                return Self {
-                    left,
-                    width: plot_width,
-                    height: plot_height,
-                    scales,
-                    category,
-                    scene: super::chart_3d::SceneFrame::new(
+                let scene = loop {
+                    let scene = super::chart_3d::SceneFrame::new(
                         chart,
                         [width, height],
                         [plot_width, plot_height],
@@ -427,7 +478,37 @@ impl CartesianLayout {
                         category,
                         scales,
                         measure,
-                    ),
+                    );
+                    if let Some(frame) = &scene {
+                        let [projected_width, projected_height] = frame.projected_size(chart);
+                        if category.rotation_degrees == 0.0 && !horizontal {
+                            let projected =
+                                CategoryLabelLayout::new(chart, projected_width, measure);
+                            if projected.rotation_degrees > 0.0 {
+                                rotation_degrees = projected.rotation_degrees;
+                                break None;
+                            }
+                        }
+                        if !horizontal
+                            && fit_3d_vertical_ticks(&mut scales.primary, projected_height, font)
+                        {
+                            continue;
+                        }
+                    }
+                    break scene;
+                };
+                if category.rotation_degrees < rotation_degrees {
+                    left = 0.0;
+                    right = 0.0;
+                    continue;
+                }
+                return Self {
+                    left,
+                    width: plot_width,
+                    height: plot_height,
+                    scales,
+                    category,
+                    scene,
                 };
             }
             left = left.max(needed_left);
