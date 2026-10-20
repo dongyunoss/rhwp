@@ -369,3 +369,34 @@ standalone overlay에서 45도 라벨·하단 예약이 반영되고 투영 폭�
 실행 로그는 `logs/cartesian-native066-candidate-776.log`,
 `logs/chart-existing-unit-native066-777.log`, `logs/chart-3d-label-boundary-native066-778.log`,
 `logs/chart-original-scene-geometry-784.log`, `logs/chart-preview-transforms-783.log`다.
+
+## 장면 좌표계와 빠른 모듈 진단의 선행 분석
+
+786은 기준 PDF와 구별한 한컴 2020 진단 HWP 저장본이다. 기본 3D 정의와
+`depthPercent=20`의 재저장 XML은 모두 `hPercent`·`depthPercent`를 제거했다.
+자동 배치는 여전히 빈 `layout`이며 좌표를 제공하지 않는다. 자동 종가 표식의
+`size=14`는 XML에 남았다. 따라서 저장 속성의 존재와 실제 Print 소비를 구분한다.
+
+787/788은 066 엔진의 실제 `EmbeddedTextMeasurer`와 선언 공백 폭을 사용해 차트의
+측정 tuple을 동결했다. 현재 3D 34개와 정상 대조 2개를 캡처했고, 생산 SVG와 분리한
+차트 모듈의 방 좌표는 반올림을 포함해 최대 0.02px 이내였다. 이 SVG는 좌표 진단이며
+Native PNG/fresh WASM gate가 아니다. KoPub의 별도 공백 계약을 임의로 흉내 내지 않는다.
+
+다음 후보는 3D의 투영 전 데이터 면과, 실제 제목·축·범례가 예약한 표시 viewport를
+구분한다. 회전한 범주 글줄은 viewport의 높이에 반영하며 데이터 면의 종횡비를 따로
+추측해 바꾸지 않는다. 한 장면의 등방 fit·중심과 깊이를 축·막대·라벨이 함께 소비하게
+한다. 막대 폭·계열 수·gapWidth/gapDepth는 막대군과 z 여백을 결정하며 장면 자체를
+늘리는 대용으로 사용하지 않는다. 원본·범주/계열 수·크기·카메라 대조군을 함께 확인한다.
+
+3D 바 전용 선·눈금·면 음영과 공통 투영을 작은 모듈로 분리해 계산을 먼저 대조한 뒤,
+방향이 확인된 후보를 전체 엔진으로 한 번 빌드해 Native/fresh 경로를 검증한다.
+서로 다른 backend의 진단 점수를 최종 시각 판정으로 승격하지 않으며, 미달 상태에서는
+기존 회귀 기대값·baseline을 바꾸지 않는다. 한컴의 공개 차트 사양은
+[공식 차트 revision 1.2](https://cdn.hancom.com/link/docs/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_%EC%B0%A8%ED%8A%B8_revision1.2.pdf)의
+Plot·View3D·Marker 단위를 대조했다. 그 사양이 현대 OOXML 자동 배치의 완전한 수식이나
+기본값을 제공한다고 해석하지 않는다.
+
+793/794의 기계적 모듈 분리는 차트 crate 빌드 2.14초·동결 측정 36조건 실행 0.563초로
+확인했다. 36조건의 SVG 조각이 066에서 분리한 조각과 바이트까지 같았다.
+795의 기존 검사도 160 PASS·5 FAIL로 동일하다. 여기까지는 투영·색·눈금의 동작을
+바꾸지 않은 구조 분리이며, 변경한 3D 후보의 Native/fresh 통과를 뜻하지 않는다.
