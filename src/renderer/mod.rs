@@ -94,6 +94,8 @@ pub(crate) mod stored_frame_boundary;
 pub(crate) mod stored_picture_metrics;
 mod stroke_pattern;
 pub(crate) mod table_row_frame;
+pub(crate) mod text_font_coverage;
+pub(crate) mod text_ink;
 pub(crate) mod text_italic;
 // Q4-D1 registers the exact-source-bound vertical owner while all product
 // layout/publication callers remain closed until their own approved slices.

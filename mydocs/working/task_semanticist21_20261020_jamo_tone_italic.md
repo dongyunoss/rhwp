@@ -51,3 +51,96 @@ SVG/PDF 호환 경로와 브라우저의 CSS 표현도 확인하며 수식 전�
 - Native042는 공유 `target/pr-review`, 컴파일 잡 8개로 전체 보정 소스를 함께 빌드했다.
   이어서 독립 Print의 현대 자모·성조·italic·0폭·소스 경계 대조를 수행하며,
   fresh WASM과 직접 판독·기준 대조 전에는 완료 판정이나 회귀 기대값 변경을 하지 않는다.
+
+## Native042 / fresh WASM017 실행과 다음 보정
+
+- 제품 소스는 `d2256b24e013dc6d123e13c05bae116809b67b13`에 고정했다.
+  Native042 소스 125경로의 commit 바이트 동일성은
+  `native042-committed-source-equivalence-242.json`으로 확인했다.
+  Native 빌드 228.61초, 최적화 fresh WASM 714.64초 exit 0이며 Studio 동기화 해시도 같다.
+- Native 74조건 중 70조건 수치 통과. 현대 자모 Batang/Dotum, italic/bold/bold-italic
+  강조점은 100%다. 추가한 5개 분리 입력은 스타일·각주 3조건 통과, 인라인 표 2조건 미달이다.
+  #7694 새 author HWP 두 파일도 별도 비교했으며 양쪽 모두 미달이다.
+  점수 통과와 직접 판독·기준 대비 하락 판정은 분리한다.
+- fresh WASM017은 같은 제품 소스로 위 입력을 합친 81조건을 비교 중이다.
+  `wasm017-combined-252-jamo-tone-italic-fixed-wasm/progress.json`과 실행 로그를
+  확인하고, 이 기록의 중간 진행값을 최종 완료로 사용하지 않는다.
+
+### 실패 원인의 독립 근거
+
+1. 단독 종성·결합 문자: 원본 SFNT와 Print 내장 글리프의 실제 윤곽·0 전진은 같다
+   (`zero-jamo-pdf-font-audit-246.json`). Native SVG의 본문 clip x=99.4667이 실제
+   잘린 왼쪽 픽셀과 일치한다(`zero-jamo-clip-diagnostic-247/`). 전진 0을 잉크 없음으로
+   해석한 clip 범위를 공통 소비 지점에서 보정 중이다. `text_ink`의 보수적 em 범위는
+   실제 잉크 측정값이나 배치 좌표가 아니며 원문·전진·흐름을 변경하지 않는다.
+2. 빈 인라인 표: 공용 생성 API가 커서의 36pt 글자모양은 상속하지만 셀 저장 LineSeg와
+   행 최소 높이는 10pt로 만든다. 원 해결 #2095 / `9494ba8c61c`의 글자모양 상속과
+   현재 `create_table_native` / `create_table_ex_native`의 생산·소비를 대조했다.
+   잘못된 저장 줄을 정상 한컴 저장 정보의 수용 조건 완화로 해결하지 않는다.
+3. #5874 writer 원본: 원문에는 단 정의가 없다. 한컴 진단용 HWP 저장에서 유효 PageDef는
+   기본 여백이며, 원문에 colPr만 추가하면 Print가 선언 여백을 적용한다
+   (`italic-column-origin-control-253.json`). 두 Print의 첫 원점은 각각
+   (85.0339,107.6424)pt와 (56.6093,65.0889)pt다. 원본·대조군은 구분하며 원본의
+   미달을 대조군으로 대체하지 않는다. manifest 변경 두 대조군은 info에서 입력 파싱
+   실패해 Print 요청하지 않았고 정상 대조군으로 세지 않는다.
+4. 실제 Times italic: Native 94.84380%, fresh WASM도 미달이다. 실제 공급 프로그램·
+   PDF의 한글 fallback·브라우저 face 선택을 추가 대조한다. Arial의 100%로 대신하지 않는다.
+5. #7694 새 chart-before/after는 각각 Native 4.81258% / 89.01177%다.
+   공개 저장 경로와 원본 OLE/OOXML 앵커·제목·축을 추가 분석한다.
+
+추가 보정은 아직 빌드·시각 재검증 전이다. 새 회귀·fixture/golden은 해당 원본의
+Native/fresh WASM 90% 이상·직접 판독을 완료한 뒤에만 추가하며 미달 기대값을 갱신하지 않는다.
+
+### 실제 Canvas 기울임 계약 재확인
+
+`canvas-italic-font-contract-256.json`에서 CSS 문법 수용 여부와 실제 잉크 메트릭을
+분리했다. HCR 48px H의 우측 잉크는 normal 34px, 기본 italic 42px,
+`oblique 18.418deg`도 42px이며 Canvas getter는 지정 각도를 버린다.
+현재 CSS 각도만으로 공통 shear가 적용됐다고 주장하지 않는다. 실제 italic face의
+glyph coverage를 확인해 그 경로는 유지하고 upright source에만 공통 합성을 적용하는
+추가 보정이 필요하다. Times 대조군 미달도 함께 확인한다.
+
+fresh WASM017의 81조건 실행은 종료됐다: 수치 통과 73조건, 미달 8조건, exit 1.
+이전 패키지의 ExtB 상한 예외로 중단됐던 preserve-042/054/099는 실제 새 WASM에서
+모두 렌더 완료했고 각각 92.56774% / 92.56774% / 96.49315%다.
+이는 전체 #8064 fresh WASM 179조건의 최종 보존 판정이나 현재 미커밋 clip 보정의
+검증을 대신하지 않는다. 전체 실패 목록은 `wasm017-combined-252`의 progress/results를 따른다.
+
+## 공통 소비 경로 보정 묶음과 Native043
+
+0 전진 글자의 잉크 범위를 본문 clip과 paint bounds가 함께 소비하도록 보정했다.
+실제 source cmap와 face 스타일을 선택적으로 등록하여 정체 프로그램만 공통 -0.333
+잉크 변환을 적용하고, 실제 italic/oblique는 보존한다. Canvas의 CSS 각도 지원 판정을
+실제 합성의 증거로 사용하지 않는다. 미수집·자원 상한은 기존 브라우저 선택을 보존한다.
+
+빈 셀의 상속 글자모양과 줄 메트릭은 일반 재조판 생산자를 사용한다. 읽은 원본의 빈
+한 줄 em 캐시는 합성 입력뿐 아니라 독립 한컴 저장의 3600/3060/2160HU와 대조했다
+(`table-effective-line-metrics-262.json`). 원본을 바꾸지 않고 측정과 배치의 공통
+FrameGeometry를 갱신한다. 비어 있지 않은 압축 줄·다중 안내 줄·0높이는 제외한다.
+
+단 정의가 없는 writer HWPX의 유효 기본 용지는 원본 Print와 colPr만 추가한 반례의
+실제 원점 차이에 따라 parser에서 결정한다. 단 정의가 있는 정상 문서는 보존한다.
+위 보정을 한 제품으로 동결해 Native043으로 빌드한다. 아직 성공·시각 통과를 주장하지
+않으며, 원본과 독립 Print의 재검증을 마친 뒤 회귀의 추가·변경을 결정한다.
+
+### Native043 관측과 잔여 범위
+
+최초 빌드의 Arc 타입 오류를 수정했고 두 번째 빌드가 215.43초·exit 0으로 끝났다.
+`logs/char-overlap-native-build-043-attempt02.log`와 제품 소스 지문을 보존했다.
+`ink-face-critical-265-ink-face-fixed-native`는 15조건 중 13조건이 90% 이상이다.
+0폭 자소, 현대 자모 양 계열, bold-italic, 실제 Arial/Times italic, writer 원본 두
+engine과 colPr 반례는 100%다. 소스 경계 혼합 입력은 99.18718%로 개선됐다.
+빈 인라인 표 두 원본은 본체 크기만 맞고 부모 줄 기준선이 낡아 73.79481%와
+62.64501%다. 이 원본의 최종 통과나 새 회귀 추가를 주장하지 않는다.
+
+Times 한글의 Print 내장 글리프와 실제 HBATANG.TTF의 윤곽·전진·em이 같다
+(`physical-italic-hangul-source-audit-264.json`). 별도 공급 폴더에서 사용하지 않는
+Malgun을 제외한 62,697,380바이트를 공급해 Native의 64MiB 한도를 지켰다. 과거
+글꼴 조건을 덮어쓰지 않았으며 같은 공급으로 frozen Native042도 100%임을 확인했다.
+
+#7694는 별도 진단용 한컴 저장본을 얻었다(`mcp-chart-effective-save-269`). 원본
+Print를 기준으로 유지한다. chart-before의 실제 저장 줄은 18750/15938HU로 바뀌며
+원본의 1000/850HU 캐시가 개체 높이를 담지 못함을 확인했다. 정규화 저장본도 Native
+89%대로 차트 내부 라벨·간격이 남아 있어, 호스트 줄과 차트 내부를 모두 보정해야 한다.
+현재 묶음을 로컬 중간 커밋으로 고정한 뒤 후속 공통 프레임 보정을 계속한다.
+fresh WASM018·전체 Rust·전체 시각 검증·최종 확대 판독은 아직 완료하지 않았다.

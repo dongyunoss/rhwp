@@ -3443,6 +3443,22 @@ impl Renderer for SvgRenderer {
                 self.metric_faces.insert(face);
             }
         }
+        let italic_face = |cluster_str: &str| {
+            if !style.italic {
+                return None;
+            }
+            let glyph = pua_glyph::display(&source_coverage, cluster_str, style);
+            if source_coverage
+                .glyph(&style.font_family, cluster_str)
+                .is_none()
+                && super::contains_old_hangul_jamo(&glyph)
+            {
+                return None;
+            }
+            source_coverage
+                .text_faces
+                .select(&font_family, &glyph, style.is_visually_bold(), true)
+        };
         let attrs_for_cluster = |cluster_str: &str, fill: &str| {
             let glyph = pua_glyph::display(&source_coverage, cluster_str, style);
             let cluster_font_family = if source_coverage
@@ -3454,10 +3470,21 @@ impl Renderer for SvgRenderer {
             } else {
                 &font_family
             };
+            let face = italic_face(cluster_str);
+            let selected_family = face.as_ref().map(|face| format!("'{}'", face.family));
+            let attrs = face.as_ref().map_or_else(
+                || base_attrs.clone(),
+                |face| {
+                    base_attrs.replace(
+                        super::text_italic::CSS_STYLE,
+                        if face.slanted { "italic" } else { "normal" },
+                    )
+                },
+            );
             format!(
                 "font-family=\"{}\" {} fill=\"{}\"{}",
-                escape_xml(cluster_font_family),
-                base_attrs,
+                escape_xml(selected_family.as_deref().unwrap_or(cluster_font_family)),
+                attrs,
                 fill,
                 faux_bold_stroke.map_or_else(String::new, |w| faux_bold_stroke_attr(w, fill)),
             )
@@ -3578,12 +3605,20 @@ impl Renderer for SvgRenderer {
                     ratio,
                 );
                 let shadow_attrs = attrs_for_cluster(cluster_str, &shadow_color);
-                if has_ratio {
+                let skew = italic_face(cluster_str)
+                    .filter(|face| !face.slanted)
+                    .map_or(0.0, |_| super::text_italic::SKEW_X);
+                if has_ratio || skew != 0.0 {
+                    let transform = if skew == 0.0 {
+                        format!("scale({ratio:.4},1)")
+                    } else {
+                        format!("matrix({ratio:.4} 0 {} 1 0 0)", ratio * skew)
+                    };
                     self.output.push_str(&format!(
-                        "<text transform=\"translate({},{}) scale({:.4},1)\" {}{}>{}</text>\n",
+                        "<text transform=\"translate({},{}) {}\" {}{}>{}</text>\n",
                         char_x,
                         char_y,
-                        ratio,
+                        transform,
                         shadow_attrs,
                         length_attrs,
                         escape_xml(&pua_glyph::display(&source_coverage, cluster_str, style)),
@@ -3723,13 +3758,20 @@ impl Renderer for SvgRenderer {
                 );
                 let common_attrs = attrs_for_cluster(cluster_str, &color);
                 let glyph_text = pua_glyph::display(&source_coverage, cluster_str, style);
-
-                if has_ratio {
+                let skew = italic_face(cluster_str)
+                    .filter(|face| !face.slanted)
+                    .map_or(0.0, |_| super::text_italic::SKEW_X);
+                if has_ratio || skew != 0.0 {
+                    let transform = if skew == 0.0 {
+                        format!("scale({ratio:.4},1)")
+                    } else {
+                        format!("matrix({ratio:.4} 0 {} 1 0 0)", ratio * skew)
+                    };
                     self.output.push_str(&format!(
-                        "<text transform=\"translate({},{}) scale({:.4},1)\" {}{}>{}</text>\n",
+                        "<text transform=\"translate({},{}) {}\" {}{}>{}</text>\n",
                         char_x,
                         y,
-                        ratio,
+                        transform,
                         common_attrs,
                         length_attrs,
                         escape_xml(&glyph_text),

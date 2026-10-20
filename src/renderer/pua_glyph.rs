@@ -101,6 +101,7 @@ type FaceKey = (String, u16, bool);
 #[derive(Clone, Default)]
 pub(crate) struct FontCoverage {
     faces: HashMap<FaceKey, Arc<[u64; WORDS]>>,
+    pub(crate) text_faces: super::text_font_coverage::TextFontCoverage,
 }
 
 fn primary(family: &str) -> String {
@@ -117,6 +118,7 @@ impl FontCoverage {
     /// 미검증 스타일이 같은 family의 이전 양수 coverage를 재사용하지 않게 한다.
     /// 선택적 보조 정보의 상한 때문에 브라우저의 정상 글꼴 적재를 실패시키지 않는다.
     fn disable_family(&mut self, family: String) -> bool {
+        self.text_faces.disable_family(&family);
         let key = (family.clone(), 0, false);
         if self
             .faces
@@ -151,6 +153,7 @@ impl FontCoverage {
         let Ok(face) = ttf_parser::Face::parse(bytes, index) else {
             return Ok(self.disable_family(family));
         };
+        self.text_faces.register(&family, bytes, index, &face);
         let key = (family, face.weight().to_number(), face.is_italic());
         if !self.faces.contains_key(&key) && self.faces.len() >= MAX_FACES {
             return Ok(self.disable_family(key.0));

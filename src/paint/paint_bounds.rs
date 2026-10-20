@@ -819,6 +819,9 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
         }
     }
     let mut bounds = expand(painted, padding);
+    if let Some(ink) = crate::renderer::text_ink::zero_advance_ink_bbox(logical, run) {
+        bounds = union(bounds, ink);
+    }
     if let Some(ink) = crate::renderer::emphasis::geometry(text, &positions, &run.style, font_size)
         .and_then(|g| g.ink_bounds())
     {

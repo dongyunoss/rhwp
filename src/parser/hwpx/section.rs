@@ -6,6 +6,8 @@
 #[path = "note_line_positions.rs"]
 mod note_line_positions;
 use note_line_positions::normalize_hwpx_note_line_vpos;
+#[path = "section_activation.rs"]
+mod section_activation;
 
 use quick_xml::events::{BytesRef, Event};
 use quick_xml::Reader;
@@ -83,6 +85,7 @@ pub fn parse_hwpx_section(xml: &str) -> Result<Section, HwpxError> {
         buf.clear();
     }
 
+    section_activation::apply_missing_column_defaults(&mut section);
     link_orphan_field_ends_recursive(&mut section.paragraphs);
 
     Ok(section)

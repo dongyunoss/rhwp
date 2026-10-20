@@ -249,7 +249,6 @@ pub(crate) fn raised_decoration_ink_bbox(
         || run.char_overlap.is_some()
         || run.rotation != 0.0
         || run.is_vertical
-        || bbox.width <= 0.0
         || !run.display_or_text().chars().any(|ch| ch != '\u{FFFC}')
     {
         return None;

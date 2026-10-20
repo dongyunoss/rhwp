@@ -4685,9 +4685,13 @@ impl LayoutEngine {
                 // 글상자 안은 글상자 자체 clip 이 자르므로 반영하지 않는다.
                 if !inside_textbox {
                     if let RenderNodeType::TextRun(run) = &node.node_type {
-                        if let Some(ink) =
-                            super::text_decoration::raised_decoration_ink_bbox(cb, run)
-                                .or_else(|| super::char_overlap::ink_bounds(run, cb))
+                        for ink in [
+                            super::text_decoration::raised_decoration_ink_bbox(cb, run),
+                            super::char_overlap::ink_bounds(run, cb),
+                            super::text_ink::zero_advance_ink_bbox(cb, run),
+                        ]
+                        .into_iter()
+                        .flatten()
                         {
                             let right = (cb.x + cb.width).max(ink.x + ink.width);
                             let bottom = (cb.y + cb.height).max(ink.y + ink.height);

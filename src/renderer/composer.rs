@@ -263,6 +263,7 @@ include!("composer/stored_cell_reflow.inc.rs");
 include!("composer/cell_line_breaking.inc.rs");
 include!("composer/pua_surface.inc.rs");
 
+mod empty_line_metrics;
 mod line_breaking;
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{

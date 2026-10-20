@@ -110,6 +110,7 @@ mod hft_outline;
 mod middle_dot;
 #[cfg(target_arch = "wasm32")]
 mod pua_glyph;
+mod text_italic;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
 // WASM 단일 스레드이므로 thread_local 안전
@@ -2747,6 +2748,10 @@ impl Renderer for WebCanvasRenderer {
                     if measured_descriptor.is_some_and(|descriptor| descriptor != self.ctx.font()) {
                         self.metric_descriptor_mismatch.set(true);
                     }
+                    // 측정의 source face/전진을 확인한 뒤 glyph의 잉크 합성만 결정한다.
+                    let synthetic_italic = !(source_glyph.is_none()
+                        && super::contains_old_hangul_jamo(glyph_text))
+                        && self.prepare_italic_font(glyph_text, style, font_size);
                     // XML/HTML 무효 제어문자 건너뜀 (SVG의 escape_xml과 동일)
                     if cluster_str
                         .starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r'))
@@ -2858,6 +2863,7 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.save();
                         self.ctx.translate(char_x, y).unwrap_or(());
                         self.ctx.scale(scale, 1.0).unwrap_or(());
+                        self.apply_synthetic_italic(synthetic_italic);
                         Self::fill_positioned_text(
                             &self.ctx,
                             cluster_str,
@@ -2908,6 +2914,7 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.save();
                         self.ctx.translate(char_x + fit_dx, y).unwrap_or(());
                         self.ctx.scale(ratio * fit_scale, 1.0).unwrap_or(());
+                        self.apply_synthetic_italic(synthetic_italic);
                         if !self.draw_hft_outline(glyph_text, style, font_size) {
                             Self::fill_positioned_text(
                                 &self.ctx,
@@ -3507,6 +3514,9 @@ impl WebCanvasRenderer {
                 {
                     self.metric_descriptor_mismatch.set(true);
                 }
+                let synthetic_italic = !(source_glyph.is_none()
+                    && super::contains_old_hangul_jamo(glyph_text))
+                    && self.prepare_italic_font(glyph_text, style, font_size);
                 if cs.starts_with(|c: char| c < '\u{0020}' && !matches!(c, '\t' | '\n' | '\r')) {
                     continue;
                 }
@@ -3537,10 +3547,11 @@ impl WebCanvasRenderer {
                     continue;
                 }
 
-                if has_ratio {
+                if has_ratio || synthetic_italic {
                     ctx.save();
                     ctx.translate(char_x, char_y).unwrap_or(());
                     ctx.scale(ratio, 1.0).unwrap_or(());
+                    self.apply_synthetic_italic(synthetic_italic);
                     let _ = ctx.fill_text(glyph_text, 0.0, 0.0);
                     if paint_stroke {
                         let _ = ctx.stroke_text(glyph_text, 0.0, 0.0);
