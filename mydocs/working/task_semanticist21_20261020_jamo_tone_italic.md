@@ -177,3 +177,56 @@ Native044는 218.82초·exit 0이다. `ink-box-critical-277-ink-box-fixed-native
 다음 단계는 같은 Native044 제품 소스의 최적화 fresh WASM018이다. Native 결과만으로
 새 회귀·최종 통합 판정을 만들지 않는다. 남은 차트 내부와 다른 필수 항목의 보정도
 계속하며, 원격 push/PR은 준비 완료 후 작업지시자의 승인 전에 수행하지 않는다.
+
+## Native044 / fresh WASM018 전쪽 재검증과 CSS face 조회 보정
+
+같은 제품 소스의 Native044와 최적화 fresh WASM018을 사용했다. WASM018은
+710.57초·exit 0이며 Studio JS/WASM 동기화 해시가 일치한다. 기존 74조건에 자소·표·
+단 정의·업데이트된 차트 경계를 더한 82조건의 전쪽 검증에서 Native는 80조건,
+fresh WASM은 81조건이 수치 통과했다. Native의 #7694 chart-before/after는 각각
+89.38709%/89.00396%, WASM chart-before는 87.98250%다. 두 빈 표 원본은 양쪽
+100%다. 이 결과는 최종 upstream/devel 전체 보존 검증이나 전체 Rust 완료가 아니다.
+
+`ink-box-combined-280-ink-box-fixed-native`, `ink-box-combined-289-ink-box-fixed-wasm`에
+TSV와 입력·Print·제품 지문을 보존했다. 중간 Native042→044의 같은 입력·PDF·글꼴
+80조건에서는 0.1%p 이상 하락이 없었다. 이는 고정 devel 대비 179조건 대조를 대체하지 않는다.
+
+### 실제 Canvas의 기울임 소비 확인
+
+`canvas-italic-actual-paint-295.json`에서 실제 원문 `Ha 나`는 등록 완료 뒤에도
+CSS italic + CTM c=0으로 그려지고, 장식 점만 공통 c=-0.333을 소비했다. 등록 실패나
+본문 호출 경로의 누락이 아니었다. TextFontCoverage가 CSS 체인을 내부 비인용 목록으로
+분리해 따옴표를 family 이름에 포함한 것이 원인이다. 기존 svgtypes 파서로 이름을
+해석하도록 고쳤다. 플랫폼 generic의 실제 face는 등록 정보만으로 확정하지 않는다.
+
+수정 전·후 같은 HCR 프로그램의 독립 진단에서 큰따옴표/작은따옴표 family는
+`None → 정체 face`로 바뀌고, 비인용 family는 동일하며 generic은 양쪽 None이다
+(`logs/quoted-font-selection-297.log`). 진단은 정식 회귀나 Print 일치 판정을 대신하지
+않는다. Native045/fresh WASM019로 실제 출력과 실제 italic 프로그램을 다시 대조한다.
+
+### 차트의 별도 반례와 남은 배치 차이
+
+원본 `samples/143E433F503322BD33.hwp`의 구형 차트는 최신 제품에서도 Native
+99.27590%/WASM99.29729%를 유지했다. 새 패널 `legacy-user-current-panels-294`에서
+제목·막대·값축·범례를 직접 확인했다. 본문 일부의 줄 간격 잔차는 별도로 남아 있다.
+
+#7694는 편집 가능한 OOXML 차트다. 공개 CSV 편집 경로로 첫 값만 4.3→8.6으로
+바꾼 원본을 한컴에서 Print했으며, Native84.37007%/WASM87.99311%로 내부 배치
+미달을 확인했다. 낡은 OlePres000 미리보기로 대체하지 않는다. Contents의 물리 영역은
+0으로 비어 있고 title도 없어 현재 OOXML의 실제 배치 근거로 수용할 수 없다
+(`logs/chart-legacy-presentation-trace-286-attempt03.log`).
+
+네 글꼴 속성 대조군의 한컴 Print와 추가 세 대조군을 확보했다
+(`mcp-chart-font-controls-290`, `mcp-chart-font-controls-296`). 기본 10pt에서 제목
+14pt 명시 Print는 원본과 픽셀 동일하지만, 기본9pt/12pt에서 제목을 각각12.6pt/16.8pt로
+명시한 Print는 생략본과 같지 않았다. 따라서 단순 1.4배 상속 가정은 채택하지 않는다.
+원 해결 이슈 #6624와 PR #6626의 실측·상수 도입 근거를 확인했으며, 현재 Print의
+값축·제목·범례를 독립 근거로 추가 분석한다. 차트 상수를 점수에 맞춰 조정하지 않는다.
+
+원격 원문은 `open-pr-heads-298.json`에서 45PR/10Draft이며 이전267 대비 head 변경이
+없다. upstream/devel도 `5e2b9bfbf08573a31fa1e11a2445ff63fc0755c0`으로 같다.
+새 PR·push·comment는 준비 완료 후 작업지시자의 승인 전에 실행하지 않는다.
+
+Native045는 218.57초·exit 0이며 fmt 검사도 통과했다. 이 단계의 코드 변경은 CSS
+family 조회 1곳이다. Native 82조건 재검증과 같은 소스의 최적화 fresh WASM019를
+이어 수행한다. 45개 원 PR 모두 reviewer 요청이 지정되어 있음도303에서 재확인했다.

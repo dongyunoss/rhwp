@@ -119,7 +119,13 @@ impl TextFontCoverage {
         if self.0.disabled {
             return None;
         }
-        for family in super::internal_font_family_members(families) {
+        // Canvas/SVG에 전달한 CSS 체인의 인용·이스케이프는 family 이름이 아니다.
+        // 내부의 비인용 목록 분리기를 재사용하면 적재된 face를 찾지 못한다.
+        for family in svgtypes::parse_font_families(families).ok()? {
+            let svgtypes::FontFamily::Named(family) = family else {
+                // 플랫폼 generic의 실제 선택은 이 세션의 등록 정보만으로 확정할 수 없다.
+                return None;
+            };
             let family = family.to_lowercase();
             if self.0.unknown.contains(&family) {
                 return None;
