@@ -11,6 +11,9 @@ use super::{
 
 use super::LineSpec;
 
+mod cartesian_layout;
+use cartesian_layout::{CartesianLayout, CategoryLabelLayout, FRAME_PAD, TICK_GAP};
+
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
 ///
 /// 한컴 2022 기본 팔레트(`hncChartStyle colorIndex="0"`) — 앞 5색은 `pdf/chart/` 정답지
@@ -47,23 +50,17 @@ mod hancom_default {
     pub const TEXT_COLOR: &str = "#000000";
     /// 프레임 상단 → 제목 줄 하단 앵커 = 1.9 × 제목 글꼴 (실측 35.5px = 위 여백 18 + 한글 잉크 17.5).
     pub const TITLE_TEXT_BOTTOM_EM: f64 = 1.9;
-    /// 제목 줄 하단 → 플롯 상단 = 1.36 × 제목 글꼴 (실측 61 − 35.5 = 25.5px).
-    pub const TITLE_PLOT_GAP_EM: f64 = 1.36;
     /// 제목이 없을 때 프레임 상단 → 플롯 상단 (라벨 글꼴 배수, 코퍼스에 표본 없음).
     pub const NO_TITLE_TOP_EM: f64 = 1.0;
-    /// 플롯 하단 → 프레임 하단 = 3.1 × 라벨 글꼴 (실측 250 − 209 = 41px).
-    pub const BOTTOM_PAD_EM: f64 = 3.1;
     /// 플롯 하단 → 카테고리 라벨 줄 하단 = 2.3 × 라벨 글꼴 (실측 239.5 − 209 = 30.5px).
     pub const CATEGORY_LABEL_TEXT_BOTTOM_EM: f64 = 2.3;
     /// 원형: 제목 줄 하단 → 원 상단 = 1.0 × 제목 글꼴 (실측 2차원원형 원 상단 54.5 = 35.5 + 19).
     pub const PIE_TITLE_GAP_EM: f64 = 1.0;
     /// 원형: 원 하단 → 프레임 하단 = 1.1 × 라벨 글꼴 (실측 252.5 − 237.5 = 15px).
-    /// 축 라벨이 없으므로 `BOTTOM_PAD_EM` 대신 쓴다. 왼쪽 여백도 0.
+    /// 원형은 축 라벨 예약 없이 이 아래 여백을 쓴다. 왼쪽 여백도 0.
     pub const PIE_BOTTOM_PAD_EM: f64 = 1.1;
     /// 라벨 오른끝 → 플롯 왼쪽 = 1.3 × 라벨 글꼴 (실측 라인 27.5 − 8 ≈ 19, 가로막대 69.7 − 53 ≈ 17).
     pub const LEFT_GAP_EM: f64 = 1.3;
-    /// 플롯 오른쪽 → 범례 영역 = 0.6 × 라벨 글꼴 (실측 356 → 365).
-    pub const RIGHT_GAP_EM: f64 = 0.6;
     /// 한글 한 글자 폭 (em 비율). 숫자·라틴은 `DIGIT_EM`.
     pub const CJK_EM: f64 = 0.9;
     pub const DIGIT_EM: f64 = 0.55;
@@ -399,22 +396,19 @@ pub fn render_chart_svg_with_text_measure(
         })
     });
 
-    // 영역 분할 — 한/글 기본 서식(`hancom_default`, #6624): 제목 줄 하단 1.9T, 제목→플롯 1.36T,
-    // 플롯 아래 3.1L, 라벨 폭 + 1.3L 왼쪽 여백 (T=제목 글꼴, L=라벨 글꼴).
+    // 제목 글줄과 축 라벨의 예약 프레임을 최종 그리기와 공유한다.
     let title_font = title_font_px(chart);
     let label_font = label_font_px(chart);
     let legend_font = legend_font_px(chart);
-    // 원형은 축·축 라벨이 없어 제목 아래 간격과 아래 여백이 다르다 (실측 2차원원형 지름 183 =
-    // 프레임 높이 252.5 − 위 54.5 − 아래 15).
     let is_pie = chart.chart_type == OoxmlChartType::Pie;
-    let title_h = match (effective_title.is_some(), is_pie) {
-        (true, false) => {
-            title_font * (hancom_default::TITLE_TEXT_BOTTOM_EM + hancom_default::TITLE_PLOT_GAP_EM)
-        }
-        (true, true) => {
+    let title_h = if is_pie {
+        if effective_title.is_some() {
             title_font * (hancom_default::TITLE_TEXT_BOTTOM_EM + hancom_default::PIE_TITLE_GAP_EM)
+        } else {
+            label_font * hancom_default::NO_TITLE_TOP_EM
         }
-        (false, _) => label_font * hancom_default::NO_TITLE_TOP_EM,
+    } else {
+        cartesian_layout::title_height(chart, effective_title.is_some())
     };
     // 파이는 카테고리 기반 범례라 시리즈 이름과 무관하게 항상 그려진다(파이 분기가
     // render_legend/render_legend_right를 무조건 호출) — 공간 예약도 그에 맞춰야 함.
@@ -422,13 +416,12 @@ pub fn render_chart_svg_with_text_measure(
         chart.chart_type == OoxmlChartType::Pie || chart.series.iter().any(|s| !s.name.is_empty());
     // C1c #1882 갭③: legendPos=r(한컴 코퍼스 전 샘플)은 우측 세로 스택 — 하단 슬롯
     // 대신 우측 폭(legend_w)을 확보. 그 외 위치는 현행 하단 가로 유지.
-    // `w * 0.30 >= 50.0` 가드: 폭이 좁으면(<167px) 하단 폴백 — 아래 clamp의
-    // min(50)>max(w*0.30) 패닉 방지 (w는 문서 데이터가 결정). NaN도 false → 폴백.
-    let legend_right = legend_visible && chart.legend_pos == LegendPos::Right && w * 0.30 >= 50.0;
+    // 범례의 실제 글줄 폭을 먼저 예약하며, 프레임 폭으로 다른 위치를 추측하지 않는다.
+    let legend_right = legend_visible && chart.legend_pos == LegendPos::Right;
     // 우측 범례는 제목 줄 하단부터 차트 프레임 바닥까지의 가용 영역에서 가운데 놓는다.
     // 플롯의 격자·하단 축 라벨 예약을 범례의 세로 정렬에 다시 적용하지 않는다.
     let title_bottom = if effective_title.is_some() {
-        title_font * hancom_default::TITLE_TEXT_BOTTOM_EM
+        FRAME_PAD + title_font * 1.2
     } else {
         0.0
     };
@@ -438,13 +431,16 @@ pub fn render_chart_svg_with_text_measure(
         if legend_visible && !legend_right {
             legend_items(chart)
                 .iter()
-                .map(|(label, _, _)| 18.0 + measure(label, legend_font, legend_family(chart)))
+                .map(|(label, _, _)| {
+                    legend_font + measure(label, legend_font, legend_family(chart))
+                })
                 .collect()
         } else {
             Vec::new()
         },
-        w - 16.0,
+        w - FRAME_PAD * 1.6,
         legend_font,
+        FRAME_PAD,
     );
     let legend_h = legend_layout.height();
     let legend_w = if legend_right {
@@ -452,51 +448,23 @@ pub fn render_chart_svg_with_text_measure(
             .iter()
             .map(|(label, _, _)| measure(label, legend_font, legend_family(chart)))
             .fold(0.0f64, f64::max);
-        // 스와치 10 + 간격 8 + 글자 폭(10pt) + 오른쪽 여백 8 (플롯 최소폭은 아래 .max(10.0)이 방어)
-        (max_w + 26.0).clamp(50.0, w * 0.30)
+        // 범례 키·간격은 선언 글꼴 한 칸, 바깥 여백은 기본 프레임 여백이다.
+        max_w + legend_font + FRAME_PAD * 0.8
     } else {
         0.0
     };
-    // 좌측 여유: 세로 차트는 값축 숫자 라벨, **가로 막대는 카테고리 라벨**("항목 1" 등)이
-    // 좌측에 오므로 카테고리 폭 기준 — 숫자 폭(2자≈32px)으로 잡으면 라벨이 잘림.
-    let horizontal_bars =
-        chart.chart_type == OoxmlChartType::Bar && !chart.is_combo() && !chart.has_secondary_axis;
-    let left_pad = if is_pie {
-        0.0
-    } else if horizontal_bars {
-        estimate_category_label_width(chart, w)
-    } else {
-        estimate_axis_label_width(chart, 0)
-    };
-    // [#6624] 가로 값축(가로 막대·분산형)은 마지막 값 라벨이 플롯 오른끝에 가운데 정렬되어
-    // 절반이 플롯 밖으로 나온다 — 그 절반 + 라벨 간격 1.3L 을 비운다 (한/글 실측: 묶은가로
-    // 21.5px, 분산형 22.5px ≈ 3.7 + 17.3). 세로 값축은 0.6L (라인 실측 9.5px).
-    let value_axis_horizontal = horizontal_bars || chart.chart_type == OoxmlChartType::Scatter;
-    let right_pad = if chart.has_secondary_axis {
-        estimate_axis_label_width(chart, 1)
-    } else if value_axis_horizontal {
-        value_axis_max_label_width(chart) / 2.0 + label_font * hancom_default::LEFT_GAP_EM
-    } else {
-        label_font * hancom_default::RIGHT_GAP_EM
-    };
-    let bottom_pad = if is_pie {
-        label_font * hancom_default::PIE_BOTTOM_PAD_EM
-    } else {
-        // 250px 기준 차트의 축·범례 여백을 프레임 높이에 비례시킨다. 큰 차트에서
-        // 고정 픽셀 여백을 쓰면 플롯 하단과 범주 라벨이 기준 출력보다 아래로 내려간다.
-        label_font * hancom_default::BOTTOM_PAD_EM * (h / 250.0).max(1.0)
-    };
-    let plot_x = x + left_pad;
+    let layout = CartesianLayout::new(chart, w, h, title_h, legend_h, legend_w, measure);
+    let plot_x = x + layout.left;
     let plot_y = y + title_h;
-    let plot_w = (w - left_pad - right_pad - legend_w).max(10.0);
-    let plot_h = (h - title_h - legend_h - bottom_pad).max(10.0);
+    let plot_w = layout.width;
+    let plot_h = layout.height;
 
     if let Some(ref title) = effective_title {
         // 한컴 제목은 regular weight (정답지 PDF 실측 — C1c #1882 갭①), 14pt 검정 (#6624)
         svg.push_str(&format!(
-            "<text class=\"hwp-chart-title\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"{}\" font-size=\"{:.2}\" font-weight=\"400\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-after-edge\">{}</text>\n",
+            "<text class=\"hwp-chart-title\" x=\"{:.2}\" y=\"{:.2}\" font-family=\"{}\" font-size=\"{:.2}\" font-weight=\"400\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-before-edge\">{}</text>\n",
             x + w / 2.0,
-            y + title_font * hancom_default::TITLE_TEXT_BOTTOM_EM,
+            y + FRAME_PAD,
             xml_escape(chart.title_font_family.as_deref().unwrap_or("inherit")),
             title_font,
             hancom_default::TEXT_COLOR,
@@ -517,7 +485,7 @@ pub fn render_chart_svg_with_text_measure(
             render_legend_right(
                 &mut svg,
                 chart,
-                x + w - legend_w + 4.0,
+                x + w - legend_w,
                 right_legend_y,
                 right_legend_h,
             );
@@ -525,9 +493,9 @@ pub fn render_chart_svg_with_text_measure(
             render_legend(
                 &mut svg,
                 chart,
-                x + 8.0,
+                x + FRAME_PAD * 0.8,
                 y + h - legend_h,
-                w - 16.0,
+                w - FRAME_PAD * 1.6,
                 legend_h,
                 &legend_layout,
             );
@@ -538,20 +506,24 @@ pub fn render_chart_svg_with_text_measure(
 
     // 콤보 또는 이중축이면 조합 렌더
     if chart.is_combo() || chart.has_secondary_axis {
-        render_combo(&mut svg, chart, plot_x, plot_y, plot_w, plot_h);
+        render_combo(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, &layout);
     } else {
         match chart.chart_type {
-            OoxmlChartType::Column => {
-                render_bars(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, false)
+            OoxmlChartType::Column => render_bars(
+                &mut svg, chart, plot_x, plot_y, plot_w, plot_h, false, &layout,
+            ),
+            OoxmlChartType::Bar => render_bars(
+                &mut svg, chart, plot_x, plot_y, plot_w, plot_h, true, &layout,
+            ),
+            OoxmlChartType::Line => {
+                render_line(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, &layout)
             }
-            OoxmlChartType::Bar => {
-                render_bars(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, true)
-            }
-            OoxmlChartType::Line => render_line(&mut svg, chart, plot_x, plot_y, plot_w, plot_h),
             OoxmlChartType::Scatter => {
                 render_scatter(&mut svg, chart, plot_x, plot_y, plot_w, plot_h)
             }
-            OoxmlChartType::Stock => render_stock(&mut svg, chart, plot_x, plot_y, plot_w, plot_h),
+            OoxmlChartType::Stock => {
+                render_stock(&mut svg, chart, plot_x, plot_y, plot_w, plot_h, &layout)
+            }
             _ => {}
         }
     }
@@ -560,7 +532,7 @@ pub fn render_chart_svg_with_text_measure(
         render_legend_right(
             &mut svg,
             chart,
-            x + w - legend_w + 4.0,
+            x + w - legend_w,
             right_legend_y,
             right_legend_h,
         );
@@ -568,9 +540,9 @@ pub fn render_chart_svg_with_text_measure(
         render_legend(
             &mut svg,
             chart,
-            x + 8.0,
+            x + FRAME_PAD * 0.8,
             y + h - legend_h,
-            w - 16.0,
+            w - FRAME_PAD * 1.6,
             legend_h,
             &legend_layout,
         );
@@ -591,21 +563,6 @@ fn render_fallback(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> String
 
 fn series_color(s: &OoxmlSeries, idx: usize) -> String {
     color_hex(s.color.unwrap_or_else(|| palette(idx)))
-}
-
-/// 가로 막대 좌측 카테고리 라벨용 여백: 최장 카테고리 문자 수 기반 (CJK ~10px/자).
-/// 상한은 차트 폭의 35%(플롯 최소폭은 호출부 `.max(10.0)`이 방어).
-fn estimate_category_label_width(chart: &OoxmlChart, w: f64) -> f64 {
-    let font = label_font_px(chart);
-    let max_w = chart
-        .categories
-        .iter()
-        .map(|c| label_text_width(c, font))
-        .fold(0.0f64, f64::max);
-    let gap = font * hancom_default::LEFT_GAP_EM;
-    (max_w + gap)
-        .min((w * 0.35).max(2.0 * font))
-        .max(2.0 * font)
 }
 
 /// 지정한 axis_group의 최대 라벨 길이(문자 수) 기반으로 여백 추정
@@ -703,10 +660,6 @@ fn value_range_for<'a>(
     nice_axis(min, max, target_ticks)
 }
 
-fn value_range(chart: &OoxmlChart, target_ticks: f64) -> (f64, f64, f64) {
-    value_range_for(chart.series.iter(), target_ticks)
-}
-
 /// raw 간격에 가장 가까운 "깔끔한" 눈금 간격 (1/2/5/10 × 10^n, 반올림 임계 1.5/3/7)
 fn floor_nice_step(raw: f64) -> f64 {
     let mag = 10f64.powf(raw.abs().log10().floor());
@@ -797,6 +750,7 @@ fn render_bars(
     pw: f64,
     ph: f64,
     horizontal: bool,
+    layout: &CartesianLayout,
 ) {
     let stacked = matches!(
         chart.grouping,
@@ -817,46 +771,7 @@ fn render_bars(
     }
     let ser_count = chart.series.len().max(1);
 
-    // 값축 범위: clustered=개별값, stacked=카테고리 합의 최대, percent=0~100%
-    // (percent는 step 20 고정 = 종전 5등분 라벨 0/20/…/100%와 동일)
-    // 눈금 밀도는 값축 방향 기준: 세로막대=세로 값축(3칸), 가로막대=가로 값축(5칸)
-    let ticks = if horizontal {
-        HORIZONTAL_AXIS_TICKS
-    } else {
-        VERTICAL_AXIS_TICKS
-    };
-    let (mut vmin, mut vmax, mut vstep) = if percent {
-        (0.0, 100.0, 20.0)
-    } else if stacked {
-        let max_sum = (0..cat_count)
-            .map(|ci| category_positive_sum(chart, ci))
-            .fold(0.0_f64, f64::max);
-        let (mn, mx, st) = nice_axis(0.0, max_sum.max(1.0), ticks);
-        if chart.is_3d && !horizontal {
-            // 한컴 3D 누적'세로' 실측: 2D(0~15) + 1 step = 0~20. 가로는 2D와 동일(0~14).
-            (mn, mx + st, st)
-        } else {
-            (mn, mx, st)
-        }
-    } else if chart.is_3d {
-        // 한컴 3D 묶은막대 실측: 세로·가로 모두 촘촘 눈금(5칸) + 경계 headroom 없음
-        // (max 5.0 → 0~5 step 1; 2D의 0~6과 다름)
-        let (mn, mx) = raw_value_bounds(chart.series.iter());
-        nice_axis_no_headroom(mn, mx, HORIZONTAL_AXIS_TICKS)
-    } else {
-        let (mn, mx, st) = value_range(chart, ticks);
-        // 특이케이스 실측(C1c v2 기록 → #2277 stage5): 가로막대 1카테고리 미니차트는
-        // 축 범위 유지·step 절반 (4.3 → 0~5 step 0.5, 라벨 11개). 기존 가로축 앵커
-        // (12.3→2 / 5.0→1 / 2.6→0.5)와 단일 규칙 불성립 — 단일 샘플 근거라
-        // 가로·1카테고리(·이 분기 자체로 비누적·비3D)로 좁게 게이트. 세로 1카테고리는
-        // 미실측이라 불변.
-        if horizontal && cat_count == 1 {
-            (mn, mx, st / 2.0)
-        } else {
-            (mn, mx, st)
-        }
-    };
-
+    let (vmin, vmax, vstep) = layout.scales.primary.tuple();
     let value_axis = axis_at(
         chart,
         if horizontal {
@@ -865,25 +780,6 @@ fn render_bars(
             AxisPos::Left
         },
     );
-    if let Some(minimum) = value_axis.minimum {
-        vmin = minimum;
-    }
-    if let Some(maximum) = value_axis.maximum.filter(|max| *max > vmin) {
-        vmax = maximum;
-    }
-    if value_axis.minimum.is_some() || value_axis.maximum.is_some() {
-        // 명시 범위는 headroom으로 늘리지 않는다. 백분율 축은 20% 눈금을 사용한다.
-        let intervals = if value_axis
-            .format_code
-            .as_deref()
-            .is_some_and(|code| code.contains('%'))
-        {
-            5.0
-        } else {
-            ticks
-        };
-        vstep = (vmax - vmin) / intervals;
-    }
 
     if chart.is_3d {
         // 3D는 시어 투영 기반 별도 경로 — 축 범위(vmin/vmax/vstep)는 위에서
@@ -937,6 +833,9 @@ fn render_bars(
         cat_span * idx as f64
     };
 
+    let zero_fraction = layout.scales.primary.zero_fraction();
+    let zero_x = px + pw * zero_fraction;
+    let zero_y = py + ph * (1.0 - zero_fraction);
     let mut data_labels = String::new();
     if stacked {
         // 누적: 카테고리당 단일 막대, 시리즈를 아래/왼쪽부터 쌓음.
@@ -952,21 +851,33 @@ fn render_bars(
             } else {
                 (vmax - vmin).max(1e-9)
             };
-            let mut acc = 0.0_f64; // 지금까지 쌓인 픽셀 길이
+            let mut positive_acc = 0.0_f64;
+            let mut negative_acc = 0.0_f64;
             let mut preceding_label_y = None::<f64>;
             for (si, ser) in chart.series.iter().enumerate() {
-                let v = ser.values.get(ci).copied().unwrap_or(0.0).max(0.0);
+                let signed_value = ser.values.get(ci).copied().unwrap_or(0.0);
+                let v = signed_value.abs();
+                let acc = if signed_value < 0.0 {
+                    negative_acc
+                } else {
+                    positive_acc
+                };
                 let color = series_color(ser, si);
-                let base = px;
+                let base = zero_x;
                 // 셀 시작: 가로=세로축(py) 기준, 세로=가로축(px) 기준
                 let cell = if horizontal { py } else { px }
                     + cat_slot(ci)
                     + (cat_span - bar_span_total) / 2.0;
                 if horizontal {
                     let seg = pw * (v / denom);
+                    let start_x = if signed_value < 0.0 {
+                        base - acc - seg
+                    } else {
+                        base + acc
+                    };
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                        base + acc, cell, seg.max(0.0), bar_span_total, color, line_attr(ser.shape_line, "")
+                        start_x, cell, seg, bar_span_total, color, line_attr(ser.shape_line, "")
                     ));
                     if ser.show_values && v > 0.0 {
                         let font = data_label_font_px(chart, ser);
@@ -981,16 +892,24 @@ fn render_bars(
                             label_x,
                             cell + bar_span_total / 2.0 + font * 0.35,
                             font,
-                            xml_escape(&format_value_axis_num(v, ser.format_code.as_deref()))
+                            xml_escape(&format_value_axis_num(signed_value, ser.format_code.as_deref()))
                         ));
                     }
-                    acc += seg;
+                    if signed_value < 0.0 {
+                        negative_acc += seg;
+                    } else {
+                        positive_acc += seg;
+                    }
                 } else {
                     let seg = ph * (v / denom);
-                    let by = py + ph - acc - seg;
+                    let by = if signed_value < 0.0 {
+                        zero_y + acc
+                    } else {
+                        zero_y - acc - seg
+                    };
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                        cell, by, bar_span_total, seg.max(0.0), color, line_attr(ser.shape_line, "")
+                        cell, by, bar_span_total, seg, color, line_attr(ser.shape_line, "")
                     ));
                     if ser.show_values && v > 0.0 {
                         let font = data_label_font_px(chart, ser);
@@ -1015,7 +934,7 @@ fn render_bars(
                         // outEnd 라벨은 누적 차트의 다음 계열 위에 놓일 수 있다.
                         // 실제 글자 중심이 검은 면에 들어가면 밝은 글자를 사용한다.
                         let label_middle = label_y - font * 0.4;
-                        let mut fill_bottom = py + ph;
+                        let mut fill_bottom = zero_y;
                         let mut label_fill = "#000000";
                         for (paint_idx, paint_series) in chart.series.iter().enumerate() {
                             let paint_value =
@@ -1039,10 +958,14 @@ fn render_bars(
                             label_y,
                             font,
                             label_fill,
-                            xml_escape(&format_value_axis_num(v, ser.format_code.as_deref()))
+                            xml_escape(&format_value_axis_num(signed_value, ser.format_code.as_deref()))
                         ));
                     }
-                    acc += seg;
+                    if signed_value < 0.0 {
+                        negative_acc += seg;
+                    } else {
+                        positive_acc += seg;
+                    }
                 }
             }
         }
@@ -1064,19 +987,20 @@ fn render_bars(
                         + cat_slot(ci)
                         + (cat_span - bar_span_total) / 2.0
                         + bar_w * (ser_count - 1 - si) as f64;
-                    let bw = pw * t;
+                    let bx = px + pw * t.min(zero_fraction);
+                    let bw = pw * (t - zero_fraction).abs();
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                        px, cy, bw.max(0.0), bar_w * 0.95, color, line_attr(ser.shape_line, "")
+                        bx, cy, bw, bar_w * 0.95, color, line_attr(ser.shape_line, "")
                     ));
                 } else {
                     let cx =
                         px + cat_slot(ci) + (cat_span - bar_span_total) / 2.0 + bar_w * si as f64;
-                    let bh = ph * t;
-                    let by = py + ph - bh;
+                    let bh = ph * (t - zero_fraction).abs();
+                    let by = py + ph * (1.0 - t.max(zero_fraction));
                     svg.push_str(&format!(
                         "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
-                        cx, by, bar_w * 0.95, bh.max(0.0), color, line_attr(ser.shape_line, "")
+                        cx, by, bar_w * 0.95, bh, color, line_attr(ser.shape_line, "")
                     ));
                 }
             }
@@ -1085,7 +1009,17 @@ fn render_bars(
 
     // 스택 위 경계에 놓인 값 라벨은 다음 계열의 막대가 덮지 않도록 마지막에 칠한다.
     svg.push_str(&data_labels);
-    render_category_labels(svg, chart, px, py, pw, ph, cat_count, horizontal);
+    render_category_labels(
+        svg,
+        chart,
+        px,
+        py,
+        pw,
+        ph,
+        cat_count,
+        horizontal,
+        layout.category,
+    );
 }
 
 /// 한 카테고리의 (양수) 시리즈 값 합. 누적 막대 축/정규화에 사용.
@@ -1099,7 +1033,15 @@ fn category_positive_sum(chart: &OoxmlChart, ci: usize) -> f64 {
 
 // ---------------- Line (단일 축) ----------------
 
-fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
+fn render_line(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    layout: &CartesianLayout,
+) {
     let stacked = matches!(
         chart.line_grouping,
         BarGrouping::Stacked | BarGrouping::PercentStacked
@@ -1116,18 +1058,7 @@ fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, 
         return;
     }
 
-    // 값축: 비누적=개별값, 누적=카테고리 합의 최대, 백프로=0~100% step 20
-    // (render_bars 누적 정책 미러 — 정답지 실측 누적 0~15 step 5. C1d #2129)
-    let (vmin, vmax, vstep) = if percent {
-        (0.0, 100.0, 20.0)
-    } else if stacked {
-        let max_sum = (0..max_len)
-            .map(|ci| category_positive_sum(chart, ci))
-            .fold(0.0_f64, f64::max);
-        nice_axis(0.0, max_sum.max(1.0), VERTICAL_AXIS_TICKS)
-    } else {
-        value_range(chart, VERTICAL_AXIS_TICKS)
-    };
+    let (vmin, vmax, vstep) = layout.scales.primary.tuple();
 
     svg.push_str(&plot_rect(chart, px, py, pw, ph));
     render_value_grid(
@@ -1191,7 +1122,7 @@ fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, 
         }
     }
 
-    render_category_labels(svg, chart, px, py, pw, ph, max_len, false);
+    render_category_labels(svg, chart, px, py, pw, ph, max_len, false, layout.category);
 }
 
 // ---------------- Stock (주식형, hiLowLines/upDownBars) ----------------
@@ -1211,7 +1142,15 @@ fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, 
 ///
 /// 코퍼스 3·4계열(`고가저가종가`·`시가고가저가종가`)에서는 이 규칙이 옛 위치 매핑과 카테고리마다
 /// **같은 값**을 낸다 — 그래서 기존 정답지 정합이 그대로 유지된다. (C2a #2277)
-fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
+fn render_stock(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    layout: &CartesianLayout,
+) {
     let cat_count = chart.categories.len().max(
         chart
             .series
@@ -1224,11 +1163,7 @@ fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
         return;
     }
 
-    // 값축: stock 전용 무조건 +1 step 헤드룸 — 정답지 실측 max 59 → 0~80 step 20.
-    // nice_axis의 경계 조건부 +1로는 0~60이라 부족. 3D 누적세로(+1 step)와 동형 패턴.
-    let (raw_min, raw_max) = raw_value_bounds(chart.series.iter());
-    let (vmin, mx, vstep) = nice_axis_no_headroom(raw_min, raw_max, VERTICAL_AXIS_TICKS);
-    let vmax = mx + vstep;
+    let (vmin, vmax, vstep) = layout.scales.primary.tuple();
 
     svg.push_str(&plot_rect(chart, px, py, pw, ph));
     render_value_grid(
@@ -1356,7 +1291,17 @@ fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
         }
     }
 
-    render_category_labels(svg, chart, px, py, pw, ph, cat_count, false);
+    render_category_labels(
+        svg,
+        chart,
+        px,
+        py,
+        pw,
+        ph,
+        cat_count,
+        false,
+        layout.category,
+    );
 }
 
 // ---------------- Scatter (분산형, 2 수치축) ----------------
@@ -1874,7 +1819,15 @@ fn render_pie_3d(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64
 
 // ---------------- Combo + Dual Axis ----------------
 
-fn render_combo(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
+fn render_combo(
+    svg: &mut String,
+    chart: &OoxmlChart,
+    px: f64,
+    py: f64,
+    pw: f64,
+    ph: f64,
+    layout: &CartesianLayout,
+) {
     let cat_count = chart.categories.len().max(
         chart
             .series
@@ -1891,16 +1844,8 @@ fn render_combo(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
     let pri: Vec<&OoxmlSeries> = chart.series.iter().filter(|s| s.axis_group == 0).collect();
     let sec: Vec<&OoxmlSeries> = chart.series.iter().filter(|s| s.axis_group == 1).collect();
 
-    let (pri_min, pri_max, pri_step) = if pri.is_empty() {
-        value_range(chart, VERTICAL_AXIS_TICKS)
-    } else {
-        value_range_for(pri.iter().cloned(), VERTICAL_AXIS_TICKS)
-    };
-    let (sec_min, sec_max, sec_step) = if sec.is_empty() {
-        (0.0, 1.0, 0.2)
-    } else {
-        value_range_for(sec.iter().cloned(), VERTICAL_AXIS_TICKS)
-    };
+    let (pri_min, pri_max, pri_step) = layout.scales.primary.tuple();
+    let (sec_min, sec_max, sec_step) = layout.scales.secondary.tuple();
 
     svg.push_str(&plot_rect(chart, px, py, pw, ph));
 
@@ -2026,7 +1971,17 @@ fn render_combo(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
         }
     }
 
-    render_category_labels(svg, chart, px, py, pw, ph, cat_count, false);
+    render_category_labels(
+        svg,
+        chart,
+        px,
+        py,
+        pw,
+        ph,
+        cat_count,
+        false,
+        layout.category,
+    );
 }
 
 // ---------------- 공통: 값 격자/라벨 ----------------
@@ -2065,7 +2020,11 @@ fn render_value_grid(
     // step 기반 눈금: v = vmin + step*i (정수 루프 — 부동소수 누적 드리프트 방지)
     let span = (vmax - vmin).max(1e-9);
     let step = if step > 0.0 { step } else { span / 5.0 };
-    let grid_lines = (span / step).round().max(1.0) as usize;
+    let grid_lines = if vmax <= vmin {
+        0
+    } else {
+        (span / step).round().max(1.0) as usize
+    };
     // [#6624] 축 선언대로: 격자선은 `c:majorGridlines` 가 있는 축만, 축선은 숨기지 않은 축,
     // 눈금은 `c:majorTickMark` 방향으로 (한/글 실측: 값축 축선 있음, 눈금 out 약 3px,
     // 주식형은 격자 없음). 셋 다 격자선과 같은 선 스타일.
@@ -2150,7 +2109,7 @@ fn render_value_grid(
                 push_tick(svg, axis.major_tick_mark, px, gy, -1.0, 0.0, tick_len);
             }
             let v = vmin + step * i as f64;
-            let gap = font * hancom_default::LEFT_GAP_EM * 0.5;
+            let gap = FRAME_PAD;
             let (tx, anchor) = if secondary {
                 (px + pw + gap, "start")
             } else {
@@ -2500,8 +2459,19 @@ fn render_bars_3d(
         }
     }
 
-    // 가로형 라벨은 좌측 카테고리 틱(5pt) 바깥 — 한컴 실측 간격(2D는 4.0 유지)
-    render_category_labels_at(svg, chart, fx, fy, fw, fh, cat_count, horizontal, 6.0);
+    // 3D 라벨은 투영한 좌측 카테고리 틱 바깥에 놓는다.
+    render_category_labels_at(
+        svg,
+        chart,
+        fx,
+        fy,
+        fw,
+        fh,
+        cat_count,
+        horizontal,
+        6.0,
+        CategoryLabelLayout::default(),
+    );
 }
 
 fn render_category_labels(
@@ -2513,12 +2483,23 @@ fn render_category_labels(
     ph: f64,
     cat_count: usize,
     horizontal: bool,
+    layout: CategoryLabelLayout,
 ) {
-    render_category_labels_at(svg, chart, px, py, pw, ph, cat_count, horizontal, 4.0);
+    render_category_labels_at(
+        svg,
+        chart,
+        px,
+        py,
+        pw,
+        ph,
+        cat_count,
+        horizontal,
+        FRAME_PAD + TICK_GAP,
+        layout,
+    );
 }
 
-/// 카테고리 라벨 — `left_gap`: 가로형 라벨의 축선~라벨 간격(2D 4.0 불변,
-/// 3D는 좌측 틱 밖 6.0). 세로형 위치는 공통.
+/// 범주 라벨은 계획한 0 축과 글줄 방향을 소비한다. 3D는 투영 프레임과 별도 틱 여백을 넘긴다.
 #[allow(clippy::too_many_arguments)]
 fn render_category_labels_at(
     svg: &mut String,
@@ -2530,6 +2511,7 @@ fn render_category_labels_at(
     cat_count: usize,
     horizontal: bool,
     left_gap: f64,
+    layout: CategoryLabelLayout,
 ) {
     let cat_span = if horizontal {
         ph / cat_count as f64
@@ -2549,41 +2531,43 @@ fn render_category_labels_at(
     if cat_axis.deleted {
         return;
     }
+    let axis_y = layout.axis_y(py, ph);
+    let axis_x = px + pw * layout.axis_fraction;
     let font = label_font_px(chart);
     let tick_len = font * hancom_default::TICK_EM;
     if horizontal {
         svg.push_str(&format!(
             "<line class=\"hwp-chart-cat-axis\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
-            px,
+            axis_x,
             py,
-            px,
+            axis_x,
             py + ph,
             line_attr(cat_axis.line, hancom_default::GRID_STYLE)
         ));
         for i in 0..=cat_count {
             let y = py + cat_span * i as f64;
-            push_tick(svg, cat_axis.major_tick_mark, px, y, -1.0, 0.0, tick_len);
+            push_tick(
+                svg,
+                cat_axis.major_tick_mark,
+                axis_x,
+                y,
+                -1.0,
+                0.0,
+                tick_len,
+            );
         }
     } else {
         svg.push_str(&format!(
             "<line class=\"hwp-chart-cat-axis\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
             px,
-            py + ph,
+            axis_y,
             px + pw,
-            py + ph,
+            axis_y,
             line_attr(cat_axis.line, hancom_default::GRID_STYLE)
         ));
         for i in 0..=cat_count {
             let x = px + cat_span * i as f64;
-            push_tick(
-                svg,
-                cat_axis.major_tick_mark,
-                x,
-                py + ph,
-                0.0,
-                1.0,
-                tick_len,
-            );
+            push_tick(svg, cat_axis.major_tick_mark, x, axis_y, 0.0, 1.0, tick_len);
         }
     }
     for (ci, cat) in chart.categories.iter().enumerate() {
@@ -2596,7 +2580,7 @@ fn render_category_labels_at(
             let cy = py + cat_span * row as f64 + cat_span / 2.0 + font * 0.35;
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\">{}</text>\n",
-                px - left_gap,
+                axis_x - left_gap,
                 cy,
                 font,
                 hancom_default::TEXT_COLOR,
@@ -2604,14 +2588,19 @@ fn render_category_labels_at(
             ));
         } else {
             let cx = px + cat_span * ci as f64 + cat_span / 2.0;
-            svg.push_str(&format!(
-                "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-after-edge\">{}</text>\n",
-                cx,
-                py + ph + font * hancom_default::CATEGORY_LABEL_TEXT_BOTTOM_EM,
-                font,
-                hancom_default::TEXT_COLOR,
-                xml_escape(cat)
-            ));
+            if layout.rotate {
+                let label_y = axis_y + font;
+                svg.push_str(&format!(
+                    "<text x=\"{:.2}\" y=\"{:.2}\" transform=\"rotate(-90 {:.2} {:.2})\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"end\" dominant-baseline=\"central\">{}</text>\n",
+                    cx, label_y, cx, label_y, font, hancom_default::TEXT_COLOR, xml_escape(cat)
+                ));
+            } else {
+                svg.push_str(&format!(
+                    "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\" dominant-baseline=\"text-after-edge\">{}</text>\n",
+                    cx, axis_y + cartesian_layout::category_text_bottom(font), font,
+                    hancom_default::TEXT_COLOR, xml_escape(cat)
+                ));
+            }
         }
     }
 }
@@ -2649,7 +2638,7 @@ fn legend_order_reversed(chart: &OoxmlChart) -> bool {
 /// **원 계열 인덱스**(역순 나열과 무관하게 플롯 마커·팔레트와 동일 형상/색 유지).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SwatchKind {
-    /// 막대/원형: 10×10 색 사각형 (현행 유지 — issue_1882 필터 문자열 보호)
+    /// 막대·원형 계열의 색상 키.
     Square,
     /// 계열 자체에 선언된 사각형 테두리를 범례 키도 함께 표시한다.
     OutlinedSquare { rgb: u32, width_emu: Option<u32> },
@@ -2749,16 +2738,14 @@ fn legend_items(chart: &OoxmlChart) -> Vec<(String, u32, SwatchKind)> {
     }
 }
 
-/// 범례 스와치 1개. `cy` = 행 세로 중심. Square/LineOnly는 종전 출력 바이트 유지,
-/// 글리프는 별도 클래스 `hwp-legend-glyph`(플롯 마커 `hwp-chart-marker` 카운트
-/// 오염 방지 — issue_2129 보호). (C2a #2277)
-fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: SwatchKind) {
+/// 범례 키의 크기와 중심은 선언 글꼴에서 정한다. 플롯 마커와 범례 키의 소속도 구분한다.
+fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: SwatchKind, font: f64) {
     let swatch_line = |svg: &mut String| {
         svg.push_str(&format!(
             "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
             ix,
             cy,
-            ix + 14.0,
+            ix + font * 0.6,
             cy,
             color_hex(color),
             hancom_default::SERIES_LINE_PT * PX_PER_PT
@@ -2767,17 +2754,21 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
     match kind {
         SwatchKind::Square => {
             svg.push_str(&format!(
-                "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"10\" height=\"10\" fill=\"{}\"/>\n",
+                "<rect x=\"{:.2}\" y=\"{:.2}\" class=\"hwp-chart-legend-key\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\"/>\n",
                 ix,
-                cy - 6.0,
+                cy - font * 0.3,
+                font * 0.6,
+                font * 0.6,
                 color_hex(color)
             ));
         }
         SwatchKind::OutlinedSquare { rgb, width_emu } => {
             svg.push_str(&format!(
-                "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"10\" height=\"10\" fill=\"{}\" {}/>\n",
+                "<rect x=\"{:.2}\" y=\"{:.2}\" class=\"hwp-chart-legend-key\" width=\"{:.2}\" height=\"{:.2}\" fill=\"{}\" {}/>\n",
                 ix,
-                cy - 6.0,
+                cy - font * 0.3,
+                font * 0.6,
+                font * 0.6,
                 color_hex(color),
                 line_attr(LineSpec::Solid { rgb, width_emu }, "stroke=\"none\"")
             ));
@@ -2789,9 +2780,9 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
                 svg,
                 "hwp-legend-glyph",
                 si,
-                ix + 7.0,
+                ix + font * 0.3,
                 cy,
-                3.0,
+                font * 0.225,
                 &color_hex(color),
             );
         }
@@ -2800,9 +2791,9 @@ fn push_legend_swatch(svg: &mut String, ix: f64, cy: f64, color: u32, kind: Swat
                 svg,
                 "hwp-legend-glyph",
                 si,
-                ix + 7.0,
+                ix + font * 0.3,
                 cy,
-                3.5,
+                font * 0.2625,
                 &color_hex(color),
             );
         }
@@ -2825,7 +2816,7 @@ fn render_legend(
     x: f64,
     y: f64,
     w: f64,
-    _h: f64,
+    h: f64,
     layout: &crate::legend_layout::LegendLayout,
 ) {
     let items = legend_items(chart);
@@ -2839,13 +2830,16 @@ fn render_legend(
     let start_x = x + (w - layout.width) / 2.0;
     for (row_index, row) in layout.rows.iter().enumerate() {
         let mut ix = start_x;
-        let cy = y + layout.row_height * (row_index as f64 + 0.5);
+        let baseline = y + h
+            - layout.frame_padding
+            - layout.row_height * (layout.rows.len() - 1 - row_index) as f64;
+        let cy = baseline - font * 0.35;
         for i in row.items.clone() {
             let (label, color, kind) = &items[i];
-            push_legend_swatch(svg, ix, cy, *color, *kind);
+            push_legend_swatch(svg, ix, cy, *color, *kind, font);
             svg.push_str(&format!(
                 "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
-                ix + 18.0, cy + font * 0.35, font,
+                ix + font, baseline, font,
                 hancom_default::TEXT_COLOR, xml_escape(label)
             ));
             ix += layout.widths[i];
@@ -2872,10 +2866,10 @@ fn render_legend_right(svg: &mut String, chart: &OoxmlChart, x: f64, y: f64, h: 
     ));
     for (i, (label, color, kind)) in items.iter().enumerate() {
         let cy = start_y + row_h * i as f64 + row_h / 2.0;
-        push_legend_swatch(svg, x, cy, *color, *kind);
+        push_legend_swatch(svg, x, cy, *color, *kind, font);
         svg.push_str(&format!(
             "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"inherit\" font-size=\"{:.2}\" fill=\"{}\">{}</text>\n",
-            x + 18.0,
+            x + font,
             cy + font * 0.35,
             font,
             hancom_default::TEXT_COLOR,
