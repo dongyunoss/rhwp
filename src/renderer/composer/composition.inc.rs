@@ -503,6 +503,11 @@ pub(crate) fn tac_host_trailing_spacing(
 
 /// 다음 문단을 현재 프레임에서 재조판하면 저장 vpos가 간격의 나머지를
 /// 복원하지 않는다. 마지막 저장 TAC 줄은 후행 간격 전량을 흐름에 남긴다.
+fn successor_lacks_stored_text_axis(para: &Paragraph) -> bool {
+    para.stored_text_partition_is_dirty()
+        || crate::renderer::para_has_no_stored_line_segs(para)
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn tac_host_trailing_spacing_at_boundary(
     para: &Paragraph,
@@ -520,7 +525,7 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && next_para.is_some_and(crate::renderer::para_has_no_stored_line_segs)
+        && next_para.is_some_and(successor_lacks_stored_text_axis)
     {
         crate::renderer::hwpunit_to_px(seg.line_spacing.max(0), dpi)
     } else {
@@ -552,9 +557,7 @@ pub(crate) fn tac_successor_uses_reflow_spacing(
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
         && next_para.is_some_and(|next| {
-            next.controls.is_empty()
-                && !next.stored_text_partition_is_dirty()
-                && crate::renderer::para_has_no_stored_line_segs(next)
+            next.controls.is_empty() && successor_lacks_stored_text_axis(next)
         })
 }
 
