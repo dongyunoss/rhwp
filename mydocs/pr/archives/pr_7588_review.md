@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 원 재현의 보정과 별도로 표 셀의 활성 필드 소유 주소 반례가 통합 경로에서 남았다. 관련 주소 보정·반례 실행과 전체 통합 필수 gate가 끝나기 전에는 수용 완료로 판정하지 않는다.**
+**머지 보류 — 자식 기하와 활성 셀 주소의 Native 집중 검증을 완료했으며, 새 후보의 fresh WASM·전쪽 시각·전체 통합 필수 검증을 계속한다.**
 
 이 기록은 로컬 체리픽 통합 검토다. 원 contributor PR을 직접 merge하지 않는다.
 원격 push·PR 생성·review/comment·merge는 작업지시자의 구체적인 승인 뒤에 수행한다.
@@ -67,6 +67,30 @@ review/standalone overlay로 직접 열어 위치·회전·외곽·겹침 순서
 테두리의 약한 농도도 조사했다. 실제 stroke0.48 CSS px와 PDF0.36pt는 같은 물리 굵기이며
 Native/Canvas에 선이 존재한다. 저해상도 raster 농도 차이는 남는다. 600DPI 추가 진단을
 정식96DPI 점수나 허용치 변경에 사용하지 않았다. raw100%를 RGB 동일로 설명하지 않는다.
+
+## 활성 셀 주소 보정의 현재 검증
+
+같은 본문 문단의 컨트롤 번호 remap이 본문 필드의 지역 번호와 셀 필드의 본문 소유
+번호를 구분하도록 보정했다. 셀 경로의 첫 컨트롤 번호만 옮기고 지역 필드 번호·나머지
+경로는 보존한다. 공통 삽입 helper와 도형 제거·묶기·풀기가 같은 변환을 소비한다.
+기존 #7595 → #7601 통합의 본문 필드 계약도 유지했다.
+
+새 정식 검사 [active_field_group_root_owner.rs](../../../tests/cases/active_field_group_root_owner.rs)의
+HWP/HWPX×묶기/풀기4개는 Native079에서4FAIL, Native081에서4PASS다. 양쪽 strict build는
+성공했고 같은 활성 주소의 재설정·필드 안 입력·양쪽 저장 내용 보존을 검사한다.
+[원본·독립 Print·양쪽 전쪽100% 선행 증거](../assets/active_field_group_owner_20261021/README.md)를
+먼저 확보했다. 기존 필드·그룹 검사와 기대값을 삭제하거나 px 허용치를 넓히지 않았다.
+현재 source는 이 검토 기록과 함께 일반 커밋으로 고정한다. Native081의 실제 제품/소스
+바이트와 수정 전후 실행은 ignored `char-overlap-native-build-081-result.json`,
+`emphasis-metric-current-failure-focus-1214.json`에 있다.
+
+앞선 현재 API28조건은 고정 devel의 실제 Native/WASM 출력과 직접 비교를 완료했다.
+각각 전28쪽100%, 쪽수1=1,0.1%p 이상 하락0쪽이다. 기준은 `2e3b4f880b`, 실제 기준 제품은
+인쇄 경로 동등성을 입증한 `d7d4d2ea6e`이며 새2e3 빌드로 바꿔 설명하지 않는다.
+`group-api-base-comparison-1199.json`에 원본·PDF·TSV SHA와 페이지별 비교를 보존했다.
+
+위 결과는 이 보정의 Native 계약과 저장본 시각 선행 증거다. 새 fresh WASM에서의 API·
+출력 및 통합 전체 회귀·전쪽·확대 판독을 완료하기 전에는 PR을 제출하거나 승인하지 않는다.
 
 ## 후속 실행과 원격 조건
 

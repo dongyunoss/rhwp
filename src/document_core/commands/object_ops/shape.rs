@@ -998,16 +998,17 @@ impl DocumentCore {
         }
 
         para.remove_control(control_idx);
-        // 컨트롤 배열이 줄어도 활성 누름틀은 같은 필드를 가리켜야 한다.
-        if let Some(active) = self.active_field.as_mut() {
-            if active.section_idx == section_idx
-                && active.para_idx == parent_para_idx
-                && active.cell_path.is_none()
-                && active.control_idx > control_idx
-            {
-                active.control_idx -= 1;
-            }
-        }
+        // 활성 필드 자신 또는 셀의 본문 소유자 번호를 같은 제거 결과로 갱신한다.
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            parent_para_idx,
+            |index| match index.cmp(&control_idx) {
+                std::cmp::Ordering::Less => Some(index),
+                std::cmp::Ordering::Equal => None,
+                std::cmp::Ordering::Greater => Some(index - 1),
+            },
+        );
 
         // line_segs 재계산: 도형 높이가 반영된 line_segs를 텍스트 기반으로 리셋
         Self::reflow_paragraph_line_segs_after_control_delete(para, &self.styles, self.dpi);
@@ -2114,15 +2115,16 @@ impl DocumentCore {
             let para = &mut self.document.sections[section_idx].paragraphs[pi];
 
             para.remove_control(ci);
-            if let Some(active) = self.active_field.as_mut() {
-                if active.section_idx == section_idx
-                    && active.para_idx == pi
-                    && active.cell_path.is_none()
-                    && active.control_idx > ci
-                {
-                    active.control_idx -= 1;
-                }
-            }
+            Self::remap_active_field_root_control(
+                &mut self.active_field,
+                section_idx,
+                pi,
+                |index| match index.cmp(&ci) {
+                    std::cmp::Ordering::Less => Some(index),
+                    std::cmp::Ordering::Equal => None,
+                    std::cmp::Ordering::Greater => Some(index - 1),
+                },
+            );
         }
 
         // 5) 삽입 위치 인덱스 재계산 (제거 후 인덱스가 변했을 수 있음)
@@ -2375,14 +2377,12 @@ impl DocumentCore {
         for range in &mut para.field_ranges {
             range.control_idx = remap(range.control_idx);
         }
-        if let Some(active) = self.active_field.as_mut() {
-            if active.section_idx == section_idx
-                && active.para_idx == para_idx
-                && active.cell_path.is_none()
-            {
-                active.control_idx = remap(active.control_idx);
-            }
-        }
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            para_idx,
+            |index| Some(remap(index)),
+        );
 
         // 리플로우 + 페이지네이션
         self.document.sections[section_idx].raw_stream = None;

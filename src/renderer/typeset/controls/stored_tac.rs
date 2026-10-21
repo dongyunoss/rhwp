@@ -51,6 +51,8 @@ pub(in crate::renderer::typeset) struct StoredTacPage {
     pub stored_zero_column_origin: bool,
     /// 첫 원본 TAC의 확정 배치와 저장 줄이 현재 단 원점에서 일치하는가.
     pub original_object_column_origin: bool,
+    /// 실제 첫 저장 글줄이 소유하는 원문 기준축과 물리 단 앵커.
+    pub stored_text_column_frame: Option<StoredColumnFrame>,
 }
 
 pub(super) struct StoredTacPlan {
@@ -722,19 +724,29 @@ pub(super) fn prepare(
             };
             // 앞 문단의 저장 사다리가 누적 높이보다 앞서 있으면 그 앵커를
             // fit와 paint에 함께 보존한다. 문단 상대 top만 더하면 앞 표로 되감긴다.
-            let mut saved_origin = page.vpos_col_anchor
-                + hwpunit_to_px(
-                    if single_saved_line {
-                        // An original object box is page-relative. A paragraph
-                        // ladder's text base does not authenticate its object origin.
-                        para.line_segs[0].vertical_pos
-                    } else {
+            let mut saved_origin = if single_saved_line {
+                // 완전한 개체 높이는 줄의 소유를 입증하지만 단의 원점을 0으로 만들지는
+                // 않는다. 앞 글줄이 확립한 같은 원문/물리 프레임에 개체 줄도 투영한다.
+                let frame = page.stored_text_column_frame.unwrap_or(StoredColumnFrame {
+                    source_origin_hu: 0,
+                    column_anchor_y: page.vpos_col_anchor,
+                });
+                frame.column_anchor_y
+                    + hwpunit_to_px(
+                        para.line_segs[0]
+                            .vertical_pos
+                            .saturating_sub(frame.source_origin_hu),
+                        dpi,
+                    )
+            } else {
+                page.vpos_col_anchor
+                    + hwpunit_to_px(
                         para.line_segs[0].vertical_pos.saturating_sub(
                             page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0),
-                        )
-                    },
-                    dpi,
-                );
+                        ),
+                        dpi,
+                    )
+            };
             let restarted_column_line = single_saved_line
                 && page.empty_column
                 && page.current_height == 0.0
@@ -859,9 +871,10 @@ pub(super) fn prepare(
                 // 저장 축과 실제 내용 하단이 갈리는 경계를 같은 진단에서 추적한다.
                 if std::env::var("RHWP_DIAG_FLOW").is_ok() {
                     eprintln!(
-                        "DIAG_STORED_TAC pi={para_idx} current={} saved={} same_frame={same_frame} inherited={inherited_origin:?} previous={:?} page_base={:?} lazy_base={:?} anchor={}",
+                        "DIAG_STORED_TAC pi={para_idx} current={} saved={} same_frame={same_frame} inherited={inherited_origin:?} previous={:?} page_base={:?} lazy_base={:?} anchor={} text_frame={:?}",
                         page.current_height, saved_origin, page.previous_content_bottom,
                         page.vpos_page_base, page.vpos_lazy_base, page.vpos_col_anchor,
+                        page.stored_text_column_frame,
                     );
                 }
                 if !same_frame && inherited_origin.is_none() {
