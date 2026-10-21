@@ -158,6 +158,10 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) paragraph_origins:
         std::collections::HashMap<usize, crate::renderer::pagination::ParagraphOrigin>,
     pub(super) pending_paragraph_origins: Vec<PendingParagraphOrigin>,
+    pub(in crate::renderer::typeset) host_compositions: std::collections::HashMap<
+        usize,
+        std::sync::Arc<crate::renderer::composer::ComposedParagraph>,
+    >,
     pub(in crate::renderer::typeset) stored_paragraph_flow_ends:
         std::collections::HashMap<usize, f64>,
     /// 쪽 상단의 첫 문단이 이미 예약한 저장 앞 간격.

@@ -2413,6 +2413,22 @@ impl TypesetEngine {
                 }
             })
         });
+        // 혼합 호스트의 현재 줄 컷과 물리 상자는 통째 수용 경로에서 함께 발행한다.
+        // 미수용 표의 분할 경로에는 통째 상자의 컷을 넘기지 않는다.
+        let resolved_host_placement = resolved_host_placement.or_else(|| {
+            fmt.host_composition.as_ref()?;
+            let lines = fmt.computed_host_lines.as_deref()?;
+            crate::renderer::float_placement::ParagraphFloatPlacement::from_split_computed_host(
+                para,
+                table,
+                ctrl_idx,
+                placement_para_start_height + fmt.spacing_before,
+                lines,
+                whole_placement_height,
+                self.dpi,
+            )
+            .map(|placement| constrain_host_placement.constrain(placement, st))
+        });
         let unrestricted_whole_object = super::unrestricted_float::owns_whole_object(input);
         let resolved_host_placement = resolved_host_placement.or_else(|| {
             (!legacy_whole_fits && unrestricted_whole_object)

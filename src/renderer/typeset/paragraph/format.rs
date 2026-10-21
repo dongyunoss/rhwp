@@ -165,6 +165,12 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
     // 표 없는 일반 본문에는 배치용 줄 사본을 만들지 않는다.
     let computed_host_lines = recomposed
         .as_ref()
+        .or_else(|| {
+            (para.stored_text_partition_is_dirty()
+                || crate::renderer::para_has_no_stored_line_segs(para))
+            .then_some(composed)
+            .flatten()
+        })
         .filter(|_| {
             para.controls.iter().any(|control| {
                 matches!(control,
@@ -191,6 +197,18 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
                 })
                 .collect()
         });
+    let host_composition = composed
+        .filter(|comp| {
+            computed_host_lines.is_some()
+                && !comp.lines.is_empty()
+                && comp.lines.len() == line_heights.len()
+                && comp.lines.len() == line_spacings.len()
+                && comp.lines.iter().enumerate().all(|(index, line)| {
+                    line_heights[index] == hwpunit_to_px(line.line_height, ctx.dpi())
+                        && line_spacings[index] == hwpunit_to_px(line.line_spacing, ctx.dpi())
+                })
+        })
+        .map(|comp| std::sync::Arc::new(comp.clone()));
     let tail_line_remaining_width = (|| {
         if !para.controls.iter().any(|control| {
             matches!(control, Control::Table(table) if is_para_topbottom_float(&table.common))
@@ -265,6 +283,7 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
         computed_paragraph,
         tail_line_remaining_width,
         computed_host_lines,
+        host_composition,
         square_host_plan: None,
         total_height,
         line_heights,

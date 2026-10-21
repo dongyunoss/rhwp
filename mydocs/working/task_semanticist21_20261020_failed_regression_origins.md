@@ -883,3 +883,70 @@ job의 상태를 확인해 다운로드했다. 새 변환 job으로 성공을 �
 `original-print-profiles-native088-1383/results.json`과
 `logs/original-print-profiles-native088-1383.log`에 원본·Print·CLI profile·전쪽 TSV와
 실제 종료값을 보존했다. 위62조건 통과와 이 미달 범위는 별개로 보고한다.
+
+### 2026-10-21 호스트의 선행·후행 줄 소유 보정 계획
+
+기각한089의 전면 줄 재생성 대신, 활성 본문 상자가 없는 구역에서 보이는 본문의 옛 문자
+분할만 무효화하고 고정 개체를 담는 저장 줄 상자는 보존한다. 실제 재구성 줄은 기존
+formatter의 문자 경계·높이 결과에서 얻는다. 이를 표 앞 줄·제어문자 소속 줄 이후로 나눈
+계획을 만들고, 통째 표 수용·prefix/suffix 방출·paint가 같은 컷과 물리 상자를 소비하게 한다.
+글 끝 표의 마지막 소속 줄이 표의 배제 띠에 걸릴 때 그 앞의 줄까지 모두 표 뒤로 보내지 않는다.
+
+생산은 `ParagraphFloatPlacement`의 현재 줄 구성, 수용은 `table/block/entry`의 whole fit,
+소비는 `place_table_with_text`의 앞/뒤 PartialParagraph와 표 원점, paint는 column의 같은
+placement·line range다. 같은 helper 뒤 signed offset만 보고 전체 호스트를 이연하거나
+원점을 덮어쓰는 경로도 함께 확인한다. 단계 구현에서 통째 상자 경계를 먼저 확인하며,
+미수용·표 분할·본문 후행 줄의 쪽 넘김은 별도 필수 경계로 남겨 실제 실행 후 완료한다.
+
+원본의 실제2020 Print 외에, 공개 parser/serializer로 같은 활성 A4 용지의 대조군6개를
+만들었다. 호스트600/1200HU와 표 offset -1700/0/1700HU의 조합이며, 원문의 글자·표 셀은
+보존하고 호스트 저장 줄만 제거했다. 생성 후 재파싱해 표의 글 끝 제어문자 소유를 확인했다.
+이 자료는 원본을 교체하지 않는다. 같은 engine2020 Print1388을 요청했고 첫 job은 공유
+큐에서 대기 중이다. 이미 접수된 job을 조회하며 중복 제출하지 않는다.
+
+### 2026-10-21 혼합 호스트의 줄 컷과 paint 소비 경계
+
+독립 Print 대조군 6개는 모두 출력됐다. 1200HU 호스트의 offset -1700/0HU는
+첫 줄→표→마지막 줄, +1700HU는 본문 전체→표다. 600HU의 한 줄 호스트는
+-1700/0HU에서 표→본문, +1700HU에서 본문→표다. 원장은
+`split-host-independent-print-1389.json`이며 모두 2쪽이다. 공통 분기는 이 독립적인
+줄 소유 차이를 지켜야 한다.
+
+Native090의 원본 #6184는 두 쪽 98.47238%/98.67445%였으나 직접 review·overlay
+판독에서 `선대책 발표`가 표 위·아래에 중복됐다. 높은 점수만으로 수용하지 않는다.
+측정은 재구성한 2줄의 prefix 0..1 / suffix 1..2를 방출했지만,
+`layout_partial_paragraph_with_spacing_before`가 이전 1줄 캐시를 기준으로 prefix를
+전체 문단 요청으로 판독하고 2줄로 확장했다. #2284의 전체 문단 재래핑 계약은 유지하며,
+현재 부분 문단의 컷과 이전 전체 문단 요청을 구분해야 한다.
+
+Native091은 formatter에서 실제 수용한 문자 컷·줄 메트릭의 구성을 `Arc`로 보존한다.
+`record_host_text_fragment`→단 flush/인덱스 remap→PartialParagraph paint가 그 구성을
+공유한다. 높이·간격이 formatter 결과와 일치하는 경우만 발행하며, 이 조각은 paint에서
+줄을 다시 나누거나 원본 줄 수를 기준으로 범위를 늘리지 않는다. 전체 문단의 기존 확장
+경로는 바꾸지 않는다. ColumnContent를 직접 만드는 기존 검사에는 빈 메타데이터 필드만
+추가했다. 기존 assertion·기대값·golden은 변경하지 않았다.
+
+Native091 실제 빌드는 exit 0, 기존 집중 11파일 61검사도 모두 PASS다. 원본 전쪽은
+98.47238%/99.18403%다. 실제 렌더 트리에서 해당 꼬리 문구가 2회→1회로 줄고,
+공백을 제외한 원문 보존 및 첫 줄→표→마지막 줄의 포함·순서를 확인했다.
+`host-text-preservation-native091-1407.json`에 수정 전 실패/수정 후 통과를 기록했다.
+새 review·standalone overlay `new-failure-native091-panels-1404/091`도 직접 판독했다.
+이는 Native의 관측이며 fresh WASM 및 다른 필수 경계의 완료로 대신하지 않는다.
+
+Native090/091의 새 대조군 중 1200HU 3개는 81.35158%/81.35158%/83.54260%로
+미달이었다. 원인은 저장 줄이 없고 현재 구성의 재구성이 불필요한 경우, formatter가
+이미 수용한 구성을 호스트 배치에 전달하지 않던 경로다. Native092는 저장 줄 없는
+경로에서도 같은 현재 구성을 전달한다. `new-rust-failure-native-1408`,
+`missing-column-native092-1409`, `missing-column-native092-1410`에 원본·새 대조군·
+기존 대조군의 전쪽 결과를 순차 보존한다. 통째 표 fit 외의 미수용·행 분할·suffix
+쪽 넘김을 확인하려고 같은 호스트·표와 후속 본문을 담은 작은 용지 3개도 만들었다.
+`split-host-budget-controls-1411`은 진단 입력이며 원본 교체나 정식 fixture가 아니다.
+실제 2020 Print `mcp-split-host-budget-controls-1412`의 관측과 대조한 뒤 판정한다.
+
+#5715는 원본을 바꾸지 않고 진단 사본의 DocInfo 구역 수 필드만 2→1로 보정했다.
+다른 40개 OLE stream은 바이트가 같고 DocInfo의 해제된 데이터 차이도 해당 한 바이트뿐이다.
+2024 실제 Print는 사본에서 성공했지만 3쪽이며 Native090은 2쪽으로 측정이 중단됐다.
+원본 거절을 사본 성공으로 바꾸어 보고하지 않고, `section-count-repaired-1395/provenance.json`,
+`mcp-section-count-repaired-1396/engine-2024`와 `original-print-profiles-native090-1400/results.json`을
+연결한다. 저장 제품을 추정하지 않기 위한 2020 Print도 같은 사본에서 성공해 보존했다.
+양 제품 대응 원본과 현재 출력의 검증·보정은 남아 있다.

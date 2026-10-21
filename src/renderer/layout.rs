@@ -135,6 +135,7 @@ struct ColumnItemCtx<'a> {
         &'a std::collections::HashMap<(usize, usize), super::float_placement::InlineBoxPlacement>,
     inline_flow_plans: &'a std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
     computed_paragraphs: &'a std::collections::HashMap<usize, ComposedParagraph>,
+    host_compositions: &'a std::collections::HashMap<usize, std::sync::Arc<ComposedParagraph>>,
     paragraph_float_placements: &'a std::collections::HashMap<
         (usize, usize),
         super::float_placement::ParagraphFloatPlacement,
@@ -6943,6 +6944,7 @@ impl LayoutEngine {
             overlay_cuts: Vec::new(),
             inline_placements: placements.inline_placements,
             inline_flow_plans: placements.inline_flow_plans,
+            host_compositions: placements.host_compositions,
             stored_paragraph_flow_ends: placements.stored_paragraph_flow_ends,
             stored_column_top_spacings: placements.stored_column_top_spacings,
             paragraph_float_placements: placements.paragraph_float_placements,
@@ -8207,6 +8209,7 @@ impl LayoutEngine {
                         &col_content.inline_placements,
                         &col_content.inline_flow_plans,
                         &col_content.computed_paragraphs,
+                        &col_content.host_compositions,
                         &col_content.paragraph_float_placements,
                         &col_content.stored_column_top_spacings,
                         &col_content.float_pushed_line_spacings,
@@ -10060,6 +10063,7 @@ impl LayoutEngine {
                 &col_content.inline_placements,
                 &col_content.inline_flow_plans,
                 &col_content.computed_paragraphs,
+                &col_content.host_compositions,
                 &col_content.paragraph_float_placements,
                 &col_content.stored_column_top_spacings,
                 &col_content.float_pushed_line_spacings,
@@ -10370,6 +10374,7 @@ impl LayoutEngine {
                         && matches!(
                             placement.flow,
                             super::float_placement::ParagraphFloatFlow::NextLine
+                                | super::float_placement::ParagraphFloatFlow::SplitHost { .. }
                                 | super::float_placement::ParagraphFloatFlow::EmptyHost
                         )
                     {
@@ -10817,6 +10822,7 @@ impl LayoutEngine {
                 inline_placements: &col_content.inline_placements,
                 inline_flow_plans: &col_content.inline_flow_plans,
                 computed_paragraphs: &col_content.computed_paragraphs,
+                host_compositions: &col_content.host_compositions,
                 paragraph_float_placements: &col_content.paragraph_float_placements,
                 stored_column_top_spacings: &col_content.stored_column_top_spacings,
                 float_pushed_line_spacings: &col_content.float_pushed_line_spacings,
@@ -11162,6 +11168,7 @@ impl LayoutEngine {
         >,
         inline_flow_plans: &std::collections::HashMap<usize, super::inline_flow::InlineFlowPlan>,
         computed_paragraphs: &std::collections::HashMap<usize, ComposedParagraph>,
+        host_compositions: &std::collections::HashMap<usize, std::sync::Arc<ComposedParagraph>>,
         paragraph_float_placements: &std::collections::HashMap<
             (usize, usize),
             super::float_placement::ParagraphFloatPlacement,
@@ -11199,6 +11206,7 @@ impl LayoutEngine {
             inline_placements,
             inline_flow_plans,
             computed_paragraphs,
+            host_compositions,
             paragraph_float_placements,
             stored_column_top_spacings,
             float_pushed_line_spacings,
@@ -11754,6 +11762,7 @@ impl LayoutEngine {
                                         .map(|frame| frame.before)
                                 }),
                             ctx.computed_paragraphs.get(para_index),
+                            false,
                         );
                         y_offset = if paint_y < y_offset {
                             y_offset + (flow_end - paint_y).max(0.0)
@@ -11990,18 +11999,22 @@ impl LayoutEngine {
                         .para_styles
                         .get(para.para_shape_id as usize)
                         .is_some_and(|style| style.head_type == HeadType::Bullet);
+                    let accepted_composition = ctx.host_compositions.get(para_index);
+                    let source_comp = accepted_composition
+                        .map(std::sync::Arc::as_ref)
+                        .or_else(|| composed.get(*para_index));
                     let comp = if *start_line == 0 || continuation_bullet {
                         let numbered = self.apply_paragraph_numbering(
-                            composed.get(*para_index),
+                            source_comp,
                             para,
                             styles,
                             outline_numbering_id,
                         );
                         // numbered가 있으면 composed 업데이트는 불가하므로
                         // layout_partial_paragraph에 직접 전달
-                        numbered.or_else(|| composed.get(*para_index).cloned())
+                        numbered.or_else(|| source_comp.cloned())
                     } else {
-                        composed.get(*para_index).cloned()
+                        source_comp.cloned()
                     };
                     // [Issue #677] 같은 paragraph 의 TAC 표를 선행한 PP 는 y_offset 이
                     // 이미 표 바닥까지 누적된 상태로 진입한다. 그러나 HWP IR 는 line 1 의
@@ -12119,6 +12132,7 @@ impl LayoutEngine {
                         ctx.wrap_anchors.get(para_index),
                         float_pushed_spacing_before,
                         ctx.computed_paragraphs.get(para_index),
+                        accepted_composition.is_some(),
                     );
                     // The last text fragment need not end the paragraph: another
                     // object can follow it, or the table can extend below its text.
@@ -16082,11 +16096,10 @@ impl LayoutEngine {
                         && end_cut.is_empty()
                         && end_row >= table.row_count as usize
                         && (!para_has_visible_text(para)
-                            || ctx.paragraph_float_placements
+                            || ctx
+                                .paragraph_float_placements
                                 .get(&(para_index, control_index))
-                                .is_some_and(|placement| {
-                                    placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
-                                })))
+                                .is_some_and(|placement| placement.advances_paragraph_flow())))
                 {
                     if let Some(placement) = ctx
                         .paragraph_float_placements
@@ -17126,6 +17139,8 @@ pub(crate) fn compute_tac_leading_width(
 /// 실제 렌더는 단을 닫을 때 같은 값을 `ColumnContent` 로 받는다.
 #[derive(Default)]
 pub(crate) struct EndnoteColumnPlacements {
+    pub(crate) host_compositions:
+        std::collections::HashMap<usize, std::sync::Arc<ComposedParagraph>>,
     pub(crate) stored_paragraph_flow_ends: std::collections::HashMap<usize, f64>,
     pub(crate) stored_column_top_spacings:
         std::collections::HashMap<usize, crate::renderer::float_placement::StoredColumnTopSpacing>,

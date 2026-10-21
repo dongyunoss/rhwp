@@ -23,6 +23,9 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
     /// frame이 실제로 재조판한 줄만 보존한다. Some이면 source 줄로 되돌아가지 않는다.
     pub(in crate::renderer::typeset) computed_host_lines:
         Option<Vec<crate::renderer::float_placement::ParagraphHostLine>>,
+    /// 측정한 줄의 문자 컷과 메트릭을 paint까지 같은 결과로 전달한다.
+    pub(in crate::renderer::typeset) host_composition:
+        Option<std::sync::Arc<crate::renderer::composer::ComposedParagraph>>,
     /// Shared physical rows for a no-LineSeg Square table host.
     pub(in crate::renderer::typeset) square_host_plan:
         Option<crate::renderer::inline_flow::InlineFlowPlan>,

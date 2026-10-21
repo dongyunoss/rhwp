@@ -24,6 +24,11 @@ impl TypesetState {
         fmt: &FormattedParagraph,
         dpi: f64,
     ) {
+        if let Some(composition) = fmt.host_composition.as_ref() {
+            self.data
+                .host_compositions
+                .insert(owner, composition.clone());
+        }
         let content_height = fmt.line_content_height(range.clone(), 0.0);
         let advance = fmt.line_advances_sum(range.clone());
         let stored_frame = self.host_fragment_stored_frame(range.clone(), para, fmt, dpi);

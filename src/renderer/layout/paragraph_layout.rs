@@ -4850,6 +4850,7 @@ impl LayoutEngine {
             wrap_anchor,
             None,
             measured,
+            false,
         )
     }
 
@@ -4875,6 +4876,7 @@ impl LayoutEngine {
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
         confirmed_spacing_before: Option<f64>,
         measured: Option<&ComposedParagraph>,
+        accepted_composition: bool,
     ) -> f64 {
         let (start_line, end_line) = match line_range {
             ParagraphLineRange::Whole => {
@@ -4919,7 +4921,7 @@ impl LayoutEngine {
                 );
                 // NO_LS 와 저장분할 both go to the frame: no stored record means
                 // the rebuild case outright, and the frame's fill owns it.
-                if column_inner_width > 0.0 {
+                if !accepted_composition && column_inner_width > 0.0 {
                     crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band(
                         comp,
                         para,
@@ -5008,7 +5010,7 @@ impl LayoutEngine {
                 para_index,
                 None,
                 // 현재 frame에서 재조판한 줄에 이전 저장 vpos를 다시 적용하지 않는다.
-                recomposed.is_some() && !preserve_saved_page_top_spacing,
+                accepted_composition || (recomposed.is_some() && !preserve_saved_page_top_spacing),
                 false,
                 0.0,
                 multi_col_width_hu,

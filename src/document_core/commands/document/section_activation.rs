@@ -60,6 +60,15 @@ pub(super) fn rebase_body_frames(
             let style = styles.para_styles.get(paragraph.para_shape_id as usize);
             let before = style.map_or(0.0, |style| style.spacing_before);
             let after = style.map_or(0.0, |style| style.spacing_after);
+            // 본문 폭의 소유자가 없는 저장 문자 분할은 현재 상자에서 다시 구성한다.
+            // 개체만 담는 줄과 표 셀의 물리 메트릭은 본문 문자 분할과 별개다.
+            if paragraph
+                .text
+                .chars()
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
+            {
+                paragraph.stored_text_partition_dirty = true;
+            }
             next = next.saturating_add(px_to_hwpunit(before, dpi));
             // 원본 바이트는 raw provenance가 보존한다. 무효한 옛 쪽 좌표를
             // paint가 별도 source 축으로 다시 가져오지 않도록 같은 결과를 발행한다.

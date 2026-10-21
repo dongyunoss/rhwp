@@ -4792,7 +4792,13 @@ impl TypesetEngine {
                 crate::renderer::composer::ordinary_tac_prefix_rows(para, line)
                     && crate::renderer::layout::control_line_seg_index(para, ctrl_idx) == Some(line)
             });
-        let pre_table_end_line = if !is_visible_para_float
+        let split_host_prefix = st
+            .paragraph_float_placements
+            .get(&(para_idx, ctrl_idx))
+            .and_then(|placement| placement.split_host_prefix());
+        let pre_table_end_line = if let Some(prefix) = split_host_prefix {
+            prefix
+        } else if !is_visible_para_float
             && signed_vertical_offset > 0
             && !para.text.is_empty()
             && !whitespace_host_line_covers_table
@@ -4849,6 +4855,9 @@ impl TypesetEngine {
         // pre-table 텍스트 (첫 번째 표에서만)
         // [참고2 fix] 배열순서가 아닌 배치순서 기준 (typeset_table_paragraph 산출).
         let is_first_table = is_first_placed;
+        if split_host_prefix.is_some() {
+            st.finish_deferred_host_line();
+        }
         let defer_host_line = st.defer_host_line_item_para == Some(para_idx);
         let pre_height: f64 = if pre_table_end_line > 0
             && is_first_table
@@ -5245,7 +5254,10 @@ impl TypesetEngine {
             };
             // 단 오른쪽 밖 개체는 배제 영역도 만들지 않는다 — 배제 영역을 만들면
             // 뒤따르는 본문 표가 그만큼 밀려 마지막 블록이 다음 쪽으로 넘어간다.
-            if signed_vertical_offset > 0 {
+            if resolved.is_some_and(|placement| placement.split_host_prefix().is_some()) {
+                // 앞 줄의 예약·표·뒤 줄은 이미 한 소유 계획으로 확정됐다.
+                st.align_flow_to(table_bottom);
+            } else if signed_vertical_offset > 0 {
                 if table_bottom > table_top + 0.5 {
                     st.add_visible_float_exclusion(VisibleFloatExclusion {
                         para_index: para_idx,
@@ -5552,7 +5564,8 @@ impl TypesetEngine {
             let stored_host_origin = st
                 .paragraph_float_placements
                 .get(&(para_idx, ctrl_idx))
-                .and_then(|placement| placement.stored_host_origin);
+                .and_then(|placement| placement.stored_host_origin)
+                .filter(|_| post_table_start == 0);
             if let Some(origin) = stored_host_origin {
                 // The host was resolved before fit, even though its text item is
                 // emitted after the floating table. Consume that same origin.
@@ -5623,7 +5636,8 @@ impl TypesetEngine {
             // 하한을 넘으면 문구를 새 쪽으로 보낸다. 저장 형상 열람은 저장 vpos를
             // 신뢰하므로 제외한다(셀 끝 Enter 재현: 하단 문구·로고가 페이지
             // 밖으로 잘리던 구간).
-            let session_grown_topbottom_spill = self.profile.get().session_edited()
+            let session_grown_topbottom_spill = (self.profile.get().session_edited()
+                || split_host_prefix.is_some())
                 && !table.common.treat_as_char
                 && is_para_topbottom_float(&table.common);
             if (self.tac_table_line_index(para, table, fmt) == Some(0)
@@ -7612,6 +7626,7 @@ mod tests {
                 inline_placements: Default::default(),
                 inline_flow_plans: Default::default(),
                 stored_paragraph_flow_ends: Default::default(),
+                host_compositions: Default::default(),
                 stored_column_top_spacings: Default::default(),
                 paragraph_float_placements: Default::default(),
                 float_pushed_line_spacings: Default::default(),

@@ -3,6 +3,7 @@
 mod column_frame;
 mod column_ole;
 mod first_line;
+mod split_host;
 pub use column_frame::StoredColumnFrame;
 pub use first_line::FloatPushedFirstLine;
 pub(crate) mod restarted_tac;
@@ -3633,7 +3634,7 @@ pub(crate) fn preceding_control_flow_bottom_px(
     placements
         .iter()
         .filter(|((index, _), placement)| {
-            *index < para_index && placement.flow == ParagraphFloatFlow::NextLine
+            *index < para_index && placement.advances_paragraph_flow()
         })
         .map(|(_, placement)| placement.occupied_bottom)
         .chain(
@@ -3649,6 +3650,10 @@ pub(crate) fn preceding_control_flow_bottom_px(
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ParagraphFloatFlow {
     Exclusion,
+    /// 같은 문단의 앞 글줄과 뒤 글줄 사이에 놓인 자리차지 표다.
+    SplitHost {
+        prefix_lines: usize,
+    },
     /// A valid saved successor strip participates in the object's side flow.
     /// The host advances independently; leaving the strip closes the accepted
     /// outer box. An exclusion without that strip retains its prior flow owner.
@@ -5645,7 +5650,7 @@ impl ParagraphFloatPlacement {
             ParagraphFloatFlow::Exclusion | ParagraphFloatFlow::StoredSquareWrap => text_flow_end,
             ParagraphFloatFlow::EmptyHost => self.occupied_bottom,
             ParagraphFloatFlow::ComputedEmptyHost { line_advance } => self.anchor_y + line_advance,
-            ParagraphFloatFlow::NextLine => {
+            ParagraphFloatFlow::NextLine | ParagraphFloatFlow::SplitHost { .. } => {
                 // A certified successor line at or below the accepted frame
                 // bottom already closes this paragraph. Adding the host's
                 // trailing space again would move that same successor beyond

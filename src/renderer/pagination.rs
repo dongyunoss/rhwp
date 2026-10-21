@@ -709,6 +709,9 @@ pub struct ColumnContent {
     pub paragraph_origins: std::collections::HashMap<usize, ParagraphOrigin>,
     /// 실제 fit에 사용한 일반 본문 구성. 전체/부분 배치가 같은 줄을 소비한다.
     pub computed_paragraphs: std::collections::HashMap<usize, super::composer::ComposedParagraph>,
+    /// 부분 문단의 줄 범위는 이 수용된 구성의 문자 컷을 참조한다.
+    pub host_compositions:
+        std::collections::HashMap<usize, std::sync::Arc<super::composer::ComposedParagraph>>,
     /// 저장 사다리의 기준을 수용할 때 확정한 문단 끝(단 상대 좌표).
     /// 배치는 이후의 cursor 기준으로 같은 사다리를 다시 투영하지 않는다.
     pub stored_paragraph_flow_ends: std::collections::HashMap<usize, f64>,
@@ -1411,6 +1414,13 @@ impl PaginationResult {
                             .stored_paragraph_flow_ends
                             .iter()
                             .map(|(&pi, &end)| ((pi as i64 + offset as i64).max(0) as usize, end))
+                            .collect(),
+                        host_compositions: cc
+                            .host_compositions
+                            .iter()
+                            .map(|(&pi, comp)| {
+                                ((pi as i64 + offset as i64).max(0) as usize, comp.clone())
+                            })
                             .collect(),
                         stored_column_top_spacings: cc
                             .stored_column_top_spacings

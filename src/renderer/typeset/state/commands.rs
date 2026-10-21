@@ -930,6 +930,7 @@ impl TypesetState {
                 && matches!(
                     placement.flow,
                     crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                        | crate::renderer::float_placement::ParagraphFloatFlow::SplitHost { .. }
                         | crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
                 )
             {
