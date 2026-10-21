@@ -6202,7 +6202,7 @@ impl DocumentCore {
                             line.tag |=
                                 crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
                         }
-                        paragraph.replace_line_segs(lines);
+                        paragraph.publish_object_projection(lines);
                         frame_changes.push(index);
                     }
                 }

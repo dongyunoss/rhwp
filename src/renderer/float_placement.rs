@@ -7654,6 +7654,9 @@ pub(crate) fn computed_empty_table_host(para: &Paragraph, table: &Table) -> bool
     para.text.is_empty()
         // An implementation-tagged LineSeg still describes a computed line.
         // Lack of a trustworthy saved anchor does not erase that line box.
+        // 개체 흐름이 확정한 투영 줄은 별도 원점 소유자가 있다. 저장 줄의
+        // 좌표 이동에 붙인 구현 태그를 새 빈 줄로 해석하지 않는다.
+        && !para.layout_object_projection
         && para.line_segs.iter().all(|line| {
             line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         })
