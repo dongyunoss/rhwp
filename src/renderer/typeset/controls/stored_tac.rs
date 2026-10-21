@@ -306,7 +306,8 @@ pub(super) fn prepare_coanchored_first_line(
         control_index,
         inline: InlineBoxPlacement {
             x: 0.0,
-            y: origin + hwpunit_to_px(i32::from(table.outer_margin_top), dpi),
+            // 실제 표 배치가 위 바깥 여백을 소비하므로 줄의 pen만 전달한다.
+            y: origin,
             clearance: 0.0,
             resolved_x: false,
             advance_end: Some(end),
