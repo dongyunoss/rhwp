@@ -3541,6 +3541,7 @@ mod hidden_paragraph_marker;
 mod note_reference;
 mod paragraph_border;
 mod paragraph_layout;
+mod picture_border;
 mod picture_footnote;
 mod shape_layout;
 mod stored_shape_host;

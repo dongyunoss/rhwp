@@ -2429,7 +2429,7 @@ impl LayoutEngine {
                     }),
                     BoundingBox::new(render_x, render_y, render_w, render_h),
                 );
-                parent.children.push(img_node);
+                self.append_picture_image_node(tree, parent, pic, img_node);
             }
             ShapeObject::Chart(chart) => {
                 // Task #195: 차트 placeholder (점선 테두리 + "차트" 라벨)
