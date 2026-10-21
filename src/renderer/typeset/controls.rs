@@ -525,6 +525,7 @@ pub(super) fn try_place_stored_tac_paragraph(
     composed: Option<&ComposedParagraph>,
 ) -> bool {
     let dpi = engine.dpi;
+    let source_frame = st.stored_tac_line_frame(para, paragraphs.get(para_idx + 1), styles);
     if let Some(placement) = stored_tac::prepare_computed(
         para_idx,
         para,
@@ -538,6 +539,7 @@ pub(super) fn try_place_stored_tac_paragraph(
         styles,
         st.stored_tac_page(paragraphs),
         || st.available_height(),
+        source_frame,
         dpi,
     ) {
         // 합성 표 줄의 간격은 확정 끝에 이미 포함된다. 같은 끝점에서 좌표축을
@@ -646,6 +648,7 @@ pub(super) fn try_place_stored_tac_paragraph(
             .get(para.para_shape_id as usize)
             .is_some_and(|style| style.page_break_before),
         || st.available_height(),
+        source_frame,
         dpi,
     ) else {
         return false;

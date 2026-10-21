@@ -5,7 +5,10 @@ use super::stored_tac::StoredTacControlPlacement;
 use crate::model::{
     control::Control, paragraph::Paragraph, provenance::LayoutCompatibilityProfile,
 };
-use crate::renderer::{float_placement::InlineBoxPlacement, hwpunit_to_px};
+use crate::renderer::{
+    float_placement::{InlineBoxPlacement, StoredColumnFrame},
+    hwpunit_to_px,
+};
 
 #[allow(clippy::too_many_arguments)]
 pub(in crate::renderer::typeset) fn prepare(
@@ -19,6 +22,7 @@ pub(in crate::renderer::typeset) fn prepare(
     flow_origin: f64,
     leading_spacing: f64,
     available_height: f64,
+    source_frame: Option<StoredColumnFrame>,
     dpi: f64,
 ) -> Option<StoredTacControlPlacement> {
     if profile.session_edited()
@@ -82,7 +86,8 @@ pub(in crate::renderer::typeset) fn prepare(
             resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
-            stored_column_frame: None,
+            stored_column_frame: source_frame
+                .filter(|frame| frame.accepts_line_origin(seg.vertical_pos, origin, dpi)),
         },
         end,
         rebase_line_origin: false,

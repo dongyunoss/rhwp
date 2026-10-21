@@ -4613,6 +4613,7 @@ impl TypesetEngine {
             st.current_height,
             leading_spacing,
             st.available_height(),
+            st.stored_tac_line_frame(para, next_para, styles),
             self.dpi,
         ) {
             // 회피로 확정한 가로 원점도 보존한다. 흐름 끝을 paint에 전달하고

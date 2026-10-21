@@ -333,6 +333,7 @@ pub(super) fn prepare_computed(
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     page: StoredTacPage,
     available_height: impl Fn() -> f64,
+    source_frame: Option<StoredColumnFrame>,
     dpi: f64,
 ) -> Option<StoredTacControlPlacement> {
     if !page.profile.hwpx_stored_layout()
@@ -548,7 +549,9 @@ pub(super) fn prepare_computed(
             resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
-            stored_column_frame: None,
+            stored_column_frame: source_frame.filter(|frame| {
+                closed_stored_line && frame.accepts_line_origin(seg.vertical_pos, origin, dpi)
+            }),
         },
         end,
         rebase_line_origin: !closed_stored_line,
@@ -584,6 +587,7 @@ pub(super) fn prepare(
     next_spacing_before: f64,
     explicit_page_break_before: bool,
     available_height: impl Fn() -> f64,
+    source_frame: Option<StoredColumnFrame>,
     dpi: f64,
 ) -> Option<StoredTacPlan> {
     // 커서가 이미 거절한 source 원점을 첫 저장 줄/개체의 영점 인증으로
@@ -726,11 +730,15 @@ pub(super) fn prepare(
             // fit와 paint에 함께 보존한다. 문단 상대 top만 더하면 앞 표로 되감긴다.
             let mut saved_origin = if single_saved_line {
                 // 완전한 개체 높이는 줄의 소유를 입증하지만 단의 원점을 0으로 만들지는
-                // 않는다. 앞 글줄이 확립한 같은 원문/물리 프레임에 개체 줄도 투영한다.
-                let frame = page.stored_text_column_frame.unwrap_or(StoredColumnFrame {
-                    source_origin_hu: 0,
-                    column_anchor_y: page.vpos_col_anchor,
-                });
+                // 않는다. 앞 글줄 또는 완전한 표가 확립한 같은 원문/물리
+                // 프레임에 개체 줄도 투영한다.
+                let frame =
+                    page.stored_text_column_frame
+                        .or(source_frame)
+                        .unwrap_or(StoredColumnFrame {
+                            source_origin_hu: 0,
+                            column_anchor_y: page.vpos_col_anchor,
+                        });
                 frame.column_anchor_y
                     + hwpunit_to_px(
                         para.line_segs[0]
@@ -789,7 +797,7 @@ pub(super) fn prepare(
                     }
                     previous.line_segs.last().is_some_and(|last| {
                         !crate::renderer::typeset::is_synthetic_line_seg(last)
-                            && last.vertical_pos > 0
+                            && last.vertical_pos >= 0
                             && last.line_height > 0
                             && last.line_spacing >= 0
                             && last

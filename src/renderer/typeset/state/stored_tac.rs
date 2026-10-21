@@ -2,6 +2,41 @@
 use super::*;
 
 impl TypesetState {
+    /// 최초 완전한 표의 source 축은 paint의 단 초기화와 같은 규칙으로 조회한다.
+    /// 여기서는 후보만 만들고 실제 pen과의 일치는 수용 계획이 확인한다.
+    pub(in crate::renderer::typeset) fn stored_tac_line_frame(
+        &self,
+        para: &Paragraph,
+        next: Option<&Paragraph>,
+        styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    ) -> Option<crate::renderer::float_placement::StoredColumnFrame> {
+        use crate::renderer::float_placement::StoredColumnFrame;
+        if let Some((source_origin_hu, column_anchor_y)) = self.data.vpos_stored_column_origin {
+            return Some(StoredColumnFrame {
+                source_origin_hu,
+                column_anchor_y,
+            });
+        }
+        if !self.data.current_items.is_empty() {
+            return None;
+        }
+        let dpi = self.data.layout.dpi;
+        let source_origin_hu =
+            if crate::renderer::stored_page_origin::stored_first_margin_is_page_relative(
+                para, next, styles, dpi,
+            ) {
+                0
+            } else {
+                crate::renderer::float_placement::stored_table_column_origin(
+                    para, false, None, dpi,
+                )?
+            };
+        Some(StoredColumnFrame {
+            source_origin_hu,
+            column_anchor_y: self.data.vpos_col_anchor,
+        })
+    }
+
     /// 각주 등록 뒤 단일 단의 vpos 관측값을 기존 순서로 확정한다.
     pub(in crate::renderer::typeset) fn commit_deferred_table_anchor(
         &mut self,
