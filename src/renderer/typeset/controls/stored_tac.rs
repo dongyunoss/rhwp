@@ -258,8 +258,6 @@ pub(super) fn prepare_coanchored_first_line(
         && page.stored_zero_column_origin
         && para.line_segs.len() == 1
         && fmt.line_count() == 1
-        && fmt.spacing_after == 0.0
-        && next_spacing_before == 0.0
         && next_para.is_some_and(|next| {
             !next.stored_text_partition_is_dirty()
                 && !next.cell_format_vpos_dirty
@@ -269,6 +267,12 @@ pub(super) fn prepare_coanchored_first_line(
                             .vertical_pos
                             .checked_add(line.line_height)
                             .and_then(|end| end.checked_add(line.line_spacing))
+                            .and_then(|end| {
+                                end.checked_add(crate::renderer::px_to_hwpunit(
+                                    fmt.spacing_after + next_spacing_before,
+                                    dpi,
+                                ))
+                            })
                             == Some(after.vertical_pos)
                 })
         })
@@ -279,12 +283,18 @@ pub(super) fn prepare_coanchored_first_line(
     if !has_float && !(has_fixed_decoration && full_trailing) && !closed_decorated_line {
         return None;
     }
-    let origin = page.vpos_col_anchor
-        + hwpunit_to_px(
-            line.vertical_pos
-                .saturating_sub(page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0)),
-            dpi,
-        );
+    // 단 첫 원본 줄이 인증한 영점은 글줄의 임시 lazy 기준축과 다르다.
+    // 장식이 함께 있는 개체 줄도 그 원점을 수용·후속 흐름·paint에 전달한다.
+    let source_frame = closed_decorated_line.then_some(StoredColumnFrame {
+        source_origin_hu: 0,
+        column_anchor_y: page.vpos_col_anchor,
+    });
+    let source_base = source_frame.map_or_else(
+        || page.vpos_page_base.or(page.vpos_lazy_base).unwrap_or(0),
+        |frame| frame.source_origin_hu,
+    );
+    let origin =
+        page.vpos_col_anchor + hwpunit_to_px(line.vertical_pos.saturating_sub(source_base), dpi);
     let end = origin
         + hwpunit_to_px(line.line_height, dpi)
         + hwpunit_to_px(line.line_spacing, dpi) * if full_trailing { 1.0 } else { 0.5 }
@@ -301,7 +311,7 @@ pub(super) fn prepare_coanchored_first_line(
             resolved_x: false,
             advance_end: Some(end),
             stored_horizontal_pen: None,
-            stored_column_frame: None,
+            stored_column_frame: source_frame,
         },
         end,
         rebase_line_origin: false,
@@ -396,6 +406,7 @@ pub(super) fn prepare_computed(
         && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && next_para.is_some_and(|next| {
             !next.stored_text_partition_is_dirty()
+                && !next.cell_format_vpos_dirty
                 && next.line_segs.first().is_some_and(|after| {
                     after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                         && after.vertical_pos > seg.vertical_pos
@@ -855,10 +866,11 @@ pub(super) fn prepare(
                 if !same_frame && inherited_origin.is_none() {
                     return None;
                 }
-                // 기존 축이 증명된 경우는 보존한다. 다른 경우에는 소유가
-                // 확인된 직전 실제 줄과 저장 상대 간격으로 축을 확립한다.
+                // 상대 간격은 앞 내용이 요구하는 하한이다. 압축한 텍스트
+                // 흐름 끝이 더 위라는 이유로 독립된 저장 개체 원점을 지우지
+                // 않는다. 원본의 새 단 재시작은 앞에서 별도로 확정했다.
                 if !same_frame {
-                    saved_origin = inherited_origin?;
+                    saved_origin = saved_origin.max(inherited_origin?);
                 }
             }
             let origin = flow_origin.max(saved_origin);
