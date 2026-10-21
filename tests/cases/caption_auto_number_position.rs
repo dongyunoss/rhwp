@@ -16,7 +16,9 @@ const SAMPLE: &[u8] = include_bytes!("../../samples/hwpx/ta-pic-001-r.hwpx");
 
 fn page_text(node: &RenderNode, out: &mut String) {
     if let RenderNodeType::TextRun(run) = &node.node_type {
-        out.push_str(&run.text);
+        // 모델 자리표 한 칸과 실제 표시 번호는 다르다. 독립 Print의 캡션과
+        // 대조하는 이 검사는 paint와 같은 표시 문자열을 읽는다.
+        out.push_str(run.display_or_text());
     }
     for child in &node.children {
         page_text(child, out);
