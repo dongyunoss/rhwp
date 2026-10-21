@@ -2147,6 +2147,9 @@ fn render_category_labels_at(
         if ci >= cat_count {
             break;
         }
+        if !ci.is_multiple_of(layout.label_stride.max(1)) {
+            continue;
+        }
         if horizontal {
             // 가로 막대: 카테고리 아래→위 (한컴 실측 — 막대 배치와 동일 순서)
             let row = cat_count - 1 - ci;

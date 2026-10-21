@@ -148,7 +148,7 @@ fn automatic_scale(min: f64, max: f64, length: f64, font: f64) -> ValueScale {
 }
 
 /// 3D 세로 축은 최대 다섯 칸을 두고 큰 글줄에는 더 성긴 단위를 고른다.
-/// 묶은 막대의 원래 최댓값이 눈금에 닿으면 그 범위를 유지한다.
+/// 묶은 막대의 원래 최댓값이 눈금에 닿으면 그 범위를 유지하되 두 칸은 확보한다.
 fn automatic_3d_vertical(min: f64, max: f64, height: f64, font: f64) -> ValueScale {
     let min = min.min(0.0);
     let max = max.max(0.0);
@@ -156,7 +156,7 @@ fn automatic_3d_vertical(min: f64, max: f64, height: f64, font: f64) -> ValueSca
         return ValueScale::from_tuple((min, max, 1.0));
     }
     let line_height = font * crate::legend_layout::TEXT_LINE_EM;
-    let budget = (1.0 + (height.abs() / (line_height * 2.0)).round()).clamp(3.0, 5.0);
+    let budget = (1.0 + (height.abs() / (line_height * 2.0)).round()).clamp(2.0, 5.0);
     let raw_step = (max - min) / budget;
     let magnitude = 10.0_f64.powf(raw_step.log10().floor());
     let step = [1.0, 2.0, 5.0, 10.0]
@@ -164,9 +164,20 @@ fn automatic_3d_vertical(min: f64, max: f64, height: f64, font: f64) -> ValueSca
         .map(|n| n * magnitude)
         .find(|step| *step >= raw_step * (1.0 - 1e-9))
         .unwrap_or(magnitude * 10.0);
+    let mut scaled_min = (min / step).floor() * step;
+    let mut scaled_max = (max / step).ceil() * step;
+    // 큰 글자의 두 칸 예산에서도 단위 선택 후 한 칸만 남길 수 있다.
+    // 한컴의 자동 축은 같은 단위를 유지하며 데이터 바깥으로 두 칸을 확보한다.
+    if scaled_max - scaled_min < step * 2.0 {
+        if max > 0.0 {
+            scaled_max = scaled_min + step * 2.0;
+        } else {
+            scaled_min = scaled_max - step * 2.0;
+        }
+    }
     ValueScale {
-        min: (min / step).floor() * step,
-        max: (max / step).ceil() * step,
+        min: scaled_min,
+        max: scaled_max,
         step,
     }
 }
@@ -327,6 +338,7 @@ pub(super) struct CategoryLabelLayout {
     pub rotation_degrees: f64,
     pub maximum_advance: f64,
     pub axis_fraction: f64,
+    pub label_stride: usize,
 }
 
 impl CategoryLabelLayout {
@@ -363,7 +375,35 @@ impl CategoryLabelLayout {
             rotation_degrees,
             maximum_advance,
             axis_fraction: 0.0,
+            label_stride: 1,
         }
+    }
+
+    /// 세로 글줄은 축 방향으로 한 em을 점유한다. 3D도 투영이 끝난 축 너비를
+    /// 사용하며, 표시만 건너뛰고 원래 범주·막대·눈금의 소속과 간격은 유지한다.
+    fn fit_vertical_labels(&mut self, chart: &OoxmlChart, axis_width: f64) {
+        if self.rotation_degrees != 90.0 {
+            return;
+        }
+        let count = chart.categories.len().max(
+            chart
+                .series
+                .iter()
+                .map(|series| series.values.len())
+                .max()
+                .unwrap_or(0),
+        );
+        if count == 0 {
+            return;
+        }
+        let pitch = axis_width / count as f64;
+        self.label_stride = if pitch > 0.0 {
+            (label_font_px(chart) / pitch)
+                .ceil()
+                .clamp(1.0, count as f64) as usize
+        } else {
+            count
+        };
     }
 
     pub fn bottom_reservation(self, chart: &OoxmlChart, crosses_inside: bool) -> f64 {
@@ -506,6 +546,11 @@ impl CartesianLayout {
                     left = 0.0;
                     right = 0.0;
                     continue;
+                }
+                if let Some(frame) = &scene {
+                    category.fit_vertical_labels(chart, frame.projected_size(chart)[0]);
+                } else if !chart.is_3d {
+                    category.fit_vertical_labels(chart, plot_width);
                 }
                 return Self {
                     left,
