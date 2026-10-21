@@ -538,3 +538,22 @@ OLE 캡션4저장본의 Print는 모두 완료했고 각1쪽·양쪽 raw100%다.
 가려100%가 돼도 완료로 판정하지 않는다. 원문 WMF에 포함된400×54 DIB와 공통
 WMF→SVG 결과의 비트맵은 같은 노란 표·숫자를 보존했다(1261/1262). Native의
 SVG 조각 재생 단계를 추적하며 OLE 검사 기대값·표시 helper는 아직 바꾸지 않았다.
+
+## Native OLE 포함 그림의 SVG 이름공간 복원
+
+원 해결 #2069→#2103의 캡션 속성·개체 관계, Native RawSvg 최초 구현
+`6505e9038c4`와 #2292의 페이지 좌표 수정 `9d1805a7d51`, #8064의 Print 그림
+payload·마스크 경로를 대조했다. 이번 입력의 생산 결과는 `shape_layout`의
+WMF→SVG→data URI image이며 `paint::builder`가 RawSvg를 전달하고 Native
+`skia::image_conv::rasterize_svg_fragment_to_png`가 완전한 문서로 감싼다.
+fresh의 `svg_fragment::wrap_svg_fragment`는 xlink 이름공간을 선언하지만 Native의
+별도 래퍼는 누락했다. 같은 원본 조각의 usvg 실행1264는 선언 전
+`unknown namespace prefix 'xlink'`로 실패하고 선언 후 정상 파싱·렌더링됐다.
+처음 진단의 unused-mut 빌드 오류는 수정했고 정상 build/run만 원인 증거로 사용한다.
+
+Native 래퍼에 표준 xlink 이름공간만 추가한다. 저장 그림·캡션 내용·목적지 좌표·
+소수점 정밀도·출력 배율·마스크 피복률·파일 참조 resolver는 유지한다. 특정 문서나
+WMF 여부로 분기하지 않는다. 반례는 xlink 포함 비트맵, 기존 일반 벡터 조각과
+외부 file href 차단이다. 실제 Native 네 저장본의 Print 대조·직접 판독과 같은
+제품의 수정 전 FAIL/후 PASS를 확인한 뒤 정식 회귀를 추가한다. raw100만으로
+회색 상자에 가려진 내용을 통과시키거나 OLE 캡션 검사만 바꾸지 않는다.
