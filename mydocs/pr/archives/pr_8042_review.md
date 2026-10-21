@@ -107,3 +107,13 @@ review 문서나 docs PR을 만들지 않는다. 오늘할일은 통합 PR 절�
 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/semanticist21_group_geometry_20261021/` 아래
 Native/fresh review·overlay URL로 고정한다. 본문 파일을 `--body-file`로 전달하고 API로
 게시 내용을 재확인한다. 이 계획은 사전 comment나 원 PR close의 실행 승인이 아니다.
+
+## 보정 커밋의 Native·fresh 활성 셀 검증
+
+`ae6d24e744`에서 셀 누름틀의 루트 소유 주소를 공통 보정했다. 새 관계형 정식 검사4개는
+Native079에서4FAIL, Native081에서4PASS다. 실제 공개 WASM 편집 API도 fresh031에서
+4FAIL, 같은 보정 소스의 최적화 fresh032에서4PASS로 바뀌었다. 필드 재활성화의
+idempotence·표 소유 번호 이동·지역 주소 보존·입력과 두 저장 형식의 내용을 확인했다.
+[검증 출처와 입력](../assets/active_field_group_owner_20261021/README.md)에 소스·제품 해시와
+실제 결과를 연결했다. 현재 Rust lint/build4단계는 모두 성공했다. 새 전쪽 fresh와
+전체 Rust 실패·차트 등 통합 필수 항목은 계속 검증하며, 최종 판정은 **머지 보류**다.

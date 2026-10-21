@@ -41,3 +41,15 @@ Native080의 공개 API 진단에서는 묶기·풀기 뒤 같은 필드 재활�
 설정의 정상 대조, 필드 범위·본문 보존, 필드 안 입력과 양쪽 저장 내용을 확인한다.
 실행 원문은 ignored `emphasis-metric-current-failure-focus-1214.json`에 보존했다.
 새 fresh의 편집 API 확인과 전쪽 출력·통합 전체 검증은 계속 수행한다.
+
+## 현재 커밋의 fresh WASM 편집 동작 확인
+
+보정 커밋 `ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9`의 최적화 fresh032 빌드와
+Studio 패키지 동기화가 성공했다. Native081의 dirty snapshot 소스187개는 이 커밋의
+실제 파일 바이트와 모두 같다. snapshot 당시 HEAD와 실제 보정 커밋을 구분해 기록했다.
+같은 입력4개를 Node의 실제 `HwpDocument` 공개 API에서 실행해 이전 fresh031의
+4FAIL과 현재 fresh032의4PASS를 확인했다. 실패는 같은 활성 셀 주소를 다시 설정할 때
+보정이 필요하다는 결과이며, 빌드·초기화 실패가 아니다. 현재 코드는 같은 주소 설정의
+idempotence, 표 소유 번호 이동, 지역 필드 정보, 실제 입력과 HWP/HWPX 저장 내용을 보존한다.
+원문은 ignored `active-field-wasm-before-after-1223.json`과 같은 번호 로그에 있다.
+전체 통합 검증이나 새 제품의 모든 저장본 시각 확인을 이 편집 API 결과로 대신하지 않는다.

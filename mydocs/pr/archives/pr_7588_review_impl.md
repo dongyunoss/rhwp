@@ -38,3 +38,13 @@
 실제 결과는4FAIL→4PASS이며 형식별 입력·독립 Print와 양쪽 전쪽100% 증거를 보존했다.
 기존 현재 API28조건의 고정 devel Native/WASM 직접 비교도 각각 전28쪽·하락0쪽이다.
 현재 후보의 fresh·전체 통합 검증은 계속하며 이 기록을 전체 완료로 해석하지 않는다.
+
+## 보정 커밋의 Native·fresh 활성 셀 검증
+
+`ae6d24e744`에서 셀 누름틀의 루트 소유 주소를 공통 보정했다. 새 관계형 정식 검사4개는
+Native079에서4FAIL, Native081에서4PASS다. 실제 공개 WASM 편집 API도 fresh031에서
+4FAIL, 같은 보정 소스의 최적화 fresh032에서4PASS로 바뀌었다. 필드 재활성화의
+idempotence·표 소유 번호 이동·지역 주소 보존·입력과 두 저장 형식의 내용을 확인했다.
+[검증 출처와 입력](../assets/active_field_group_owner_20261021/README.md)에 소스·제품 해시와
+실제 결과를 연결했다. 현재 Rust lint/build4단계는 모두 성공했다. 새 전쪽 fresh와
+전체 Rust 실패·차트 등 통합 필수 항목은 계속 검증하며, 최종 판정은 **머지 보류**다.

@@ -78,3 +78,22 @@ extern은 runner만 보완해 해당7개를 다시 실행했으며7PASS다. 원 
 [활성 셀 입력·Print·시각 선행 증거](../pr/assets/active_field_group_owner_20261021/README.md)를
 보존했고 새 제품의 전쪽·fresh 검증을 계속한다. 원 API28조건의 devel 직접 비교1199는
 양쪽28쪽100%,0.1%p 하락0쪽이다. 이 Native 보정을 전체 통합 승인으로 기록하지 않는다.
+
+## 현재 커밋의 fresh WASM 편집 동작 확인
+
+보정 커밋 `ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9`의 최적화 fresh032 빌드와
+Studio 패키지 동기화가 성공했다. Native081의 dirty snapshot 소스187개는 이 커밋의
+실제 파일 바이트와 모두 같다. snapshot 당시 HEAD와 실제 보정 커밋을 구분해 기록했다.
+같은 입력4개를 Node의 실제 `HwpDocument` 공개 API에서 실행해 이전 fresh031의
+4FAIL과 현재 fresh032의4PASS를 확인했다. 실패는 같은 활성 셀 주소를 다시 설정할 때
+보정이 필요하다는 결과이며, 빌드·초기화 실패가 아니다. 현재 코드는 같은 주소 설정의
+idempotence, 표 소유 번호 이동, 지역 필드 정보, 실제 입력과 HWP/HWPX 저장 내용을 보존한다.
+원문은 ignored `active-field-wasm-before-after-1223.json`과 같은 번호 로그에 있다.
+전체 통합 검증이나 새 제품의 모든 저장본 시각 확인을 이 편집 API 결과로 대신하지 않는다.
+
+Native081의62조건·860쪽은 독립 Print 쪽수가 모두 같고 전체 최저92.44708%다.
+고정 devel `2e3b4f880bd11d35398e6ea0100846611f13a72d`의 같은 입력·PDF·글꼴 조건과
+전쪽 Decimal 비교1224에서0.1%p 이상 하락은0쪽이다. 전쪽 fresh032는 실행 중이며,
+`not_evaluated` TSV 상태를 통합 승인으로 보고하지 않는다. 현재 커밋의 Native Clippy,
+WASM32 lib Clippy, workspace build, workspace all-target Clippy1222는 모두 exit0이다.
+기록한 Rust/Cargo 소스는 실행 중 변경되지 않았다. 공유 `target/pr-review`, 빌드 잡8개를 사용했다.

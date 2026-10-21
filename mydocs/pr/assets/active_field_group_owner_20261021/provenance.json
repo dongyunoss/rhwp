@@ -704,6 +704,112 @@
     "candidate_pass": 4,
     "candidate_fail": 0,
     "both_strict_build_exit": 0,
-    "execution_evidence": "ignored output/pr-review/semanticist21-20261019/emphasis-metric-current-failure-focus-1214.json"
+    "execution_evidence": "ignored output/pr-review/semanticist21-20261019/emphasis-metric-current-failure-focus-1214.json",
+    "candidate_committed_source_sha": "ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9",
+    "native_source_equivalence_count": 187,
+    "fresh_wasm_source_sha": "ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9",
+    "fresh_wasm_sha256": "64b31a168b3b04f7fbe7d9f372ea2645b9e16cd999620e465df9a41f7cae5dea",
+    "fresh_wasm_studio_sync_equal": true,
+    "fresh_wasm_before_fail": 4,
+    "fresh_wasm_candidate_pass": 4,
+    "fresh_wasm_execution_evidence": "ignored output/pr-review/semanticist21-20261019/active-field-wasm-before-after-1223.json",
+    "fresh_wasm_cases": [
+      {
+        "version": "031",
+        "action": "group",
+        "format": "hwp",
+        "input_sha256": "2ea9d7fe564e939e821791512bce04bccb70bd92884c8fab591857e184631559",
+        "source_sha": "6fc2b3490dd8226856c0a6e1c47f589ccda7896e",
+        "wasm_sha256": "5c99a7aa1af58bee72d1dd0663f53b1c7b0bcb3876a3c0ebf5f64658b5129149",
+        "owner_before": 4,
+        "owner_after": 3,
+        "needed_active_owner_repair": true,
+        "pass": false
+      },
+      {
+        "version": "031",
+        "action": "group",
+        "format": "hwpx",
+        "input_sha256": "604cfd31c0b6afd27a5460c8a080ec366e9391212bb9b605bcd8e08462ea4908",
+        "source_sha": "6fc2b3490dd8226856c0a6e1c47f589ccda7896e",
+        "wasm_sha256": "5c99a7aa1af58bee72d1dd0663f53b1c7b0bcb3876a3c0ebf5f64658b5129149",
+        "owner_before": 4,
+        "owner_after": 3,
+        "needed_active_owner_repair": true,
+        "pass": false
+      },
+      {
+        "version": "031",
+        "action": "ungroup",
+        "format": "hwp",
+        "input_sha256": "cc3484b53263b598266e14259d1253e431f287dcf8eb1afe437fa83699188218",
+        "source_sha": "6fc2b3490dd8226856c0a6e1c47f589ccda7896e",
+        "wasm_sha256": "5c99a7aa1af58bee72d1dd0663f53b1c7b0bcb3876a3c0ebf5f64658b5129149",
+        "owner_before": 3,
+        "owner_after": 4,
+        "needed_active_owner_repair": true,
+        "pass": false
+      },
+      {
+        "version": "031",
+        "action": "ungroup",
+        "format": "hwpx",
+        "input_sha256": "c85a5f75fc0b144a017aa624d9fc7132a3f2074922782a84440c9270f782cf2c",
+        "source_sha": "6fc2b3490dd8226856c0a6e1c47f589ccda7896e",
+        "wasm_sha256": "5c99a7aa1af58bee72d1dd0663f53b1c7b0bcb3876a3c0ebf5f64658b5129149",
+        "owner_before": 3,
+        "owner_after": 4,
+        "needed_active_owner_repair": true,
+        "pass": false
+      },
+      {
+        "version": "032",
+        "action": "group",
+        "format": "hwp",
+        "input_sha256": "2ea9d7fe564e939e821791512bce04bccb70bd92884c8fab591857e184631559",
+        "source_sha": "ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9",
+        "wasm_sha256": "64b31a168b3b04f7fbe7d9f372ea2645b9e16cd999620e465df9a41f7cae5dea",
+        "owner_before": 4,
+        "owner_after": 3,
+        "needed_active_owner_repair": false,
+        "pass": true
+      },
+      {
+        "version": "032",
+        "action": "group",
+        "format": "hwpx",
+        "input_sha256": "604cfd31c0b6afd27a5460c8a080ec366e9391212bb9b605bcd8e08462ea4908",
+        "source_sha": "ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9",
+        "wasm_sha256": "64b31a168b3b04f7fbe7d9f372ea2645b9e16cd999620e465df9a41f7cae5dea",
+        "owner_before": 4,
+        "owner_after": 3,
+        "needed_active_owner_repair": false,
+        "pass": true
+      },
+      {
+        "version": "032",
+        "action": "ungroup",
+        "format": "hwp",
+        "input_sha256": "cc3484b53263b598266e14259d1253e431f287dcf8eb1afe437fa83699188218",
+        "source_sha": "ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9",
+        "wasm_sha256": "64b31a168b3b04f7fbe7d9f372ea2645b9e16cd999620e465df9a41f7cae5dea",
+        "owner_before": 3,
+        "owner_after": 4,
+        "needed_active_owner_repair": false,
+        "pass": true
+      },
+      {
+        "version": "032",
+        "action": "ungroup",
+        "format": "hwpx",
+        "input_sha256": "c85a5f75fc0b144a017aa624d9fc7132a3f2074922782a84440c9270f782cf2c",
+        "source_sha": "ae6d24e744533f87bf39c9ff79e2b6fb4451ecd9",
+        "wasm_sha256": "64b31a168b3b04f7fbe7d9f372ea2645b9e16cd999620e465df9a41f7cae5dea",
+        "owner_before": 3,
+        "owner_after": 4,
+        "needed_active_owner_repair": false,
+        "pass": true
+      }
+    ]
   }
 }
