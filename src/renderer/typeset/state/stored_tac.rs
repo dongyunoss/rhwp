@@ -11,14 +11,27 @@ impl TypesetState {
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) -> Option<crate::renderer::float_placement::StoredColumnFrame> {
         use crate::renderer::float_placement::StoredColumnFrame;
-        if let Some((source_origin_hu, column_anchor_y)) = self.data.vpos_stored_column_origin {
-            return Some(StoredColumnFrame {
-                source_origin_hu,
-                column_anchor_y,
-            });
-        }
-        if !self.data.current_items.is_empty() {
-            return None;
+        if let Some(first) = self.data.current_items.first() {
+            // 단의 첫 완전한 표만 이 축의 소유자다. 글줄로 시작한 단의
+            // 중간 표가 한 점에서 맞더라도, 그 뒤 재조판 글줄의 저장 끝까지
+            // 유효하다고 인증하면 기존 본문의 source 축을 가로채게 된다.
+            let PageItem::Table {
+                para_index,
+                control_index,
+            } = first
+            else {
+                return None;
+            };
+            let (source_origin_hu, column_anchor_y) = self.data.vpos_stored_column_origin?;
+            return self
+                .data
+                .inline_placements
+                .get(&(*para_index, *control_index))?
+                .stored_column_frame
+                .filter(|frame| {
+                    frame.source_origin_hu == source_origin_hu
+                        && frame.column_anchor_y == column_anchor_y
+                });
         }
         let dpi = self.data.layout.dpi;
         let source_origin_hu =
