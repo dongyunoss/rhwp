@@ -4,8 +4,7 @@
 //! 렌더 트리는 OLE preview를 RawSvg로 만들지만, 원본 control 좌표를 잃으면 Studio가
 //! 클릭 선택/개체 속성 진입을 할 수 없고 빈 문단 커서 rect도 찾지 못한다.
 
-use std::fs;
-use std::path::Path;
+use std::{fs, path::Path};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
@@ -144,6 +143,16 @@ fn collect_text_run_nodes<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode
     for child in &node.children {
         collect_text_run_nodes(child, out);
     }
+}
+// 모델 자리표 대신 paint가 사용하는 표시 번호를 읽는다.
+fn visible_text(nodes: &[&RenderNode]) -> String {
+    nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+            _ => None,
+        })
+        .collect()
 }
 
 fn assert_enter_after_square_ole_keeps_wrap_zone(rel: &str) {
@@ -841,13 +850,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .unwrap_or_else(|e| panic!("render tree after OLE caption {}: {:?}", rel, e));
     let mut text_runs = Vec::new();
     collect_text_run_nodes(&tree.root, &mut text_runs);
-    let rendered_text = text_runs
-        .iter()
-        .filter_map(|node| match &node.node_type {
-            RenderNodeType::TextRun(run) => Some(run.display_or_text()),
-            _ => None,
-        })
-        .collect::<String>();
+    let rendered_text = visible_text(&text_runs);
     let caption_run = text_runs
         .iter()
         .find(|node| {
@@ -933,13 +936,7 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
         .unwrap_or_else(|e| panic!("render tree after OLE caption removal {}: {:?}", rel, e));
     let mut text_runs = Vec::new();
     collect_text_run_nodes(&tree.root, &mut text_runs);
-    let rendered_text = text_runs
-        .iter()
-        .filter_map(|node| match &node.node_type {
-            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
-            _ => None,
-        })
-        .collect::<String>();
+    let rendered_text = visible_text(&text_runs);
     assert!(
         !rendered_text.contains("그림"),
         "removed OLE caption should not remain visible for {}: rendered={:?}",
