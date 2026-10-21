@@ -322,3 +322,10 @@ Print의 0~10과 다르므로 자동 3D 축은 단위를 유지하면서 최소 
 `chart-horizontal-metric-table-analysis-1356.json`, `chart-native088-selected-1354/results.json`,
 `chart-native088-panels-1355/provenance.json`이다. 입력·PDF·실제 글꼴 파일 SHA와 실행 로그를
 각 원장에서 연결했다. 새 분석은 기존29개 미달·devel 하락의 해소 증거가 아니며 보정을 계속한다.
+
+HDMX가 없는 크기의4개 불일치를 포함해 같은150조건을 실제 FreeType 힌팅으로 대조했다.
+일반 힌팅은117건, 모노 힌팅은150건 모두 GDI 전진 폭과 일치했다. 자동 힌팅을 배제한
+모노 경로도 같은150건이 일치한다. `chart-hinted-advance-analysis-1370.json`과
+`logs/chart-hinted-advance-analysis-1370.log`가 실제 글꼴 파일·실측·실행 모드의 근거다.
+이 제한된 실측을 모든 글꼴·문자·크기의 호환 보장으로 확대하지 않는다. Native 전용 측정을
+추가해 fresh 경로를 다르게 만들지 않으며, 공통 글꼴 공급과 차트의 측정·배치 계약을 검토한다.
