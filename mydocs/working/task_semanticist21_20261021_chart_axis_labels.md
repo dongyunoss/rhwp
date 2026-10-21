@@ -294,3 +294,31 @@ Print의 0~10과 다르므로 자동 3D 축은 단위를 유지하면서 최소 
 `logs/chart-category-layout-panels-1075.log`, `logs/chart-category-print-geometry-1076.log`다.
 원래 전체 45개 PR와 Rust 57건 실패, 최종 전쪽 Native/fresh·최신 devel 0.1%p gate는
 완료하지 않았으며 PR 준비·push·원격 review를 진행하지 않는다.
+
+## 2026-10-21 실제 글꼴 표와 독립 GDI 측정의 추가 대조
+
+제품 소스 `43abfbab6748e5345d848de8661098dc5b59b10e`의 Native088로 대표 미달 6조건을
+재출력했다. Times 18pt 자동 회전 50.54393%, 5pt 세로 막대 78.47574%, 20pt 폭460/480은
+각각 69.56030%·74.04388%, 직각 축 해제 카메라 58.95322%, 실제 corpus035는
+87.64310%다. 모두 전쪽 raw이며 이전 모듈 조각 점수와 구분한다. 이 단계에서는 제품 코드와
+회귀 기대값을 바꾸지 않았다.
+
+- 독립 Windows GDI 실측1054의 세 글꼴·10크기, 총30조건을 같은 요청 글꼴의 Linux
+  등록 face에 있는 VDMX·OS/2 표와 대조했다. 정수 ppem의 해당 VDMX 그룹을 우선하고, 없을 때
+  WinAscent·WinDescent를 각각 환산하면 높이뿐 아니라 상승·하강 성분도30건 모두 일치했다.
+  Times 18pt의 실측 높이는27px이고 기존1.3em 계산은31.2px다.
+- 전진 폭은 같은150조건을 HDMX 또는 글리프별 반올림 HMTX로 대조해146건이 일치했다.
+  나머지4건은 HDMX에 해당 ppem이 없는 Times 10.5pt·15pt의 `Label 1`·`officeAV`다.
+  따라서 이 fallback으로 모든 GDI 폭을 재현했다고 주장하지 않는다. Times 18pt의
+  `S10`은 실제 HDMX/GDI36px이고 현재 본문용 측정 경로는37px다.
+- Times 자동 회전 입력의 최신 review와 overlay에서는 Print의 수평 범주와 제품의45도
+  범주 차이를 확인했다. 회전으로 바닥 예약이 늘면 plot 높이와 표시 눈금도 함께 바뀐다.
+  숨겨진6 눈금을 값축 max4로 오인해 숫자 범위를 바꾸지 않는다.
+- 실제 측정 provider가 전달하는 폭·상승·하강과 범례의 예약/표시 간격을 공통 결과로
+  소비할 수 있는지 분석한다. 글꼴별 상수나 특정 폭에서만 회전시키는 분기를 추가하지 않는다.
+  비직각3D 카메라의 별도 투영 차이도 글꼴 높이 하나로 해결했다고 간주하지 않는다.
+
+근거는 ignored output의 `chart-vertical-metric-table-analysis-1350.json`,
+`chart-horizontal-metric-table-analysis-1356.json`, `chart-native088-selected-1354/results.json`,
+`chart-native088-panels-1355/provenance.json`이다. 입력·PDF·실제 글꼴 파일 SHA와 실행 로그를
+각 원장에서 연결했다. 새 분석은 기존29개 미달·devel 하락의 해소 증거가 아니며 보정을 계속한다.

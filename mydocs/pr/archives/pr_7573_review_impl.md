@@ -17,3 +17,9 @@
 
 실행 로그·중간 JSON·다음 실행 메모는 ignored output에만 보존한다. 기존 기대값 완화와
 회귀 제거로 개체 보존 결함을 숨기지 않는다.
+
+현재 제품43ab의 전체 Rust1352에서 관련3검사 PASS를 재확인했다. Native088·fresh037의
+최신1347 실행에서도 편집 저장본4조건의 전쪽 raw100%·Print 쪽수 일치를 확인했다.
+통합 전체는59개 Rust 실패와 다른 시각 미달이 남아 있으며, 이 PR의 직접 판독·최신 devel
+대조·제출 asset 보존도 이어서 완료한다. 실제 실행 로그는 ignored output의
+`logs/batch-cut-native088-1347.log`와 `logs/wasm037-focus-queue-1351.log`에 연결된다.

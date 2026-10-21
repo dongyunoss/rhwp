@@ -88,3 +88,14 @@ merge SHA로 고정한 대표 review·overlay 이미지와 전체 TSV를 연결�
 
 현재 Native087의 strict 집중 실행1333도 해당3검사 모두 PASS했다. 편집 저장본의
 최신 Native1328은 모든 관련 페이지100%다. fresh036 대조와 최종 전체 게이트는 계속한다.
+
+### 최신 제품의 실제 재검증
+
+제품 소스 `43abfbab6748e5345d848de8661098dc5b59b10e`의 전체 Rust1352에서도
+`body_ime_format_batch`의 세 검사는 모두 PASS했다. 전체 실행은 다른59개 실패가 있어
+통과로 보고하지 않는다. 같은 소스의 Native088·최적화 fresh037에서 위 세 편집 저장본을
+전쪽 재출력했고 모두 raw100%·독립 Print PDF 쪽수 일치를 확인했다.
+`batch-cut-native-1347/results.json`과 `batch-cut-wasm-1347/results.json`에 실제 명령,
+입력·PDF·TSV·producer 해시를 남겼다. 옛019·1328의 결과를 최신 실행으로 바꾸어 쓰지 않았다.
+대표 PNG 직접 판독·최신 devel 대조·제출 경로 보존과 통합 후보의 나머지 필수 게이트를
+완료한 뒤 최종 판정을 갱신한다. 현재 판정은 머지 보류다.

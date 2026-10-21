@@ -82,3 +82,14 @@ API 생성 HWPX의 `pr7573-before`, `pr7573-after-interior`, `pr7573-after-start
 
 현재 Native087의 strict 집중 실행1333도 해당3검사 모두 PASS했다. 편집 저장본의
 최신 Native1328은 모든 관련 페이지100%다. fresh036 대조와 최종 전체 게이트는 계속한다.
+
+### 최신 제품의 실제 재검증
+
+제품 소스 `43abfbab6748e5345d848de8661098dc5b59b10e`의 전체 Rust1352에서도
+`issue_7444_cut_boundary_object`의 세 검사는 모두 PASS했다. 통합 후보의 전체 실행은
+다른59개 실패가 있어 통과로 보고하지 않는다. 같은 소스의 Native088·최적화 fresh037에서
+위 네 편집 저장본을 전쪽 재출력했고 모두 raw100%·독립 Print PDF 쪽수 일치를 확인했다.
+`batch-cut-native-1347/results.json`과 `batch-cut-wasm-1347/results.json`이 최신 실행이며
+옛019·1328의 결과와 구분한다. 각 원장에 실제 명령과 입력·PDF·TSV·producer 해시가 있다.
+대표 PNG 직접 판독·최신 devel 대조·제출 경로 보존과 통합 후보의 나머지 필수 게이트를
+완료한 뒤 최종 판정을 갱신한다. 현재 판정은 머지 보류다.
