@@ -3512,6 +3512,9 @@ impl DocumentCore {
             *start_cut_is_block,
             *row_cursor_is_nested,
             *end_row_owns_stored_frame,
+            col.paragraph_float_placements
+                .get(&(parent_para_idx, control_idx))
+                .is_some_and(|placement| placement.split_host_prefix().is_some()),
             *end_row_height_override,
             *start_row_height_override,
             straddle_row_relief,

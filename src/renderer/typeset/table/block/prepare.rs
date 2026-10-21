@@ -40,6 +40,7 @@ impl TypesetEngine {
             ..
         } = input;
         let SplitTableEntry {
+            computed_host_tail,
             mut total_footnote,
             next_starts_new_page,
             next_rewinds_after_table,
@@ -558,7 +559,12 @@ impl TypesetEngine {
             || crate::renderer::float_placement::partial_table_opening_host_owns_lead(
                 para, table, ctrl_idx, false,
             );
-        let fragment_host_placement = source_control_frame.or_else(|| {
+        let fragment_host_placement = if computed_host_tail.is_some() {
+            // prefix·표 위 여백은 entry의 같은 계획이 이미 소비했다.
+            // 마지막 호스트 줄의 높이나 양수 offset을 다시 가산하지 않는다.
+            unconstrained_host_placement
+        } else {
+            source_control_frame.or_else(|| {
             unconstrained_host_placement
                 .filter(|_| placement_para_start_height + fmt.height_for_fit <= available)
                 .map(|placement| {
@@ -654,7 +660,8 @@ impl TypesetEngine {
                     }
                     constrain_host_placement.constrain(fragment, st)
                 })
-        });
+        })
+        };
         // 닫힌 폭0 개체 앵커는 표 공간을 소유하며 별도 빈 글줄을 전진시키지 않는다.
         // 실제 호스트 텍스트가 있는 내부 개체는 그 글줄의 기존 소유를 유지한다.
         let host_owns_text_lines = host_owns_opening_line
@@ -709,8 +716,8 @@ impl TypesetEngine {
                 table,
                 ft.host_spacing.before,
                 false,
-                ft.strict_following_plain_text_fit,
-                crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
+                ft.strict_following_plain_text_fit || computed_host_tail.is_some(),
+                computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                     para,
                     table,
@@ -1230,15 +1237,16 @@ impl TypesetEngine {
             });
         let native_hwp5_host_precedes_first_fragment = st.profile.hwp5_stored_pagination_layout()
             && native_hwp5_rowbreak_host_precedes_first_fragment(para, table);
-        if (st.profile.hwpx_stored_layout()
-            && host_vpos_is_cumulative
-            && !table.common.treat_as_char
-            && is_para_topbottom_float(&table.common)
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            ))
-            || native_hwp5_host_precedes_first_fragment
+        if computed_host_tail.is_none()
+            && ((st.profile.hwpx_stored_layout()
+                && host_vpos_is_cumulative
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                ))
+                || native_hwp5_host_precedes_first_fragment)
         {
             self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles);
         }
@@ -1410,6 +1418,7 @@ impl TypesetEngine {
             })
         });
         let prepared = BlockTableContinuationPreparedState {
+            computed_host_tail,
             first_anchor_offset_consumed,
             opening_rowspan_block_cuts_after_first_row,
             host_placement: source_single_cell_first_placement.or(fragment_host_placement),

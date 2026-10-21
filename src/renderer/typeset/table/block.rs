@@ -13,6 +13,7 @@ mod deferred_float;
 mod entry;
 pub(in crate::renderer::typeset) mod host_placement;
 mod prepare;
+mod split_host;
 mod unrestricted_float;
 mod whole_fit;
 
@@ -36,6 +37,7 @@ struct BlockTableInput<'a> {
 
 /// 통째 배치 시도 뒤 분할 준비로 넘기는 값과 저장 프레임의 소유 단 식별자.
 struct SplitTableEntry<'a> {
+    computed_host_tail: Option<crate::renderer::typeset::paragraph::metrics::FormattedHostTail>,
     total_footnote: f64,
     next_starts_new_page: bool,
     next_rewinds_after_table: bool,

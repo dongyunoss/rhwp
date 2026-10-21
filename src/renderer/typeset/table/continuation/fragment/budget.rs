@@ -106,6 +106,7 @@ impl TypesetEngine {
                 })
                 .flatten();
         let repeat_fragment_outer_margin =
+            prepared.computed_host_tail.is_some() ||
             crate::renderer::float_placement::stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
                 self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                 para, table,
@@ -127,7 +128,7 @@ impl TypesetEngine {
                 is_continuation,
                 strict_following_plain_text_fit || single_cell_page_fragment
                     || repeat_fragment_outer_margin || repeated_header_outer_frame,
-                crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
+                prepared.computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                     para,
                     table,
@@ -301,8 +302,8 @@ impl TypesetEngine {
                 table,
                 host_spacing_before,
                 is_continuation,
-                strict_following_plain_text_fit,
-                crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
+                strict_following_plain_text_fit || prepared.computed_host_tail.is_some(),
+                prepared.computed_host_tail.is_some() || crate::renderer::float_placement::empty_host_cellbreak_fragment_repeats_outer_margin(
                     self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                     para,
                     table,

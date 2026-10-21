@@ -20,13 +20,31 @@ pub(super) fn try_defer(st: &mut TypesetState, input: BlockTableInput<'_>, dpi: 
         ctrl_idx,
         ..
     } = input;
+    // 나누지 않는 개체가 현재 글줄 사이에 들어가지 않으면 글줄은 현재 쪽에서
+    // 계속 흐르고 개체만 다음 쪽 상단을 소유한다. 저장 좌표 대신 현재 구성을 쓴다.
+    let computed_visible_host = fmt.host_composition.is_some()
+        && input.is_first_placed
+        && input.is_last_placed
+        && fmt.computed_host_lines.as_deref().is_some_and(|lines| {
+            ParagraphFloatPlacement::from_split_computed_host(
+                para,
+                table,
+                ctrl_idx,
+                st.current_height + fmt.spacing_before,
+                lines,
+                ft.effective_height,
+                dpi,
+            )
+            .is_some()
+        });
     if st.col_count != 1
         || table.page_break != TablePageBreak::None
         || !table.common.flow_with_text
         || !is_para_topbottom_float(&table.common)
         || table.common.vert_align != crate::model::shape::VertAlign::Top
         || !(computed_empty_table_host(para, table)
-            || saved_host_matches_current_frame(st, input, dpi))
+            || saved_host_matches_current_frame(st, input, dpi)
+            || computed_visible_host)
         || signed_hwpunit(table.common.vertical_offset) != 0
         || table.caption.is_some()
         || !ft.table_footnotes.is_empty()
@@ -45,6 +63,9 @@ pub(super) fn try_defer(st: &mut TypesetState, input: BlockTableInput<'_>, dpi: 
         || st.current_height + fmt.height_for_fit > available
     {
         return false;
+    }
+    if computed_visible_host {
+        st.record_host_text_fragment(para_idx, 0..fmt.line_count(), para, fmt, dpi);
     }
     st.append_item(PageItem::PartialParagraph {
         para_index: para_idx,

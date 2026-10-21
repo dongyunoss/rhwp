@@ -2442,11 +2442,34 @@ impl TypesetEngine {
                 .flatten()
                 .map(|placement| constrain_host_placement.constrain(placement, st))
         });
-        if unrestricted_whole_object
-            || (!painted_rowbreak_exceeds_paper
-                && complete_caption_fits
-                && resolved_host_placement.map_or(legacy_whole_fits, |p| {
-                    p.occupied_bottom <= whole_frame_budget
+        let mut computed_host_tail = None;
+        let mut split_host_fragment = None;
+        if let Some(handoff) = resolved_host_placement.and_then(|placement| {
+            self.place_computed_split_host(st, input, placement, whole_frame_budget, fn_margin)
+        }) {
+            match handoff {
+                super::split_host::SplitHostHandoff::Placed => return None,
+                super::split_host::SplitHostHandoff::Fragment {
+                    placement,
+                    tail,
+                    available: limit,
+                } => {
+                    split_host_fragment = Some(placement);
+                    computed_host_tail = Some(*tail);
+                    available = limit;
+                    total_footnote = st.projected_footnote_height(
+                        ft.table_footnote_height,
+                        ft.table_footnote_count,
+                    );
+                }
+            }
+        }
+        if split_host_fragment.is_none()
+            && (unrestricted_whole_object
+                || (!painted_rowbreak_exceeds_paper
+                    && complete_caption_fits
+                    && resolved_host_placement.map_or(legacy_whole_fits, |p| {
+                        p.occupied_bottom <= whole_frame_budget
                     // None split 개체의 본체는 종이 안에 들어가면 body 아래 여백을
                     // 사용할 수 있다. 뒤 바깥 여백은 후속 흐름에 예약하지만 본체를
                     // 다음 쪽으로 밀 이유가 아니다(독립 Print의 작은 용지 대조).
@@ -2455,7 +2478,7 @@ impl TypesetEngine {
                         && ft.table_footnotes.is_empty()
                         && st.current_footnote_height <= 0.0
                         && p.table_top + ft.effective_height <= available + below_body_slack)
-                }))
+                    })))
         {
             if let Some(placement) = resolved_host_placement {
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
@@ -2661,6 +2684,7 @@ impl TypesetEngine {
         }
 
         Some(SplitTableEntry {
+            computed_host_tail,
             total_footnote,
             next_starts_new_page,
             next_rewinds_after_table,
@@ -2677,7 +2701,7 @@ impl TypesetEngine {
             stored_rewinding_rowbreak_uses_painted_row_footprint,
             closed_source_frame_placement,
             closed_source_frame_key,
-            unconstrained_host_placement,
+            unconstrained_host_placement: split_host_fragment.or(unconstrained_host_placement),
             constrain_host_placement,
             mt,
             row_geometry_table,

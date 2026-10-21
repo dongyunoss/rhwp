@@ -15773,6 +15773,10 @@ impl LayoutEngine {
             wrap_anchors,
             ..
         } = ctx;
+        let computed_fragment_frame = ctx
+            .paragraph_float_placements
+            .get(&(para_index, control_index))
+            .is_some_and(|placement| placement.split_host_prefix().is_some());
         let defer_visible_rowbreak_host_text = paragraphs.get(para_index).and_then(|para| {
             para.controls
                 .get(control_index)
@@ -15899,7 +15903,7 @@ impl LayoutEngine {
             measured
         });
         let pt_mt = fragment_measurement.as_ref().or(pt_mt);
-        let repeat_fragment_outer_margin = paragraphs
+        let repeat_fragment_outer_margin = computed_fragment_frame || paragraphs
             .get(para_index)
             .map(|para| {
                 if repeats_native_empty_host_rowbreak_fragment_margin(
@@ -16005,6 +16009,7 @@ impl LayoutEngine {
             start_cut_is_block,
             row_cursor_is_nested,
             end_row_owns_stored_frame,
+            computed_fragment_frame,
             end_row_height_override,
             start_row_height_override,
             straddle_row_relief,
@@ -16584,6 +16589,7 @@ impl LayoutEngine {
                             false,
                             false,
                             cut.owns_stored_frame,
+                            false,
                             cut.end_row_height,
                             None,
                             &[],

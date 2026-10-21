@@ -46,6 +46,13 @@ pub(in crate::renderer::typeset) struct FormattedParagraph {
     pub(in crate::renderer::typeset) tac_outer_margin_v_px: f64,
 }
 
+/// 표의 마지막 조각 뒤까지 남겨 둔 현재 구성의 줄 범위.
+#[derive(Debug, Clone)]
+pub(in crate::renderer::typeset) struct FormattedHostTail {
+    pub first_line: usize,
+    pub paragraph: FormattedParagraph,
+}
+
 impl FormattedParagraph {
     pub(in crate::renderer::typeset) fn use_square_host_plan(
         &mut self,

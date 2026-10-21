@@ -125,6 +125,8 @@ struct PartialTableHostContext<'a> {
     resolved_table_left: Option<f64>,
     predecessor_flow_bottom: Option<f64>,
     end_row_owns_stored_frame: bool,
+    /// 현재 호스트의 확정된 줄·표 계획에서 온 물리 조각 상자다.
+    computed_fragment_frame: bool,
 }
 
 /// 투명하고 비어 있는 1×1 감싸기 표 안의 내용 표를 반환한다.
@@ -1088,6 +1090,7 @@ impl LayoutEngine {
         center_saved_spanning_cell: Option<usize>,
         align_saved_opening_frame: bool,
         end_row_owns_stored_frame: bool,
+        computed_fragment_frame: bool,
         // 원본 쪽 재시작과 전달된 물리 높이를 함께 확인한 시작/끝 행.
         original_restart_alignment_rows: [Option<usize>; 2],
         // [#6976] 접기 대상 행(모델 행 인덱스)과 그 행이 남긴 여분의 최솟값 수집기.
@@ -1539,6 +1542,12 @@ impl LayoutEngine {
                         .is_some_and(|minimum| row_heights[row] >= minimum)
                     })
             });
+            let computed_frame_owns_alignment = computed_fragment_frame
+                && cell.row_span == 1
+                && cell_row + 1 == end_row
+                && !is_block_split
+                && !start_cut_is_block
+                && end_row_height_override.is_some();
             let stored_span_frame_owns_alignment = accepted_block_frame_owns_alignment
                 || completed_block_frame_owns_alignment
                 || stored_restart_span_frame_owns_alignment
@@ -1609,6 +1618,7 @@ impl LayoutEngine {
             let frame_owns_alignment = !descendant_owns_closing_band
                 && (ordinary_source_frame_owns_alignment
                     || closing_source_frame_owns_alignment
+                    || computed_frame_owns_alignment
                     || complete_suffix_frame
                     || heading_frame_owns_alignment
                     || self
@@ -2178,8 +2188,13 @@ impl LayoutEngine {
                 && end_row.checked_sub(1).is_some_and(|last_row| {
                     cell_row <= last_row && last_row < cell_row + cell.row_span as usize
                 });
-            let selected_frame_owns_alignment =
-                closing_source_frame_owns_alignment || full_width_row_frame_owns_alignment;
+            let selected_frame_owns_alignment = closing_source_frame_owns_alignment
+                || computed_frame_owns_alignment
+                || full_width_row_frame_owns_alignment;
+            let declared_opening_content_height = (!is_continuation)
+                .then(|| self.declared_nested_opening_cut_height(table, start_cut, end_cut, styles))
+                .flatten()
+                .map(|frame| frame - pad_top - pad_bottom);
             let stored_page_content_height = cut_units.and_then(|(start, end)| {
                 self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
             });
@@ -4795,6 +4810,7 @@ impl LayoutEngine {
                                                     },
                                                 ),
                                                 end_row_owns_stored_frame: false,
+                                                computed_fragment_frame: false,
                                                 // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
                                                 // 실제 표 원점에서는 위 여백만 한 번 소비한다.
                                                 resolved_table_top: source_frame_height
@@ -5548,6 +5564,7 @@ impl LayoutEngine {
         start_cut_is_block: bool,
         row_cursor_is_nested: bool,
         end_row_owns_stored_frame: bool,
+        computed_fragment_frame: bool,
         end_row_height_override: Option<f64>,
         start_row_height_override: Option<f64>,
         straddle_row_relief: &[(usize, f64)],
@@ -5569,7 +5586,7 @@ impl LayoutEngine {
             Some(Control::Table(t)) => t,
             _ => return y_start,
         };
-        let repeat_fragment_outer_margin = repeats_native_empty_host_rowbreak_fragment_margin(
+        let repeat_fragment_outer_margin = computed_fragment_frame || repeats_native_empty_host_rowbreak_fragment_margin(
             self.profile.get().hwp5_stored_pagination_layout(),
             paragraphs,
             para_index,
@@ -5628,6 +5645,7 @@ impl LayoutEngine {
                 resolved_table_left: None,
                 predecessor_flow_bottom,
                 end_row_owns_stored_frame,
+                computed_fragment_frame,
             },
             section_index,
             styles,
@@ -5706,6 +5724,7 @@ impl LayoutEngine {
             resolved_table_left,
             predecessor_flow_bottom,
             end_row_owns_stored_frame,
+            computed_fragment_frame,
         } = host;
 
         // [Issue #4326] 쪽 나누기는 투명한 1×1 감싸기 표 안의 중첩 표 행을 의도적으로 사용할 수 있다.
@@ -7142,6 +7161,7 @@ impl LayoutEngine {
                 && enclosing_cell_ctx.is_none()
                 && !align_saved_opening_frame
                 && !end_row_owns_stored_frame
+                && !(computed_fragment_frame && end_row_height_override.is_some())
                 // 저장 걸침 칸의 두 조각에 이미 배분한 물리 높이는 옆 칸의
                 // 후행 줄간격이 아니다. 다시 접으면 앞 조각의 공간만 유실된다.
                 && center_saved_spanning_cell.is_none()
@@ -7250,6 +7270,7 @@ impl LayoutEngine {
             center_saved_spanning_cell,
             align_saved_opening_frame,
             end_row_owns_stored_frame,
+            computed_fragment_frame,
             original_restart_alignment_rows,
             fold_last_row,
             &mut fold_slack,
