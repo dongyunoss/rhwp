@@ -153,34 +153,48 @@ impl TypesetEngine {
                 let table = input.source.row_geometry_table;
                 let engine = &input.prepared.layout_engine;
                 let styles = input.source.styles;
+                let nested_frame = engine.row_cut_has_original_nested_frame_owners(
+                    table,
+                    row,
+                    &scan.split_end_cut,
+                    styles,
+                );
                 if scan.split_end_limit <= 0.0
                     || scan.split_end_cut.is_empty()
-                    || !(engine.row_has_original_plain_text_owners(table, row, &scan.split_end_cut)
+                    || !(nested_frame
+                        || engine.row_has_original_plain_text_owners(
+                            table,
+                            row,
+                            &scan.split_end_cut,
+                        )
                         || engine.row_cut_has_original_plain_text_owners(
                             table,
                             row,
                             &scan.split_end_cut,
                             styles,
                         ))
-                    || !(engine.row_cut_ends_at_original_plain_text_reset(
-                        table,
-                        row,
-                        &[],
-                        &scan.split_end_cut,
-                        styles,
-                    ) || engine.row_cut_ends_at_saved_zero_origin_frame(
-                        table,
-                        row,
-                        &[],
-                        &scan.split_end_cut,
-                        styles,
-                    ) || engine.row_cut_ends_at_native_saved_page_frame(
-                        table,
-                        row,
-                        &[],
-                        &scan.split_end_cut,
-                        styles,
-                    ))
+                    || !(nested_frame
+                        || engine.row_cut_ends_at_original_plain_text_reset(
+                            table,
+                            row,
+                            &[],
+                            &scan.split_end_cut,
+                            styles,
+                        )
+                        || engine.row_cut_ends_at_saved_zero_origin_frame(
+                            table,
+                            row,
+                            &[],
+                            &scan.split_end_cut,
+                            styles,
+                        )
+                        || engine.row_cut_ends_at_native_saved_page_frame(
+                            table,
+                            row,
+                            &[],
+                            &scan.split_end_cut,
+                            styles,
+                        ))
                 {
                     return None;
                 }

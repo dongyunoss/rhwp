@@ -20,6 +20,7 @@ mod stored_inline_closing_frame;
 mod stored_inline_row_frame;
 mod stored_intra_paragraph_frame;
 mod stored_mixed_opening_frame;
+mod stored_nested_fragment_frame;
 mod stored_nested_frame;
 mod stored_nested_host_flow;
 mod stored_nested_outer_frame;
@@ -16507,7 +16508,9 @@ impl LayoutEngine {
                         && !self.render_normalization.borrow().table_text_reflowed(nt)
                     {
                         let body = rhs.iter().sum::<f64>() + ncs * (nrow + 1) as f64;
-                        if let Some(height) = crate::renderer::float_placement::stored_nested_terminal_host_line_height_hu(p, nt, body, self.dpi) {
+                        let closing = crate::renderer::float_placement::stored_nested_terminal_host_line_height_hu(p, nt, body, self.dpi)
+                            .or_else(|| self.projected_nested_terminal_host_line(p, nt, pi, &units, styles));
+                        if let Some(height) = closing {
                             let closing = hwpunit_to_px(height, self.dpi);
                             let last = units.last_mut().expect("projected nested rows");
                             last.height += closing;
@@ -25993,6 +25996,9 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         purpose: row_physical_band::CutHeight,
     ) -> f64 {
+        if let Some(frame) = self.stored_nested_opening_cut_frame(child, cut, styles) {
+            return frame.height;
+        }
         if cut.start_row == 0 && cut.end_row == 1 && !cut.is_block_split && !cut.start_cut_is_block
         {
             if let Some(height) = self.saved_nested_single_cell_frame_height(

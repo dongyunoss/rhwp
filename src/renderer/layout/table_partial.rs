@@ -4756,6 +4756,14 @@ impl LayoutEngine {
                                                     &recursive_cut.end_cut,
                                                     styles,
                                                 )
+                                                .or_else(|| {
+                                                    self.stored_nested_opening_cut_frame(
+                                                        nested_table,
+                                                        recursive_cut,
+                                                        styles,
+                                                    )
+                                                    .map(|frame| frame.last_row_height)
+                                                })
                                             })
                                             .flatten();
                                         let plain_source_height = recursive_cut
