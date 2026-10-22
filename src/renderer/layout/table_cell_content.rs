@@ -992,6 +992,7 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: false,
+                    closed_reflow_frame: false,
                     page_fragment: false,
                     model_cell_index: Some(cell_enum_idx as u32),
                 }),

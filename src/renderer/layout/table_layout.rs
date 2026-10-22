@@ -477,6 +477,9 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(
     if !cell_meta.clip {
         return;
     }
+    if cell_meta.closed_reflow_frame {
+        return;
+    }
 
     let host_clip_left = cell_node.bbox.x;
     let host_clip_right = cell_node.bbox.x + cell_node.bbox.width;
@@ -4063,6 +4066,15 @@ impl LayoutEngine {
             styles,
             depth > 0 || table.common.treat_as_char,
         );
+        let source_reservation_height = measured_table
+            .and_then(|measured| measured.row_frame_heights.as_ref())
+            .filter(|rows| nested_split.is_none() && rows.len() == row_count)
+            .map(|_| row_heights.iter().sum::<f64>() + cell_spacing * (row_count + 1) as f64);
+        let row_heights = measured_table
+            .and_then(|measured| measured.row_frame_heights.as_ref())
+            .filter(|rows| nested_split.is_none() && rows.len() == row_count)
+            .cloned()
+            .unwrap_or(row_heights);
         if std::env::var("RHWP_DIAG_TAC").is_ok() {
             let decl: Vec<f64> = table
                 .cells
@@ -4847,10 +4859,12 @@ impl LayoutEngine {
                 // Top band again moves following content by a phantom band.
                 let caption_below = caption_extra
                     - top_caption_flow_extra(&table.caption, caption_height, caption_spacing);
-                let table_bottom = table_y + table_height + caption_below;
+                let table_bottom =
+                    table_y + source_reservation_height.unwrap_or(table_height) + caption_below;
                 table_bottom.max(y_start)
             } else {
-                let total_height = table_height + caption_extra;
+                let total_height =
+                    source_reservation_height.unwrap_or(table_height) + caption_extra;
                 y_start + total_height
             }
         } else {
@@ -10229,6 +10243,11 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: true,
+                    closed_reflow_frame: row_filter.is_none()
+                        && !single_row_fragment
+                        && self
+                            .reflow_block_cell_flow(&cell.paragraphs, styles)
+                            .is_some(),
                     page_fragment: false,
                     model_cell_index: Some(cell_idx as u32),
                 }),
@@ -14558,7 +14577,6 @@ impl LayoutEngine {
         // 그래서 shrink 와 달리 `cell_inner_text_width` 안에서 여기에도 적용된다.
         let inner_width =
             crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
-        let reflow_block_flow = self.reflow_block_cell_flow(&cell.paragraphs, styles);
         let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
@@ -15908,7 +15926,6 @@ impl LayoutEngine {
                     .collect();
                 if nested_tables.len() == 1
                     && !nested_tables[0].common.treat_as_char
-                    && (reflow_block_flow.is_none() || nested_tables[0].common.flow_with_text)
                     && nested_tables[0].row_count >= 2
                     && !matches!(
                         nested_tables[0].page_break,
@@ -17180,9 +17197,7 @@ impl LayoutEngine {
                         _ => 0.0,
                     })
                     .sum();
-                let para_h = if let Some(flow) = reflow_block_flow.as_ref() {
-                    flow.paragraph_advances[pi]
-                } else if let Some(advance) = stored_empty_successor_advance {
+                let para_h = if let Some(advance) = stored_empty_successor_advance {
                     // 저장 전진량은 현재 앞 간격까지 포함한다. 온전한 셀과
                     // 조각 paint도 이 결과를 그대로 소비하므로 다시 더하지 않는다.
                     advance

@@ -3,6 +3,7 @@
 //! 페이지네이션 전에 각 콘텐츠의 실제 렌더링 높이를 측정한다.
 //! LayoutEngine과 동일한 계산 로직을 사용하여 정확한 높이를 산출한다.
 
+mod reflow_cell_frames;
 mod rowspan_block;
 mod table_wrapper;
 pub(crate) use table_wrapper::{
@@ -788,6 +789,8 @@ pub struct MeasuredTable {
     pub total_height: f64,
     /// 행별 높이 목록 (px)
     pub row_heights: Vec<f64>,
+    /// 원본 예약과 독립된 완료 셀의 테두리 행 높이. 부분 컷은 원본 예약을 소비한다.
+    pub row_frame_heights: Option<Vec<f64>>,
     /// [편집 세션] 로드 시점(비편집) 측정의 행 배분 — 편집 재측정의 행별 하한 기준.
     /// 직전 측정이 아니라 이 값을 하한으로 써야 undo/삭제로 내용이 줄었을 때
     /// 행이 로드 배분까지 되돌아온다. 비편집 측정은 None(자기 자신이 기준).
@@ -2943,23 +2946,6 @@ impl HeightMeasurer {
         if depth >= Self::MAX_NESTED_DEPTH || cell.text_direction != 0 {
             return None;
         }
-        if let Some(flow) = self.cell_reflow_block_flow(cell, styles, depth) {
-            return Some(crate::renderer::float_placement::StoredBlockCellFlow {
-                paragraph_origins: flow.paragraph_origins,
-                origins: flow
-                    .origins
-                    .iter()
-                    .map(|origins| {
-                        origins
-                            .iter()
-                            .map(|origin| origin.map(|origin| origin.top))
-                            .collect()
-                    })
-                    .collect(),
-                bottom: flow.bottom,
-                closed_before_host: false,
-            });
-        }
         crate::renderer::float_placement::stored_block_cell_flow(
             &cell.paragraphs,
             styles,
@@ -2992,7 +2978,12 @@ impl HeightMeasurer {
             |child| {
                 let stretch = self.render_normalization.nested_table_width_scale(child);
                 let measured = self.measure_table_impl(child, 0, 0, styles, depth + 1, stretch);
-                measured.total_height - measured.caption_height
+                measured.row_frame_heights.as_ref().map_or(
+                    measured.total_height - measured.caption_height,
+                    |rows| {
+                        rows.iter().sum::<f64>() + measured.cell_spacing * (rows.len() + 1) as f64
+                    },
+                )
             },
         )
     }
@@ -3254,6 +3245,7 @@ impl HeightMeasurer {
                 total_height: 0.0,
                 row_heights: vec![0.0; rc],
                 baseline_row_heights: None,
+                row_frame_heights: None,
                 fragment_block_frames: Vec::new(),
                 unwrapped_table_depth: 0,
                 caption_height: 0.0,
@@ -5239,7 +5231,7 @@ impl HeightMeasurer {
         };
 
         // 총 높이 = 표 높이 + 캡션 높이 + 캡션-표 간격
-        let total_height = table_height
+        let mut total_height = table_height
             + hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi)
             + caption_height
             + if caption_height > 0.0 {
@@ -5503,12 +5495,6 @@ impl HeightMeasurer {
                     .find(|(_, cell)| cell.row as usize == mc.row && cell.col as usize == mc.col)
                     .unwrap();
                 let mc_cell_w = measured_cell_width_px(cell_index, cell);
-                if let Some(flow) = self.cell_reflow_block_flow(cell, styles, depth) {
-                    mc.para_line_counts = flow.line_advances.iter().map(Vec::len).collect();
-                    mc.line_heights = flow.line_advances.into_iter().flatten().collect();
-                    mc.total_content_height = flow.bottom;
-                    continue;
-                }
                 let frame_paragraphs = measured_frame_paragraphs
                     .get(&cell_index)
                     .map_or(cell.paragraphs.as_slice(), Vec::as_slice);
@@ -5580,6 +5566,17 @@ impl HeightMeasurer {
             }
         }
 
+        let row_frame_heights = self.reflow_cell_frame_rows(table, styles, depth, &row_heights);
+        if let Some(frames) = row_frame_heights.as_ref() {
+            for (row, &height) in frames.iter().enumerate() {
+                let growth = (height - row_heights[row]).max(0.0);
+                row_heights[row] += growth;
+                total_height += growth;
+                for end in &mut cumulative_heights[row + 1..] {
+                    *end += growth;
+                }
+            }
+        }
         let (row_block_start, row_block_end) = compute_row_blocks(table, row_heights.len());
         MeasuredTable {
             para_index,
@@ -5587,6 +5584,7 @@ impl HeightMeasurer {
             total_height,
             row_heights,
             baseline_row_heights: None,
+            row_frame_heights,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height,
@@ -6600,6 +6598,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6625,6 +6624,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0, 40.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6657,6 +6657,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![50.0, 30.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6681,6 +6682,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6716,6 +6718,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![50.0, 30.0, 25.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6746,6 +6749,7 @@ mod tests {
             total_height: 0.0,
             row_heights: vec![],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6770,6 +6774,7 @@ mod tests {
             total_height: 50.0,
             row_heights: vec![50.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6896,6 +6901,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6931,6 +6937,7 @@ mod tests {
             total_height: 50.0,
             row_heights: vec![20.0, 30.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6960,6 +6967,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![10.0, 10.0, 10.0, 10.0, 10.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -6995,6 +7003,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![10.0, 10.0, 10.0, 10.0, 10.0],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,
@@ -7022,6 +7031,7 @@ mod tests {
             total_height: 0.0,
             row_heights: vec![],
             baseline_row_heights: None,
+            row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
             caption_height: 0.0,

@@ -1266,6 +1266,7 @@ impl LayoutEngine {
                     text_direction: cell.text_direction,
                     clip: is_in_split_row || is_rowbreak_straddle || height_override_clip,
                     // [#5862] 이 경로의 clip 셀은 전부 쪽 컷이 만든 조각이다.
+                    closed_reflow_frame: false,
                     page_fragment: is_in_split_row || is_rowbreak_straddle || height_override_clip,
                     model_cell_index: Some(cell_idx as u32),
                 }),
@@ -2372,15 +2373,6 @@ impl LayoutEngine {
                         + frame.paragraph_origin_offset_px(inner_height, effective_align, self.dpi)
                 })
                 .unwrap_or(text_y_start);
-
-            let reflow_block_flow = self.reflow_block_cell_flow(&cell.paragraphs, styles);
-            let reflow_block_source_top = text_y_start
-                - cut_units.map_or(0.0, |(start, _)| {
-                    self.cell_units(cell, table, styles)[..start]
-                        .iter()
-                        .map(|unit| unit.height)
-                        .sum::<f64>()
-                });
 
             super::table_layout::unit_diagnostics::trace_alignment(
                 cell,
@@ -4748,16 +4740,6 @@ impl LayoutEngine {
                                     let derived_table_meta = nested_ctx
                                         .as_ref()
                                         .and_then(CellContext::nested_table_meta);
-                                    let unrestricted_origin = reflow_block_flow.as_ref()
-                                        .filter(|_| crate::renderer::float_placement::unrestricted_cell_float(&nested_table.common))
-                                        .and_then(|flow| self.reflow_block_table_origin(
-                                            flow, cp_idx, ctrl_idx, nested_table,
-                                            cell_x, cell_y, inner_x, reflow_block_source_top,
-                                        ));
-                                    let ctrl_area =
-                                        unrestricted_origin.map_or(ctrl_area, |origin| {
-                                            self.unrestricted_cell_float_area(&ctrl_area, origin)
-                                        });
                                     let first_new_child = cell_node.children.len();
                                     let table_h_rendered = if let Some(recursive_cut) = split_info
                                         .as_ref()
@@ -5074,32 +5056,15 @@ impl LayoutEngine {
                                                     })
                                                 })
                                                 .or_else(|| {
-                                                    let planned = owns_nested_start
-                                                        .then(|| reflow_block_flow.as_ref())
-                                                        .flatten()
-                                                        .and_then(|flow| {
-                                                            self.reflow_block_table_origin(
-                                                                flow,
-                                                                cp_idx,
-                                                                ctrl_idx,
-                                                                nested_table,
-                                                                cell_x,
-                                                                cell_y,
-                                                                inner_x,
-                                                                reflow_block_source_top,
-                                                            )
-                                                        });
-                                                    planned.or_else(|| {
-                                                        self.reflow_nested_table_origin(
-                                                            para,
-                                                            nested_table,
-                                                            &ctrl_area,
-                                                            nested_w,
-                                                            nested_y,
-                                                            owns_nested_start,
-                                                        )
-                                                        .map(|(x, y)| (Some(x), y))
-                                                    })
+                                                    self.reflow_nested_table_origin(
+                                                        para,
+                                                        nested_table,
+                                                        &ctrl_area,
+                                                        nested_w,
+                                                        nested_y,
+                                                        owns_nested_start,
+                                                    )
+                                                    .map(|(x, y)| (Some(x), y))
                                                 }),
                                             Self::standalone_table_char_border_fill(
                                                 Some(para),
@@ -5200,17 +5165,6 @@ impl LayoutEngine {
                                                 frame.occupied_bottom - successor_before
                                             }
                                         });
-                                    if let Some(flow) = reflow_block_flow.as_ref().filter(|_| {
-                                        crate::renderer::float_placement::unrestricted_cell_float(
-                                            &nested_table.common,
-                                        )
-                                    }) {
-                                        table_node
-                                            .children
-                                            .extend(cell_node.children.drain(first_new_child..));
-                                        para_y =
-                                            para_y_before_compose + flow.paragraph_advances[cp_idx];
-                                    }
                                     has_preceding_text = true;
                                 }
                             }
@@ -8102,6 +8056,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: true,
+                closed_reflow_frame: false,
                 page_fragment: false,
                 model_cell_index: Some(0),
             }),

@@ -192,6 +192,7 @@ fn overlapping_text_runs_inside_table_are_text_overlap_not_generic_overlap() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),

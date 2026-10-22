@@ -19,8 +19,6 @@ pub(crate) struct ReflowBlockOrigin {
 
 pub(crate) struct ReflowBlockCellFlow {
     pub(crate) paragraph_origins: Vec<f64>,
-    pub(crate) paragraph_advances: Vec<f64>,
-    pub(crate) line_advances: Vec<Vec<f64>>,
     pub(crate) origins: Vec<Vec<Option<ReflowBlockOrigin>>>,
     pub(crate) bottom: f64,
 }
@@ -86,8 +84,6 @@ pub(crate) fn reflow_block_cell_flow(
 
     let mut flow = ReflowBlockCellFlow {
         paragraph_origins: Vec::with_capacity(paragraphs.len()),
-        paragraph_advances: Vec::with_capacity(paragraphs.len()),
-        line_advances: Vec::with_capacity(paragraphs.len()),
         origins: paragraphs
             .iter()
             .map(|p| vec![None; p.controls.len()])
@@ -110,10 +106,8 @@ pub(crate) fn reflow_block_cell_flow(
         } else {
             style.map_or(0.0, |style| style.spacing_after)
         };
-        let start = cursor;
         cursor += before;
         let no_ls = crate::renderer::para_has_no_stored_line_segs(para);
-        let mut advances = Vec::new();
         if !no_ls {
             // 선행 저장 사다리의 빈 밴드는 글자 수나 합산 높이로 추측하지 않는다.
             let top = hwpunit_to_px(para.line_segs.first()?.vertical_pos, dpi);
@@ -132,7 +126,6 @@ pub(crate) fn reflow_block_cell_flow(
                 if end < cursor {
                     return None;
                 }
-                advances.push(end - cursor);
                 cursor = end;
             }
         } else {
@@ -201,18 +194,9 @@ pub(crate) fn reflow_block_cell_flow(
                 block_height += group_height;
             }
             let occupied = line_height.max(block_height);
-            advances.push(occupied);
             cursor += occupied;
         }
         cursor += after;
-        let advance = cursor - start;
-        // 문단 앞뒤 여백과 저장된 빈 밴드도 같은 원본 줄 유닛에 귀속한다.
-        let extra = advance - advances.iter().sum::<f64>();
-        if let Some(first) = advances.first_mut() {
-            *first += extra;
-        }
-        flow.line_advances.push(advances);
-        flow.paragraph_advances.push(advance);
     }
     flow.bottom = cursor;
     Some(flow)

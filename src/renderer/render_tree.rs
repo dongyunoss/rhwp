@@ -1240,6 +1240,10 @@ pub struct TableCellNode {
     pub text_direction: u8,
     /// 셀 콘텐츠를 bounding box로 클리핑 (분할 행 셀에서 사용)
     pub clip: bool,
+    /// 완료된 재조판 셀은 독립적으로 확정한 물리 경계를 소유한다.
+    /// 조상 표의 사후 clip 확장으로 그 경계를 다시 추정하지 않는다.
+    #[serde(default)]
+    pub closed_reflow_frame: bool,
     /// [#5862] 이 셀이 **쪽 분할 조각**인가 (`table_partial` 경로에서 만든 셀).
     ///
     /// 조각 셀의 clip 은 괘선이 아니라 **쪽 컷**이 정한 값이라, 컷 부기와 실제

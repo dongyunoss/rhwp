@@ -3060,6 +3060,7 @@ fn collect_top_level_table_spans_domain() {
             border_fill_id: 0,
             text_direction: 0,
             clip: false,
+            closed_reflow_frame: false,
             page_fragment: false,
             model_cell_index: None,
         }),
