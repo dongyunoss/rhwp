@@ -50,7 +50,7 @@ impl LayoutEngine {
                 .checked_sub(1)
                 .and_then(|index| para.line_segs.get(index))
                 .zip(para.line_segs.get(line))
-                .is_some_and(|(last, first)| last.vertical_pos > 0 && first.vertical_pos == 0)
+                .is_some_and(|(last, first)| source_line_restart(last, first))
     }
 
     /// 실제 스캐너의 문단 내부 컷과 원본 개체의 첫 물리 프레임이 함께 닫히는가.
@@ -64,6 +64,17 @@ impl LayoutEngine {
             && self.original_stored_table_frame_is_usable(table)
             && table.cells.iter().any(|cell| {
                 if cell.row_span != 1 || cell.dirty_flag {
+                    return false;
+                }
+                // 최종 인증이 요구하는 원본 재시작이 없으면 유닛 구성·선행 행 합도
+                // 필요 없다. 큰 표의 모든 셀에서 같은 표 전체를 반복 순회하지 않는다.
+                if !cell.paragraphs.iter().any(|paragraph| {
+                    source_paragraph(paragraph)
+                        && paragraph
+                            .line_segs
+                            .windows(2)
+                            .any(|lines| source_line_restart(&lines[0], &lines[1]))
+                }) {
                     return false;
                 }
                 let Some(prefix) = source_rows_before_hu(table, cell.row) else {
@@ -123,6 +134,10 @@ impl LayoutEngine {
                 || opening_text_frame_end_hu(cell, table, styles, self.dpi)
                     .is_some_and(|end| (end - i64::from(table.common.height)).abs() <= 2))
     }
+}
+
+fn source_line_restart(previous: &LineSeg, current: &LineSeg) -> bool {
+    previous.vertical_pos > 0 && current.vertical_pos == 0
 }
 
 fn source_paragraph(paragraph: &Paragraph) -> bool {
