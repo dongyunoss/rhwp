@@ -46,6 +46,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/document/hft_outline_fonts.rs",
+        "register_text_font_glyph_coverage_native",
+        Exempt::SessionState,
+        "원문 IR·raw stream 대신 paint용 pua_coverage 세션만 등록한다. text_font_coverage_registration의 registered_upright_face_resolves_quoted_css_and_keeps_document_source가 공개 등록 전후 HWP/HWPX 바이트 보존을 검사한다.",
+    ),
+    (
+        "commands/document/hft_outline_fonts.rs",
         "register_hft_outline_font_native",
         Exempt::SessionState,
         "#7902: hft_outline_fonts의 paint 전용 프로그램만 등록·교체한다. 문서 IR과 저장 HWP 바이트 보존은 hft_outline_font_contract의 public API 실행으로 검사한다.",
