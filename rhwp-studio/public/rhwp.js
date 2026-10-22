@@ -8390,6 +8390,34 @@ export class HwpDocument {
         }
     }
     /**
+     * 인라인 개체를 논리적 캐럿 위치로 원자적으로 옮긴다.
+     * @param {string} source_json
+     * @param {string} destination_json
+     * @returns {string}
+     */
+    moveInlineControl(source_json, destination_json) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(source_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(destination_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_moveInlineControl(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * 직선 끝점 이동 (글로벌 HWPUNIT 좌표)
      * @param {number} sec
      * @param {number} para
@@ -9155,6 +9183,24 @@ export class HwpDocument {
         const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
         const len1 = WASM_VECTOR_LEN;
         const ret = wasm.hwpdocument_registerNativePuaFont(this.__wbg_ptr, ptr0, len0, bold, italic, ptr1, len1, face_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
+     * 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
+     * @param {string} family
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {boolean}
+     */
+    registerTextFontGlyphCoverage(family, bytes, face_index) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerTextFontGlyphCoverage(this.__wbg_ptr, ptr0, len0, ptr1, len1, face_index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -12194,6 +12240,14 @@ function __wbg_get_imports() {
         },
         __wbg_a_50b8aa2c55aab913: function(arg0) {
             const ret = arg0.a;
+            return ret;
+        },
+        __wbg_actualBoundingBoxLeft_862e432cc4b67b21: function(arg0) {
+            const ret = arg0.actualBoundingBoxLeft;
+            return ret;
+        },
+        __wbg_actualBoundingBoxRight_7dc82a3b2c564418: function(arg0) {
+            const ret = arg0.actualBoundingBoxRight;
             return ret;
         },
         __wbg_addColorStop_35d831fa917ffcd4: function() { return handleError(function (arg0, arg1, arg2, arg3) {

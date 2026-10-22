@@ -140,3 +140,44 @@ Native101 빌드는 236.44초·exit 0이다. 기존 집중 검사는 #8060만 �
 `rebase-7752-handbook-native102-1532/result.json`에 기록했다.
 대표 PNG는 `common-flow-native102-panels-1534/`의 review·overlay 쌍이다.
 해당 경로는 작업 중 증적이며 최종 제출용 안정 asset·TSV 보존을 대신하지 않는다.
+
+## fresh WASM040과 Studio 공개 바인딩 동기화
+
+커밋 `d29cea22c6`의 제품 소스로 fresh WASM040을 최적화까지 빌드했다.
+공유 `target/pr-review`·빌드 잡 8개를 사용했으며 888.46초·exit 0이다.
+Native102의 동결 소스와 제품 소스 바이트가 같은지 확인했다. 생성된
+JS·WASM의 Studio 공개 사본 SHA-256도 패키지와 같다. 공개 타입 선언은
+이전 생성본에 머물러 있어 같은 패키지의 두 `.d.ts`로 동기화했으며,
+Studio `npx tsc --noEmit`은 exit 0이다. 기존 API를 삭제하거나 수동으로
+타입을 추측하지 않고 현재 WASM의 실제 export를 반영했다.
+
+- #7972와 큰 글꼴 빈 표 `table-leading`·`table-middle`은 fresh WASM에서도
+  각각 1/1쪽·raw 100%다.
+- #7752 편람은 383/383쪽·최저 raw 92.60474%이며, 고정 devel WASM TSV
+  대비 0.1%p 이상 하락은 0쪽이다. Native102의 383쪽 결과와 함께
+  페이지 수·수치 보존을 확인했다. 이 수치만으로 직접 판독을 완료했다고
+  판정하지 않는다.
+- #8060은 fresh WASM도 48/48쪽이지만 미달 쪽이 남는다. 기존 검사 통과와
+  문서의 시각 완료를 구별하며 보정을 계속한다. 나머지 17입력 대조군의
+  WASM 실행은 이 기록 시점에 진행 중이다.
+
+실행 기록은 `char-overlap-fresh-wasm-build-040-result.json`,
+`wasm040-public-types-sync-1547.json`,
+`common-flow-wasm040-visual-1545/results.json`,
+`rebase-7752-handbook-wasm040-1536/result.json` 및
+`logs/wasm040-studio-tsc-1547.log`에 보존했다.
+
+## #8060의 남은 물리 프레임 분석
+
+동일 원본·독립 2024 Print에서 28쪽 표의 뒤 내용은 29쪽으로 이어진다.
+원본 셀의 같은 문단 안에 양수 vpos에서 0으로 돌아가는 쪽 경계가 있지만,
+whole-fit 뒤의 별도 호스트 배치 판정이 조각 스캐너를 건너뛰어 한 쪽에
+배치한다. 저장 경계와 최종 whole 수용 조건의 연결을 보정할 대상이다.
+문단마다 0인 지역 좌표와 편집 후 재조판은 이 증거와 구분한다.
+
+11쪽 부모 표는 PDF 점선 괘선의 독립 경로가 79.4333–367.7573px이며,
+중첩 표와 글자 위치는 거의 맞지만 부모의 끝이 더 내려간다. 12쪽의 빈 줄만
+흡수하는 방식은 원인을 해결하지 못하므로 사용하지 않는다. 37쪽도 첫 조각이
+소비한 물리 높이와 마지막 조각의 남은 높이를 함께 추적한다. 진단 좌표를
+고정 기대값으로 추가하지 않는다. 근거는 ignored 증적
+`issue8060-independent-dashed-edges-1549.json`과 원본/후보 렌더 트리다.
