@@ -8,6 +8,8 @@ use std::ops::Range;
 mod picture_rows;
 pub(crate) use picture_rows::supports_picture_rows;
 mod separator_spaces;
+mod source_addresses;
+pub(crate) use source_addresses::text_logical_starts;
 mod table_rows;
 pub(crate) use table_rows::{standalone_table_fragment_owner, supports_table_text_rows};
 

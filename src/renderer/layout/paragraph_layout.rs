@@ -3112,6 +3112,7 @@ impl LayoutEngine {
             return;
         }
         let chars: Vec<_> = para.text.chars().collect();
+        let logical_starts = crate::renderer::inline_flow::text_logical_starts(para);
         let mut paragraph_fill_bands = Vec::new();
         // Physical rows and per-character positions are the measurement
         // result. Preserve them in the render tree and coalesce compatible
@@ -3185,7 +3186,7 @@ impl LayoutEngine {
                             && run.style == text_style
                             && run.char_shape_id == Some(*style)
                             && run.char_start.is_some_and(|start| {
-                                start + run.text.chars().count() == range.start
+                                start + run.logical_char_count() == logical_starts[range.start]
                             })
                             && (previous.bbox.x + previous.bbox.width - x).abs() < 0.01
                             && (previous.bbox.y - y).abs() < 0.01
@@ -3209,7 +3210,7 @@ impl LayoutEngine {
                         para_shape_id: Some(para.para_shape_id),
                         section_index: Some(section_index),
                         para_index: Some(para_index),
-                        char_start: Some(range.start),
+                        char_start: Some(logical_starts[range.start]),
                         cell_context: None,
                         is_para_end: range.end == chars.len(),
                         is_line_break_end: false,
