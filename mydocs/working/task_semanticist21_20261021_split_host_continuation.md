@@ -148,3 +148,29 @@ Native 62조건 860쪽은 모두 완료했고 고정 devel보다 0.1%p 이상 �
 
 사용자는 2026-10-22에 최신 upstream/devel로 리베이스하고 충돌하면 #7752 변경을
 우선하도록 지시했다. 위 결과는 리베이스 전 기록이며 새 head의 완료 증거로 대신하지 않는다.
+
+## #7752 우선 리베이스와 호출 계약 보정
+
+2026-10-22에 `review/semanticist21-20261019`를 #8148의 merge SHA
+`2e087a5b4bc1515ad877e8020b30114639a59392` 위로 리베이스했다. 직후 head는
+`fd75bb1c07b87d95178a83fc4be803a8cc5c14c6`이다. 이전 head
+`15e403b4cb95d7dd871f61e0b3882f782fa57993`와 162개 커밋은
+`safety/semanticist21-before-rebase-7752-20261022`에 보존했다. 새 PR을 추가로
+체리픽하지 않았다. FontTrace의 중복 검사 커밋 하나는 새 devel의 더 강한 원문 주소·런 소유
+검사를 유지하면서 빈 변경이 되어 재작성 대상에서 빠졌으며 나머지 161개 커밋은 재작성했다.
+
+충돌에서는 새 devel의 저장 프레임·유효 패딩·원본 선 프레임 인증을 우선했다.
+`owns_stored_frame`과 `fragment_block_frames`의 기존 소유 결과를 유지하고, 재조판한 호스트의
+`computed_fragment_frame` 인수와 정렬 소유를 구분해 함께 전달했다. 초기 컴파일에서
+`exclusion_probe_height`의 예전 두 번째 인수가 남은 오류를 검출해, 새 devel의 공통 첫 줄
+높이 함수 계약에 호출을 맞추었다. 첫 줄 높이 계산과 앞 간격 흡수 조건은 변경하지 않았다.
+
+Native097 빌드는 8 build jobs·공유 `target/pr-review`에서 exit 0(246.38초)이다.
+수정 파일의 rustfmt 검사와 Studio 타입 검사도 exit 0이다. 폰트 측정·세션 Node 검사
+10건, 기존 호스트·표 조각 검사 6건, 새 devel의 편람 완료 경계 검사 7건이 모두 통과했다.
+이 실행은 동결한 Native097을 사용하는 집중 검사이며 전체 Cargo 회귀 완료로 표시하지 않는다.
+
+#7752의 기준 입력·정상 KoPub Print PDF SHA와 두 설치 글꼴 경로를 확인했다.
+383쪽 Native 전쪽 대조와 기존 표 분할 17조건 대조는 실행 중이다. fresh WASM은 리베이스 뒤
+아직 재빌드·재검증하지 않았으며 이전 소스의 통과를 이번 head의 증거로 대신하지 않는다.
+실행 로그·중간 JSON은 ignored `output/pr-review/semanticist21-20261019/`에만 보존한다.
