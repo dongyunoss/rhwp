@@ -268,6 +268,16 @@ pub(super) fn place_split_paragraph(
             }
         }
         content::record_first_fragment_origin(st, &fragment.item, paragraphs);
+        if std::env::var("RHWP_DIAG_SPLIT_BUDGET").is_ok() {
+            eprintln!(
+                "DIAG_FRAGMENT_COMMIT pi={} current={} height={} content={:?} item={:?}",
+                para_idx,
+                st.current_height,
+                fragment.height,
+                fragment.content_height,
+                fragment.item,
+            );
+        }
         st.commit_split_paragraph_fragment(fragment);
 
         if end_line >= line_count {
@@ -805,6 +815,16 @@ pub(super) fn prepare_fit_budget(
             st.vpos_page_base_stored,
             st.vpos_ladder_dirty,
             st.current_items.first(),
+        );
+        eprintln!(
+            "DIAG_FLOW_METRICS pi={} heights={:?} spacings={:?} total={} fit={} before={} after={}",
+            para_idx,
+            fmt.line_heights,
+            fmt.line_spacings,
+            fmt.total_height,
+            fmt.height_for_fit,
+            fmt.spacing_before,
+            fmt.spacing_after,
         );
     }
 

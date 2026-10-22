@@ -43,13 +43,21 @@ pub(super) fn refresh(
     if stored.text_height >= font_hu {
         return;
     }
-    let (height, spacing) = crate::renderer::corrected_line_metrics(
+    let (height, spacing) = crate::renderer::corrected_line_metrics_for_source(
         hwpunit_to_px(stored.line_height, dpi),
+        hwpunit_to_px(stored.text_height, dpi),
         hwpunit_to_px(stored.line_spacing, dpi),
         font_size,
         para_style.line_spacing_type,
         para_style.line_spacing,
+        true,
+        false,
     );
+    // 유효한 저장 text_height의 수용 범위는 일반 줄 메트릭과 같다.
+    // 작은 빈 em을 오래된 캐시로 오인해 정상 저장 행을 재성장시키지 않는다.
+    if px_to_hwpunit(height, dpi) == stored.line_height {
+        return;
+    }
     let mut resolved = stored.clone();
     resolved.line_height = px_to_hwpunit(height, dpi);
     resolved.text_height = font_hu;
