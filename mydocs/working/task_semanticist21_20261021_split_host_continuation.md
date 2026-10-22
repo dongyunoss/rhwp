@@ -214,3 +214,24 @@ exit 101로 종료했다. `legacy_chart_physical_layout`의 기존 배경 탐색
 Native098의 편람 383쪽은 Native097과 raster SHA-256이 모두 같다. 최신 Native098
 출력으로 90·94·375쪽의 review·standalone overlay를 새로 만들었으며, 이 사실을
 fresh WASM이나 전체 Rust 검증 완료로 확대하지 않는다.
+
+## 리베이스 후 전체 Rust 실행 결과
+
+`c446a8e95f35448d5e8e9fbf08f063e835a1e3a0`의 전체 nextest 1497을
+8 build jobs·12 test threads·공유 `target/pr-review`에서 실행했다.
+컴파일은 통과했고 실제 실행 summary는 11,540건 중 11,475 PASS / 65 FAIL / 45 SKIP,
+실행 시간 813.761초, exit 100이다. 이 시간은 summary의 테스트 실행 구간이며 컴파일을
+포함한 전체 경과 시간과 구분한다. 실행 중 추적 소스 3,978개의 변경은 없었다.
+
+이전 전체 실행 1352의 59개 실패와 함수 이름으로 대조하면 7개는 통과했고 52개는 계속
+실패하며, 13개의 새 실패가 관측됐다. 두 실행 사이에는 제품 보정과 devel 반영이 함께 있으므로
+이 차이를 리베이스의 인과 증거로 사용하지 않는다. 최종 함수별 stderr·소스 위치·전후 분류는
+ignored `full-rust-failure-inventory-1505.json`·TSV에 고정했다.
+
+새 devel에도 있는 #8060 검사는 48쪽을 기대하지만 후보는 compat 2022·2024 모두 49쪽이다.
+기대값은 유지한다. 원 해결 커밋 `3026918dd33a3c0f6d4110f30bef61b16ad59490`의
+닫는 줄 높이가 다른 저장 되감김 계약을 읽고, 새 devel과 후보를 같은 입력·Print로 대조한다.
+새 기준 `2e087a5b4bc1515ad877e8020b30114639a59392`의 읽기 전용 worktree를 준비했으며
+전체 nextest 종료 후 같은 `target/pr-review`에서 기준 Native 빌드를 시작했다.
+현재 대상의 개선과 #7752 등 새 devel 기능을 함께 유지하는 보정을 계속하며,
+65개 실패·미달 입력·fresh WASM 검증이 남아 있어 PR 제출 준비 완료로 판정하지 않는다.
