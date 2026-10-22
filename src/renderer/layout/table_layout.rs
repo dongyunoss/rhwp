@@ -5,6 +5,7 @@ mod empty_line_flow;
 mod nested_empty_line_flow;
 mod nested_header_frame;
 mod plain_cell_flow;
+mod reflow_block_frames;
 mod reflowed_nested_row;
 mod row_block_cut;
 mod row_defaults;
@@ -2306,6 +2307,7 @@ struct SequentialNestedCellLayout {
     origins: Vec<Vec<Option<f64>>>,
     bottom: f64,
     paragraph_origins: Option<Vec<f64>>,
+    reflowed: Option<crate::renderer::float_placement::ReflowBlockCellFlow>,
 }
 
 /// [#2089] 가로쓰기 셀 본문 배치의 셀-스코프 스칼라 묶음.
@@ -5939,6 +5941,9 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        if let Some(flow) = self.reflow_block_cell_flow(paragraphs, styles) {
+            return flow.bottom;
+        }
         if let Some(flow) = self.stored_single_column_cell_flow(paragraphs) {
             return hwpunit_to_px(flow.content_end_hu, self.dpi);
         }
@@ -8218,9 +8223,10 @@ impl LayoutEngine {
                             } else {
                                 para_y
                             };
-                            let unrestricted_take_place_cell_float = !pic.common.flow_with_text
-                                && matches!(pic.common.text_wrap, TextWrap::TopAndBottom)
-                                && matches!(pic.common.vert_rel_to, VertRelTo::Para);
+                            let unrestricted_take_place_cell_float =
+                                crate::renderer::float_placement::unrestricted_cell_float(
+                                    &pic.common,
+                                );
                             let reset_relocated_stored_picture_offset =
                                 stored_layout_relocated_empty_rowbreak_picture_resets_offset(
                                     self.profile.get().hwp5_stored_pagination_layout()
@@ -9024,6 +9030,22 @@ impl LayoutEngine {
                             .inline_table_height_hu(ctrl_idx)
                             .unwrap_or(nested_table.common.height);
                         let is_tac_table = nested_table.common.treat_as_char;
+                        let reflow_block_origin = sequential_nested_layout
+                            .as_ref()
+                            .filter(|_| fragment_cut_units.is_none())
+                            .and_then(|layout| layout.reflowed.as_ref())
+                            .and_then(|flow| {
+                                self.reflow_block_table_origin(
+                                    flow,
+                                    cp_idx,
+                                    ctrl_idx,
+                                    nested_table,
+                                    cell_node.bbox.x,
+                                    content_cell_y,
+                                    inner_x,
+                                    text_y_start,
+                                )
+                            });
 
                         // 저장 HWPX의 같은 host 문단 안에 있는 `글 뒤로` 표는
                         // 문단 흐름을 차지하지 않는 overlay control이다. 특히 자동날인
@@ -9636,9 +9658,23 @@ impl LayoutEngine {
                                 self.with_nested_header_reservation(nested_table, split, styles)
                             });
                             let nested_split = nested_header_split.as_ref();
+                            let unrestricted_reflow_block = reflow_block_origin.is_some()
+                                && crate::renderer::float_placement::unrestricted_cell_float(
+                                    &nested_table.common,
+                                );
+                            let ctrl_area = reflow_block_origin
+                                .filter(|_| unrestricted_reflow_block)
+                                .map_or(ctrl_area, |origin| {
+                                    self.unrestricted_cell_float_area(&ctrl_area, origin)
+                                });
+                            let nested_parent = if unrestricted_reflow_block {
+                                &mut *table_node
+                            } else {
+                                &mut *cell_node
+                            };
                             let table_h = self.layout_table(
                                 tree,
-                                cell_node,
+                                nested_parent,
                                 nested_table,
                                 section_index,
                                 styles,
@@ -9662,40 +9698,42 @@ impl LayoutEngine {
                                 false,
                                 clamp_header_negative_para_offset,
                                 0.0,
-                                float_x
-                                    .map(|x| {
-                                        (
-                                            Some(x),
-                                            stored_float_frame
-                                                .map_or(nested_y, |frame| frame.table_top),
-                                        )
-                                    })
-                                    .or_else(|| {
-                                        overlay_frame.as_ref().map(|frame| {
+                                reflow_block_origin.or_else(|| {
+                                    float_x
+                                        .map(|x| {
                                             (
-                                                None,
-                                                frame.start
-                                                    + hwpunit_to_px(
-                                                        nested_table.outer_margin_top as i32,
-                                                        self.dpi,
-                                                    ),
+                                                Some(x),
+                                                stored_float_frame
+                                                    .map_or(nested_y, |frame| frame.table_top),
                                             )
                                         })
-                                    })
-                                    .or_else(|| {
-                                        self.reflow_nested_table_origin(
-                                            para,
-                                            nested_table,
-                                            &ctrl_area,
-                                            hwpunit_to_px(
-                                                nested_table.common.width as i32,
-                                                self.dpi,
-                                            ) * self.render_table_width_scale(nested_table),
-                                            nested_y,
-                                            true,
-                                        )
-                                        .map(|(x, y)| (Some(x), y))
-                                    }),
+                                        .or_else(|| {
+                                            overlay_frame.as_ref().map(|frame| {
+                                                (
+                                                    None,
+                                                    frame.start
+                                                        + hwpunit_to_px(
+                                                            nested_table.outer_margin_top as i32,
+                                                            self.dpi,
+                                                        ),
+                                                )
+                                            })
+                                        })
+                                        .or_else(|| {
+                                            self.reflow_nested_table_origin(
+                                                para,
+                                                nested_table,
+                                                &ctrl_area,
+                                                hwpunit_to_px(
+                                                    nested_table.common.width as i32,
+                                                    self.dpi,
+                                                ) * self.render_table_width_scale(nested_table),
+                                                nested_y,
+                                                true,
+                                            )
+                                            .map(|(x, y)| (Some(x), y))
+                                        })
+                                }),
                                 Self::standalone_table_char_border_fill(
                                     Some(para),
                                     nested_table,
@@ -9717,21 +9755,26 @@ impl LayoutEngine {
                             {
                                 stored_tac_host_outgrown = true;
                             }
-                            if let Some(advance) = self.nested_table_flow_advance(
-                                nested_table,
-                                para,
-                                if stored_block_flow {
-                                    // This resolved child fragment includes its
-                                    // physical padding, just as row reservation
-                                    // does. Content-only source cuts are not the
-                                    // following paragraph's physical origin.
-                                    table_h
-                                } else {
-                                    nested_split
-                                        .map(|split| split.flow_height)
-                                        .unwrap_or(table_h)
-                                },
-                            ) {
+                            if let Some(advance) = (!unrestricted_reflow_block)
+                                .then(|| {
+                                    self.nested_table_flow_advance(
+                                        nested_table,
+                                        para,
+                                        if stored_block_flow {
+                                            // This resolved child fragment includes its
+                                            // physical padding, just as row reservation
+                                            // does. Content-only source cuts are not the
+                                            // following paragraph's physical origin.
+                                            table_h
+                                        } else {
+                                            nested_split
+                                                .map(|split| split.flow_height)
+                                                .unwrap_or(table_h)
+                                        },
+                                    )
+                                })
+                                .flatten()
+                            {
                                 if let Some(x) = float_x {
                                     // [#6787] 나란히 무리는 **가장 높은 표** 만큼만 흐름을
                                     // 전진시키고, 가로만 채워 나간다.
@@ -11053,6 +11096,23 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> Option<SequentialNestedCellLayout> {
+        if let Some(flow) = self.reflow_block_cell_flow(paragraphs, styles) {
+            return Some(SequentialNestedCellLayout {
+                origins: flow
+                    .origins
+                    .iter()
+                    .map(|origins| {
+                        origins
+                            .iter()
+                            .map(|origin| origin.map(|origin| origin.top))
+                            .collect()
+                    })
+                    .collect(),
+                bottom: flow.bottom,
+                paragraph_origins: Some(flow.paragraph_origins.clone()),
+                reflowed: Some(flow),
+            });
+        }
         if let Some(flow) = crate::renderer::float_placement::stored_block_cell_flow(
             paragraphs,
             styles,
@@ -11063,6 +11123,7 @@ impl LayoutEngine {
                 origins: flow.origins,
                 bottom: flow.bottom,
                 paragraph_origins: Some(flow.paragraph_origins),
+                reflowed: None,
             });
         }
         if composed_paras.len() != paragraphs.len()
@@ -11083,6 +11144,7 @@ impl LayoutEngine {
                 .collect(),
             bottom: 0.0,
             paragraph_origins: None,
+            reflowed: None,
         };
         let mut flow_y = 0.0;
         for (pidx, (para, composed)) in paragraphs.iter().zip(composed_paras).enumerate() {
@@ -14496,6 +14558,7 @@ impl LayoutEngine {
         // 그래서 shrink 와 달리 `cell_inner_text_width` 안에서 여기에도 적용된다.
         let inner_width =
             crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
+        let reflow_block_flow = self.reflow_block_cell_flow(&cell.paragraphs, styles);
         let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
@@ -15845,6 +15908,7 @@ impl LayoutEngine {
                     .collect();
                 if nested_tables.len() == 1
                     && !nested_tables[0].common.treat_as_char
+                    && (reflow_block_flow.is_none() || nested_tables[0].common.flow_with_text)
                     && nested_tables[0].row_count >= 2
                     && !matches!(
                         nested_tables[0].page_break,
@@ -17116,7 +17180,9 @@ impl LayoutEngine {
                         _ => 0.0,
                     })
                     .sum();
-                let para_h = if let Some(advance) = stored_empty_successor_advance {
+                let para_h = if let Some(flow) = reflow_block_flow.as_ref() {
+                    flow.paragraph_advances[pi]
+                } else if let Some(advance) = stored_empty_successor_advance {
                     // 저장 전진량은 현재 앞 간격까지 포함한다. 온전한 셀과
                     // 조각 paint도 이 결과를 그대로 소비하므로 다시 더하지 않는다.
                     advance

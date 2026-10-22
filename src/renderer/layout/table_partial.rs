@@ -2373,6 +2373,15 @@ impl LayoutEngine {
                 })
                 .unwrap_or(text_y_start);
 
+            let reflow_block_flow = self.reflow_block_cell_flow(&cell.paragraphs, styles);
+            let reflow_block_source_top = text_y_start
+                - cut_units.map_or(0.0, |(start, _)| {
+                    self.cell_units(cell, table, styles)[..start]
+                        .iter()
+                        .map(|unit| unit.height)
+                        .sum::<f64>()
+                });
+
             super::table_layout::unit_diagnostics::trace_alignment(
                 cell,
                 (cell_y, text_y_start),
@@ -3727,15 +3736,9 @@ impl LayoutEngine {
                                     let pic_w = hwpunit_to_px(pic.common.width as i32, self.dpi);
                                     let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                                     let unrestricted_take_place_cell_float =
-                                        !pic.common.flow_with_text
-                                            && matches!(
-                                                pic.common.text_wrap,
-                                                crate::model::shape::TextWrap::TopAndBottom
-                                            )
-                                            && matches!(
-                                                pic.common.vert_rel_to,
-                                                crate::model::shape::VertRelTo::Para
-                                            );
+                                        crate::renderer::float_placement::unrestricted_cell_float(
+                                            &pic.common,
+                                        );
                                     let picture_anchor_y = if unrestricted_take_place_cell_float {
                                         anchor_y
                                             - pic_h
@@ -4745,6 +4748,16 @@ impl LayoutEngine {
                                     let derived_table_meta = nested_ctx
                                         .as_ref()
                                         .and_then(CellContext::nested_table_meta);
+                                    let unrestricted_origin = reflow_block_flow.as_ref()
+                                        .filter(|_| crate::renderer::float_placement::unrestricted_cell_float(&nested_table.common))
+                                        .and_then(|flow| self.reflow_block_table_origin(
+                                            flow, cp_idx, ctrl_idx, nested_table,
+                                            cell_x, cell_y, inner_x, reflow_block_source_top,
+                                        ));
+                                    let ctrl_area =
+                                        unrestricted_origin.map_or(ctrl_area, |origin| {
+                                            self.unrestricted_cell_float_area(&ctrl_area, origin)
+                                        });
                                     let first_new_child = cell_node.children.len();
                                     let table_h_rendered = if let Some(recursive_cut) = split_info
                                         .as_ref()
@@ -5061,15 +5074,32 @@ impl LayoutEngine {
                                                     })
                                                 })
                                                 .or_else(|| {
-                                                    self.reflow_nested_table_origin(
-                                                        para,
-                                                        nested_table,
-                                                        &ctrl_area,
-                                                        nested_w,
-                                                        nested_y,
-                                                        owns_nested_start,
-                                                    )
-                                                    .map(|(x, y)| (Some(x), y))
+                                                    let planned = owns_nested_start
+                                                        .then(|| reflow_block_flow.as_ref())
+                                                        .flatten()
+                                                        .and_then(|flow| {
+                                                            self.reflow_block_table_origin(
+                                                                flow,
+                                                                cp_idx,
+                                                                ctrl_idx,
+                                                                nested_table,
+                                                                cell_x,
+                                                                cell_y,
+                                                                inner_x,
+                                                                reflow_block_source_top,
+                                                            )
+                                                        });
+                                                    planned.or_else(|| {
+                                                        self.reflow_nested_table_origin(
+                                                            para,
+                                                            nested_table,
+                                                            &ctrl_area,
+                                                            nested_w,
+                                                            nested_y,
+                                                            owns_nested_start,
+                                                        )
+                                                        .map(|(x, y)| (Some(x), y))
+                                                    })
                                                 }),
                                             Self::standalone_table_char_border_fill(
                                                 Some(para),
@@ -5170,6 +5200,17 @@ impl LayoutEngine {
                                                 frame.occupied_bottom - successor_before
                                             }
                                         });
+                                    if let Some(flow) = reflow_block_flow.as_ref().filter(|_| {
+                                        crate::renderer::float_placement::unrestricted_cell_float(
+                                            &nested_table.common,
+                                        )
+                                    }) {
+                                        table_node
+                                            .children
+                                            .extend(cell_node.children.drain(first_new_child..));
+                                        para_y =
+                                            para_y_before_compose + flow.paragraph_advances[cp_idx];
+                                    }
                                     has_preceding_text = true;
                                 }
                             }

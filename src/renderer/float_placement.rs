@@ -19,7 +19,9 @@ mod stored_cell_flow_picture;
 pub(crate) use stored_cell_flow_picture::{
     stored_cell_flow_picture_extent_hu, stored_cell_flow_picture_frame,
 };
+mod reflow_block_cell;
 mod stored_closed_cell_frame;
+pub(crate) use reflow_block_cell::{reflow_block_cell_flow, ReflowBlockCellFlow};
 mod stored_empty_host_frame;
 mod stored_nested_before_host;
 mod stored_nested_closing_host;
@@ -1170,6 +1172,15 @@ pub(crate) fn block_table_trailing_whitespace_line_hu(
         && advance > 0
         && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
         .then_some(advance)
+}
+
+/// 제한 없는 문단 기준 자리차지 개체는 셀 내용 clip 밖에서도 그린다.
+/// 실제 개체 주소는 CellContext로 보존하며 부모 글줄의 clip은 유지한다.
+pub(crate) fn unrestricted_cell_float(common: &CommonObjAttr) -> bool {
+    !common.treat_as_char
+        && !common.flow_with_text
+        && common.text_wrap == TextWrap::TopAndBottom
+        && common.vert_rel_to == VertRelTo::Para
 }
 
 /// The renderer defers visible TopAndBottom host text unless the saved lines

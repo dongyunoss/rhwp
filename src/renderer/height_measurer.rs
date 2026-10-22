@@ -2943,6 +2943,23 @@ impl HeightMeasurer {
         if depth >= Self::MAX_NESTED_DEPTH || cell.text_direction != 0 {
             return None;
         }
+        if let Some(flow) = self.cell_reflow_block_flow(cell, styles, depth) {
+            return Some(crate::renderer::float_placement::StoredBlockCellFlow {
+                paragraph_origins: flow.paragraph_origins,
+                origins: flow
+                    .origins
+                    .iter()
+                    .map(|origins| {
+                        origins
+                            .iter()
+                            .map(|origin| origin.map(|origin| origin.top))
+                            .collect()
+                    })
+                    .collect(),
+                bottom: flow.bottom,
+                closed_before_host: false,
+            });
+        }
         crate::renderer::float_placement::stored_block_cell_flow(
             &cell.paragraphs,
             styles,
@@ -2955,6 +2972,27 @@ impl HeightMeasurer {
                         i32::from(nested.outer_margin_top) + i32::from(nested.outer_margin_bottom),
                         self.dpi,
                     )
+            },
+        )
+    }
+
+    fn cell_reflow_block_flow(
+        &self,
+        cell: &crate::model::table::Cell,
+        styles: &ResolvedStyleSet,
+        depth: usize,
+    ) -> Option<crate::renderer::float_placement::ReflowBlockCellFlow> {
+        if depth >= Self::MAX_NESTED_DEPTH || cell.text_direction != 0 || self.is_hwp3_variant {
+            return None;
+        }
+        crate::renderer::float_placement::reflow_block_cell_flow(
+            &cell.paragraphs,
+            styles,
+            self.dpi,
+            |child| {
+                let stretch = self.render_normalization.nested_table_width_scale(child);
+                let measured = self.measure_table_impl(child, 0, 0, styles, depth + 1, stretch);
+                measured.total_height - measured.caption_height
             },
         )
     }
@@ -5465,6 +5503,12 @@ impl HeightMeasurer {
                     .find(|(_, cell)| cell.row as usize == mc.row && cell.col as usize == mc.col)
                     .unwrap();
                 let mc_cell_w = measured_cell_width_px(cell_index, cell);
+                if let Some(flow) = self.cell_reflow_block_flow(cell, styles, depth) {
+                    mc.para_line_counts = flow.line_advances.iter().map(Vec::len).collect();
+                    mc.line_heights = flow.line_advances.into_iter().flatten().collect();
+                    mc.total_content_height = flow.bottom;
+                    continue;
+                }
                 let frame_paragraphs = measured_frame_paragraphs
                     .get(&cell_index)
                     .map_or(cell.paragraphs.as_slice(), Vec::as_slice);
