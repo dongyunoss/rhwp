@@ -1333,6 +1333,38 @@ impl LayoutEngine {
                     styles,
                 )
             });
+            let opening_cell_cut = (!is_continuation
+                && is_split_end_row
+                && !is_block_split
+                && !start_cut_is_block
+                && cell.row_span == 1)
+                .then(|| {
+                    cell_cut_window(
+                        table,
+                        cell,
+                        start_cut_is_block,
+                        is_block_split,
+                        is_split_start_row,
+                        split_start_block,
+                        is_split_end_row,
+                        split_end_block,
+                        start_cut,
+                        end_cut,
+                        None,
+                        start_row,
+                        end_row.saturating_sub(1),
+                    )
+                });
+            let stored_mixed_opening_frame = opening_cell_cut.and_then(|(start, end)| {
+                self.stored_mixed_opening_cell_frame(
+                    cell,
+                    table,
+                    styles,
+                    start,
+                    end,
+                    resolved_row_heights,
+                )
+            });
             // 저장 텍스트 병합 셀의 마지막 조각은 남은 소유 유닛을 최종 물리 셀 상자 안에서 정렬한다.
             // 연속된 원본 줄 위치도 포함하며, 선택한 컷을 아래 줄 구성과 실제 그리기에 재사용한다.
             let stored_restart_span_frame_owns_alignment = !is_in_split_row
@@ -1617,6 +1649,7 @@ impl LayoutEngine {
                 };
             let frame_owns_alignment = !descendant_owns_closing_band
                 && (ordinary_source_frame_owns_alignment
+                    || stored_mixed_opening_frame.is_some()
                     || closing_source_frame_owns_alignment
                     || computed_frame_owns_alignment
                     || complete_suffix_frame
@@ -2202,6 +2235,8 @@ impl LayoutEngine {
                 frame.content_height
             } else if let Some(frame) = mixed_opening_frame {
                 // 예약한 상자와 같은 source host/child의 닫힌 점유 끝을 정렬한다.
+                frame.content_height
+            } else if let Some(frame) = &stored_mixed_opening_frame {
                 frame.content_height
             } else if let Some(height) = declared_opening_content_height {
                 // 인증한 프레임은 원본 잉크 경계에서 끝난다. 첫 빈 띠와 문단 사이 빈 띠도
@@ -4278,7 +4313,9 @@ impl LayoutEngine {
                                     let stored_square_offset = (collapse_stored_wrap_spacers && start_line == 0)
                                         .then(|| super::super::height_measurer::stored_square_table_anchor_offset(cell, cp_idx))
                                         .flatten();
-                                    let stored_float_frame = (start_line == 0)
+                                    let stored_float_frame = stored_mixed_opening_frame.as_ref()
+                                        .and_then(|frame| frame.placement_for_host(cp_idx, ctrl_idx, text_y_start))
+                                        .or_else(|| (start_line == 0)
                                         .then(|| {
                                             // 저장 위치에 맞춘 빈 호스트는 문단 앞 간격
                                             // 뒤의 저장 줄에서 시작한다. 블록 프레임은
@@ -4314,7 +4351,7 @@ impl LayoutEngine {
                                                             || frame.stored_host_origin.is_some()))
                                             })
                                         })
-                                        .flatten()
+                                        .flatten())
                                         .map(|frame| {
                                             frame.with_cell_column_anchor(
                                                 nested_table,

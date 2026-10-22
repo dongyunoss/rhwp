@@ -42,6 +42,16 @@ pub(super) fn trace_units(cell: &Cell, units: &[CellUnit]) {
     }
 }
 
+/// 저장 혼합 컷의 인증이 끝난 지점을 선택한 셀에 한해 기록한다.
+pub(super) fn trace_mixed_opening(cell: &Cell, stage: &str) {
+    if selected(cell) {
+        eprintln!(
+            "DIAG_MIXED_OPENING row={} col={} stage={stage}",
+            cell.row, cell.col
+        );
+    }
+}
+
 /// 로컬 원점 복원과 독립적인 물리 페이지 경계의 판정을 구분한다.
 pub(super) fn trace_reset_cut(
     cell: &Cell,
