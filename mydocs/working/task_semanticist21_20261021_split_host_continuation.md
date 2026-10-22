@@ -201,3 +201,16 @@ Native097의 정상 KoPub 기준 편람 HWPX는 383/383쪽, 최저 raw 92.61726%
 두 `#[cfg(test)]` 모듈의 호스트 구성이 없는 계약에 맞춰 각각 `None`을 명시했다.
 일반 실행의 조판 로직과 기존 기대값·golden·허용 오차는 변경하지 않았다.
 수정 파일 rustfmt와 diff 검사는 exit 0이며 전체 nextest를 새 커밋에서 재실행한다.
+
+### 경로 클립을 포함하는 기존 paint 검사 순회
+
+전체 Rust 1490은 두 생성자 오류를 해소한 뒤 integration suite 010의 컴파일에서
+exit 101로 종료했다. `legacy_chart_physical_layout`의 기존 배경 탐색 helper가
+새 devel의 `LayerNodeKind::ClipPath`를 처리하지 않았다. 제품의 LayerNode 순회처럼
+`ClipRect`·`ClipPath` 모두 자식 노드에서 배경 paint를 찾도록 수정했다.
+와일드카드로 새 노드를 무시하지 않으며 기존 이미지 색상·원본 불변성 기대값은 유지한다.
+제품 렌더링 코드는 변경하지 않았다. rustfmt·diff 검사는 exit 0이다.
+
+Native098의 편람 383쪽은 Native097과 raster SHA-256이 모두 같다. 최신 Native098
+출력으로 90·94·375쪽의 review·standalone overlay를 새로 만들었으며, 이 사실을
+fresh WASM이나 전체 Rust 검증 완료로 확대하지 않는다.

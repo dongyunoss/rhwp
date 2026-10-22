@@ -277,7 +277,9 @@ fn real_picture_page_background_uses_print_rgb_once_without_mutating_source() {
     fn background(n: &LayerNode) -> Option<&[u8]> {
         match &n.kind {
             LayerNodeKind::Group { children, .. } => children.iter().find_map(background),
-            LayerNodeKind::ClipRect { child, .. } => background(child),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                background(child)
+            }
             LayerNodeKind::Leaf { ops } => ops.iter().find_map(|op| {
                 if let PaintOp::PageBackground { background, .. } = op {
                     background.image.as_ref().map(|i| i.data.as_slice())
