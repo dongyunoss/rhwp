@@ -153,12 +153,17 @@ impl TypesetEngine {
                 let table = input.source.row_geometry_table;
                 let engine = &input.prepared.layout_engine;
                 let styles = input.source.styles;
-                let nested_frame = engine.row_cut_has_original_nested_frame_owners(
-                    table,
-                    row,
-                    &scan.split_end_cut,
-                    styles,
-                );
+                let nested_frame = engine
+                    .stored_nested_parent_opening_frame(
+                        table,
+                        row,
+                        &scan.split_end_cut,
+                        &input.source.measured_table.row_heights,
+                        styles,
+                    )
+                    .is_some_and(|frame| {
+                        (frame.height - height).abs() <= hwpunit_to_px(2, self.dpi)
+                    });
                 if scan.split_end_limit <= 0.0
                     || scan.split_end_cut.is_empty()
                     || !(nested_frame

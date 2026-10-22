@@ -7089,9 +7089,29 @@ impl LayoutEngine {
             body_filling_source_frame,
         );
         let page_cap_fold = (table_y + partial_table_height - page_cap).max(0.0);
+        let accepted_nested_opening_frame = (!is_continuation
+            && start_row == 0
+            && start_cut.is_empty()
+            && !is_block_split
+            && !start_cut_is_block)
+            .then(|| {
+                let frame = self.stored_nested_parent_opening_frame(
+                    table,
+                    end_row.checked_sub(1)?,
+                    end_cut,
+                    &resolved_row_heights,
+                    styles,
+                )?;
+                let height = end_row_height_override?;
+                ((height - frame.last_row_height).abs() <= hwpunit_to_px(2, self.dpi))
+                    .then_some(frame)
+            })
+            .flatten();
         let owns_accepted_row_frame = end_row_height_override.is_some()
             && end_row.checked_sub(1).is_some_and(|row| {
                 self.native_stored_row_has_text_frame_boundary(table, row, styles)
+                    // 같은 첫 물리 상자를 다시 접지 않는다. 셀 정렬 소유와는 별도다.
+                    || accepted_nested_opening_frame.is_some()
                     // 독립 최소를 가진 칸이 수용한 빈 띠만 보존한다.
                     // scan과 같은 소유 판정으로 일반 내용 행의 여백을 늘리지 않는다.
                     || ((self.row_has_continuing_reflow_minimum(table, row, styles)

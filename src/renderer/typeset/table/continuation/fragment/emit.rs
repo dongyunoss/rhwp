@@ -68,6 +68,26 @@ impl TypesetEngine {
         let stored_complete_extent = self
             .stored_partial_fragment_complete_extent(input, budget, &scan)
             .or_else(|| self.stored_body_closing_fragment_extent(st, input, budget, &scan));
+        let nested_opening_extent = (!is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && scan.split_block_start.is_none()
+            && std::ptr::eq(table, row_geometry_table))
+        .then(|| {
+            let frame = layout_engine.stored_nested_parent_opening_frame(
+                row_geometry_table,
+                scan.end_row.checked_sub(1)?,
+                &scan.split_end_cut,
+                &mt.row_heights,
+                styles,
+            )?;
+            let (height, last) = stored_complete_extent?;
+            let tolerance = hwpunit_to_px(2, self.dpi);
+            ((frame.height - height).abs() <= tolerance
+                && (frame.last_row_height - last).abs() <= tolerance)
+                .then_some(frame)
+        })
+        .flatten();
         let block_acceptance =
             self.accept_stored_block_frame(st, continuation, input, budget, &scan);
         let mut fragment_block_frames = mt.fragment_block_frames.clone();
@@ -2268,7 +2288,9 @@ impl TypesetEngine {
             .or_else(|| end_row_height_override
             // 완전히 소비한 것으로 확인된 원본 행은 다음 행으로 전진한다.
             // 수용한 앞부분에 병합 셀 소유자의 공간이 이미 반영되어 있으므로 이전 행의 빈 꼬리로 새 행의 상자를 대체하지 않는다.
-            .filter(|_| !layout_engine.stored_heading_before_inline_frame_cut(
+            // 자식의 저장 컷이 닫는 첫 물리 띠는 전체 논리 행의 소비량이 아니다.
+            // 이 띠를 원본 최소에서 빼 남은 내용보다 작은 상자를 이월하지 않는다.
+            .filter(|_| nested_opening_extent.is_none() && !layout_engine.stored_heading_before_inline_frame_cut(
                 table, end_row.saturating_sub(1),
                 if end_row - 1 == cursor_row { start_cut } else { &[] }, &next_cut, styles,
             ) && !closes_original_body_frame && !complete_source_row_frame && !first_fragment_blank_band && !source_frame_trailing_trim_applied && stored_row_frame.is_none()

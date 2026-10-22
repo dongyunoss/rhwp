@@ -6,12 +6,39 @@ use super::{
 use crate::model::{control::Control, paragraph::LineSeg, paragraph::Paragraph, table::Table};
 use crate::renderer::hwpunit_to_px;
 
-pub(in crate::renderer::layout) struct StoredNestedOpeningFrame {
-    pub(in crate::renderer::layout) height: f64,
-    pub(in crate::renderer::layout) last_row_height: f64,
+pub(crate) struct StoredNestedOpeningFrame {
+    pub(crate) height: f64,
+    pub(crate) last_row_height: f64,
 }
 
 impl LayoutEngine {
+    /// 부모 첫 조각의 별도 물리 상자다. 선택 유닛의 끝을 인증한 뒤 이미
+    /// 수용한 완전 행을 빼며, 이 높이를 전체 논리 행의 소비량으로 쓰지 않는다.
+    pub(crate) fn stored_nested_parent_opening_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        cut: &[usize],
+        measured_rows: &[f64],
+        styles: &ResolvedStyleSet,
+    ) -> Option<StoredNestedOpeningFrame> {
+        if !self.row_cut_has_original_nested_frame_owners(table, row, cut, styles)
+            || !self.stored_row_boxes_exceed_first_frame(table)
+            || !(0..row).all(|owner| self.whole_fragment_row_uses_measured_height(table, owner))
+        {
+            return None;
+        }
+        let height = hwpunit_to_px(i32::try_from(table.common.height).ok()?, self.dpi);
+        let prefix = measured_rows.get(..row)?.iter().sum::<f64>()
+            + hwpunit_to_px(i32::from(table.cell_spacing), self.dpi) * row as f64;
+        let last_row_height = height - prefix;
+        let selected = self.row_cut_height(table, row, &[], cut, styles, CutHeight::Occupied);
+        (prefix >= 0.0 && last_row_height >= selected).then_some(StoredNestedOpeningFrame {
+            height,
+            last_row_height,
+        })
+    }
+
     /// 모든 미완료 칸이 실제 원본 쪽 재시작을 공유하는 첫 자식 컷이다.
     /// 선언 상자의 남은 띠는 마지막 선택 행이 소유하며 줄을 추가 소비하지 않는다.
     pub(in crate::renderer::layout) fn stored_nested_opening_cut_frame(
