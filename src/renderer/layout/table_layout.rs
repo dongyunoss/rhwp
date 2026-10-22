@@ -36,6 +36,7 @@ mod stored_span_reservation;
 mod stored_span_row_owner;
 mod stored_terminal_row_frame;
 mod stored_text_frame_owner;
+mod stored_wrapper_opening_frame;
 mod stored_zero_origin;
 mod straddle_continuation;
 mod tac_host_end;
@@ -26978,6 +26979,11 @@ impl LayoutEngine {
                 self.declared_nested_opening_cut_height(table, start_cut, end_cut, styles)
             {
                 return height;
+            }
+            if let Some(frame) =
+                self.stored_wrapper_opening_frame(table, start_cut, end_cut, styles)
+            {
+                return frame.height;
             }
         }
         if !start_cut.is_empty() && end_cut.is_empty() {

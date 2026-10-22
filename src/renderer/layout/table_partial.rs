@@ -4843,6 +4843,12 @@ impl LayoutEngine {
                                                                 )
                                                                 .map(|(_, y)| y)
                                                             })
+                                                            .or_else(|| {
+                                                                self.stored_wrapper_opening_frame(
+                                                                    table, start_cut, end_cut, styles,
+                                                                )
+                                                                .map(|frame| cell_y + frame.child_top)
+                                                            })
                                                     })
                                                     .or_else(|| {
                                                         // 투영된 첫 행 유닛은 이 위쪽 바깥 띠를
