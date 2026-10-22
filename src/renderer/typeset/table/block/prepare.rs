@@ -1024,6 +1024,13 @@ impl TypesetEngine {
             } else {
                 f64::MAX
             };
+            // NO_LS 블록 호스트의 작은 글자 상자는 자식 첫 유닛의 수용 근거가
+            // 아니다. 실제 컷이 요구하는 높이까지 들어가야 현재 쪽을 유지한다.
+            let min_content = min_content.max(
+                layout_engine
+                    .reflow_row_opening_cut_height(row_geometry_table, 0, styles)
+                    .unwrap_or(0.0),
+            );
             // [Task #1046 Stage 3] 다행(多行) 표의 비분할 첫 행/블록이 잔여공간엔 안
             // 들어가지만 fresh 페이지엔 통째 들어가면 다음 페이지로 이월한다. 첫 행은
             // 행 내부 분할이 안 되고(=is_row_splittable=false) 표에 후속 행 경계가 있어
