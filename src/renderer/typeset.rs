@@ -3895,7 +3895,7 @@ impl TypesetEngine {
         lanes: &mut FloatLaneSet,
         paragraphs: &[Paragraph],
     ) -> bool {
-        if self.stored_two_line_row_frames_require_split(table, styles) {
+        if self.stored_cell_page_frames_require_split(table, styles) {
             return false;
         }
         // 앞 조각의 새 문자 줄로 현재 단의 흐름이 바뀌었으면 후속 표의

@@ -29,6 +29,49 @@ impl LayoutEngine {
             && Self::stored_row_boxes_exceed_object_frame(table)
     }
 
+    /// 원본 같은 문단 안의 실제 쪽 재시작은 개체 전체 높이가 들어가도
+    /// 조각 스캐너를 거쳐야 한다. 문단마다 0인 지역 좌표는 인증하지 않는다.
+    /// 스캐너가 소비할 유닛의 경계와 원본 글줄을 함께 확인한다.
+    pub(crate) fn native_stored_table_has_intra_paragraph_frames(
+        &self,
+        table: &Table,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        self.profile.get().hwp5_stored_pagination_layout()
+            && self.original_stored_table_frame_is_usable(table)
+            && table.cells.iter().any(|cell| {
+                if cell.row_span != 1 || cell.dirty_flag {
+                    return false;
+                }
+                self.cell_units(cell, table, styles)
+                    .windows(2)
+                    .any(|units| {
+                        let [before, after] = units else {
+                            return false;
+                        };
+                        if !after.hard_break_before
+                            || !after.page_frame_reset_before
+                            || before.para_idx != after.para_idx
+                            || before.vis_end != after.vis_start
+                        {
+                            return false;
+                        }
+                        let paragraph = &cell.paragraphs[after.para_idx];
+                        if !source_paragraph(paragraph) {
+                            return false;
+                        }
+                        before
+                            .vis_end
+                            .checked_sub(1)
+                            .and_then(|index| paragraph.line_segs.get(index))
+                            .zip(paragraph.line_segs.get(after.vis_start))
+                            .is_some_and(|(last, first)| {
+                                last.vertical_pos > 0 && first.vertical_pos == 0
+                            })
+                    })
+            })
+    }
+
     /// HWP/HWPX의 원본 조각은 같은 저장 좌표·문단 간격 인증을 쓴다.
     /// 문단마다 0인 지역 원점만으로 쪽 경계를 만들지 않는다. 선언 행의 합이
     /// 원본 object보다 크거나, 원본 첫 글줄 조각이 object를 정확히 닫아야 한다.

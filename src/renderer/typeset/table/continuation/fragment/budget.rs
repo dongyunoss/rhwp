@@ -772,7 +772,7 @@ impl TypesetEngine {
                 && para.line_segs.len() == 1
                 && !is_synthetic_line_seg(&para.line_segs[0])
                 && (table.cells.iter().all(|cell| cell.row_span == 1)
-                    || self.stored_two_line_row_frames_require_split(table, input.source.styles))
+                    || self.stored_cell_page_frames_require_split(table, input.source.styles))
                 && table.cells.iter().all(|cell| {
                     !cell.dirty_flag
                         && cell.paragraphs.iter().all(|paragraph| {
@@ -788,7 +788,7 @@ impl TypesetEngine {
                 && table.caption.is_none()
                 && !self.render_normalization.table_text_reflowed(table)
                 && (crate::renderer::typeset::rowbreak_table_has_internal_saved_vpos_reset(table)
-                    || self.stored_two_line_row_frames_require_split(table, input.source.styles))
+                    || self.stored_cell_page_frames_require_split(table, input.source.styles))
                 && st.current_zone_y_offset.abs() < f64::EPSILON)
                 .then(|| {
                     let previous = input.source.paragraphs_all.get(para_idx.checked_sub(1)?)?;
