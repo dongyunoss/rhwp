@@ -14751,8 +14751,13 @@ impl LayoutEngine {
                     }
                     if previous.is_some_and(|prev| {
                         seg.vertical_pos < prev.vertical_pos
-                            && is_stored_frame_rewind(prev, seg, para_idx, line_idx)
+                            && (self.native_intra_paragraph_source_restart(
+                                table, cell, para_idx, line_idx,
+                            ) || is_stored_frame_rewind(prev, seg, para_idx, line_idx))
                     }) {
+                        // 내용 좌표의 새 원점을 이전 프레임의 누적 유닛 뒤에 잇는다.
+                        // 이 변환은 물리 쪽 나눔을 강제하지 않는다. 실제 쪽 수용은
+                        // 원본 개체 프레임을 닫는 독립 인증과 스캐너가 결정한다.
                         frames.push((para_idx, line_idx, seg.vertical_pos.max(0)));
                     }
                     previous = Some(seg);
@@ -15923,6 +15928,20 @@ impl LayoutEngine {
                                 )
                             },
                         );
+                    // 마지막 호스트가 표 뒤의 원본 글줄이면 그 줄 상자도 셀의
+                    // 내용이다. 앞 줄 끝과 표 바깥 상자가 닫는 같은 계획을 쓰며,
+                    // 다음 줄이 없는 셀 끝의 line-spacing은 추가하지 않는다.
+                    let terminal_host_slot = stored_frame
+                        .filter(|frame| {
+                            host_is_cell_last_para
+                                && frame.flow
+                                    == crate::renderer::float_placement::ParagraphFloatFlow::NextLine
+                        })
+                        .and_then(|frame| {
+                            frame.stored_host_origin.map(|origin| frame.occupied_bottom - origin)
+                        })
+                        .unwrap_or(0.0);
+                    let terminal_band = terminal_band + terminal_host_slot;
                     // [#6599] 행 유닛 합에 **중첩 표의 캡션**이 빠져 있었다. 같은
                     // 호스트를 통째로 한 유닛(atom)으로 올리는 갈래는 저장 줄높이가
                     // 캡션을 이미 품지만, 행 단위로 쪼개는 이 갈래는 행 높이만 센다.

@@ -4309,8 +4309,9 @@ impl LayoutEngine {
                                                 // 아직 자식 표를 소비하지 않았으므로 그
                                                 // 커서에서 표 높이를 다시 빼면 앞 행에 겹친다.
                                                 !matches!(frame.flow, crate::renderer::float_placement::ParagraphFloatFlow::NextLine)
-                                                    || (cut_units.is_none()
-                                                        && table_host_has_stored_origin)
+                                                    || (table_host_has_stored_origin
+                                                        && (cut_units.is_none()
+                                                            || frame.stored_host_origin.is_some()))
                                             })
                                         })
                                         .flatten()

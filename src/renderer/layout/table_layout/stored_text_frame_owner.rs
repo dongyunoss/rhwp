@@ -29,9 +29,32 @@ impl LayoutEngine {
             && Self::stored_row_boxes_exceed_object_frame(table)
     }
 
-    /// 원본 같은 문단 안의 실제 쪽 재시작은 개체 전체 높이가 들어가도
-    /// 조각 스캐너를 거쳐야 한다. 문단마다 0인 지역 좌표는 인증하지 않는다.
-    /// 스캐너가 소비할 유닛의 경계와 원본 글줄을 함께 확인한다.
+    /// 같은 원본 문단의 좌표 재시작이다. 이 사실만으로 물리 쪽을 강제하지 않는다.
+    /// 측정의 지역 좌표 변환과 물리 프레임 인증이 같은 원본 경계를 조회한다.
+    pub(super) fn native_intra_paragraph_source_restart(
+        &self,
+        table: &Table,
+        cell: &Cell,
+        paragraph: usize,
+        line: usize,
+    ) -> bool {
+        let Some(para) = cell.paragraphs.get(paragraph) else {
+            return false;
+        };
+        self.profile.get().hwp5_stored_pagination_layout()
+            && self.original_stored_table_frame_is_usable(table)
+            && cell.row_span == 1
+            && !cell.dirty_flag
+            && source_paragraph(para)
+            && line
+                .checked_sub(1)
+                .and_then(|index| para.line_segs.get(index))
+                .zip(para.line_segs.get(line))
+                .is_some_and(|(last, first)| last.vertical_pos > 0 && first.vertical_pos == 0)
+    }
+
+    /// 실제 스캐너의 문단 내부 컷과 원본 개체의 첫 물리 프레임이 함께 닫히는가.
+    /// 내용의 지역 재시작만으로 전체 표 수용을 금지하지 않는다.
     pub(crate) fn native_stored_table_has_intra_paragraph_frames(
         &self,
         table: &Table,
@@ -43,6 +66,10 @@ impl LayoutEngine {
                 if cell.row_span != 1 || cell.dirty_flag {
                     return false;
                 }
+                let Some(prefix) = source_rows_before_hu(table, cell.row) else {
+                    return false;
+                };
+                let padding = cell.effective_padding(&table.padding);
                 self.cell_units(cell, table, styles)
                     .windows(2)
                     .any(|units| {
@@ -53,21 +80,22 @@ impl LayoutEngine {
                             || !after.page_frame_reset_before
                             || before.para_idx != after.para_idx
                             || before.vis_end != after.vis_start
+                            || !self.native_intra_paragraph_source_restart(
+                                table,
+                                cell,
+                                after.para_idx,
+                                after.vis_start,
+                            )
                         {
                             return false;
                         }
-                        let paragraph = &cell.paragraphs[after.para_idx];
-                        if !source_paragraph(paragraph) {
-                            return false;
-                        }
-                        before
-                            .vis_end
-                            .checked_sub(1)
-                            .and_then(|index| paragraph.line_segs.get(index))
-                            .zip(paragraph.line_segs.get(after.vis_start))
-                            .is_some_and(|(last, first)| {
-                                last.vertical_pos > 0 && first.vertical_pos == 0
-                            })
+                        let last = &cell.paragraphs[before.para_idx].line_segs[before.vis_end - 1];
+                        let end = prefix
+                            + i64::from(last.vertical_pos)
+                            + i64::from(last.line_height)
+                            + i64::from(padding.top)
+                            + i64::from(padding.bottom);
+                        (end - i64::from(table.common.height)).abs() <= 2
                     })
             })
     }
@@ -134,6 +162,28 @@ fn source_row_height_hu(cell: &Cell, table: &Table) -> Option<i64> {
     Some((bottom + i64::from(padding.top) + i64::from(padding.bottom)).max(i64::from(cell.height)))
 }
 
+/// 선행 행의 독립 원본 높이. 걸친 셀과 개체·되감김으로 닫히지 않는 행은 제외한다.
+fn source_rows_before_hu(table: &Table, end_row: u16) -> Option<i64> {
+    let mut prefix = 0_i64;
+    for row in 0..end_row {
+        // 앞 행을 가로지르는 rowspan은 이 독립 행 합으로 증명할 수 없다.
+        if table.cells.iter().any(|peer| {
+            usize::from(peer.row) <= usize::from(row)
+                && usize::from(row) < usize::from(peer.row) + usize::from(peer.row_span)
+                && peer.row_span != 1
+        }) {
+            return None;
+        }
+        let mut row_height = None;
+        for peer in table.cells.iter().filter(|peer| peer.row == row) {
+            let height = source_row_height_hu(peer, table)?;
+            row_height = Some(row_height.unwrap_or(0_i64).max(height));
+        }
+        prefix += row_height? + i64::from(table.cell_spacing);
+    }
+    Some(prefix)
+}
+
 /// 첫 문단 간 재시작 직전의 원본 잉크가 소유한 표 좌표계 끝점이다.
 /// 뒤 조각의 개체는 첫 조각의 인증을 무효화하지 않는다. 인증 전에 만난 개체나
 /// 합성 줄·문단 내부 되감김은 이 문단 간 텍스트 프레임의 증거로 쓰지 않는다.
@@ -174,23 +224,7 @@ fn opening_text_frame_end_hu(
         }
     }
     let closing = closing?;
-    let mut prefix = 0_i64;
-    for row in 0..cell.row {
-        // 앞 행을 가로지르는 rowspan은 이 독립 행 합으로 증명할 수 없다.
-        if table.cells.iter().any(|peer| {
-            usize::from(peer.row) <= usize::from(row)
-                && usize::from(row) < usize::from(peer.row) + usize::from(peer.row_span)
-                && peer.row_span != 1
-        }) {
-            return None;
-        }
-        let mut row_height = None;
-        for peer in table.cells.iter().filter(|peer| peer.row == row) {
-            let height = source_row_height_hu(peer, table)?;
-            row_height = Some(row_height.unwrap_or(0_i64).max(height));
-        }
-        prefix += row_height? + i64::from(table.cell_spacing);
-    }
+    let prefix = source_rows_before_hu(table, cell.row)?;
     let padding = cell.effective_padding(&table.padding);
     Some(
         prefix
