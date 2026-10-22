@@ -135,6 +135,16 @@ impl DocumentCore {
         stored_end_before: Option<i32>,
     ) {
         self.reflow_paragraph(section_idx, para_idx);
+        self.finish_body_inline_object_reflow(section_idx, para_idx, stored_end_before);
+    }
+
+    /// 이미 구성한 줄 결과를 후속 본문 원점에 반영한다. 같은 문단을 다시 조판하지 않는다.
+    pub(crate) fn finish_body_inline_object_reflow(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        stored_end_before: Option<i32>,
+    ) {
         let hwp3_layout = self.document.layout_profile().hwp3_layout();
         crate::renderer::composer::recalculate_section_vpos(
             &mut self.document.sections[section_idx].paragraphs,
