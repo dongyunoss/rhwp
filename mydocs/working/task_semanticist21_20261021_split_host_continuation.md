@@ -185,3 +185,19 @@ Native097의 정상 KoPub 기준 편람 HWPX는 383/383쪽, 최저 raw 92.61726%
 재실행한 `cargo fmt --all -- --check`는 exit 0이다. 로직·조건·허용 오차는 변경하지 않았다.
 `rust-test-suite-manifest.mjs --prepare`는 exit 0이며 정식 자동 수집 경로를 다시 생성했다.
 형식 정리 후 소스의 Native 빌드와 회귀·시각 대조는 별도로 확인한다.
+
+### 최종 Native 재검증과 단위 생성자 보완
+
+형식 정리 후 `70701864ef6fde72ff3a2465c9993cac5c881624`의 Native098을
+깨끗한 작업 트리에서 빌드했다(exit 0, 231.11초). 편람 HWPX는 383/383쪽,
+최저 raw 92.61726%, 새 devel 증거 대비 0.1%p 이상 하락 0쪽이다.
+기존 표 분할 17조건은 39/39쪽, 최저 raw 98.47238%, 쪽수 불일치 0건이며
+집중 회귀 13건도 모두 통과했다. 이는 Native 결과이며 fresh WASM 완료로 확대하지 않는다.
+
+전체 nextest 1484는 테스트 실행 전 컴파일에서 exit 101로 종료됐다.
+리베이스로 들어온 `issue_3780_line_advance_oob::fp`와
+`issue2424_block_table_context_owns_step_lifecycle`의 구조체 생성자에
+현재 브랜치의 `host_composition`·`computed_host_tail` 초기값이 없었다.
+두 `#[cfg(test)]` 모듈의 호스트 구성이 없는 계약에 맞춰 각각 `None`을 명시했다.
+일반 실행의 조판 로직과 기존 기대값·golden·허용 오차는 변경하지 않았다.
+수정 파일 rustfmt와 diff 검사는 exit 0이며 전체 nextest를 새 커밋에서 재실행한다.

@@ -6467,6 +6467,7 @@ mod issue_3780_line_advance_oob {
             computed_paragraph: None,
             tail_line_remaining_width: None,
             computed_host_lines: None,
+            host_composition: None,
             square_host_plan: None,
             total_height: 0.0,
             line_heights: vec![10.0; lines],
@@ -7500,6 +7501,7 @@ mod tests {
     #[test]
     fn issue2424_block_table_context_owns_step_lifecycle() {
         let prepared = BlockTableContinuationPreparedState {
+            computed_host_tail: None,
             first_anchor_offset_consumed: false,
             opening_rowspan_block_cuts_after_first_row: false,
             host_placement: None,
