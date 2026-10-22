@@ -882,3 +882,39 @@ Cargo.toml의 rust lint 설정을 동일하게 공급한 재실행에서 105개 
 모두 일치했다. 이전 전체 실패 55개의 현재 재실행과 같은 소스의 fresh WASM,
 새 원본 첫 혼합 프레임 회귀·전체 Rust/lint·남은 차트 검토는 아직 완료 전이다.
 현재 Native 결과만으로 PR 준비 완료를 선언하지 않는다.
+
+
+## 현재 실패 재실행과 다음 공통 원인 분석
+
+Native115와 같은 제품 소스를 커밋 `d61beab674`에 보존한 뒤 599개 source
+snapshot이 실제 커밋 바이트와 모두 같은 것을 확인했다. 이전 전체 nextest에서
+실패한 integration 검사 55개를 현재 동결 rlib에 한 번 연결하고, 각 검사를
+개별 프로세스로 실행했다. 실제 결과는 2 PASS / 53 FAIL / 누락 0개다.
+통과한 두 개는 #8060 저장 행 재시작과 #7972 비활성 여백이다. source-side
+글자겹침 검사 1개는 앞의 105 PASS에 포함되며 이 55개 집계에는 포함하지 않는다.
+차트 crate의 단위 검사·다른 lib 검사와 전체 nextest를 실행한 결과도 아니다.
+
+직접 링크의 최초 시도는 검사 모듈의 zip/image 의존성을 공급하지 않아 중단됐다.
+현재 rhwp fingerprint의 동일 의존 rlib를 추가한 재시도에서 55개 모두 실제로
+실행했다. Cargo.toml의 rust lint 설정도 동일하게 적용했다. 중단 로그를 보존하고
+실제 실행과 구분한다. `current-previous-failures-1741-result.json` 및
+`current-remaining-failures-1747.json`이 현재 실패 이름·소스·실행 로그를 연결한다.
+예전 65 FAIL을 현재 전체 실패 수로 보고하지 않는다.
+
+특히 #7671 원 PR `67764a121`은 HWP 직렬화 직전 제어 갭과 8유닛 번호 자리표를
+다룬다. 이후 #7935의 `ed97e78cb1`은 모델 scalar 위치를 유지하며 표시 문자열과
+측정·배치를 공유하도록 보정하고 독립 Print 증거를 추가했다. 현재 여섯 정식
+Print 위치 검사는 source control 자리표 확인을 통과한 뒤 표시 필드의 같은
+`char_start` 소속을 찾지 못한다. 실제 Native115 CLI 트리에는 번호와 뒤 글자가
+존재하지만 compact JSON은 char_start를 생략하므로 그 출력만으로 소속 원인을
+확정하지 않는다. 필드·각주·개체가 공유하는 원문 축과 별도 편집 칸을 추적한다.
+`emitted_inline_slots`가 이후 최종 TextRun·선택 영역에 소비되는 위치와
+`ComposedTextRun::source_scalar_count`를 함께 확인하며, 기존 기대값은 바꾸지 않는다.
+
+최적화 fresh043은 `d61beab674`의 동일 소스에서 빌드 중이다. actual Cargo/rustc
+프로세스를 확인했고 중복 빌드를 시작하지 않았다. 완료 후 같은 원본 18쪽을
+먼저 검증하고 기존 대조군과 리베이스 보존 검증을 이어가도록 예약했다. 추가
+편람 HWP판 실행은 사용자 정정에 따라 목록에서 제외했다. 로그는
+`logs/char-overlap-fresh-wasm-build-043.log`,
+`logs/wasm043-validation-1738-driver.log`에 보존한다. 제품 소스를 바꾸지 않고
+남은 실패를 분석하며, fresh 완료와 전체 필수 gate 전에는 PR을 제출하지 않는다.
