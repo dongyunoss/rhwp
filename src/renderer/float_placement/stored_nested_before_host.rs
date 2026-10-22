@@ -139,7 +139,8 @@ fn terminal_table_before_host_frame(
         stored_successor_line_origin: None,
         table_left: None,
         table_top: anchor_y + offset + top,
-        occupied_bottom: host_origin + hwpunit_to_px(host.line_height, dpi) + style.spacing_after,
+        // 셀의 마지막 문단 뒤 간격은 일반 셀 유닛과 동일하게 점유하지 않는다.
+        occupied_bottom: host_origin + hwpunit_to_px(host.line_height, dpi),
     })
 }
 

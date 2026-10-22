@@ -3,8 +3,7 @@
 use crate::renderer::typeset::{
     controls, hwpunit_to_px, is_synthetic_line_seg, nearest_saved_rowbreak_frame_row_end,
     para_has_non_whitespace_text, para_has_visible_text, paragraph,
-    partial_rowbreak_fragment_spacing_px, row_geometry_table,
-    rowbreak_row_has_internal_saved_vpos_reset,
+    partial_rowbreak_fragment_spacing_px, rowbreak_row_has_internal_saved_vpos_reset,
     saved_rowbreak_first_fragment_flow_overflow_allowance, table,
     table_declared_object_covers_cell_row_frames, Control, TypesetEngine, TypesetState,
     SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,

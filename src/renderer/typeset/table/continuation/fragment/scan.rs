@@ -1,8 +1,8 @@
 //! Read-only scan and footnote-aware refit. Returns cuts; does not emit page items.
 
 use crate::renderer::typeset::{
-    controls, row_geometry_table, table, table_declared_object_covers_cell_row_frames,
-    BlockRowScanVars, BlockTableRowScan, Control, Footnote, TypesetEngine, TypesetState,
+    controls, table, table_declared_object_covers_cell_row_frames, BlockRowScanVars,
+    BlockTableRowScan, Control, Footnote, TypesetEngine, TypesetState,
 };
 
 use super::super::TableContinuationCursor;

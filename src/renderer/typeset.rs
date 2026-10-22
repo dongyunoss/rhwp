@@ -1767,46 +1767,6 @@ fn is_stored_anchor_picture_table(table: &crate::model::table::Table) -> bool {
             || is_two_row_picture_caption_rowbreak_table(table))
 }
 
-/// 측정기와 렌더러가 풀어 쓰는 빈 1×1 래퍼 표의 실제 행 기하를 돌려준다.
-///
-/// 래퍼의 page-anchor·caption·PageItem 메타데이터는 원본 표에 남아 있어야 한다.
-/// 반면 `MeasuredTable`과 행 컷(`advance_row_cut`)은 내부 표의 행을 기준으로
-/// 동작한다. 두 경로가 다른 표를 참조하면 행 수가 1 대 N으로 갈라져, 보이지
-/// 않는 래퍼 행 높이가 쪽 소비에 더해진다. `table_layout` 및
-/// `HeightMeasurer::measure_table_impl`의 unwrap 조건과 의도적으로 동일하다.
-///
-/// [Issue #4326] fallback `Paginator`(`pagination/engine.rs`)도 같은 unwrap 여부를
-/// `PageItem::PartialTable::row_cursor_is_nested`에 실어야 하므로 crate 내부에 공개한다.
-pub(crate) fn row_geometry_table(
-    table: &crate::model::table::Table,
-) -> &crate::model::table::Table {
-    let mut effective = table;
-    loop {
-        if effective.row_count != 1 || effective.col_count != 1 || effective.cells.len() != 1 {
-            return effective;
-        }
-        let cell = &effective.cells[0];
-        if cell.paragraphs.len() != 1 {
-            return effective;
-        }
-        let para = &cell.paragraphs[0];
-        let has_visible_text = para
-            .text
-            .chars()
-            .any(|ch| !ch.is_whitespace() && ch != '\r' && ch != '\n');
-        if has_visible_text {
-            return effective;
-        }
-        let Some(nested) = para.controls.iter().find_map(|control| match control {
-            Control::Table(table) => Some(table.as_ref()),
-            _ => None,
-        }) else {
-            return effective;
-        };
-        effective = nested;
-    }
-}
-
 /// 1×1 RowBreak 표의 실측 높이가 선언 객체 높이와 같은 범위인지 판별한다.
 ///
 /// 그림 표가 아니더라도 이 형상은 한컴이 empty host의 raw vpos에 직접 배치할 수

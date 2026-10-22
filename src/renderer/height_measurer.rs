@@ -47,7 +47,9 @@ pub(crate) fn transparent_table_wrapper_child<'a>(
     table: &'a Table,
     styles: &ResolvedStyleSet,
 ) -> Option<&'a Table> {
-    if wrapper_owns_paint_or_horizontal_frame(table, styles) {
+    if wrapper_owns_paint_or_horizontal_frame(table, styles)
+        || table_wrapper::wrapper_owns_row_fragment_frame(table, styles)
+    {
         return None;
     }
     let [cell] = table.cells.as_slice() else {
@@ -780,6 +782,8 @@ pub struct MeasuredTable {
     pub para_index: usize,
     /// 컨트롤 인덱스
     pub control_index: usize,
+    /// 측정한 행의 소유 표까지 펼친 투명 래퍼 수. 분할기는 이 확정 결과를 소비한다.
+    pub unwrapped_table_depth: usize,
     /// 총 높이 (px, 캡션 포함)
     pub total_height: f64,
     /// 행별 높이 목록 (px)
@@ -3213,6 +3217,7 @@ impl HeightMeasurer {
                 row_heights: vec![0.0; rc],
                 baseline_row_heights: None,
                 fragment_block_frames: Vec::new(),
+                unwrapped_table_depth: 0,
                 caption_height: 0.0,
                 cell_spacing: 0.0,
                 cumulative_heights: vec![0.0; rc + 1],
@@ -3227,7 +3232,7 @@ impl HeightMeasurer {
         // 측정 행과 실제 배치가 같은 표를 소유해야 한다. 독립적인 셀 채움이나
         // 자식 문단 프레임이 있으면 부모 행을 측정하고 일반 셀 경로를 유지한다.
         if let Some(nested) = transparent_table_wrapper_child(table, styles) {
-            return self.measure_table_impl(
+            let mut measured = self.measure_table_impl(
                 nested,
                 para_index,
                 control_index,
@@ -3235,6 +3240,8 @@ impl HeightMeasurer {
                 depth,
                 width_scale,
             );
+            measured.unwrapped_table_depth += 1;
+            return measured;
         }
 
         // 표 레이아웃은 열 그리드를 먼저 해석한 뒤 셀 문단을 그 너비에 맞춰 줄바꿈한다.
@@ -5537,6 +5544,7 @@ impl HeightMeasurer {
             row_heights,
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height,
             cell_spacing,
             cumulative_heights,
@@ -6549,6 +6557,7 @@ mod tests {
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 5.0,
             cumulative_heights: vec![0.0, 20.0, 55.0, 85.0], // 0, 20, 20+30+5, 55+25+5
@@ -6573,6 +6582,7 @@ mod tests {
             row_heights: vec![20.0, 30.0, 25.0, 40.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 5.0,
             cumulative_heights: vec![0.0, 20.0, 55.0, 85.0, 130.0],
@@ -6604,6 +6614,7 @@ mod tests {
             row_heights: vec![50.0, 30.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 5.0,
             cumulative_heights: vec![0.0, 50.0, 85.0],
@@ -6627,6 +6638,7 @@ mod tests {
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 5.0,
             cumulative_heights: vec![0.0, 20.0, 55.0, 85.0],
@@ -6661,6 +6673,7 @@ mod tests {
             row_heights: vec![50.0, 30.0, 25.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 5.0,
             cumulative_heights: vec![0.0, 50.0, 85.0, 115.0],
@@ -6690,6 +6703,7 @@ mod tests {
             row_heights: vec![],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 0.0,
             cumulative_heights: vec![0.0],
@@ -6713,6 +6727,7 @@ mod tests {
             row_heights: vec![50.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 0.0,
             cumulative_heights: vec![0.0, 50.0],
@@ -6838,6 +6853,7 @@ mod tests {
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 5.0,
             cumulative_heights: vec![0.0, 20.0, 55.0, 85.0],
@@ -6872,6 +6888,7 @@ mod tests {
             row_heights: vec![20.0, 30.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 5.0,
             cumulative_heights: vec![0.0, 20.0, 55.0],
@@ -6900,6 +6917,7 @@ mod tests {
             row_heights: vec![10.0, 10.0, 10.0, 10.0, 10.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 0.0,
             cumulative_heights: vec![0.0, 10.0, 20.0, 30.0, 40.0, 50.0],
@@ -6934,6 +6952,7 @@ mod tests {
             row_heights: vec![10.0, 10.0, 10.0, 10.0, 10.0],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 0.0,
             cumulative_heights: vec![0.0, 10.0, 20.0, 30.0, 40.0, 50.0],
@@ -6960,6 +6979,7 @@ mod tests {
             row_heights: vec![],
             baseline_row_heights: None,
             fragment_block_frames: Vec::new(),
+            unwrapped_table_depth: 0,
             caption_height: 0.0,
             cell_spacing: 0.0,
             cumulative_heights: vec![0.0],

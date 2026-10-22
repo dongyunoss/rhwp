@@ -1,7 +1,7 @@
 //! 수용한 조각의 배치, 대기 중인 각주 처리, 커서 전진을 원래 순서대로 확정한다.
 
 use crate::renderer::typeset::{
-    hwpunit_to_px, is_synthetic_line_seg, row_geometry_table, table, BlockTableRowScan, PageItem,
+    hwpunit_to_px, is_synthetic_line_seg, table, BlockTableRowScan, PageItem,
     TableContinuationIteration, TypesetEngine, TypesetState, VisibleFloatExclusion,
     MIN_TOP_KEEP_PX,
 };

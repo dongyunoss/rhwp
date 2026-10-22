@@ -4,10 +4,9 @@ use crate::renderer::typeset::{
     controls, hwpunit_to_px, is_page_bottom_fixed_float, is_para_topbottom_float,
     is_synthetic_line_seg, line_seg_visible_bounds_px,
     native_hwp5_saved_rowbreak_tail_frame_matches, para_has_non_whitespace_text,
-    para_has_visible_text, raw_table_ctrl_height_px, row_geometry_table,
-    rowbreak_table_has_internal_saved_vpos_reset, saved_bounds_overlap_current_flow,
-    signed_hwpunit, single_line_visible_bounds_px, table, Control, PageItem, TypesetEngine,
-    TypesetState, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
+    para_has_visible_text, raw_table_ctrl_height_px, rowbreak_table_has_internal_saved_vpos_reset,
+    saved_bounds_overlap_current_flow, signed_hwpunit, single_line_visible_bounds_px, table,
+    Control, PageItem, TypesetEngine, TypesetState, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
 };
 
 use super::{BlockTableInput, HostPlacementConstraint, SplitTableEntry};
@@ -2591,7 +2590,7 @@ impl TypesetEngine {
         // 1×1 RowBreak wrapper뿐이다. 모든 native 표에 바깥 행 기하를 적용하면
         // 일반 중첩 표의 행 cursor가 달라져 59043 pagination이 39 -> 41쪽으로
         // 회귀한다. 따라서 physical continuation 계약이 있는 wrapper로만 좁힌다.
-        let effective_row_geometry_table = row_geometry_table(table);
+        let effective_row_geometry_table = mt.row_geometry_table(table);
         let hwp5_single_cell_rowbreak_wrapper = (st.profile.hwp5_stored_pagination_layout()
             || st.profile.hwp5_origin_hwpx())
             && table.row_count == 1

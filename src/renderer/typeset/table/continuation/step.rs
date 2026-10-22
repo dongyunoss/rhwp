@@ -1,8 +1,8 @@
 //! 표 도메인 조정. 기존 평가·상태 쓰기 순서를 보존한다.
 
 use crate::renderer::typeset::{
-    paragraph, row_geometry_table, table, BlockTableContinuationContext,
-    BlockTableContinuationSource, Issue2424TypesetProfile, TypesetEngine, TypesetState,
+    paragraph, table, BlockTableContinuationContext, BlockTableContinuationSource,
+    Issue2424TypesetProfile, TypesetEngine, TypesetState,
 };
 
 use super::fragment::FragmentProfile;

@@ -6,11 +6,10 @@ use crate::renderer::typeset::{
     is_two_row_picture_caption_rowbreak_table, line_seg_visible_bounds_px,
     native_hwp5_rowbreak_host_precedes_first_fragment, native_terminal_child_host_line_spacing,
     none_table_is_atomic_here, notes, para_has_non_whitespace_text, para_has_visible_text,
-    paragraph, partial_rowbreak_fragment_spacing_px, row_geometry_table,
-    rowbreak_table_has_internal_saved_vpos_reset, stored_square_picture_has_adjacent_text, table,
-    BlockTableContinuationContext, BlockTableContinuationPreparedState,
-    BlockTableContinuationSource, CaptionDirection, Control, PageItem, TypesetEngine, TypesetState,
-    MIN_TOP_KEEP_PX, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
+    paragraph, partial_rowbreak_fragment_spacing_px, rowbreak_table_has_internal_saved_vpos_reset,
+    stored_square_picture_has_adjacent_text, table, BlockTableContinuationContext,
+    BlockTableContinuationPreparedState, BlockTableContinuationSource, CaptionDirection, Control,
+    PageItem, TypesetEngine, TypesetState, MIN_TOP_KEEP_PX, SINGLE_ROW_DECLARED_TRUST_MAX_RATIO,
 };
 
 use super::{BlockTableInput, SplitTableEntry};

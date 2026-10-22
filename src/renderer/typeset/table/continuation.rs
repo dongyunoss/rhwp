@@ -5,8 +5,8 @@ mod job;
 mod step;
 
 use crate::renderer::typeset::{
-    paragraph, row_geometry_table, table, ComposedParagraph, FootnoteFragment, MeasuredTable,
-    Paragraph, ResolvedStyleSet, TableCellFootnote, TypesetState,
+    paragraph, table, ComposedParagraph, FootnoteFragment, MeasuredTable, Paragraph,
+    ResolvedStyleSet, TableCellFootnote, TypesetState,
 };
 
 /// [#2424] block-table continuation loop의 재개 지점.

@@ -1,9 +1,8 @@
 //! 블록 표의 통째 배치·분할 준비·이어받기 호출 경로.
 
 use crate::renderer::typeset::{
-    row_geometry_table, table, BlockTableContinuationContext, ComposedParagraph,
-    FormattedParagraph, FormattedTable, MeasuredTable, Paragraph, ResolvedStyleSet, TypesetEngine,
-    TypesetState,
+    table, BlockTableContinuationContext, ComposedParagraph, FormattedParagraph, FormattedTable,
+    MeasuredTable, Paragraph, ResolvedStyleSet, TypesetEngine, TypesetState,
 };
 
 use host_placement::HostPlacementConstraint;
