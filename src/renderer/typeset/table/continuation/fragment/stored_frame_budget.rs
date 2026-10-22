@@ -155,7 +155,13 @@ impl TypesetEngine {
                 let styles = input.source.styles;
                 if scan.split_end_limit <= 0.0
                     || scan.split_end_cut.is_empty()
-                    || !engine.row_has_original_plain_text_owners(table, row, &scan.split_end_cut)
+                    || !(engine.row_has_original_plain_text_owners(table, row, &scan.split_end_cut)
+                        || engine.row_cut_has_original_plain_text_owners(
+                            table,
+                            row,
+                            &scan.split_end_cut,
+                            styles,
+                        ))
                     || !(engine.row_cut_ends_at_original_plain_text_reset(
                         table,
                         row,
@@ -163,6 +169,12 @@ impl TypesetEngine {
                         &scan.split_end_cut,
                         styles,
                     ) || engine.row_cut_ends_at_saved_zero_origin_frame(
+                        table,
+                        row,
+                        &[],
+                        &scan.split_end_cut,
+                        styles,
+                    ) || engine.row_cut_ends_at_native_saved_page_frame(
                         table,
                         row,
                         &[],

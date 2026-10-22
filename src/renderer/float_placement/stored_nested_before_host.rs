@@ -54,18 +54,6 @@ pub(crate) fn stored_nested_before_host_placement(
         styles,
         dpi,
     )
-    .or_else(|| {
-        terminal_table_before_host_frame(
-            &cell.paragraphs,
-            para_index,
-            table,
-            control_index,
-            origin,
-            table_height,
-            styles,
-            dpi,
-        )
-    })
 }
 
 /// 셀의 마지막 저장 호스트는 뒤 문단 없이도 앞 줄 끝·표 상자로 인증한다.
@@ -147,6 +135,42 @@ fn terminal_table_before_host_frame(
 /// 측정도 같은 저장 앞·뒤 줄과 표 바깥 상자로 호스트의 줄 소속을 확인한다.
 /// 셀 편집 여부는 셀을 소유한 호출자가, 저장 줄의 유효성은 이 함수가 확인한다.
 pub(crate) fn stored_table_before_host_frame(
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    table: &Table,
+    control_index: usize,
+    origin: f64,
+    table_height: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    // 마지막 호스트도 같은 닫힌 상자의 소유자다. 측정의 블록 흐름과 실제
+    // 배치가 서로 다른 프레임 수용 조건을 사용하지 않도록 여기서 선택한다.
+    stored_table_between_host_frames(
+        paragraphs,
+        para_index,
+        table,
+        control_index,
+        origin,
+        table_height,
+        styles,
+        dpi,
+    )
+    .or_else(|| {
+        terminal_table_before_host_frame(
+            paragraphs,
+            para_index,
+            table,
+            control_index,
+            origin,
+            table_height,
+            styles,
+            dpi,
+        )
+    })
+}
+
+fn stored_table_between_host_frames(
     paragraphs: &[Paragraph],
     para_index: usize,
     table: &Table,
