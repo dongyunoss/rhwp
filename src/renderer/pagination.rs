@@ -725,7 +725,8 @@ pub struct ColumnContent {
     /// [#7330] 같은 문단의 자리차지 표가 아래로 민 host 첫 글줄이 표 점유 끝 위에 더
     /// 소비하는 문단 앞 간격(px, 0 이상). 측정(typeset)이 확정하고 배치(layout)가 같은 값을
     /// 확정 앞 간격으로 소비한다. 키는 문단 인덱스이며 항목이 없으면 이 계약이 아니다.
-    pub float_pushed_line_spacings: std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
+    pub float_pushed_line_spacings:
+        std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
     /// [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 밀어 확정한 문단 시작(단 상대 px).
     /// 측정(typeset)이 확정하고 배치(layout)가 그 문단의 시작으로 소비한다.
     pub page_band_flow_starts: std::collections::HashMap<usize, f64>,

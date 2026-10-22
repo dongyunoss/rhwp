@@ -174,3 +174,14 @@ Native097 빌드는 8 build jobs·공유 `target/pr-review`에서 exit 0(246.38�
 383쪽 Native 전쪽 대조와 기존 표 분할 17조건 대조는 실행 중이다. fresh WASM은 리베이스 뒤
 아직 재빌드·재검증하지 않았으며 이전 소스의 통과를 이번 head의 증거로 대신하지 않는다.
 실행 로그·중간 JSON은 ignored `output/pr-review/semanticist21-20261019/`에만 보존한다.
+
+### 리베이스 후 첫 전쪽 결과와 형식 정리
+
+Native097의 정상 KoPub 기준 편람 HWPX는 383/383쪽, 최저 raw 92.61726%이며
+새 devel의 같은 입력·Print·글꼴 조건 TSV 대비 0.1%p 이상 하락한 쪽은 없다.
+표 분할 대조는 15조건까지 통과한 뒤 세션 중단으로 종료됐으므로 17조건 완료로 표시하지 않는다.
+
+전체 rustfmt 검사에서 충돌 해소 부분 3곳의 줄바꿈 차이를 확인해 정리했다.
+재실행한 `cargo fmt --all -- --check`는 exit 0이다. 로직·조건·허용 오차는 변경하지 않았다.
+`rust-test-suite-manifest.mjs --prepare`는 exit 0이며 정식 자동 수집 경로를 다시 생성했다.
+형식 정리 후 소스의 Native 빌드와 회귀·시각 대조는 별도로 확인한다.

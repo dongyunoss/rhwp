@@ -17162,7 +17162,8 @@ pub(crate) struct EndnoteColumnPlacements {
         (usize, usize),
         crate::renderer::float_placement::ParagraphFloatPlacement,
     >,
-    pub(crate) float_pushed_line_spacings: std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
+    pub(crate) float_pushed_line_spacings:
+        std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
     pub(crate) page_band_flow_starts: std::collections::HashMap<usize, f64>,
 }
 

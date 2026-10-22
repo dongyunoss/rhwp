@@ -814,7 +814,12 @@ fn text_bounds(logical: BoundingBox, run: &TextRunNode) -> BoundingBox {
         for (left, right) in visual.segments(text.chars().count()) {
             painted = union(
                 painted,
-                BoundingBox::new(logical.x + left, positioned.y, right - left, positioned.height),
+                BoundingBox::new(
+                    logical.x + left,
+                    positioned.y,
+                    right - left,
+                    positioned.height,
+                ),
             );
         }
     }
