@@ -1125,11 +1125,7 @@ impl DocumentCore {
                 );
                 // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
                 if let (true, Some(cs)) = (matches, tr.char_start) {
-                    let cc = if tr.char_overlap.is_some() {
-                        usize::from(!tr.text.is_empty())
-                    } else {
-                        tr.text.chars().count()
-                    };
+                    let cc = tr.logical_char_count();
                     // 이 run이 목표 줄의 char_range에 겹치는지 확인
                     if cs < char_range.1 && cs + cc > char_range.0 {
                         let positions = cursor_positions_for_render_run(tr, node.bbox.width);
@@ -1926,11 +1922,7 @@ impl DocumentCore {
                             && tr.cell_context.is_none(),
                         tr.char_start,
                     ) {
-                        let cc = if tr.char_overlap.is_some() {
-                            usize::from(!tr.text.is_empty())
-                        } else {
-                            tr.text.chars().count()
-                        };
+                        let cc = tr.logical_char_count();
                         if offset >= cs && offset <= cs + cc {
                             let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;
@@ -2015,11 +2007,7 @@ impl DocumentCore {
                     });
                     // 번호/글머리표 TextRun (char_start: None)은 건너뛴다
                     if let (true, Some(cs)) = (matches_cell, tr.char_start) {
-                        let cc = if tr.char_overlap.is_some() {
-                            usize::from(!tr.text.is_empty())
-                        } else {
-                            tr.text.chars().count()
-                        };
+                        let cc = tr.logical_char_count();
                         if offset >= cs && offset <= cs + cc {
                             let pos = cursor_positions_for_render_run(tr, node.bbox.width);
                             let lo = offset - cs;

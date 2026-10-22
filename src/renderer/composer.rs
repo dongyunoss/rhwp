@@ -39,7 +39,9 @@ pub(crate) use stored_word_tail::{
     project_current_source_program_rows, project_stored_soft_wraps,
     projects_current_marker_geometry,
 };
+mod note_line_slots;
 mod punctuation_slots;
+pub(crate) use note_line_slots::NoteLineSlots;
 
 /// 글자겹침(CharOverlap) 렌더링 정보
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]

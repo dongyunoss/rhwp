@@ -1062,6 +1062,15 @@ pub struct TextRunNode {
 }
 
 impl TextRunNode {
+    /// 편집·소유 판정이 공유하는 논리 칸 수. 겹침 payload도 한 칸이다.
+    pub(crate) fn logical_char_count(&self) -> usize {
+        if self.char_overlap.is_some() {
+            usize::from(!self.text.is_empty())
+        } else {
+            self.text.chars().count()
+        }
+    }
+
     /// Same logical end-tab rule as cross-run alignment: saved trailing
     /// spaces belong to the tab's advance, rather than visible content.
     pub(crate) fn ends_with_alignment_tab(text: &str) -> bool {

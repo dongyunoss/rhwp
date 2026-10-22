@@ -2373,6 +2373,7 @@ fn compute_line_extra_spacing_with_dash_plan(
     available_width: f64,
     tab_width: f64,
     dash_extra_by_run: &mut Option<Vec<f64>>,
+    trailing_note_slots: usize,
 ) -> (f64, f64, f64) {
     *dash_extra_by_run = None;
     // 글자 뒤 말미 공백은 줄 밖에 매달리므로 넘침 판정에서 뺀다. 가운데 정렬 측정은
@@ -2535,7 +2536,13 @@ fn compute_line_extra_spacing_with_dash_plan(
         // 표시 텍스트의 공백 76개 전부에 붙어 쪽번호가 종이 밖 x≈20,163px 로
         // 밀려났다. 폭(`total_text_width`)·글자수(`total_char_count`)는 이미 표시
         // 텍스트 기준이라 여기만 축이 달랐다.
-        let spacing_chars = leading_space_plan.spacing_chars();
+        let mut spacing_chars = leading_space_plan.spacing_chars();
+        // 텍스트 뒤 주석도 같은 물리 줄의 한 칸이다. 자연 폭은 공통 주석 측정에서
+        // 이미 포함했으며, 여기서는 마지막 본문 글자와의 배분 경계만 추가한다.
+        spacing_chars.extend(std::iter::repeat_n(
+            ('\u{FFFC}', false),
+            trailing_note_slots,
+        ));
         let all_chars: Vec<char> = spacing_chars.iter().map(|(ch, _)| *ch).collect();
         let trailing_spaces = all_chars
             .iter()
@@ -5975,6 +5982,7 @@ impl LayoutEngine {
         // start_line까지의 누적 문자 오프셋 계산 (편집용 문서 좌표)
         let mut char_offset: usize = 0;
         let mut emitted_inline_slots = 0;
+        let note_slots = crate::renderer::composer::NoteLineSlots::new(composed, para);
         let stored_tac_assignment =
             para.and_then(|p| crate::renderer::composer::composed_tac_line_assignment(p, composed));
         let tac_slots_for_line = |line_idx| {
@@ -6004,7 +6012,7 @@ impl LayoutEngine {
                 char_offset += 1;
             }
             // 앞쪽 조각도 실제 줄 소유 TAC의 논리 칸을 같은 기준으로 이어받는다.
-            let slots = tac_slots_for_line(li);
+            let slots = tac_slots_for_line(li) + note_slots.lines[li].positions.len();
             char_offset += slots;
             emitted_inline_slots += slots;
         }
@@ -6265,7 +6273,8 @@ impl LayoutEngine {
                     if comp_line.has_line_break {
                         char_offset += 1;
                     }
-                    let slots = tac_slots_for_line(line_idx);
+                    let slots =
+                        tac_slots_for_line(line_idx) + note_slots.lines[line_idx].positions.len();
                     char_offset += slots;
                     emitted_inline_slots += slots;
                     continue;
@@ -7235,6 +7244,7 @@ impl LayoutEngine {
             // [Task #604 Stage 2] wrap_anchor 가 있는 줄: line_cs_offset 을 est_x 기준점에
             // 포함 (line_x_offset 은 col_area.x 기준 상대좌표).
             let est_x_start = text_start_offset;
+            let note_line = &note_slots.lines[line_idx];
             let line_width_est = self.estimate_line_run_widths(
                 comp_line,
                 composed,
@@ -7249,6 +7259,7 @@ impl LayoutEngine {
                 start_line,
                 line_idx,
                 est_x_start,
+                &note_line.positions,
             );
             let est_x = line_width_est.est_x;
             let included_tac_width_in_est = line_width_est.included_tac_width;
@@ -7279,7 +7290,7 @@ impl LayoutEngine {
                         })));
 
             // 정렬별 간격 분배 계산
-            let has_forced_break = comp_line.has_line_break;
+            let has_forced_break = comp_line.has_line_break && !note_line.follows_break;
             // [#6864] 저장 줄 정보나 머리말/꼬리말 위치는 정렬 의미를 바꾸지
             // 않는다. 마지막 줄 분배가 필요한 원본은 파서가 Split으로 전달한다.
             let needs_justify =
@@ -7380,7 +7391,7 @@ impl LayoutEngine {
                 line_tac_offsets_for_width
                     .iter()
                     .map(|(pos, _, _)| *pos)
-                    .chain(composed.footnote_positions.iter().map(|(pos, _, _)| *pos))
+                    .chain(note_line.positions.iter().map(|(pos, _, _)| *pos))
                     .chain(click_here_positions.iter().copied())
                     .filter(|pos| *pos >= comp_line.char_start)
                     .min()
@@ -7482,6 +7493,7 @@ impl LayoutEngine {
                     available_width,
                     tab_width,
                     &mut dash_extra_by_run,
+                    note_line.trailing_slots,
                 )
             };
 
@@ -7798,7 +7810,7 @@ impl LayoutEngine {
             let shape_markers: Vec<(usize, String)> = collect_shape_marker_labels(show_ctrl, para);
 
             // 각주 마커 위치 수집
-            let fn_positions: &[(usize, u16, usize)] = &composed.footnote_positions;
+            let fn_positions: &[(usize, u16, usize)] = &note_line.positions;
             let mut fn_marker_inserted = vec![false; fn_positions.len()];
 
             let mut pending_right_tab_render: Option<(f64, u8, u8)> = None;
@@ -10809,6 +10821,7 @@ impl LayoutEngine {
         start_line: usize,
         line_idx: usize,
         est_x_init: f64,
+        fn_positions: &[(usize, u16, usize)],
     ) -> LineWidthEst {
         let mut est_x = est_x_init;
         let mut pending_right_tab_est: Option<(f64, u8, u8)> = None;
@@ -10817,7 +10830,7 @@ impl LayoutEngine {
         let mut included_tac_width_in_est = 0.0f64;
         // cross-run 탭 감지용 inline_tabs(composed.tab_extended) 커서 — Task #290
         let mut inline_tab_cursor_est = stored_tab_index_before_line(composed, comp_line);
-        let mut note_width_inserted = vec![false; composed.footnote_positions.len()];
+        let mut note_width_inserted = vec![false; fn_positions.len()];
         // 앞선 줄의 겹침 개수만 한 번 건너뛰고 control 순서대로 소비한다.
         let prior_overlaps = composed.lines[..line_idx]
             .iter()
@@ -10913,7 +10926,7 @@ impl LayoutEngine {
             // 겹침의 조기 반환도 같은 주석 폭을 포함하도록 먼저 계산한다.
             let mut note_width = 0.0;
             let is_last_run_est = run_idx_est + 1 == comp_line.runs.len();
-            for (fni, &(fpos, fnum, ctrl_idx)) in composed.footnote_positions.iter().enumerate() {
+            for (fni, &(fpos, fnum, ctrl_idx)) in fn_positions.iter().enumerate() {
                 // [Task #1219 Stage 1b] 선두 미주 마커는 endnote_marker_x_advance
                 // 가 풀사이즈 선두 마커로 렌더하고 그 폭을 inline_offset 에 이미
                 // 반영했다(available_width 에서 차감). 렌더 경로는 이 미주의 인라인
@@ -11856,6 +11869,7 @@ mod issue_2809_split_alignment_tests {
             30.0,
             90.0,
             40.0,
+            0,
         );
 
         assert!((extra_word - 30.0).abs() < 0.001);
@@ -11901,6 +11915,7 @@ mod issue_2809_split_alignment_tests {
             natural_width,
             available_width,
             40.0,
+            0,
         );
         let consumed_separator = super::estimate_text_width_exact(" ", &text_style);
         assert!((extra_word * 2.0 - (60.0 + consumed_separator)).abs() < 0.001);
@@ -12019,6 +12034,7 @@ mod issue_2809_split_alignment_tests {
             natural + 24.0,
             120.0,
             40.0,
+            0,
         );
         ts.extra_word_spacing = word;
         assert!((super::estimate_text_width_exact("다 같 이", &ts) + 24.0 - 120.0).abs() < 0.001);
@@ -12066,6 +12082,7 @@ mod issue_2809_split_alignment_tests {
             62.5,
             481.8,
             40.0,
+            0,
         );
         assert_eq!(extra_word, 0.0);
         assert_eq!(extra_char, 0.0);
@@ -12095,6 +12112,7 @@ mod issue_2809_split_alignment_tests {
             62.5,
             481.8,
             40.0,
+            0,
         );
         assert!(extra_char_mid > 0.0);
     }
@@ -12151,6 +12169,7 @@ mod issue_4657_distribute_alignment_tests {
             text_width,
             avail,
             40.0,
+            0,
         );
         assert_eq!(extra_word, 0.0);
         assert_eq!(extra_dash, 0.0);
