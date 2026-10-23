@@ -139,3 +139,44 @@ Native145는 그림 소유 보정만의 방향을 보는 생산자다. 같은 �
 
 새 회귀·fixture/쪽수 핀 갱신·PR 생성은 계속 보류한다. 본 단계는 미해결 후보와 실제
 검증 근거를 일반 커밋으로 보존한 뒤 최신 devel을 리베이스하고 원인 보정을 이어간다.
+
+## 최신 devel 리베이스와 새 기능 보존
+
+중간 보정 `f5bd4b8976b25cc42448af097c102264b009773e`를 보존하고
+`upstream/devel d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867`(#8181) 위로 리베이스했다.
+현재 검증 code head는 `fdf17630f76f615ae94095148443e68330ea196b`다. 상태 조회와 겹친
+일시적 index.lock 오류 뒤 잠금 파일이 없고 작업 트리가 깨끗함을 확인해 재개했다.
+`rebase-upstream-d9fd-2312-result.json`과 `logs/rebase-upstream-d9fd-2312-continue01.log`에
+종료 코드 0이 있다. `range-diff`의 211개 패치는 모두 `=`다
+(`logs/rebase-patch-preservation-2313.log`). 백업은
+`backup/review-semanticist21-before-d9fd-native146-220556`에 보존했다.
+
+#8181 원문과 실제 통합 범위는 `pr8181-preservation-provenance-2301.json`에서 확인했다.
+Native147은 공유 target·잡 8개·241.66초·종료 코드 0으로 빌드했다. 라이브러리의 실제
+Cargo fingerprint도 생산자 영수증에 봉인해 후속 진단이 다른 feature의 최근 fingerprint를
+잘못 사용하는 일을 방지했다.
+
+| 실행 | 실제 결과·범위 | 증거 |
+| --- | --- | --- |
+| source 사전 검사 계약 | 18 PASS / 0 FAIL | `pr8181-source-checks-2314-result.json`, `logs/pr8181-source-checks-2314.log` |
+| 현재 head의 8개 패키지 source | source check PASS. Cargo package/registry 게시 판정은 아님 | `pr8181-source-preflight-2314/source-preflight.json` |
+| 공개 오류 API + 기존 세 계약 모듈 | 39 PASS / 0 FAIL. 새 `HwpError` 전파/downcast를 실제 실행 | `reviewed-contract-tests-2315-result.json` |
+| 글꼴 생성 도구 | 공용 target/debug·dev-tools·잡 8개로 빌드 후 5 PASS / 0 FAIL | `pr8181-font-metric-generator-2318-result.json` |
+| CLI 입력·오류 계약 | 일반 HWP/HWPX/HWP3 12개, 잘못된 입력·암호 정상/오입력/미지정 4개, PDF info 1개: 17/17 | `pr8181-cli-preservation-2322/summary.json`, 같은 폴더 `results.json` |
+| 실제 페이지 출력 | 선택한 편집 저장본 11쪽·원본 6쪽·#7840 전 9쪽의 raw·쪽수 결과가 리베이스 전과 같음 | `issue4138-native147-boundary-batch-2317-result.json` |
+| 픽셀 보존 직접 대조 | 같은 26개 Native PNG의 RGBA 바이트가 모두 동일 | `rebase-native147-pixel-preservation-2321.json` |
+
+CLI 대조는 동일 cwd·입력·인자로 Native146과 Native147의 exit/stdout/stderr 전체를
+비교했다. 기존 #8181의 원격 registry 소비 실행을 이번에 새로 했다고 표시하지 않는다.
+글꼴 도구의 임시 canary가 정식 source를 바꾸지 않은 것도 clean 작업 트리로 확인했다.
+
+따라서 이 리베이스에서 관측한 후퇴는 없다. 다만 26쪽 보존을 전체 #7969/#8064 또는
+19문서 835쪽 검증 완료로 확대하지 않는다. #7969의 원문·기능 범위도
+`pr7969-preservation-provenance-2319.json`에 재확인했으며 최종 필수 검증에 유지한다.
+
+다음 분석에서는 단일 sqrt의 source 캐시 1300HU와 실제 render-tree Equation bbox의
+반올림 표기 15.0px를 구분한다(`issue4138-native147-equation-tree-2320`). bbox를 줄 수용
+높이로 동일시하거나 자연 glyph 크기로 정상 source 프레임을 무조건 축소하지 않는다.
+실제 `flow_metrics_hwp` 생산 → 재조판/저장 줄 발행 → 컷 소비 → paint 상자를 추적한다.
+Native144 혼재 발행 후보의 공개 composition 관측은 `issue4138-native144-candidate-2316-result.json`
+에 있다. 이것은 철회 후보의 진단이며 최종 구현·시각 통과 증거가 아니다.
