@@ -26455,7 +26455,10 @@ impl LayoutEngine {
         let has_row_cuts = units[run_start..run_end]
             .iter()
             .any(|unit| unit.nested_table_fragment.is_some());
-        if !crate::renderer::para_has_no_stored_line_segs(para) && !has_row_cuts {
+        // 자식 내용 커서의 존재는 저장 호스트의 물리 띠를 재조판으로
+        // 교체할 근거가 아니다. 저장 경로의 행 유닛은 생산자가 산출한
+        // 원본 프레임을 소유하며, 이 보조 예약은 NO_LS 재조판만 확장한다.
+        if !crate::renderer::para_has_no_stored_line_segs(para) {
             return None;
         }
         let child = para.controls.iter().find_map(|control| match control {
@@ -26530,9 +26533,12 @@ impl LayoutEngine {
             }
             // 반복 머리행은 상위 컷과 viewport가 이미 한 번 더한다.
             physical -= self.nested_continuation_header_height(cell, units, start, styles);
-            // 완결 행에 예약한 물리 띠를 부분 컷이 모두 소유하지는 않는다.
-            // 감소분도 같은 자식 컷의 실제 상자로 예약·viewport에 전달한다.
-            return Some(physical - selected.iter().map(|unit| unit.height).sum::<f64>());
+            // 내용 커서가 끝나도 생산자가 예약한 물리 띠는 남을 수 있다.
+            // 실제 자식 상자가 더 요구하는 몫만 보완하고, 내용 높이만으로
+            // 이미 소유한 프레임을 줄여 다음 문단의 원점을 앞당기지 않는다.
+            return Some(
+                (physical - selected.iter().map(|unit| unit.height).sum::<f64>()).max(0.0),
+            );
         }
         let style = styles.para_styles.get(para.para_shape_id as usize);
         let reopens_outer_frame = reflow_nested_table_has_outer_frame(para, child);
