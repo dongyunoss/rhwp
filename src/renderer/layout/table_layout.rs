@@ -10251,7 +10251,8 @@ impl LayoutEngine {
                     row_span: cell.row_span,
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
-                    clip: !closed_reflow_frame,
+                    // 외부 소유 자식은 이미 Cell 밖에 배치된다. 셀 자신의 클립은 유지한다.
+                    clip: true,
                     closed_reflow_frame,
                     page_fragment: false,
                     model_cell_index: Some(cell_idx as u32),

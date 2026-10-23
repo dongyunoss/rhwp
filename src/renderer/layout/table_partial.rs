@@ -1865,9 +1865,9 @@ impl LayoutEngine {
             if reflow_content_height.is_some() {
                 if let RenderNodeType::TableCell(meta) = &mut cell_node.node_type {
                     // 자식의 가시 폭은 부모의 물리 괘선 폭을 늘리지 않는다.
-                    // 내용 컷은 이미 자식 viewport를 정했으므로 부모 clip으로 다시 자르지 않는다.
+                    // 자식 선언 폭은 유지하되 부모가 소유한 셀 경계에서 표시를 제한한다.
                     meta.closed_reflow_frame = true;
-                    meta.clip = false;
+                    meta.clip = true;
                 }
             }
             let line_ranges: Option<Vec<(usize, usize)>> = cut_units

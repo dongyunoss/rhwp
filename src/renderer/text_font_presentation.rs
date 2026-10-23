@@ -36,17 +36,17 @@ pub fn ordinary_text_font_program(data: &[u8], face_index: u32) -> Option<Vec<u8
     if color_glyphs == 0 {
         return None;
     }
-    let tables: Vec<_> = raw
-        .table_records
+    let records: Vec<_> = raw.table_records.into_iter().collect();
+    // 제외할 표의 중복도 수용하지 않는다. 원본 디렉터리 자체를 먼저 검증한다.
+    if records.len() > MAX_TABLES || records.windows(2).any(|pair| pair[0].tag >= pair[1].tag) {
+        return None;
+    }
+    let tables: Vec<_> = records
         .into_iter()
         .filter(|record| !matches!(&record.tag.to_bytes(), b"COLR" | b"CPAL" | b"DSIG"))
         .collect();
     let count = tables.len();
     if count == 0 || count > MAX_TABLES {
-        return None;
-    }
-    // 중복·정렬되지 않은 원본 디렉터리를 정상 사본으로 승격하지 않는다.
-    if tables.windows(2).any(|pair| pair[0].tag >= pair[1].tag) {
         return None;
     }
     let count = u16::try_from(count).ok()?;

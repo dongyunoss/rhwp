@@ -552,3 +552,36 @@ source SHA의 release manifest로 고쳐 쓰지 않는다. #8171·#8173의 새 �
 중복 검사는 COLR/CPAL/DSIG를 제외하기 전 원본 디렉터리 전체에 적용하도록 보완한다.
 두 보정 뒤 같은 입력·Print의 Native와 기존 대조군을 다시 확인한다. 독립 자식 스트림의
 부모 물리 프레임 반복과 TABLE 원자 행 이월 문제는 여전히 해결해야 한다.
+
+## Native133의 클립 복원과 디렉터리 검증 결과
+
+새 base 위에서 공용 target·잡 8개로 246.71초에 Native133 빌드 종료 코드 0을 확인했다.
+부모 셀 클립은 유지하고 닫힌 reflow 프레임의 괘선 확장 금지도 유지했다. 제한 없는 자식은
+기존 Table 직접 자식 소유를 유지하며 셀 경계로 옮기지 않았다. 선언 폭·좌표를 줄이지 않았다.
+
+`restricted-child-margin-native133-2055/`의 전체 2쪽은 Native raw가 각각 100%이며
+`native-export.json`의 `pageCount: 2`·`all_pages_exported: true`를 확인했다. 2쪽 review와
+standalone overlay를 함께 읽어 부모 경계 밖의 파란 선이 사라진 것을 확인했다. RGB 엄격
+일치는 35.99%이므로 이를 전체 픽셀 동일이나 모든 렌더링 정확도 100%로 보고하지 않는다.
+fresh WASM은 이 새 후보로 다시 산출해야 한다.
+
+`current-previous-failures-2056-result.json`의 기존 완료 페이지·저장 프레임 계약 22개가
+모두 통과했다. `current-previous-failures-2060-result.json`의 strict Native glyph replay
+10개도 모두 통과했다. 후자에는 실제 COLRv0 레이어 순서·색 출력, 비트맵·SVG·가변/collection
+face와 outline 효과가 포함된다. 일반 텍스트 기본 윤곽 처리를 명시 컬러 자원 재생에 적용하지
+않는 계약을 실제 실행으로 확인했다.
+
+`font-directory-duplicate-probe-2058/`은 같은 실제 프로그램의 COLR 디렉터리 항목만 중복한
+잘못된 입력을 만들었다. ttf-parser의 face/컬러 glyph 조회가 가능한 이 입력을 이전 Native132
+함수는 사본으로 승격했고, Native133은 거절했다. 입력의 glyph·표 payload는 바꾸지 않았다.
+이 자료는 진단이며 독립 Print 또는 정식 렌더링 회귀의 증거로 승격하지 않는다.
+
+`reflow-policy-native133-2057/results.json`의 18조건 중 7조건은 모두 전쪽 raw 100%다.
+나머지 11조건은 여전히 90% 미만이다. 제한 없는 자식의 독립 스트림과 부모 물리 프레임,
+TABLE 원자 행 이월을 해결해야 한다. 지적한 제한 true·자식 여백 사례의 개선으로 이 미달을
+상쇄하지 않으며 PR 준비 완료나 전체 회귀 통과를 선언하지 않는다.
+
+다음 fresh 빌드는 새 devel의 #7474 절차대로 `measure_render_diff_wasm.py`의 standard
+release 경로와 실제 wasm-opt 관측 manifest를 사용한다. pkg·Studio·보존 package의 바이트
+일치를 확인하며, 최종 브라우저 소비까지 같은 package를 사용해야 한다. 새 source SHA를
+이전 build receipt에 대입해 release 검증을 우회하지 않는다.
