@@ -698,3 +698,10 @@ Cargo/nextest 실행 2809에서 함께 검증하며, 그 결과를 확인한 뒤
 새 표 프레임 2개와 원래 독립 shaping 39개가 실제 실행됐다. 다른 suite의 275개 필터
 skip은 성공 수에 넣지 않았다. 이 실행은 전체 Rust 검증이 아니다. 제품 구현은 Native176
 그대로이며 이번 단계의 추가 변경은 테스트·target 라우팅·증거와 기록이다.
+
+단계 커밋 `7c13d215c1` 뒤 같은 고정 devel SHA의 정책 검사도 종료0으로 통과했다
+(2815): 1750 sources / 7605 static test attrs / 28 suites + 20 exceptions = 48/48 targets.
+`cargo fmt --all -- --check`와 `git diff --check`도 통과했다. 검증 뒤 다시 fetch한
+devel은 같은 `d9fd85ed5b`이며 새 반영 PR이나 리베이스 대상은 없다. 이번 단계의
+제품 소스·전쪽 시각 증거는 Native176/WASM049이고, 후속 테스트·라우팅·기록 커밋을
+새 제품 빌드의 SHA로 바꾸어 보고하지 않는다. 나머지 보정과 최종 검증은 계속 필요하다.
