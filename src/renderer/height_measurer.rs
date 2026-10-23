@@ -2519,6 +2519,13 @@ impl HeightMeasurer {
         cell.paragraphs
             .iter()
             .map(|para| {
+                if let Some(band) =
+                    crate::renderer::float_placement::paragraph_picture_band(para, self.dpi)
+                {
+                    // 개체의 전체 점유를 측정한다. 호스트 줄과 겹치는 몫의
+                    // 분리는 선택된 실제 줄을 아는 CellUnit 소비자가 맡는다.
+                    return band.height;
+                }
                 let mut bands: Vec<(i64, i64, f64)> = Vec::new();
                 for ctrl in &para.controls {
                     let common = match ctrl {

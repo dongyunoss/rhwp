@@ -783,46 +783,18 @@ impl LayoutEngine {
             0.0
         };
 
-        // 캡션을 포함한 전체 크기 계산 (위치 결정에 사용)
-        let (total_width, total_height) = if let Some(ref caption) = picture.caption {
-            match caption.direction {
-                CaptionDirection::Top | CaptionDirection::Bottom => (
-                    pic_width,
-                    super::super::composer::captioned_picture_height_px(picture, self.dpi),
-                ),
-                CaptionDirection::Left | CaptionDirection::Right => {
-                    let cw = hwpunit_to_px(caption.width as i32, self.dpi);
-                    (
-                        pic_width + cw + caption_spacing,
-                        super::super::composer::captioned_picture_height_px(picture, self.dpi),
-                    )
-                }
-            }
-        } else {
-            (pic_width, pic_height)
-        };
-
-        // [#6596] 바깥 여백은 개체 상자의 일부다. 한/글은 여백을 포함한 상자를 오프셋·정렬
-        // 자리에 놓고 잉크(그림+캡션)를 그 안쪽 (왼쪽 여백, 위 여백) 에 그린다.
-        // 코퍼스 실측(samples↔pdf 한컴 PDF 215문서): 여백 3.01mm 그림 45건 중 44건이
-        // dx + 왼쪽 여백 ≈ 0, dy + 위 여백 ≈ 0 이고 Paper/Column/Para 기준과
-        // Square/TopAndBottom/BehindText 를 가리지 않는다. 가운데 정렬은 좌우 여백이
-        // 같아 가로가 상쇄되고 오른쪽 정렬은 오른쪽 여백만 잉크에 나타나므로, 정렬은
-        // 상자 크기로 계산해야 둘 다 맞는다. 글자처럼 그림은 줄 안 상자라 이 규칙 밖이다.
-        let (margin_left, margin_right, margin_top, margin_bottom) = if picture.common.treat_as_char
-        {
-            (0.0, 0.0, 0.0, 0.0)
-        } else {
-            let m = &picture.common.margin;
-            (
-                hwpunit_to_px(i32::from(m.left), self.dpi),
-                hwpunit_to_px(i32::from(m.right), self.dpi),
-                hwpunit_to_px(i32::from(m.top), self.dpi),
-                hwpunit_to_px(i32::from(m.bottom), self.dpi),
-            )
-        };
-        let box_width = total_width + margin_left + margin_right;
-        let box_height = total_height + margin_top + margin_bottom;
+        // #6596의 여백·캡션 상자를 셀과 같은 생산 결과로 소비한다.
+        let outer_box = crate::renderer::float_placement::picture_outer_box(
+            picture,
+            pic_width,
+            pic_height,
+            caption_height,
+            self.dpi,
+        );
+        let box_width = outer_box.width;
+        let box_height = outer_box.height;
+        let margin_left = outer_box.margin_left;
+        let margin_top = outer_box.margin_top;
 
         // 통합 좌표 계산 (여백을 포함한 상자 기준)
         let (box_x, base_y) = self.compute_object_position(
@@ -857,19 +829,8 @@ impl LayoutEngine {
             base_y
         };
 
-        // 캡션 방향에 따라 그림 위치 오프셋 계산
-        let (caption_top_offset, caption_left_offset) = if let Some(ref caption) = picture.caption {
-            match caption.direction {
-                CaptionDirection::Top => (caption_height + caption_spacing, 0.0),
-                CaptionDirection::Left => {
-                    let cw = hwpunit_to_px(caption.width as i32, self.dpi);
-                    (0.0, cw + caption_spacing)
-                }
-                _ => (0.0, 0.0),
-            }
-        } else {
-            (0.0, 0.0)
-        };
+        let caption_top_offset = outer_box.caption_top;
+        let caption_left_offset = outer_box.caption_left;
 
         // 잉크 원점 = 상자 원점 + (왼쪽 여백, 위 여백). #3821 이 Column-왼쪽 Square 의
         // 왼쪽 여백에만 좁혀 적용하던 것을 위 실측대로 사방·전 기준으로 편다. wrap

@@ -3354,7 +3354,12 @@ impl LayoutEngine {
     pub(crate) fn calc_non_inline_controls_flow_height(&self, paragraphs: &[Paragraph]) -> f64 {
         paragraphs
             .iter()
-            .map(|p| self.paragraph_top_and_bottom_non_inline_flow_height(&p.controls))
+            .map(|p| {
+                crate::renderer::float_placement::paragraph_picture_band(p, self.dpi).map_or_else(
+                    || self.paragraph_top_and_bottom_non_inline_flow_height(&p.controls),
+                    |band| band.height,
+                )
+            })
             .sum()
     }
 
@@ -7469,6 +7474,9 @@ impl LayoutEngine {
             };
             let allow_first_para_lead = first_para_lead_px > 0.0;
             let para_y_before_compose = para_y;
+            let paragraph_picture_band =
+                crate::renderer::float_placement::paragraph_picture_band(para, self.dpi)
+                    .filter(|_| stored_empty_picture_frame.is_none());
             let paragraph_children_start = cell_node.children.len();
 
             // 저장 줄과 현재 프레임 모두 원시 UTF-16 슬롯으로 개체 소속을 정한다.
@@ -8338,10 +8346,20 @@ impl LayoutEngine {
                                     };
                                     c
                                 });
+                            let picture_box = paragraph_picture_band
+                                .as_ref()
+                                .and_then(|band| band.boxes.get(ctrl_idx));
+                            let paragraph_owned_picture = picture_box.is_some()
+                                && start_line == 0
+                                && end_line > start_line
+                                && signed_hwpunit(pic.common.vertical_offset) >= 0
+                                && crate::renderer::float_placement::picture_host_follows_cell_content(
+                                    &cell.paragraphs, cp_idx,
+                                );
                             let (pic_x, pic_y) = self.compute_object_position(
                                 positioned_common.as_ref().unwrap_or(&pic.common),
-                                pic_w,
-                                pic_h,
+                                picture_box.map_or(pic_w, |frame| frame.width),
+                                picture_box.map_or(pic_h, |frame| frame.height),
                                 &cell_area,
                                 &inner_area,
                                 &inner_area,
@@ -8366,6 +8384,10 @@ impl LayoutEngine {
                                 // 이전 쪽의 음수 offset은 공통 판정이 제거하지만 원본의
                                 // 양수 offset까지 없애면 그림이 자기 앞 글줄을 덮는다.
                                 picture_anchor_y + hwpunit_to_px(flow_offset, self.dpi)
+                            } else if paragraph_owned_picture {
+                                // 현재 문단의 물리 원점을 셀 상단으로 다시 바꾸지 않는다.
+                                para_y_before_compose
+                                    + hwpunit_to_px(pic.common.vertical_offset as i32, self.dpi)
                             } else if reset_relocated_stored_picture_offset {
                                 // 이 형상은 cell의 Center 값이 현 물리 페이지의 정렬 계약이
                                 // 아니라 stale 음수 offset과 짝을 이룬 이전 페이지 ladder다.
@@ -8409,7 +8431,8 @@ impl LayoutEngine {
                                             0.0
                                         }
                                     });
-                                let aligned_visual_h = pic_h + bottom_caption_h;
+                                let aligned_visual_h =
+                                    picture_box.map_or(pic_h + bottom_caption_h, |frame| frame.height);
                                 let content_top = content_cell_y + pad_top;
                                 // [#5731] 셀-valign 강제(#2071)는 그림이 셀의 첫 콘텐츠일 때의
                                 // 계약이다(그때 저장 vpos=0 이라 흐름 배치와 일치). 캡션·다른
@@ -8598,7 +8621,7 @@ impl LayoutEngine {
                             );
                             let pic_y = if let Some(origin) = planned_picture_origin {
                                 inner_area.y + origin
-                            } else if overlay_para {
+                            } else if overlay_para || paragraph_owned_picture {
                                 // Overlay paint may straddle the cell edge (e.g.
                                 // a border's half stroke). The cell clip owns its
                                 // visibility; moving the bitmap changes its paint.
@@ -8619,6 +8642,8 @@ impl LayoutEngine {
                                     "[6313B] pic_y={pic_y:.1} pic_h={pic_h:.1} pic_x={pic_x:.1}"
                                 );
                             }
+                            let pic_x = pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
+                            let pic_y = pic_y + picture_box.map_or(0.0, |frame| frame.margin_top);
                             let pic_area = LayoutRect {
                                 x: pic_x,
                                 y: pic_y,
@@ -17605,6 +17630,22 @@ impl LayoutEngine {
                 }
             }
             attach_stored_square_picture_owner(&mut units, pi);
+            // 그림 띠와 호스트 줄은 같은 원점에서 시작한다. 실제로 생산한
+            // 호스트 전진을 한 번 빼고 남는 점유만 별도 flow 유닛에 맡긴다.
+            let (para_non_inline_extra_h, para_top_and_bottom_h) = if let Some(band) =
+                crate::renderer::float_placement::paragraph_picture_band(p, self.dpi)
+            {
+                let host_advance: f64 = units[para_unit_start..]
+                    .iter()
+                    .map(|unit| unit.height)
+                    .sum();
+                (
+                    (band.height + spacing_before + spacing_after - host_advance).max(0.0),
+                    band.height,
+                )
+            } else {
+                (para_non_inline_extra_h, para_top_and_bottom_h)
+            };
             let non_inline_range = append_non_inline_units(
                 &mut units,
                 pi,

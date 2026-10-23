@@ -137,3 +137,54 @@ control_index)`별 예약을 생산한다. `control_line_seg_index`로 해당 �
 (`picture-frame-physical-equivalence-2367.json`). 입력 자체의 다음 원점 차이 1920HU를
 실제 그림 점유로 해석해서는 안 된다. 이는 원인 분석 근거이며, 아직 그림 보정·전쪽 시각
 검증을 마쳤다는 뜻은 아니다.
+
+## 2차 보정 후보: 그림 상자와 호스트 점유
+
+시작 head `08f1f78e31`. `float_placement/picture_box.rs`에 #6596의 여백·캡션 상자를
+추출해 본문과 셀에서 사용한다. 실제 한 줄의 빈 TopAndBottom 호스트는 같은 상자로
+현재 문단의 점유와 앞 조각이 오프셋을 소비한 띠의 점유를 구분한다. 기존 지연 띠의
+수용 조건은 바꾸지 않는다. 문서 ID나 좌표 문턱을 추가하지 않는다.
+
+- 생산: `picture_outer_box`, `paragraph_picture_band`.
+- 측정: `HeightMeasurer::measure_non_inline_controls_height`와 셀 흐름 높이의 최솟값은
+  같은 전체 상자를 읽는다. `cell_units_uncached`는 실제 생산한 호스트 유닛의 전진을
+  한 번 빼고 남는 높이만 그림 유닛에 배정한다. 캡션이 누락되지 않는다.
+- 배치: 일반·분할 셀은 같은 상자로 정렬하고 좌·상 여백 안쪽에 잉크를 그린다.
+  앞 내용이 있고 현재 조각이 호스트 줄을 소유한 양수 오프셋 그림은 현재 문단 원점을
+  사용한다. 첫 콘텐츠의 셀 정렬과 음수 저장 오프셋의 기존 계약을 이 분기로 대신하지 않는다.
+- 이후 소비: 정상 호스트는 기존 문단 전진과 상자 끝 중 큰 값으로 후속 흐름을 확정한다.
+  지연된 띠는 소진한 호스트 오프셋을 재사용하지 않는다. 기존 partitioned/empty 저장 프레임
+  분기를 유지하고, 현재 소유 문단의 정상 그림을 셀 안으로 다시 clamp하지 않는다.
+
+아직 검증 전 후보다. Native152 빌드 후 실제 두 API의 저장 입력 SHA·쪽수를 먼저 확인한다.
+같은 입력·Print 대조가 성립할 때 전체 TSV와 24쪽 review·overlay를 새로 산출한다.
+기존 #2071/#5734/#6782/#6596 검사와 #7840 대조군, 앞 단계의 물리 프레임 검사를 함께
+실행한다. 새 렌더링 회귀나 기대값 갱신은 전쪽 Native/fresh WASM 조건을 만족하기 전까지
+보류한다.
+
+### Native152 실행 결과
+
+- 빌드 종료 코드 0, 8잡, 286.03초. 공용 target과 제품 소스 해시 확인은
+  `char-overlap-native-build-152-result.json`에 있다.
+- 실제 두 API 모두 편집 직후·저장 재로드 후 196쪽이다. 저장 SHA는 기존 `bfb7a5…f858a`와
+  같아 위 독립 Print와의 대응이 유지된다(`issue4138-native152-candidate-2372-result.json`).
+- 기존 11개 모듈 75건 모두 통과했다(`reviewed-contract-tests-2373-result.json`).
+  회귀 함수·기대값·fixture를 추가하거나 바꾸지 않았다.
+- 정책 조합 35문서·66쪽 모두 raw 100%·독립 PDF 쪽수 일치·실행 종료 코드 0이다
+  (`native152-matrix-2382-summary.json`). #7840 전체 9쪽, 현대 수식 v5/v6 전체 7쪽,
+  원본 115쪽의 선택 6쪽도 Native151의 쪽수·점수를 유지했다.
+- 서식 검사 통과: `logs/picture-frame-fmt-2383.log`.
+- 24쪽 그림 원점은 (121.54667, 224.36)px, Print는 약 (121.37466, 224.07599)px다.
+  뒤 문단 원점 전진 19473HU도 독립 재저장본과 같다
+  (`picture-frame-geometry-comparison-2381.json`). 실제 CellUnit은 호스트 25.6px와
+  그림 잔여 234.04px로 이 같은 전체 점유를 예약한다.
+- 24쪽 raw는 70.89935% → 99.86028%다. 새 `issue4138-native152-critical-review-2376/`의
+  review·overlay를 함께 직접 판독해 그림·캡션·뒤 본문 원점의 회복을 확인했다.
+- Native151 대비 나머지 195쪽은 PNG 바이트가 같다. 전쪽에서는 24쪽이 90% 이상,
+  172쪽이 미달이며 최저 14.38121%다(`picture-frame-full196-before-after-2381.json`).
+  gate는 여전히 `re_review_required`다. 현재 그림 보정은 이 미달을 해결했다는 뜻이 아니다.
+
+`native152-cut-comparison-2380.json`은 첫 24개 내용 컷이 독립 한컴 프레임과 같고,
+25쪽부터의 171개 경계 차이가 Native151과 그대로임을 보여 준다. 25쪽 review·overlay를
+직접 읽으면 상단 중첩 표가 먼저 배치되고, 페이지 끝의 빈 문단이 다른 쪽에 속한다.
+새 회귀·기대값 갱신·PR 제출 전에 이 경계를 공통 소유 규칙에서 계속 보정한다.

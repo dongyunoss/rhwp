@@ -2997,6 +2997,9 @@ impl LayoutEngine {
                     }
                 }
                 let para_y_before_compose = para_y;
+                let paragraph_picture_band =
+                    crate::renderer::float_placement::paragraph_picture_band(para, self.dpi)
+                        .filter(|_| stored_empty_picture_frame.is_none());
                 // 이 조각에서 문단이 시작하면 그 첫 줄 상단이 문단 기준 개체의 원점이다.
                 // 저장 줄 사다리·문단 앞 간격으로 생긴 틈은 compose 안에서 더해지므로
                 // compose 전 커서(`para_y_before_compose`)와 다를 수 있다.
@@ -3776,59 +3779,23 @@ impl LayoutEngine {
                                             .max(0.0),
                                         ..inner_area
                                     };
-                                    let owns_paragraph_picture_frame =
-                                        paragraph_has_preceding_content
-                                            && cut_units.is_some()
-                                            && visible_non_inline_controls
-                                            && crate::renderer::float_placement::reflow_picture_host_advance(
-                                                para, self.dpi,
-                                            ).is_some()
-                                            && !self.cell_cut_owns_deferred_picture_band(
-                                                cell, table, styles, cut_units, cp_idx,
-                                            );
-                                    // An owned paragraph anchor in this fragment has its
-                                    // own origin. Resolve the complete outer box there,
-                                    // then place the image inside its margins. Cell valign
-                                    // and a deferred next-page band are separate frames.
-                                    let margin_left = if owns_paragraph_picture_frame {
-                                        hwpunit_to_px(i32::from(pic.common.margin.left), self.dpi)
-                                    } else {
-                                        0.0
-                                    };
-                                    let margin_top = if owns_paragraph_picture_frame {
-                                        hwpunit_to_px(i32::from(pic.common.margin.top), self.dpi)
-                                    } else {
-                                        0.0
-                                    };
-                                    let outer_width = pic_w
-                                        + margin_left
-                                        + if owns_paragraph_picture_frame {
-                                            hwpunit_to_px(
-                                                i32::from(pic.common.margin.right),
-                                                self.dpi,
-                                            )
-                                        } else {
-                                            0.0
-                                        };
-                                    let outer_height = pic_h
-                                        + margin_top
-                                        + if owns_paragraph_picture_frame {
-                                            hwpunit_to_px(
-                                                i32::from(pic.common.margin.bottom),
-                                                self.dpi,
-                                            ) + crate::renderer::composer::caption_height_px(
-                                                &pic.caption,
-                                                self.dpi,
-                                            ) + pic.caption.as_ref().map_or(0.0, |caption| {
-                                                hwpunit_to_px(caption.spacing as i32, self.dpi)
-                                            })
-                                        } else {
-                                            0.0
-                                        };
+                                    let picture_box = paragraph_picture_band
+                                        .as_ref()
+                                        .and_then(|band| band.boxes.get(ctrl_idx));
+                                    let paragraph_owned_picture = picture_box.is_some()
+                                        && owns_paragraph_entry
+                                        && start_line == 0
+                                        && end_line > start_line
+                                        && crate::renderer::float_placement::signed_hwpunit(
+                                            pic.common.vertical_offset,
+                                        ) >= 0
+                                        && crate::renderer::float_placement::picture_host_follows_cell_content(
+                                            &cell.paragraphs, cp_idx,
+                                        );
                                     let (pic_x, pic_y) = self.compute_object_position(
                                         square_flow_common.as_ref().unwrap_or(&pic.common),
-                                        outer_width,
-                                        outer_height,
+                                        picture_box.map_or(pic_w, |frame| frame.width),
+                                        picture_box.map_or(pic_h, |frame| frame.height),
                                         &cell_area,
                                         &inner_area,
                                         &inner_area,
@@ -3836,8 +3803,6 @@ impl LayoutEngine {
                                         picture_anchor_y,
                                         para_alignment,
                                     );
-                                    let pic_x = pic_x + margin_left;
-                                    let pic_y = pic_y + margin_top;
                                     // [Issue #2071] 셀 vertical_align 존중 (table_layout.rs 동일 수정).
                                     // 한컴은 셀 앵커 자리차지 그림을 **셀 valign 으로만** 배치하고
                                     // 그림 자체 pos vert_align 은 무시한다. compute_object_position
@@ -3852,10 +3817,18 @@ impl LayoutEngine {
                                                 crate::renderer::float_placement::cell_wrap_vertical_offset_hu(&pic.common),
                                                 self.dpi,
                                             )
+                                    } else if paragraph_owned_picture {
+                                        // 현재 조각이 소유한 호스트 줄의 실제 원점이다.
+                                        // 저장 전체 셀 vpos나 셀 상단으로 덮어쓰지 않는다.
+                                        para_first_line_top.unwrap_or(para_y_before_compose)
+                                            + hwpunit_to_px(
+                                                pic.common.vertical_offset as i32,
+                                                self.dpi,
+                                            )
                                     } else if top_and_bottom_para
                                         && pic.common.flow_with_text
                                         && !unrestricted_take_place_cell_float
-                                        && !owns_paragraph_picture_frame
+                                        && !paragraph_owned_picture
                                     {
                                         let v_off = hwpunit_to_px(
                                             pic.common.vertical_offset as i32,
@@ -3919,6 +3892,8 @@ impl LayoutEngine {
                                             // `content_top`(232.1)인 것도 의도한 것이다 — 좌표를
                                             // 만드는 `place()` 가 `content_top` 을 기준점으로
                                             // 쓰므로 같은 기준으로 판정해야 부호가 뒤집히지 않는다.
+                                            let aligned_visual_h =
+                                                picture_box.map_or(pic_h, |frame| frame.height);
                                             let place = |off: f64| match effective_align {
                                                 VerticalAlign::Top => content_top + off,
                                                 VerticalAlign::Center => {
@@ -3932,10 +3907,14 @@ impl LayoutEngine {
                                                         self.dpi,
                                                     );
                                                     content_top
-                                                        + (inner_height - pic_h + flow_offset) / 2.0
+                                                        + (inner_height - aligned_visual_h
+                                                            + flow_offset)
+                                                            / 2.0
                                                 }
                                                 VerticalAlign::Bottom => {
-                                                    content_top + inner_height - pic_h - off
+                                                    content_top + inner_height
+                                                        - aligned_visual_h
+                                                        - off
                                                 }
                                             };
                                             let with_offset = place(v_off);
@@ -3976,15 +3955,8 @@ impl LayoutEngine {
                                     let deferred_band = self.cell_cut_owns_deferred_picture_band(
                                         cell, table, styles, cut_units, cp_idx,
                                     );
-                                    let pic_x = pic_x
-                                        + if deferred_band {
-                                            hwpunit_to_px(
-                                                i32::from(pic.common.margin.left),
-                                                self.dpi,
-                                            )
-                                        } else {
-                                            0.0
-                                        };
+                                    let pic_x =
+                                        pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
                                     let pic_y = if deferred_band {
                                         para_y_before_compose
                                             + hwpunit_to_px(
@@ -3992,7 +3964,7 @@ impl LayoutEngine {
                                                 self.dpi,
                                             )
                                     } else {
-                                        pic_y
+                                        pic_y + picture_box.map_or(0.0, |frame| frame.margin_top)
                                     };
                                     let pic_y = self
                                         .stored_partitioned_picture_origin(

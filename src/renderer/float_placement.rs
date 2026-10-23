@@ -15,7 +15,11 @@ pub(crate) use overlay_outer_frame::overlay_table_outer_margin_left_hu;
 pub(crate) use stored_column_spacing::stored_column_top_spacing_before;
 pub use stored_column_spacing::StoredColumnTopSpacing;
 
+mod picture_box;
 mod stored_cell_flow_picture;
+pub(crate) use picture_box::{
+    paragraph_picture_band, picture_host_follows_cell_content, picture_outer_box,
+};
 pub(crate) use stored_cell_flow_picture::{
     stored_cell_flow_picture_extent_hu, stored_cell_flow_picture_frame,
 };
