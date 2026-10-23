@@ -218,6 +218,8 @@ struct TableCellFootnote {
 /// 기존 MeasuredTable + host_spacing을 통합하여 측정-배치 일원화.
 #[derive(Debug)]
 struct FormattedTable {
+    /// 부모 프레임과 외부 자식의 공동 앵커 점유. 소스 행/컷 원장과 구분한다.
+    external_flow: Option<crate::renderer::float_placement::ReflowExternalTableFlow>,
     /// 행별 높이 (px)
     row_heights: Vec<f64>,
     /// 행간 간격 (px)
@@ -3743,6 +3745,12 @@ impl TypesetEngine {
         next_para: Option<&Paragraph>,
         is_column_top: bool,
     ) -> FormattedTable {
+        let frame_engine = crate::renderer::layout::LayoutEngine::new(self.dpi);
+        self.prime_section_cell_context(&frame_engine);
+        frame_engine.set_layout_profile(self.profile.get());
+        frame_engine
+            .set_render_normalization_overlay(std::sync::Arc::clone(&self.render_normalization));
+        let external_flow = frame_engine.reflow_unrestricted_table_flow(table, styles);
         table::format(
             table::TableFormatInput {
                 para,
@@ -3754,6 +3762,7 @@ impl TypesetEngine {
                 composed,
                 next_para,
                 is_column_top,
+                external_flow,
             },
             self.dpi,
             || self.profile.get(),

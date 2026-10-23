@@ -6,6 +6,7 @@ mod nested_empty_line_flow;
 mod nested_header_frame;
 mod plain_cell_flow;
 mod reflow_block_frames;
+mod reflow_external_flow;
 mod reflow_fragment_content;
 mod reflowed_nested_row;
 mod row_block_cut;

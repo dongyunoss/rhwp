@@ -1,6 +1,6 @@
 //! 원본 소유의 예약 높이와 완료 셀의 물리 테두리 높이를 함께 발행한다.
 
-use super::{hwpunit_to_px, HeightMeasurer, ResolvedStyleSet, Table};
+use super::{HeightMeasurer, ResolvedStyleSet, Table};
 
 impl HeightMeasurer {
     pub(super) fn reflow_cell_frame_rows(
@@ -31,16 +31,8 @@ impl HeightMeasurer {
             let known_frames: Option<Vec<_>> = cells
                 .into_iter()
                 .map(|cell| {
-                    let declared = i32::try_from(cell.height).ok()?;
                     let flow = self.cell_reflow_block_flow(cell, styles, depth)?;
-                    let padding = cell.effective_padding(&table.padding);
-                    Some(hwpunit_to_px(declared, self.dpi).max(
-                        flow.bottom
-                            + hwpunit_to_px(
-                                i32::from(padding.top) + i32::from(padding.bottom),
-                                self.dpi,
-                            ),
-                    ))
+                    flow.parent_frame_height(cell, table, self.dpi)
                 })
                 .collect();
             if let Some(known) = known_frames {

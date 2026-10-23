@@ -765,3 +765,38 @@ Native137 결과는 두 파일 모두 1쪽 일치·raw 97.07029%이나 직접 �
 다음 보정은 부모의 물리 프레임 소유, 공동 앵커 자식들의 최대 점유 끝, 분할 뒤 여백과
 후속 본문 예약을 같은 원장으로 연결한다. 소스 유닛 삭제나 부모 괘선 숨김으로 대신하지
 않는다. 이 단계의 fresh WASM·새 정식 렌더링 회귀와 최종 전체 검증은 아직 필요하다.
+
+## 공동 앵커의 전량 점유와 부모 NONE 분할 소유
+
+`external-flow-plan-2117.md`의 근거에 따라 부모의 순차 글줄과 외부 자식의 점유를
+합산하던 가정을 제거했다. `reflow_block_cell_flow`가 같은 자식 본체 높이·원점으로
+`external_bottom`을 발행한다. `reflow_unrestricted_table_flow`는 단일 물리 행의
+비걸침 재조판 프레임에서 부모 프레임과 공동 앵커 자식들의 최대 끝을 구분한다.
+부모 오프셋·바깥여백을 Format의 내부 높이 축으로 변환하며, 소스 행 높이와 유닛은
+변경하지 않는다. 부모 프레임 산출은 측정기와 같은 helper를 사용한다.
+
+Format의 최종 effective height와 total height가 이 결과를 소비한다. 자식 분할 소유도
+같은 결과에 담아 부모 NONE 강제 통째, prepare의 원자 규칙, scan의 분할 진입이 함께
+구분한다. 부모 `page_break` 모델 값은 그대로다. 여러 물리 행·걸침·제한 자식이 섞인
+경로는 기존 원장을 유지한다. 코드 위치는 `reflow_external_flow.rs`, `typeset/table.rs`,
+`block/unrestricted_float.rs`, `block/prepare.rs`, `scan/row_entry.rs`다.
+
+Native138은 HEAD `99c0d7f10d7a2ab3c385c83192f38bc862c4ed26`와 dirty 소스에서
+236.52초·종료 코드 0을 확인했다. source 해시는 `char-overlap-native-build-138-result.json`,
+실제 Rust 소스 10개의 사본·해시는 `producers/native138-source-overlay/manifest.json`에
+보존했다. 새 전체 수용 대조군 두 개는 97.07029%에서 모두 100%·1쪽 일치로 개선됐다
+(`reflow-policy-fullfit-native138-2121/results.json`). 후속 본문의 실제 run 기준선은
+258.53333px에서 225.89333px로 이동했다. Print의 225.67338px 대비 차이는 약 0.22px다.
+`logs/unrestricted-line-origins-2125.log`와 Print의 개별 span을 대조했다.
+`unrestricted-fullfit-native138-review-2124/`의 review·standalone overlay에서 자식 3행,
+짧은 부모 외곽과 바로 뒤 본문을 직접 확인했다. 엄격 픽셀 39.05%이며 raw 100%를
+전체 픽셀·색·괘선 두께의 동일로 보고하지 않는다.
+
+23개 정책·여백 대조군은 17개 전쪽 100%, 6개 미달이다. 부모 NONE의 두 미달은
+자식 통째 출력에서 2+1행 분할로 바뀌어 최저 4.48044% → 83.24590%다. 6개 모두
+83.24590%로 모였으며 부모 프레임 반복과 이어받기 여백을 계속 보정해야 한다.
+전체 결과는 `reflow-policy-native138-2119/results.json`이다. 명시적 쪽 나눔·후속
+본문 두 개 반례도 각각 3쪽/2쪽·전쪽 100%다. 기존 완료 페이지·저장 프레임 22개는
+PASS, 이전 실패 외부 47개는 5 PASS / 42 FAIL / 누락 0개로 이전과 같다
+(`current-previous-failures-2122-result.json`, `current-previous-failures-2123-result.json`).
+fresh WASM, 새 정식 렌더링 회귀 및 최종 전체 검증은 완료하지 않았다.

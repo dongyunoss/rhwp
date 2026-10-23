@@ -131,9 +131,13 @@ impl RowEntryQuery<'_> {
                     && layout_engine
                         .stored_partitioned_picture_cell_is_fragmentable(cell, table, styles)
             });
+        let independent_child = layout_engine
+            .reflow_unrestricted_table_flow(table, styles)
+            .is_some_and(|flow| flow.child_splittable);
         let splittable = can_intra_split
-            && intra_row_cut_here
+            && (intra_row_cut_here || independent_child)
             && (mt.is_row_splittable(r)
+                || independent_child
                 || physical_minimum_splittable
                 || native_short_parent_child_splittable
                 || stored_picture_cell_splittable

@@ -5,7 +5,7 @@ use crate::model::{
     control::Control,
     paragraph::{ColumnBreakType, LineSeg, Paragraph},
     shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo},
-    table::Table,
+    table::{Cell, Table},
 };
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -23,6 +23,29 @@ pub(crate) struct ReflowBlockCellFlow {
     /// 부동 자식의 별도 프레임을 제외한 호스트 글줄의 점유 끝.
     pub(crate) host_bottom: f64,
     pub(crate) bottom: f64,
+    /// 외부 호스트 앵커를 공유하는 자식들의 점유 끝. 부모 줄 전진과 합산하지 않는다.
+    pub(crate) external_bottom: Option<f64>,
+    pub(crate) external_child_splittable: bool,
+}
+
+impl ReflowBlockCellFlow {
+    /// 선언 최소와 실제 부모 글줄이 소유하는 동일한 물리 프레임.
+    pub(crate) fn parent_frame_height(&self, cell: &Cell, table: &Table, dpi: f64) -> Option<f64> {
+        let declared = i32::try_from(cell.height).ok()?;
+        let padding = cell.effective_padding(&table.padding);
+        Some(hwpunit_to_px(declared, dpi).max(
+            self.bottom + hwpunit_to_px(i32::from(padding.top) + i32::from(padding.bottom), dpi),
+        ))
+    }
+}
+
+/// 하나의 물리 부모 프레임과 공동 앵커 외부 자식의 전량 점유를 구분한다.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct ReflowExternalTableFlow {
+    pub(crate) parent_frame_height: f64,
+    pub(crate) external_bottom: f64,
+    pub(crate) effective_height: f64,
+    pub(crate) child_splittable: bool,
 }
 
 /// 온전한 호스트와 부분 조각이 같은 빈 글줄의 점유 높이를 사용한다.
@@ -124,6 +147,8 @@ pub(crate) fn reflow_block_cell_flow(
             .collect(),
         host_bottom: 0.0,
         bottom: 0.0,
+        external_bottom: None,
+        external_child_splittable: false,
     };
     let mut cursor = 0.0_f64;
     for (pi, para) in paragraphs.iter().enumerate() {
@@ -195,19 +220,26 @@ pub(crate) fn reflow_block_cell_flow(
                             offset
                         },
                     });
+                    let height = offset
+                        + table_body_height(table)
+                        + hwpunit_to_px(
+                            i32::from(table.outer_margin_top)
+                                + i32::from(table.outer_margin_bottom),
+                            dpi,
+                        );
                     if restricted {
-                        let height = offset
-                            + table_body_height(table)
-                            + hwpunit_to_px(
-                                i32::from(table.outer_margin_top)
-                                    + i32::from(table.outer_margin_bottom),
-                                dpi,
-                            );
                         group_height = if group.side_by_side {
                             group_height.max(height)
                         } else {
                             group_height + height
                         };
+                    } else {
+                        flow.external_bottom = Some(
+                            flow.external_bottom
+                                .map_or(height, |previous| previous.max(height)),
+                        );
+                        flow.external_child_splittable |=
+                            table.page_break != crate::model::table::TablePageBreak::None;
                     }
                 }
                 block_height += group_height;
