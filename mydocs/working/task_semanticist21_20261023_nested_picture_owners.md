@@ -59,10 +59,81 @@ deferred 띠 경로는 이전 페이지에서 소진한 오프셋을 별도로 �
 `fragment-owner-tree-2356/`, 대표 PNG는
 `issue4138-native150-critical-review-2351/{review,overlay}/`에 있다.
 원 변경의 실제 통합 경로는 `clip-reservation-fix-pulls-2358.json`,
-`picture-anchor-fix-pulls-2358.json`으로 확인했다. 아직 새 구현은 하지 않았다.
+`picture-anchor-fix-pulls-2358.json`으로 확인했다. 아래 Native151은 괘선 예약만 수정한다.
 
 원본의 상단 ℓ 기호 모양 등 확대 판독 차이도 남아 있다. 다음 후보는 #6861/#5587,
 #5734/#6782/#2071, #7840과 현재 문서의 같은 영역을 함께 검사한다. 수정된 핵심 경계가
 맞으면 현재 문서 196쪽 전체 Native/fresh WASM TSV를 산출한다. 원본 115쪽·기존
 보존 대상도 최종 head에서 확인한다. 미달이나 구조 차이가 남으면 회귀 기대값을
 바꾸거나 PR을 생성하지 않는다.
+
+## 1차 보정: 중첩 표의 자기 줄 예약
+
+`tables_with_ladder_reserved_nested_overflow`는 `(model_cell_index, para_index,
+control_index)`별 예약을 생산한다. `control_line_seg_index`로 해당 컨트롤의 저장
+호스트 줄을 고른다. 한 문단의 최댓값이나 다른 문단의 예약을 빌리지 않는다.
+완성된 직접 자식 `Table`의 소유 메타데이터가 같은 키를 소비하며, 메타데이터가
+없으면 예약을 추정하지 않는다. 조상 표 사이의 예약 분리와 용지 우단 상한은 유지한다.
+
+- 생산: `table_layout.rs::tables_with_ladder_reserved_nested_overflow`.
+- 실제 clip 소비: `extend_clipped_cell_horizontal_clip_to_nested_table_borders`.
+- 일반·분할 경로: 각각 `extend_completed_nested_table_border_clips`에 같은 예약을 전달한다.
+- Native151 빌드: `char-overlap-native-build-151-result.json`, 8잡, 공용
+  `target/pr-review`, 종료 코드 0, 239.92초. 제품 소스 해시를 전후 확인했다.
+- 기존 6개 검사 모듈 58건 통과: `reviewed-contract-tests-2362-result.json`.
+  기존 함수·기대값을 바꾸거나 새 렌더링 회귀를 추가하지 않았다.
+- #6861 1쪽 100%, #5587 4쪽의 92.00/98.46/86.91/96.67%는 수정 전후 같다.
+  두 원본 5쪽 PNG도 모두 바이트 단위로 같다
+  (`nested-reservation-controls-png-preservation-2366.json`). #5587 3쪽의 기존 미달을
+  전체 문서의 통과로 바꾸어 보고하지 않는다.
+- `cargo fmt --all -- --check` 통과: `logs/nested-reservation-fmt-2366.log`.
+- 원본 115쪽의 선택 6쪽 최저 99.15773%, #7840 전체 9쪽 최저 93.43362%와 쪽수는
+  그대로다(`issue4138-native151-boundary-batch-2361-{original,7840}-result.json`).
+  실패한 부모 실행의 후보 경로 오류와 독립적으로 끝난 개별 실행 결과를 확인했다.
+- 수식 대조군 v5 전체 5쪽 최저 99.98497%, v6 전체 2쪽 100%와 쪽수도 그대로다
+  (`issue4138-native151-boundary-batch-2371-{modern-v5,modern-v6}-result.json`).
+
+196쪽 전체의 Native150/151 대조는 `check_native151_whole_candidate_2368.py`와
+`check_native150_whole_candidate_2369.py`로 완료했다. 첫 `2361` 실행은 진단 스크립트의
+입력 경로 오기로 실패했다. 그 로그를 보존하고, SHA가 같은 Native150 API 입력 경로로
+고쳐 재실행했다. 잘못된 실행을 제품 검증 성공으로 세지 않는다.
+
+입력 SHA `bfb7a5e5fbd11c2d888bf8da25aa9c841c7678cdadf8d49d77845fda1d4f858a`,
+독립 Print SHA `4e0e79e30146898c5577592de7f25c56e55aac5563e3e961e6f1b55e53d821e6`,
+96dpi·compat2024·동일 시스템 글꼴로 대조했다. 양쪽 모두 PDF와 같은 196쪽이다.
+
+| 범위 | Native150 | Native151 |
+| --- | --- | --- |
+| 7쪽 raw | 93.60334% | 99.94303% |
+| 22쪽 raw | 89.84928% | 99.98106% |
+| 24쪽 raw | 70.89935% | 70.89935% |
+| 전쪽 최저 raw | 14.38121% | 14.38121% |
+| 90% 이상 / 미만 | 22 / 174쪽 | 23 / 173쪽 |
+
+전쪽 중 9쪽(7·22·25·49·136·155·175·176·177쪽)은 개선됐고 하락은 없다.
+나머지 187쪽은 PNG 바이트가 같다(`nested-reservation-full196-before-after-2370.json`).
+이는 직전 후보 대비 괘선 수정의 보존 증거이며, 최종 고정 `upstream/devel` 대조를
+대체하지 않는다. `pr_review_gate`는 여전히 `re_review_required`다. 첫 24개 내용 컷이
+같다는 앞 단계 결과도 24쪽 이후 출력의 시각 통과를 뜻하지 않는다.
+
+대표 `issue4138-native151-critical-review-2364/review/review_022.png`와
+`overlay/overlay_022.png`를 함께 직접 판독했다. 부모 셀 우단 밖의 불필요한 세 열
+괘선이 사라졌고 표의 본문·행 위치는 보존됐다. PDF와 선 굵기·미세 글자 차이는 남는다.
+전체 문서가 아직 미달이므로 이 쪽의 높은 Native 점수만으로 새 회귀나 px 핀을 추가하지 않는다.
+
+## 다음 보정의 추가 독립 근거: 그림 여백 상자
+
+선행 #6596의 실제 수정은 `0b1062f391`·원 변경 `41520da8d41a539a232ee5c99d4563d46c635e78`,
+통합 PR은 #6645다(`picture-margin-fix-pulls-2363.json`). 본문 경로는 여백과 캡션을
+포함한 상자를 정렬한 뒤 잉크를 그 안쪽에 놓지만, 셀 호출자는 아직 그림 자체 크기를
+`compute_object_position`에 전달한다. `layout_picture_full`은 셀 호출자가 확정한 원점을
+소비하므로 호출자의 여백 누락을 자동으로 보정하지 않는다. 임의의 x/y 보정 대신 이
+상자 계약과 실제 문단 앵커를 공통 결과로 연결해야 한다.
+
+실제 원본·한컴 재저장본의 TopAndBottom 그림 호스트를 전수 조사하면 둘 다 문단 310의
+그림 두 개뿐이며, 그림·캡션 모델은 재저장 전후 완전히 같다. 두 그림의 오프셋·높이·
+상하 여백·아래 캡션 간격·저장 캡션 높이를 합친 끝은 각각 19468/19473HU다. 최댓값
+19473HU가 한컴 재저장본의 다음 문단 원점 차이와 정확히 같다
+(`picture-frame-physical-equivalence-2367.json`). 입력 자체의 다음 원점 차이 1920HU를
+실제 그림 점유로 해석해서는 안 된다. 이는 원인 분석 근거이며, 아직 그림 보정·전쪽 시각
+검증을 마쳤다는 뜻은 아니다.

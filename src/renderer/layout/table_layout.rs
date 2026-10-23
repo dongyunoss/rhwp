@@ -412,7 +412,7 @@ pub(super) fn unwrapped_table_cell_ctx(
 /// 00387's dotted 46,490HU box inside a 45,359HU cell — and 한글 paints it cut
 /// at the parent's edge.  Widening the clip for that shape would drag the
 /// dotted frame past the outer table border, so it keeps the host viewport.
-/// [#6861] **저장 사다리가 자리를 잡아 준 과폭 중첩 표**의 host 셀 모델 인덱스.
+/// [#6861] **저장 사다리가 자리를 잡아 준 과폭 중첩 표**의 셀·문단·컨트롤 소유.
 ///
 /// `#5587` 은 "부모 셀보다 넓게 저장된 중첩 표는 한글도 부모 경계에서 자른다"로 정리했다.
 /// 그런데 `3194097` 1쪽은 정반대다 — 한글이 바깥 표 오른쪽 끝을 **30.15px 넘겨** 중첩 표
@@ -429,9 +429,9 @@ pub(super) fn unwrapped_table_cell_ctx(
 ///
 /// 문턱 상수가 없다 — 문서가 스스로 두 값을 준다(환산 오차 0.5 HU 허용은 없다,
 /// 둘 다 HWPUNIT 정수 비교다).
-pub(super) fn cells_with_ladder_reserved_nested_overflow(
+pub(super) fn tables_with_ladder_reserved_nested_overflow(
     table: &crate::model::table::Table,
-) -> std::collections::HashSet<u32> {
+) -> std::collections::HashSet<(u32, usize, usize)> {
     let mut reserved = std::collections::HashSet::new();
     for (index, cell) in table.cells.iter().enumerate() {
         // 폭 변경 전 호스트 사다리는 새 부모 셀의 과폭 paint를 인증하지 않는다.
@@ -442,27 +442,24 @@ pub(super) fn cells_with_ladder_reserved_nested_overflow(
         ) {
             continue;
         }
-        for para in &cell.paragraphs {
-            let widest_stored = para
-                .line_segs
-                .iter()
-                .map(|segment| segment.segment_width)
-                .max()
-                .unwrap_or(0);
-            if widest_stored <= 0 {
-                continue;
-            }
-            let reserves_any_nested = para.controls.iter().any(|control| match control {
-                Control::Table(nested) => {
-                    nested.common.width > 0 && widest_stored >= nested.common.width as i32
+        let Ok(index) = u32::try_from(index) else {
+            continue;
+        };
+        for (para_index, para) in cell.paragraphs.iter().enumerate() {
+            for (control_index, control) in para.controls.iter().enumerate() {
+                let Control::Table(nested) = control else {
+                    continue;
+                };
+                // 같은 셀의 다른 문단이나 같은 문단의 다른 줄이 예약한 폭을
+                // 빌리지 않는다. 실제 컨트롤 슬롯의 저장 줄만 근거로 사용한다.
+                let stored_width = super::control_line_seg_index(para, control_index)
+                    .and_then(|line| para.line_segs.get(line))
+                    .map_or(0, |segment| segment.segment_width);
+                if nested.common.width > 0
+                    && i64::from(stored_width) >= i64::from(nested.common.width)
+                {
+                    reserved.insert((index, para_index, control_index));
                 }
-                _ => false,
-            });
-            if reserves_any_nested {
-                if let Ok(index) = u32::try_from(index) {
-                    reserved.insert(index);
-                }
-                break;
             }
         }
     }
@@ -471,7 +468,7 @@ pub(super) fn cells_with_ladder_reserved_nested_overflow(
 
 fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(
     cell_node: &mut RenderNode,
-    ladder_reserved_cells: &std::collections::HashSet<u32>,
+    ladder_reserved_tables: &std::collections::HashSet<(u32, usize, usize)>,
     // [#6861] 넓힌 clip 의 상한 — 본문 우단. 사다리가 자리를 잡아 줬어도 **용지 밖까지**
     // 내보내지는 않는다(1480000-201200206: 상한 없이 켜면 용지 밖 2 → 9).
     ladder_reserved_clip_right_limit: f64,
@@ -493,9 +490,9 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(
     let mut clip_right = host_clip_right;
 
     for table_node in &mut cell_node.children {
-        if !matches!(table_node.node_type, RenderNodeType::Table(_)) {
+        let RenderNodeType::Table(table_meta) = &table_node.node_type else {
             continue;
-        }
+        };
         let table_left = table_node.bbox.x;
         let table_right = table_node.bbox.x + table_node.bbox.width;
         // [#5587] 부모 셀보다 넓게 저장된 중첩표는 clip 확장 대상이 아니다.
@@ -503,7 +500,11 @@ fn extend_clipped_cell_horizontal_clip_to_nested_table_borders(
         // 한글도 그때는 부모 경계를 넘겨 그린다(위 헬퍼의 판별).
         let ladder_reserved = cell_meta
             .model_cell_index
-            .is_some_and(|index| ladder_reserved_cells.contains(&index));
+            .zip(table_meta.para_index)
+            .zip(table_meta.control_index)
+            .is_some_and(|((cell, para), control)| {
+                ladder_reserved_tables.contains(&(cell, para, control))
+            });
         // 사다리가 잡아 준 자리라도 본문 우단을 넘어서까지 열어 주지는 않는다.
         let ladder_reserved = ladder_reserved
             && table_node.bbox.x + table_node.bbox.width
@@ -1574,9 +1575,9 @@ pub(super) fn extend_completed_nested_table_border_clips(
     node: &mut RenderNode,
     suppress_bottom_text_residue: bool,
     repair_unclipped_hwpx_top_residue: bool,
-    // [#6861] 저장 사다리가 과폭 중첩 표의 자리를 잡아 준 host 셀들과, 그때 열어 줄
+    // [#6861] 저장 사다리가 과폭 중첩 표의 자리를 잡아 준 소유 경로들과, 그때 열어 줄
     // 오른쪽 상한(용지 우단).
-    ladder_reserved_cells: &std::collections::HashSet<u32>,
+    ladder_reserved_tables: &std::collections::HashSet<(u32, usize, usize)>,
     ladder_reserved_clip_right_limit: f64,
 ) {
     // 셀 번호는 각 표 안에서 다시 시작한다. 하위 표는 자신의 layout에서
@@ -1591,7 +1592,7 @@ pub(super) fn extend_completed_nested_table_border_clips(
             if matches!(child.node_type, RenderNodeType::Table(_)) {
                 &no_inherited_reservations
             } else {
-                ladder_reserved_cells
+                ladder_reserved_tables
             },
             ladder_reserved_clip_right_limit,
         );
@@ -1599,7 +1600,7 @@ pub(super) fn extend_completed_nested_table_border_clips(
     extend_table_horizontal_bbox_to_direct_cell_paint(node);
     extend_clipped_cell_horizontal_clip_to_nested_table_borders(
         node,
-        ladder_reserved_cells,
+        ladder_reserved_tables,
         ladder_reserved_clip_right_limit,
     );
     extend_clipped_cell_vertical_clip_to_nearby_nested_table_borders(node);
@@ -4771,7 +4772,7 @@ impl LayoutEngine {
             self.profile.get().hwp5_stored_pagination_layout()
                 || self.profile.get().hwp5_origin_hwpx(),
             self.profile.get().hwpx_container(),
-            &cells_with_ladder_reserved_nested_overflow(table),
+            &tables_with_ladder_reserved_nested_overflow(table),
             // 상한은 **용지**다 — 한글은 본문 밖·용지 안에 그린다(3194097: 본문 우단
             // 720.0, 그림 749.4, 용지 793.7). 본문으로 잡으면 이 축이 통째로 닫힌다.
             self.current_paper_width.get(),
