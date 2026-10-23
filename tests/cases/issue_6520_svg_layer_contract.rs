@@ -926,7 +926,14 @@ fn image_and_equation_control_labels_replay_as_canonical_ops() {
     let json = tree.to_json();
     assert_eq!(json.matches("\"type\":\"controlLabel\"").count(), 7);
     let json: serde_json::Value = serde_json::from_str(&json).unwrap();
-    assert_eq!(json["schemaMinorVersion"], 29);
+    assert_eq!(json["schemaVersion"], 1);
+    assert!(
+        json["schemaMinorVersion"]
+            .as_u64()
+            .expect("정수 minor 버전")
+            >= 23,
+        "controlLabel은 additive schema 1.23부터 지원한다: {json}"
+    );
     assert!(json["usedFeatures"]
         .as_array()
         .unwrap()
