@@ -64,18 +64,35 @@ impl LayoutEngine {
         // cell.height에는 패딩만 저장되는 원본도 있다. 이 값들의 합으로
         // 실제 원본 줄의 쪽 재시작을 기각하거나 재생성 사다리를 인증하지 않는다.
         table.cells.iter().any(|cell| {
-            if !source_geometry(cell) {
+            if cell.dirty_flag {
                 return false;
             }
             let mut previous = None;
-            let mut restarted = false;
             for para in &cell.paragraphs {
+                if para.stored_text_partition_is_dirty()
+                    || para.cell_format_vpos_dirty
+                    || crate::renderer::para_has_no_stored_line_segs(para)
+                {
+                    previous = None;
+                    continue;
+                }
                 for line in &para.line_segs {
-                    restarted |= previous.is_some_and(|pos| line.vertical_pos < pos);
+                    if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                        || line.vertical_pos < 0
+                        || line.line_height <= 0
+                    {
+                        // 생성 호스트를 건너 실제 원본 두 줄의 관계를 만들지 않는다.
+                        // 같은 셀의 다른 유효한 원본 쌍까지 지우지도 않는다.
+                        previous = None;
+                        continue;
+                    }
+                    if previous.is_some_and(|pos| line.vertical_pos < pos) {
+                        return true;
+                    }
                     previous = Some(line.vertical_pos);
                 }
             }
-            restarted
+            false
         })
     }
 

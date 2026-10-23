@@ -77,8 +77,8 @@ Native166을 공용 target·8잡으로 한 번 빌드한다. 기존 189개 검�
 
 - 빌드: `char-overlap-native-build-166-result.json`, 8잡·공용 target, exit 0.
   기본 Native Clippy도 `logs/native166-clippy-2603.log`에서 exit 0을 확인했다.
-- 기존 189개: `reviewed-contract-tests-2594-result.json`의 **185 PASS / 4 FAIL**.
-  #2185 한 글자 편집과 #7336 두 검사가 다시 통과했고 이전 정상 182개도 유지했다.
+- 기존 189개: `reviewed-contract-tests-2594-result.json`의 **184 PASS / 4 FAIL / 1 ignored**.
+  #2185 한 글자 편집과 #7336 두 검사가 다시 통과했고 이전 실제 정상 181개와 제외 1개 상태를 유지했다.
   남은 네 건은 #7114의 55/56/61/200자 저장·재열기 차이다. 검사를 바꾸지 않았다.
 - 원본 HWP/HWPX: `issue1949-exact-originals-native166-2595-result.json`, 각각
   115/115쪽·최저 95.69614%. 두 경로 모두 Native이며 fresh WASM을 대신하지 않는다.
@@ -116,8 +116,8 @@ live의 다음 조각에서는 무높이로 지나가나, 재열기는 `owns_sto
 컷 선택·물리 범위 측정·저장 시작 컷은 기존 공통 술어를 함께 소비한다.
 
 - `char-overlap-native-build-167-result.json`: 8잡·공용 target 빌드 exit 0, 247.36초.
-- `reviewed-contract-tests-2614-result.json`: 기존 **189개 중 188 PASS / 1 FAIL**.
-  55/56/61자의 세 실패가 통과했고 기존 185개 정상 검사도 유지했다. 새 검사나 기대값 변경은 없다.
+- `reviewed-contract-tests-2614-result.json`: 기존 **189개 중 187 PASS / 1 FAIL / 1 ignored**.
+  55/56/61자의 세 실패가 통과했고 기존 실제 정상 184개 검사도 유지했다. 새 검사나 기대값 변경은 없다.
   남은 실패는 200자 편집의 중첩 표 내부 컷 뒤 저장·재열기 내용 소속이다.
 - `remaining-edit-snapshots-2615-result.json`: 55/56/61자 모두 live/reload 115쪽과
   쪽별 본문이 같다. 200자는 live 116·재열기 117쪽, 첫 내용 차이는 103쪽이다.
@@ -154,5 +154,79 @@ live의 다음 조각에서는 무높이로 지나가나, 재열기는 `owns_sto
 같은 높이만으로 불변을 판정하지 않고 줄별 원점·높이·간격·소유 변화를 함께 대조한다.
 
 `native167-focused-summary-2628.json`에서 전체 producer source hash 일치, 8개 저장 바이트
-불변, 기존 188 PASS / 1 FAIL과 35문서/66쪽 raw 100%를 묶어 확인했다.
+불변, 기존 실제 187 PASS / 1 FAIL / 1 ignored와 35문서/66쪽 raw 100%를 묶어 확인했다.
 정식 회귀 추가·변경과 PR 제출의 시각 선행 조건은 충족하지 않았으며 보정을 계속한다.
+
+## 다음 보정: 실제 줄 기하 변경과 저장 좌표계의 국소 유효성
+
+현재 head `466c57122dd868d5bae9eb55bdc59320c3c663a9`에서 다음 두 생산 지점을 함께 확인한다.
+
+1. 셀 텍스트 삽입/삭제는 실제 줄 기하가 그대로여도 `mark_table_text_reflowed_after_edit`를
+   무조건 기록한다. 저장기는 이 표식을 보고 전체 표의 원본 사다리를 되쓴다.
+   한 글자 입력의 원본 줄별 원점·높이·간격은 그대로인데 편집하지 않은 54개 문단의
+   원점을 바꿨고, 독립 Print는 원본·무편집·한 글자 저장본의 그림 위치가 같다고 확인했다.
+   삽입/삭제가 같은 원본 수직 줄 프레임과 소유 분류를 보존하면 새 프레임 무효화 표식을
+   추가하지 않는다. 기존에 실제 재조판으로 기록한 표식은 지우지 않는다.
+   전체 높이 하나 대신 줄별 원점·높이·간격, 원본 줄의 유효성, 빈 줄·제어 소유를 함께 비교한다.
+2. 저장 좌표계의 종류를 찾는 판정은 지금 셀의 모든 문단이 원본이어야 되감김 하나도
+   인정한다. 200자 저장본의 호스트 81에 생성 tag가 붙어도 다른 원본 줄들의 페이지 상대
+   좌표계는 남아 있다. 생성·dirty 줄은 근거에서 제외하되, 연속한 실제 원본 줄 쌍의
+   되감김은 그대로 인정한다. 이것을 옛 컷 전체의 재인증으로 사용하지 않는다.
+
+공개 편집 8종·기존 189개, 원본 230쪽과 고정 분할본 196쪽을 같은 Native168 빌드로
+일괄 확인한다. 35문서/66쪽·#7336·#7840·현대 수식의 기존 정상 경계도 유지한다.
+새 저장 바이트는 기존 Print와 SHA를 먼저 대조하고, 달라졌으면 같은 제품 세대의
+MCP Print를 새로 확보한다. 쪽수·본문 왕복만으로 시각 검증이나 새 회귀 자격을 판정하지 않는다.
+
+## 제외 검사의 집계 정정
+
+`focused-terminal-audit-2635.json`에서 Native165/166/167의 189개 원 로그를 전수
+재독했다. 진단 드라이버는 test binary의 exit 0만으로 PASS를 집계해 기존 ignored 검사
+`issue_2308_short_rowbreak_child_wraps_where_the_authority_pdf_wraps` 1개를 잘못 포함했다.
+정확한 Native165/166/167 결과는 각각 181/7/1, 184/4/1, 187/1/1
+(PASS/FAIL/ignored)이다. 기존 JSON·로그는 원 증거로 보존하고 이 감사를 연결한다.
+수정한 다음 진단 드라이버는 실제 실행 수와 ignored 수를 따로 보고한다.
+이 검사를 활성 회귀나 실행 성공 증거로 승격하지 않는다.
+
+Native168의 실제 집중 검사는 188 PASS / 0 FAIL / 1 ignored, 공개 API 14종의
+저장·재열기 쪽별 본문은 모두 같다. 200자는 여전히 116쪽이므로 독립 Print의 115쪽과
+다르며, 시각 통과가 아니다. 다음 Native169에서는 원본 쌍을 찾는 도중 저장 줄이 없는
+문단을 만나도 이전 줄과의 연결을 끊는다. 생성·dirty 문단뿐 아니라 정보가 없는 문단을
+가로질러 가짜 원본 쌍을 만들지 않는 같은 판정의 보수적인 경계다.
+
+## Native168의 실제 실행과 독립 Print 개선
+
+`native168-focused-summary-2650.json`은 실제 기존 188 PASS / 0 FAIL / 1 ignored,
+공개 API 14종의 저장·재열기 쪽별 본문 일치, 35문서/66쪽 raw 100%를 기록한다.
+직접 삭제와 짧은/줄바꿈 삽입 후 삭제를 HWP/HWPX에서 실제 실행했다.
+
+한 글자 HWP 저장본 SHA는 `9e76b3b462e5c6f5e4adade2356f6f7dca6cb513be1c9fb6327dccec902a0107`로
+바뀌어 이전 PDF를 재사용하지 않았다. 한컴 2024 MCP job
+`bd1ccbc8-a5ab-4862-9445-4b8cda06f6aa`의 PrintMethod 0 출력은
+`mcp-edited-controls-2637/results.json`에 원본·PDF SHA와 함께 있다.
+`edited-print-native168-2638-result.json`의 Native 115/115쪽 최저는 95.69614%,
+90% 미만 0쪽이다. `one-character-preserved-vertical-frames-2642.json`에서
+원본 부모 문단 2,507개의 원점·높이·줄간격 차이도 0개다.
+
+공식 `native168-one-reviews-2643`의 105쪽 review와 standalone overlay를 직접 읽었다.
+이전 19.93037%에서 raw 100%로 개선됐고 그림과 뒤 제목·본문의 같은 쪽 소속,
+상하 순서와 원점이 Print와 일치한다. `not_evaluated` 실루엣 보조 gate를 최종 승인으로
+바꾸어 보고하지 않으며 fresh WASM과 확대 판독 범위의 최종 증거는 아직 남아 있다.
+
+200자는 116쪽으로 저장·재열기는 같지만 독립 Print의 115쪽과 다르다.
+56자 편집의 전쪽 시각 미달과 고정 분할본 177~196쪽 미달도 해결 완료가 아니다.
+다음 전체 Rust 재실행과 별개로 이 물리 배치 차이를 계속 보정한다.
+
+## Native169 결과
+
+`native169-focused-summary-2654.json`에서 producer source hash를 재확인했다.
+
+- 기존 실제 188 PASS / 0 FAIL / 1 ignored, 35문서/66쪽 전쪽 raw 100% 유지.
+- 공개 API 14종은 저장·재열기 본문이 같고, Native168과 각 저장 바이트 SHA도 같다.
+  새 저장 바이트를 별도 출력한 것처럼 보고하지 않고 동일 입력 Print를 재사용한다.
+- 원본 HWP/HWPX 각 115쪽·최저 95.69614%, 고정 분할본 196쪽·최저 38.91518%로
+  기존 뒤 20쪽 미달 유지. #7840와 현대 수식 정상 대조군도 유지했다.
+- 전체 format과 Native root Clippy는 각각 exit 0,
+  `logs/native169-format-2651.log`·`logs/native169-clippy-2652.log`에 보존했다.
+- 다음 전체 Rust 로그는 `current-full-rust-2644/nextest.log`다. 전체 결과 전에는
+  과거 68 FAIL을 새 전체 통과로 바꾸지 않으며, fresh WASM 등 나머지 필수 gate도 남아 있다.

@@ -21,6 +21,9 @@ use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 
+mod stored_vertical_frame;
+use stored_vertical_frame::StoredVerticalFrame;
+
 pub(crate) type CellReflowMetrics = (i32, i16, i16);
 
 /// 복사와 같은 글자 경계에 든 표·그림만 지울 수 있는지 변경 전에 확인한다.
@@ -2028,6 +2031,7 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
@@ -2059,16 +2063,7 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if matches!(
-            self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls
-                .get(control_idx),
-            Some(Control::Table(_))
-        ) {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-
-        let (flow_advance_after, local_contribution_after) = {
+        let (flow_advance_after, local_contribution_after, stored_frame_unchanged) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -2085,8 +2080,23 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
+                stored_frame_before
+                    .as_ref()
+                    .is_some_and(|before| before.matches(cell_para_after)),
             )
         };
+        // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
+        // 이전 편집이 이미 기록한 재조판 표식은 그대로 유지한다.
+        if !stored_frame_unchanged
+            && matches!(
+                self.document.sections[section_idx].paragraphs[parent_para_idx]
+                    .controls
+                    .get(control_idx),
+                Some(Control::Table(_))
+            )
+        {
+            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
+        }
         let units_fp_unchanged = self
             .get_cell_paragraph_ref(
                 section_idx,
@@ -2362,6 +2372,7 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
             crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
@@ -2393,16 +2404,7 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        if matches!(
-            self.document.sections[section_idx].paragraphs[parent_para_idx]
-                .controls
-                .get(control_idx),
-            Some(Control::Table(_))
-        ) {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-
-        let (flow_advance_after, local_contribution_after) = {
+        let (flow_advance_after, local_contribution_after, stored_frame_unchanged) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -2419,8 +2421,23 @@ impl DocumentCore {
                 crate::renderer::layout::LayoutEngine::paragraph_contributes_to_table_nested_text_flag(
                     cell_para_after,
                 ),
+                stored_frame_before
+                    .as_ref()
+                    .is_some_and(|before| before.matches(cell_para_after)),
             )
         };
+        // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
+        // 이전 편집이 이미 기록한 재조판 표식은 그대로 유지한다.
+        if !stored_frame_unchanged
+            && matches!(
+                self.document.sections[section_idx].paragraphs[parent_para_idx]
+                    .controls
+                    .get(control_idx),
+                Some(Control::Table(_))
+            )
+        {
+            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
+        }
         let units_fp_unchanged = self
             .get_cell_paragraph_ref(
                 section_idx,

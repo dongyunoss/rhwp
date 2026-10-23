@@ -304,8 +304,8 @@ head의 결과를 현재 제품 소스 검증으로 재명명하지 않았다.
 
 | 확인 | 실제 결과 | 근거 |
 | --- | --- | --- |
-| 기존 물리 프레임 계약 | 133 PASS, 검사 소스 해시 동일 | `native165-focused-summary-2582.json` |
-| 기존 실패 모듈 포함 | 189건 중 182 PASS / 7 FAIL; Native162의 실패 11건 PASS 전환, 새 실패 없음 | `reviewed-contract-tests-2576-result.json` |
+| 기존 물리 프레임 계약 | 실제 132 PASS / 1 ignored, 검사 소스 해시 동일 | `native165-focused-summary-2582.json`; 실행 집계는 `focused-terminal-audit-2635.json`으로 정정 |
+| 기존 실패 모듈 포함 | 실제 181 PASS / 7 FAIL / 1 ignored; Native162의 실패 11건 PASS 전환, 새 실패 없음 | `reviewed-contract-tests-2576-result.json`; `focused-terminal-audit-2635.json` |
 | 원본 HWP와 새 2024 Print | 115/115쪽, 전쪽 raw 최저 95.69614%, 90% 미달 0쪽 | `issue1949-exact-originals-native165-2577-result.json` |
 | 원본 HWPX와 새 2020 Print | 115/115쪽, 전쪽 raw 최저 95.69614%, 90% 미달 0쪽 | 같은 파일의 HWPX 원본 행 |
 | 고정 분할본과 2024 Print | 196/196쪽, 176쪽 90% 이상·177~196쪽 미달; 최저 38.91518% | `issue4138-native165-boundary-batch-2578-candidate-result.json` |
@@ -338,3 +338,10 @@ Native163의 5 FAIL과 비교하면 두 편집 경로는 다시 실패한다. �
 갱신하지 않았고, fresh WASM·전체 Rust·WASM/workspace lint·나머지 통합 범위의 필수
 검증이 아직 완료되지 않았다. 분할본 뒤 20쪽도 계속 보정한다. 새 회귀·fixture 추가,
 PR 생성·원격 push·승인·merge는 수행하지 않았다.
+
+### 집중 검사 집계 정정
+
+후속 `task_semanticist21_20261024_edit_frame_coordinate_space.md`의 실행 감사에서
+진단 드라이버가 ignored 검사 1개의 exit 0을 PASS로 센 오류를 확인했다. 위 Native165
+표는 실제 terminal 결과로 정정했다. 원 JSON·로그는 그대로 보존하며 제외 검사는
+실행 성공 증거가 아니다. Native168의 후속 결과는 실제 188 PASS / 0 FAIL / 1 ignored다.
