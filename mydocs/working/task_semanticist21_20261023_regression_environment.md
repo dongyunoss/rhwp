@@ -524,3 +524,31 @@ Print와 2 대 2다. 새 2쪽 review·standalone overlay에서 흑백 윤곽을 
 현재 원격 devel의 읽기 전용 조회는 def947c2149df5bc812d801e6e79be19a403b4d1로,
 고정 기준 605ccfd92f와 다르다. 현재 fresh 단계 결과와 생성 JS를 먼저 커밋한 뒤 새 base의
 변경·지침을 읽고 동기화한다. 리베이스 자동 적용을 기능 보존 증거로 대신하지 않는다.
+
+## def947c214 동기화와 다음 보정
+
+새 base는 def947c2149df5bc812d801e6e79be19a403b4d1, 리베이스 직후 후보는
+c520638aea2f849319c346d4f73b3a27bd0354c8이다. backup 브랜치를 보존한 뒤 197개 커밋을
+재적용했다. 진행 중 상태 조회의 인덱스 잠금 경합으로 54번째 적용이 중단됐다. 잠금·활성 Git
+프로세스가 자연 종료됐음을 확인하고, staging patch-id가 원본 139811191c와 같은지 검증한
+뒤 원 저자·메시지로 해당 커밋을 고정하고 같은 리베이스를 계속했다. 소스 되돌리기·reset·
+커밋 누락으로 해결하지 않았다. range-diff의 196개는 같고 2%p 지침 1개의 차이는 새 문서
+문맥 앵커 이동뿐이다. 결과 트리의 차이는 새 base의 39개 경로이며 실행 소스 634개는 모두
+Native132 snapshot과 같다. 정확한 기록은 `rebase-def947-2045-result.json`과
+`rebase-def947-2045-lock-recovery.json`에 있다.
+
+들어온 #7474·#7488·#8171·#8173의 본문·파일·커밋을 `rebase-incoming-pr-*-2047.json`으로
+확인했다. 제품 Rust 조판 코드는 바뀌지 않았다. #7488은 명시 opt-in만 cdylib 경로로 바꾸고
+기본은 standard release다. #7474는 패키징·브라우저가 같은 standard release 바이트를
+소비했는지 확인한다. 새 wrapper/release/workflow Python 계약과 Studio artifact·글꼴 계약,
+CI impact 검사를 실행해 성공했다. 실제 최종 standard build의 manifest·브라우저 소비·배포
+전후 바이트 일치는 다음 새 후보의 최종 패키지에서 확인해야 하며, 이전 receipt를 새
+source SHA의 release manifest로 고쳐 쓰지 않는다. #8171·#8173의 새 절차도 읽었고,
+`own-open-pr-preflight-2046.json`에서 본인 열린 PR 0개를 확인했다.
+
+다음 소스 묶음은 독립 PDF 클립 근거에 따라 부모 Cell 클립을 복원한다. 제한 없는 자식은
+이미 Cell 밖 Table 자식으로 배치되므로 별도 스트림 소유는 유지한다. 닫힌 reflow 프레임의
+괘선 확장 금지는 유지하며 자식 선언 폭·좌표를 줄여 맞추지 않는다. 글꼴 프로그램의 정렬·
+중복 검사는 COLR/CPAL/DSIG를 제외하기 전 원본 디렉터리 전체에 적용하도록 보완한다.
+두 보정 뒤 같은 입력·Print의 Native와 기존 대조군을 다시 확인한다. 독립 자식 스트림의
+부모 물리 프레임 반복과 TABLE 원자 행 이월 문제는 여전히 해결해야 한다.
