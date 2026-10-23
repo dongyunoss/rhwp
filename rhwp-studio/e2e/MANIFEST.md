@@ -140,6 +140,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `save-as-format.test.mjs` | 상시 | active | 저장 출력 포맷 선택 (file:save-as-hwp / file:save-as-hwpx) E2E — #1613 | biz_plan.hwp, hwpx/footnote-01.hwpx | 수동 |  |
 | `select-all-cmd-a.test.mjs` | 상시 | active | 한컴 정합 ⌘A — 본문 전체·셀 내용만·셀 블록 해제·표 하이라이트·포커스 밖 전역 경로·IME 키·전체 삭제 회귀 | 새 문서, hml/formatting_table.hml | npm e2e:select-all-cmd-a | dev server 필요 — run-with-vite.mjs 경유 |
 | `scenario-runner.mjs` | 유틸 | active | 시나리오 실행기 + 렌더 트리 측정기 + 규칙 검증기 | — | 수동 |  |
+| `wasm-artifact-check.mjs` | 유틸 | active | #7473 앱 초기화 중 실제 수신 WASM과 빌드 manifest SHA-256 대조 | — | 수동 | `helpers.mjs`에서 opt-in, `tests/wasm-artifact-check.test.ts`로 실패 경계 검사 |
 | `vite-server.mjs` | 유틸 | active | Vite dev server 기동·종료 공용 헬퍼 — vite Node API(createServer) in-process 기동, 로그는 customLogger 로 target/ 에 유지 | — | 수동 | `run-render-diff.mjs`·`run-with-vite.mjs`에서 import |
 | `shape-inline.test.mjs` | 상시 | active | 도형 인라인 컨트롤 — 커서 이동 및 텍스트 삽입 | — | 수동 |  |
 | `shift-end.test.mjs` | 상시 | active | shift-return.hwp Shift+End 블록 선택 | shift-return.hwp | 수동 |  |
@@ -178,3 +179,5 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `hyperlink-ui-issue6963.test.mjs` | 상시 | active | #6963 한컴형 링크 UI·우클릭·방문 색·undo/redo·드래그 선택 | 새 문서 | 수동 | 실제 WASM 필요 |
 
 | `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·합성 TTC·번들 Noto·basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-7403 / e2e:issue-7403-canvas2d | 명시적 CanvasKit/Canvas2D, 측정·paint·SVG 경계 포함 |
+
+| `issue-7593-dyad-display.test.mjs` | 상시 | active | dyad와 복합 수식의 실제 표시·CanvasKit 누락 방지 | `samples/issue7593/` 2개 | 수동 | `VITE_URL=… node e2e/issue-7593-dyad-display.test.mjs --mode=headless`; Native/fresh WASM 전쪽90% 선행 확인; 실제 WASM 바이트·내용·replay 진단 |

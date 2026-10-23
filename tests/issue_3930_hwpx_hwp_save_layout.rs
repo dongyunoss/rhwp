@@ -87,8 +87,10 @@ fn collect_stamp_placeholder_tables(node: &RenderNode, out: &mut Vec<(f64, f64, 
         RenderNodeType::Table(table)
             if table.row_count == 1
                 && table.col_count == 1
-                && (node.bbox.width - 56.7).abs() <= 0.2
-                && (node.bbox.height - 56.7).abs() <= 0.2
+                && table.section_index == Some(3)
+                && table.para_index == Some(4)
+                && table.cell_context.as_ref()
+                    .is_some_and(|context| context.parent_para_index == 71)
     ) {
         out.push((node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height));
     }
@@ -152,27 +154,27 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "원본 p30 바탕쪽은 장 제목으로 바뀌면 안 된다"
     );
     assert!(
-        source_p144_tree.contains(ATTACHMENT_GUIDANCE),
+        has_line_text(&source_p144_tree, ATTACHMENT_GUIDANCE),
         "한컴 PDF p144와 같이 붙임 안내 블록은 원본 p144에 있어야 한다"
     );
     assert!(
-        !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
+        !has_line_text(&source_p145_tree, ATTACHMENT_GUIDANCE),
         "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
     );
     assert!(
-        source_p283_tree.contains(Q5_RESPONSE_FIRST_LINE),
+        has_line_text(&source_p283_tree, Q5_RESPONSE_FIRST_LINE),
         "HWPX Q5의 saved-frame response 첫 줄은 PDF/native HWP와 같이 p283에 있어야 한다"
     );
     assert!(
-        !source_p284_tree.contains(Q5_RESPONSE_FIRST_LINE),
+        !has_line_text(&source_p284_tree, Q5_RESPONSE_FIRST_LINE),
         "HWPX Q5의 saved-frame response 첫 줄은 p284로 밀리면 안 된다"
     );
     assert!(
-        source_p285_tree.contains("홈페이지상의 질의에 대하여"),
+        has_line_text(&source_p285_tree, "홈페이지상의 질의에 대하여"),
         "HWPX Q8 표제는 PDF physical p285와 같이 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
     );
     assert!(
-        source_p286_tree.contains(Q9_TITLE),
+        has_line_text(&source_p286_tree, Q9_TITLE),
         "HWPX Q9 표제는 PDF/native HWP와 같이 p286에서 시작해야 한다"
     );
     assert!(
@@ -180,15 +182,15 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "HWPX Q10 표제는 PDF/native HWP와 같이 p287에서 시작해야 한다"
     );
     assert!(
-        source_p290_tree.contains(Q16_TITLE),
+        has_line_text(&source_p290_tree, Q16_TITLE),
         "HWPX Q16 표와 trailing blank-bottom row는 PDF/native HWP와 같이 p290에서 끝나야 한다"
     );
     assert!(
-        !source_p291_tree.contains(Q16_TITLE),
+        !has_line_text(&source_p291_tree, Q16_TITLE),
         "HWPX Q16 표는 p291로 분할되어 반복되면 안 된다"
     );
     assert!(
-        !source_p294_tree.contains(Q27_TITLE),
+        !has_line_text(&source_p294_tree, Q27_TITLE),
         "HWPX Q26의 3+3줄 응답 tail은 PDF/native HWP와 같이 p294에서 끝나야 한다"
     );
     // 독립 PDF296쪽에도 Q29가 있다. 이미 #7445에 이관한 물리쪽의
@@ -339,11 +341,15 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
 /// `horzOffset=4868,13553,22830HU`로 한 줄에 놓는다. nested non-TAC의 generic flow가
 /// 각 table 높이만큼 cursor를 전진하면 세 점선 상자가 세로로 쌓여, page owner가 맞아도
 /// 눈에 보이는 fidelity가 깨진다 (#3820 Stage 66).
+/// #8151: 바깥여백도 공통 앵커가 한 번 적용한다. 독립 Print의 괘선 중심을
+/// 96dpi로 환산했으며 양쪽 raw 98% 이상·확대 판독 근거는
+/// `mydocs/pr/assets/issue_8151/README.md`에 보존한다.
 #[test]
 fn issue_3820_hwpx_behind_text_stamp_placeholders_keep_common_y_and_offsets() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
-    let core = DocumentCore::from_bytes(&bytes).expect("HWPX fixture parse");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("HWPX fixture parse");
+    core.set_hangul2024_compat(true);
     let page = core
         .build_page_render_tree(PAGE_144)
         .expect("render PDF p144");
@@ -356,15 +362,20 @@ fn issue_3820_hwpx_behind_text_stamp_placeholders_keep_common_y_and_offsets() {
         3,
         "p144 automatic-stamp guide must retain three 1×1 placeholder tables: {stamps:?}"
     );
-    let expected_x = [182.0, 297.8, 421.5];
+    // PDF 왼쪽 세로 괘선 중심: 139.289, 225.956, 318.616pt.
+    let expected_x = [185.718667, 301.274667, 424.821333];
     for ((x, y, width, height), expected_x) in stamps.iter().zip(expected_x) {
         assert!(
-            (*x - expected_x).abs() <= 0.3,
+            (*x - expected_x).abs() <= 2.0,
             "p144 HWPX horzOffset anchor mismatch: x={x:.1}, expected={expected_x:.1}, stamps={stamps:?}"
         );
         assert!(
             (*y - stamps[0].1).abs() <= 0.3,
             "p144 BehindText placeholders must share one paragraph y: stamps={stamps:?}"
+        );
+        assert!(
+            (*y - 362.205333).abs() <= 2.0,
+            "p144 도장 표의 윗변은 독립 Print 271.654pt와 일치해야 한다: {stamps:?}"
         );
         assert!(
             (*width - 56.7).abs() <= 0.2 && (*height - 56.7).abs() <= 0.2,

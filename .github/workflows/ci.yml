@@ -1002,9 +1002,11 @@ jobs:
 
       - name: Validate Visual Sweep PNG contracts
         run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y poppler-utils
           rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
           python3 -m venv "$rhwp_visual_contract_env"
-          "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0
+          "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0 pypdfium2==5.13.0
           "$rhwp_visual_contract_env/bin/python" -m unittest discover -s scripts/tests -p 'test_visual_sweep*.py'
 
       - name: Validate CI impact classifier
@@ -1093,7 +1095,7 @@ jobs:
         run: node --test scripts/tests/visual-sweep-png-server.test.mjs
 
       - name: Validate Render Diff trigger policy
-        run: python3 -m unittest scripts/tests/test_render_diff_workflow.py
+        run: python3 -m unittest scripts/tests/test_render_diff_workflow.py scripts/tests/test_verify_release_wasm.py
 
       - name: Validate canvaskit-parity batch map
         run: python3 -m unittest scripts/tests/test_canvaskit_parity_batches.py
@@ -1124,6 +1126,7 @@ jobs:
           python3 -m unittest scripts/tests/test_llm_verifier_workflow.py
           python3 -m unittest scripts/tests/test_undo_depth_e2e_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
+          python3 -m unittest scripts/tests/test_wasm_pack_locked.py
 
       # [#4715] 채택 척추 — 에이전트 작업 표준(AWS)이 전 표면에서 정합한지.
       # 바이너리 불요(커밋 문서만) — 표면이 늘어도 표준 링크가 끊기지 않게 한다.
@@ -1303,6 +1306,7 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7820_sixel_contract -- --profile release-test --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8150_kitty_contract -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_4961_font_decision_trace -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7902_original_frame_and_content -- --profile release-test --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --profile release-test --features native-skia --verbose
@@ -1319,6 +1323,7 @@ jobs:
               node scripts/run-rust-test.mjs --cargo-test issue_2292_chart_png_clip -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_2293_chart_png_text -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7820_sixel_contract -- --release --features native-skia --verbose
+              node scripts/run-rust-test.mjs --cargo-test issue_8150_kitty_contract -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_4961_font_decision_trace -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test issue_7902_original_frame_and_content -- --release --features native-skia --verbose
               node scripts/run-rust-test.mjs --cargo-test native_fractional_glyph_origin -- --release --features native-skia --verbose
