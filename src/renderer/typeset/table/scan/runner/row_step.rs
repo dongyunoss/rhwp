@@ -602,8 +602,10 @@ impl TypesetEngine {
                     // 만 불가피하게 자른다. 그 밖에는 `splittable=false` 로 떨어져 행 경계에서
                     // 조각을 끝내고(`end_row = r`) 다음 쪽에서 행을 통째로 재개한다. 한/글
                     // 정본: 편람 PDF 158→159쪽이 큰 행을 통째로 넘기며 앞쪽 바닥을 비운다.
-                    let row_needs_whole_band = r == cursor_row
-                        && cut_row_h.get(r).copied().unwrap_or(0.0) > avail_for_rows;
+                    let atomic_band_h = layout_engine
+                        .reflow_cellbreak_row_host_band_height(table, r, styles)
+                        .unwrap_or_else(|| cut_row_h.get(r).copied().unwrap_or(0.0));
+                    let row_needs_whole_band = r == cursor_row && atomic_band_h > avail_for_rows;
                     !(crate::renderer::typeset::none_table_is_atomic_here(table)
                         || crate::renderer::typeset::cell_unit_row_is_atomic_here(table))
                         || table_storage_declares_splits

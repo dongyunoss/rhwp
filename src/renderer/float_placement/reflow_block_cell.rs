@@ -20,6 +20,8 @@ pub(crate) struct ReflowBlockOrigin {
 pub(crate) struct ReflowBlockCellFlow {
     pub(crate) paragraph_origins: Vec<f64>,
     pub(crate) origins: Vec<Vec<Option<ReflowBlockOrigin>>>,
+    /// 부동 자식의 별도 프레임을 제외한 호스트 글줄의 점유 끝.
+    pub(crate) host_bottom: f64,
     pub(crate) bottom: f64,
 }
 
@@ -120,6 +122,7 @@ pub(crate) fn reflow_block_cell_flow(
             .iter()
             .map(|p| vec![None; p.controls.len()])
             .collect(),
+        host_bottom: 0.0,
         bottom: 0.0,
     };
     let mut cursor = 0.0_f64;
@@ -139,6 +142,7 @@ pub(crate) fn reflow_block_cell_flow(
             style.map_or(0.0, |style| style.spacing_after)
         };
         cursor += before;
+        flow.host_bottom += before;
         let no_ls = crate::renderer::para_has_no_stored_line_segs(para);
         if !no_ls {
             // 선행 저장 사다리의 빈 밴드는 글자 수나 합산 높이로 추측하지 않는다.
@@ -147,6 +151,7 @@ pub(crate) fn reflow_block_cell_flow(
                 return None;
             }
             cursor = top;
+            flow.host_bottom = top;
             flow.paragraph_origins.push(cursor);
             for (li, line) in para.line_segs.iter().enumerate() {
                 let end = hwpunit_to_px(line.vertical_pos.saturating_add(line.line_height), dpi)
@@ -159,6 +164,7 @@ pub(crate) fn reflow_block_cell_flow(
                     return None;
                 }
                 cursor = end;
+                flow.host_bottom = end;
             }
         } else {
             flow.paragraph_origins.push(cursor);
@@ -208,8 +214,10 @@ pub(crate) fn reflow_block_cell_flow(
             }
             let occupied = line_height.max(block_height);
             cursor += occupied;
+            flow.host_bottom += line_height;
         }
         cursor += after;
+        flow.host_bottom += after;
     }
     flow.bottom = cursor;
     Some(flow)

@@ -21,6 +21,7 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 pub(super) mod block;
 pub(super) mod continuation;
+pub(super) mod deferred_float_flow;
 pub(super) mod footnotes;
 mod host_spacing;
 pub(super) mod scan;

@@ -958,8 +958,11 @@ impl TypesetEngine {
             // «셀 단위로 나눔» 은 단위가 한 쪽에도 안 들어갈 때만 불가피하게 자른다.
             // 한/글 정본: 편람 PDF 158→159쪽은 큰 행을 통째로 넘기며 앞쪽 바닥에 빈
             // 공간을 남긴다(값 1), 315→316쪽은 문장 한가운데를 자른다(값 2).
+            let atomic_host_band_h =
+                layout_engine.reflow_cellbreak_row_host_band_height(row_geometry_table, 0, styles);
+            let atomic_band_h = atomic_host_band_h.unwrap_or(split_unit_h);
             let unit_fits_fresh_page =
-                split_unit_h <= (base_available - first_frag_overhead).max(0.0);
+                atomic_band_h <= (base_available - first_frag_overhead).max(0.0);
             let intra_row_cut_here = !atomic_rule_applies || !unit_fits_fresh_page;
             let first_row_splittable = (first_block_is_single_row || !first_block_protected)
                 && can_intra_split
@@ -1084,6 +1087,16 @@ impl TypesetEngine {
                 || remaining_on_page_for_first_unit < min_content
                 || multirow_clean_defer
             {
+                if atomic_host_band_h.is_some() {
+                    self.prefill_computed_deferred_float(
+                        st,
+                        para_idx,
+                        para,
+                        paragraphs_all,
+                        composed_all,
+                        styles,
+                    );
+                }
                 // [Task #1753] visible-host 자리차지 RowBreak 표가 다음 쪽으로 이월되기
                 // 직전, 후속 문단을 현재 쪽 잔여 공간에 선행 채움(한글 fill-before-
                 // deferred-float 정합 — 2814765 pi52/53 은 9쪽 하단, 표는 10쪽부터).

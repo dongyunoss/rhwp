@@ -637,3 +637,48 @@ raster의 6개 확대 비교와 대표 review·standalone overlay를 생성해 �
 library에 연결해 실행했다. 수정 전 3 FAIL, 수정 후 3 PASS이며 실패를 숨기는 필터·expectation
 완화는 없다. 로그는 `logs/inline-axis-formal-2077-{before,after}.log`다. 정식 파일과 기존
 자동 suite 경로를 유지했으며, helper 보정은 제품 library의 코드 변경이 아니다.
+
+## 셀 단위 나눔의 호스트 밴드와 선행 채움
+
+#7288의 원 해결 #7357·#7378과 통합 #7383, 이후 #8129의 본문·변경 범위를 읽었다.
+#8129는 아직 열린 PR이므로 적용하지 않았다. 현재 구현의 첫 단위 이월과 행 스캔이 모두
+같은 부모 호스트 밴드를 조회하도록 보정했다. `ReflowBlockCellFlow.host_bottom`은 부동
+자식의 프레임을 제외한 부모 글줄 점유다. 전체 `bottom`·자식 원점·CellUnit·예약 높이는
+유지한다. 부모의 CellBreak 정책과 검증 가능한 재조판 프레임에 적용하며, 제한 없는 자식과
+걸침 셀은 기존 경로의 원장을 유지한다. 임의 수치 허용치나 문서 식별 조건은 추가하지 않았다.
+
+독립 확인을 위해 바깥여백 0/두 배, 짧은/긴 본문, 더 짧은 본문 대조군을 원본과 구분해
+생성하고 한컴 2020 Print로 출력했다. 5개 모두 부모 셀의 자식 3행을 다음 쪽으로 통째로
+옮긴다. `atomic-fresh-band-inputs-2075.json`, `atomic-owner-band-inputs-2078.json`에
+변경점·입력 SHA를 보존했다. 여백 0 입력은 첫 worker가 terminal 실패한 뒤 같은 바이트로
+한 번 재요청해 정상 Print를 확보했다. 기존 실패와 두 job의 근거를 모두 보존했다.
+
+Native134는 분할 대신 통째 이월했지만 뒤 본문까지 밀려 3쪽이 됐다. 저장 줄의 존재와
+visible-host만 요구하던 선행 채움이 NO_LS 빈 호스트의 점유를 빠뜨린 원인을 추적했다.
+기존 글줄 출력과 선행 채움의 포맷·본문 전진을 `deferred_float_flow.rs`로 옮겨 공통으로
+사용하고, 실제 이월이 확정된 빈 재조판 호스트도 자신의 글줄과 뒤 문단을 현재 쪽에 남긴다.
+명시적인 쪽·단 경계나 다음 개체는 앞쪽에 채우지 않는다. 별도 좌표·높이를 덮어쓰지 않는다.
+
+Native135는 공용 target·잡 8개로 240.58초에 빌드 종료 코드 0을 확인했다.
+`reflow-policy-native135-2087/results.json`의 기존 18조건 중 10조건이 전쪽 raw 100%이며,
+이전 미달이던 제한 true·부모 TABLE의 3조건은 최저 7.57797/25.28369/7.57797%에서
+각각 100%·쪽수 2 대 2로 개선됐다. 추가 경계 5개도 전쪽 raw 100%·2쪽 일치다.
+제한 false의 8조건은 여전히 미달이며 이 결과로 상쇄하지 않는다.
+
+명시적 쪽 나눔과 뒤 문단 2개를 추가한 두 반례도 별도 Print로 확인했다.
+`reflow-policy-prefill-native135-2091/results.json`에서 각각 3쪽/2쪽이 Print와 같고
+전쪽 raw 100%다. 명시적 나눔의 뒤 문단은 3쪽에, 두 뒤 문단은 순서를 보존해 1쪽에
+한 번씩 놓인다. `reflow-cellbreak-native135-review-2092/`의 1·2쪽 review와 standalone
+overlay에서 뒤 본문·자식 3행·부모 외곽을 직접 읽었다. 엄격 픽셀 동일을 주장하지 않는다.
+
+기존 완료 페이지·저장 프레임 계약 22개도 같은 Native135에서 모두 통과했다
+(`current-previous-failures-2093-result.json`). 이전 전체 실패 중 외부 테스트 47개를 정식
+소스에서 다시 컴파일해 실행한 결과는 3 PASS / 44 FAIL / 누락 0개다. 통과한 3개는 위
+TAC 조회 helper 검사다. 목록은 `current-external-rust-failures-2090.tsv`이고, 내부 검사
+9개는 이번 실행에 포함되지 않았다. 이 실행을 전체 Rust 통과로 보고하지 않는다.
+
+Native135의 실제 빌드 소스는 `producers/native135-source-overlay/manifest.json`에
+기준 커밋과 dirty Rust 파일 7개의 내용·해시로 보존했다. 빌드 뒤 호출 인자 줄바꿈만 fmt에
+맞게 정리했으며, 다음 제품 빌드와 최종 head의 필수 검증은 새 소스에서 수행한다. 이번
+프레임 보정의 fresh WASM 검증과 정식 회귀 추가는 아직 완료하지 않았다. 제한 없는 자식의
+독립 스트림·부모 물리 프레임을 함께 보정한 뒤 최종 후보에서 검증을 묶어 진행한다.
