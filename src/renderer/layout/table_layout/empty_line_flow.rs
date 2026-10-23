@@ -137,7 +137,6 @@ impl LayoutEngine {
     pub(super) fn stored_closing_empty_line_advance_hu(
         &self,
         cell: &Cell,
-        table: &crate::model::table::Table,
         index: usize,
         next_starts_frame: bool,
         styles: &ResolvedStyleSet,

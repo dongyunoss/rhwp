@@ -230,3 +230,121 @@ Native168의 실제 집중 검사는 188 PASS / 0 FAIL / 1 ignored, 공개 API 1
   `logs/native169-format-2651.log`·`logs/native169-clippy-2652.log`에 보존했다.
 - 다음 전체 Rust 로그는 `current-full-rust-2644/nextest.log`다. 전체 결과 전에는
   과거 68 FAIL을 새 전체 통과로 바꾸지 않으며, fresh WASM 등 나머지 필수 gate도 남아 있다.
+
+## 11563건 전체 실행과 줄바꿈 편집의 독립 출력 재검토
+
+`current-full-rust-2644/terminal-inventory.json`의 head `7e3be0a3fb`는 실제
+11,516 PASS / 47 FAIL / 45 skipped, nextest exit 100이다. 실행 중 source 변경은 없다.
+이전 전체 실행의 68 FAIL과 함수명으로 대조하면 21개 해결·새 실패 0개·47개 지속이다
+(`full-rust-2532-2644-difference-2663.json`). shard 번호 이동을 새 실패로 세지 않았다.
+2026-10-24 다시 fetch한 upstream/devel도 `d9fd85ed5b`로 같아 리베이스는 필요하지 않았다.
+
+`native169-wrap-reviews-2662`의 56자 저장본 4쪽은 raw 40.81625%다. 공식 review와
+standalone overlay에서 제목부터 본문까지 한 줄 위에 있고 마지막 중첩 행 전체가 앞 쪽에
+남는다. 독립 Print는 제목을 아래에 두고, 중첩 표의 마지막 행 안에서 나눠 마지막 항목을
+5쪽에 배치한다. 저장·재열기 일치와 기존 집중 검사 통과만으로 정확한 조판을 입증하지 못했다.
+
+수정할 공통 규칙과 실제 소비 경로는 다음과 같다.
+
+- 앞 쪽에 들어가지 못한 실제 빈 줄은 다음 조각에서 자기 높이를 점유한다.
+  `stored_closing_empty_line_advance_hu`의 국소 원본 줄 닫힘 → `CellUnit` 높이·소유 →
+  `is_free_leading_spacer`를 공유하는 컷 선택·물리 시작점·요구 높이·실제 배치를 연결한다.
+  표의 다른 문단이 재조판됐다는 이유로 이 줄 소유를 지우지 않는다. 반대로 dirty·합성 줄은
+  원본 근거로 수용하지 않는다. `466c57122d`의 종료 줄 무조건 건너뛰기는 독립 Print와
+  어긋나므로 이 술어를 보정한다. 기존 실제 종료 줄의 소유를 유지한 채 예산에 반영한다.
+- 자리차지 RowBreak 중첩 표의 일반 글줄은 선언 높이가 있어도 셀 안에서 나뉠 수 있다.
+  자식 자체가 성장하지 않고 부모 앞 내용만 늘어난 경우도 같다. 기존 per-driver CellUnit →
+  모든 셀의 start/end RowCut → `NestedTableUnitCut` → `row_cut_content_height` →
+  실제 부분 표 배치를 재사용한다. 별도 높이 추정기는 추가하지 않는다. rowspan·TAC·
+  개체 혼재는 기존 계약을 유지하며, 일반 글줄의 물리 높이는 같은 컷의 실제 요구 높이를 쓴다.
+
+Native170 한 번 빌드 후 기존 집중 검사와 공개 API 편집·저장을 먼저 묶어 확인한다.
+줄바꿈 저장 바이트가 달라지면 기존 PDF와 점수를 재사용하지 않고 같은 제품의 새 MCP
+Print를 확보한다. 원본 HWP/HWPX 230쪽·35문서/66쪽과 분할본·정상 대조군도 유지해야 한다.
+기대값·새 회귀는 이 단계에서 바꾸지 않는다.
+
+### 정상 대조군 producer 경로 감사 정정
+
+Native170 검증 스크립트를 준비하며 과거 6종 정상 matrix의 실제 `--rhwp-bin`을
+전수 확인했다. `reflow-*-native169-2649`라는 폴더명과 달리 실제 실행은 Native165였다.
+`matrix-producer-audit-2671.json`에 원 명령을 보존한다. 따라서 앞 절의 35문서/66쪽
+raw 100%는 Native165 대조 증거이며 Native169 재출력·기능 보존 증거로 수용하지 않는다.
+이전 기록의 같은 주장은 이 정정으로 대체한다. 원 로그·JSON은 변경하지 않는다.
+현재 6종 드라이버는 실제 Native170 경로와 실행 파일 SHA를 검증하도록 고쳤으며
+최신 후보의 같은 전체 대조군을 새로 실행한다.
+
+### Native170의 반례와 종료 컷 소비 차이
+
+Native170은 기존 실제 178 PASS / 10 FAIL / 1 ignored로 후퇴했다
+(`reviewed-contract-tests-2666-result.json`). 원본 HWP/HWPX도 각각 103·104쪽이
+90% 미만이며 최저 55.91873%·55.92440%로 수용하지 않는다. 반면 정상 matrix
+35문서/66쪽은 실제 Native170으로 재출력해 전쪽 raw 100%를 확인했다.
+편집 저장·재열기의 일치는 14종 모두 유지하지만 55·56·61·200자는 116쪽이다.
+
+56자 기존 저장본의 4쪽 raw는 40.81625%에서 95.07363%로 개선됐다. 그러나 5쪽은
+15.30899%이고 이어받을 마지막 항목이 없다. `native170-wrap-reviews-2676`의
+공식 review·overlay와 실제 render tree를 함께 읽었다. 트리에는 마지막 항목이
+4쪽 본문 아래에 존재해, 내용이 사라진 것이 아니라 잘못 수용한 조각에서 잘린 것이다.
+이 결과를 단순 점수 통과로 완료하지 않는다.
+
+원인은 일반 글줄 컷을 투영할 때 끝 컷을 모두 소비한 인덱스 벡터로 재지만,
+`nested_table_split_from_cut_units`는 같은 `terminal`을 빈 end_cut으로 바꾸어
+자식 행 전체를 그리는 데 있다. 온전한 행의 선언 높이·정렬 띠가 상위 예약에서는
+빠지고 배치에서 되살아났다. 컷 생산 → 상위 예약 → 실제 자식 컷을 같은
+`NestedTableUnitCut`로 연결하고, 종료 시 배치와 같은 빈 end_cut 및 온전한 행 높이를
+예약한다. 프레임 시작 전에는 소비 높이를 0으로 두며, 이어받기 시작 컷은 실제 컷으로
+유지한다. 첫·마지막 행의 캡션 예약도 기존 통째 행 경로와 일치시킨다.
+
+Native171에서 같은 기존 검사·실제 API·원본·정상 대조군·동일 SHA 편집본을
+묶어 재검증한다. Native170 실패와 원본 증거는 보존하며 기대값을 완화하지 않는다.
+
+## Native171의 확인 결과와 남은 실제 소비 차이
+
+- `char-overlap-native-build-171-result.json`: 공용 target, 8잡, exit 0.
+- `reviewed-contract-tests-2678-result.json`: 실제 181 PASS / 7 FAIL / 1 ignored.
+  #7114 3개, #7518 3개, 중첩 프레임 컷 검사 1개가 실패한다. 정수 컷 번호의
+  의미도 직접 원본·Print와 확인해야 하며, 단순 번호 차이로 검사부터 바꾸지 않는다.
+- `issue1949-exact-originals-native171-2681-result.json`: HWP/HWPX 각 115/115쪽,
+  양쪽 최저 95.69614%, 90% 미달 0쪽으로 원본의 Native 보존은 회복했다.
+- 실제 Native171로 다시 실행한 정상 matrix는 35문서/66쪽 raw 100%다
+  (`reflow-*-native171-2682/results.json`). 파일명만으로 producer를 판단하지 않고
+  실제 명령의 경로와 실행 파일 SHA를 함께 확인했다.
+- `issue4138-native171-boundary-batch-2683-result.json`: 고정 분할본 196쪽은
+  뒤 20쪽 미달·최저 38.91518% 유지, #7840 9쪽 최저 93.43362%, 현대 수식
+  v5 5쪽 99.98497%·v6 2쪽 100%다. 분할본 미달은 해결 완료가 아니다.
+
+`remaining-edit-snapshots-2679-result.json`의 기본 API 14종은 저장·재열기 본문이
+같지만 55·56·61·200자 편집은 116쪽이다. API 기본 조판 세대가 2022인 점을
+확인해 원본 제품에 맞게 HWP 2024·HWPX 2020을 명시한 진단도 별도로 실행했다
+(`remaining-edit-snapshots-2687-result.json`). 같은 116쪽 차이가 남으므로
+환경 차이만으로 실패를 해소하지 않는다. 기존 테스트·기대값은 변경하지 않았다.
+
+Native170이 저장한 실제 55·56·200자 입력은 `mcp-edited-controls-2686/results.json`의
+한컴 2024 13.0.0.3901·PrintMethod 0에서 각각 115쪽이다. 각 입력·PDF SHA와
+실제 job을 보존했다. Native171의 새 저장 바이트와의 비교는
+`native170-171-edited-bytes-2692.json`에 있으며 달라진 입력에 이 PDF를 재사용하지 않는다.
+
+### 다음 공통 보정에 필요한 실제 호출 경로
+
+`native171-wrapped-cut-trace-2690/receipt.json`과 로그는 같은 56자 저장본을
+`--compat 2024`로 다시 렌더한 실행 증거다. 재조판된 빈 줄의 점유와 별도로 다음 차이가 있다.
+
+1. `advance_row_cut_for_physical_band`에서 현재 컷의 요구 높이가 물리 예산을
+   넘는다고 확인한 뒤 예산을 줄여도, `absorb_tail_before_stored_frame_break`가
+   옛 저장 reset까지 같은 컷을 다시 선택한다. 반복 컷이면 알려진 초과 상태로
+   반환되고 상위 fallback이 훨씬 앞 컷으로 물러난다. 실제 trace는
+   start `[115]`·end `[155]`·물리 예산 1005.373·요구 1027.973을 반복한 뒤
+   end `[151]`로 물러났다. 숫자를 구현 조건으로 쓰지 않는다. 물리 초과를 확인한
+   경계에서 저장 꼬리 허용을 재사용하지 않고 현재 컷을 실제 예산 안에서 선택해야 한다.
+2. `nested_table_split_from_cut_units`가 자식의 같은 재귀 start/end cut을 갖고 있어도
+   viewport/흐름 높이는 유닛 합을 쓴다. `reflow_recursive_run_extra`의
+   실제 자식 상자 대조는 NoStoredLineSeg 호스트에 제한되어 원본 호스트의 새 글줄 컷은
+   건너뛴다. 또한 양수 추가분만 반영하므로 온전한 행에 예약한 물리 띠를 부분 컷이
+   전부 소유하지 않을 때의 감소분을 측정과 실제 배치에 공유하지 못한다.
+   같은 자식 컷의 실제 상자와 첫/끝 호스트 여백 소유를 생산·예약·viewport가
+   공유하도록 보정할 필요가 있다. 아직 이 후속 보정을 구현하거나 통과했다고 기록하지 않는다.
+
+`native171-wrap-reviews-2688`은 쪽수 116/115 불일치 상태에서 기존에 만든 PNG의
+4·5·6쪽만 진단한 공식 review/overlay다. 전쪽 gate 통과 증거가 아니며, 5쪽
+raw 1.69110%의 큰 이어받기 차이가 남는다. 작은 경계와 이 직접 차이를 먼저 고친 뒤
+전체 Rust·fresh WASM·남은 45개 PR 범위의 최종 검증을 완료해야 한다.

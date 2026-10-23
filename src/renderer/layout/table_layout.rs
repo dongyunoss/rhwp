@@ -15412,7 +15412,6 @@ impl LayoutEngine {
                 .then(|| {
                     self.stored_closing_empty_line_advance_hu(
                         cell,
-                        table,
                         pi,
                         cell.paragraphs[pi]
                             .line_segs
@@ -16278,17 +16277,15 @@ impl LayoutEngine {
                                 );
                             let row_has_plain_source_boundary =
                                 parent_keeps_child_source_frame && row_has_plain_restart_cut;
-                            let row_has_fresh_plain_growth = driver.is_some_and(|index| {
-                                self.reflowed_nested_row_content_grew(
+                            let row_has_plain_line_cuts = driver.is_some_and(|index| {
+                                self.nested_plain_text_row_has_line_cuts(
                                     &row_cells,
                                     &row_units[index],
-                                    index,
-                                    row_declared_px,
                                 )
                             });
                             if let Some(driver_index) = driver.filter(|driver_index| {
                                 (row_is_auto_height
-                                    || row_has_fresh_plain_growth
+                                    || row_has_plain_line_cuts
                                     || driver_is_nested_table_rows
                                     || row_has_joint_source_boundary
                                     || row_has_plain_restart_cut
@@ -16329,6 +16326,11 @@ impl LayoutEngine {
                                         .iter()
                                         .zip(end_cut.iter())
                                         .all(|(cell_units, end)| *end >= cell_units.len());
+                                    let fragment = NestedTableUnitCut {
+                                        start_cut,
+                                        end_cut,
+                                        terminal,
+                                    };
                                     let mut uh = driver_unit.height;
                                     if fragment_index == 0 {
                                         uh += row_extra * 0.5;
@@ -16339,42 +16341,44 @@ impl LayoutEngine {
                                             uh += ncs;
                                         }
                                         if ri + 1 == nrow {
-                                            uh += terminal_band;
+                                            uh += terminal_band + nt_cap_bot;
                                         }
                                     }
-                                    if row_has_plain_source_boundary || row_has_fresh_plain_growth {
+                                    if row_has_plain_source_boundary || row_has_plain_line_cuts {
                                         if driver_unit.stored_frame_break_before {
-                                            source_frame_start.clone_from(&start_cut);
+                                            source_frame_start.clone_from(&fragment.start_cut);
                                         }
-                                        let previous = self.row_cut_content_height(
+                                        uh = self.nested_plain_row_unit_height(
                                             nt,
-                                            ri,
+                                            (ri, *rh),
                                             &source_frame_start,
-                                            &start_cut,
+                                            &fragment,
                                             styles,
                                         );
-                                        let required = self.row_cut_content_height(
-                                            nt,
-                                            ri,
-                                            &source_frame_start,
-                                            &end_cut,
-                                            styles,
-                                        );
-                                        uh = (required - previous).max(0.0);
                                         if fragment_index + 1 == driver_units.len() {
-                                            uh += if ri + 1 < nrow { ncs } else { terminal_band };
+                                            uh += if ri + 1 < nrow {
+                                                ncs
+                                            } else {
+                                                terminal_band + nt_cap_bot
+                                            };
                                         }
                                     }
                                     if parent_keeps_child_source_frame {
-                                        if let Some(opening) = self.stored_joint_row_opening_height(
-                                            nt, ri, &rhs, &start_cut, &end_cut, styles,
-                                        ) {
-                                            uh = opening;
-                                        }
+                                    if let Some(opening) = self.stored_joint_row_opening_height(
+                                        nt,
+                                        ri,
+                                        &rhs,
+                                        &fragment.start_cut,
+                                        &fragment.end_cut,
+                                        styles,
+                                    ) {
+                                        uh = opening;
+                                    }
                                     }
                                     if ri == 0 && fragment_index == 0 {
                                         uh += om_top
                                             + spacing_before
+                                            + nt_cap_top
                                             + if host_is_cell_last_para
                                                 && crate::renderer::para_has_no_stored_line_segs(p)
                                             {
@@ -16390,8 +16394,10 @@ impl LayoutEngine {
                                         driver_unit.stored_frame_break_before;
                                     let mut vpos_gap_before =
                                         vpos_gap_before_para && ri == 0 && fragment_index == 0;
-                                    for ((cell_units, start), end) in
-                                        row_units.iter().zip(start_cut.iter()).zip(end_cut.iter())
+                                    for ((cell_units, start), end) in row_units
+                                        .iter()
+                                        .zip(fragment.start_cut.iter())
+                                        .zip(fragment.end_cut.iter())
                                     {
                                         if end > start {
                                             if cell_units
@@ -16474,11 +16480,7 @@ impl LayoutEngine {
                                         vis_start: 0,
                                         vis_end: line_count.max(1),
                                         nested_row: Some(ri),
-                                        nested_table_fragment: Some(NestedTableUnitCut {
-                                            start_cut,
-                                            end_cut,
-                                            terminal,
-                                        }),
+                                        nested_table_fragment: Some(fragment),
                                         mixed_nested_fragment: false,
                                         mixed_nested_trailing: false,
                                         mixed_nested_content_height: 0.0,
@@ -18216,11 +18218,9 @@ impl LayoutEngine {
     ) -> bool {
         unit.empty_spacer
             && !unit.hard_break_before
-            // 앞 저장 프레임을 닫는 줄은 앞 조각에서 높이를 소유한다.
-            // 이어받은 조각의 첫머리에서 그 높이를 다시 예약하지 않는다.
-            // 같은 유닛을 조각 중간에서 소비할 때의 점유는 그대로 유지한다.
-            && (unit.owns_stored_closing_line
-                || !self.empty_unit_owns_flow_line_box(cell, table, unit, styles))
+            // 앞 조각에 못 들어가 이월된 실제 빈 줄은 다음 조각에서 점유한다.
+            // 원본 프레임의 종료 줄이라는 이유만으로 소비를 건너뛰지 않는다.
+            && !self.empty_unit_owns_flow_line_box(cell, table, unit, styles)
     }
 
     /// 연속 소스 컷으로부터, 칸마다 **앞 쪽 프레임의 꼬리**인 빈 spacer를 제외한 물리 시작점.

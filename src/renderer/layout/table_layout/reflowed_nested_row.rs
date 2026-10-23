@@ -1,37 +1,65 @@
-//! 저장 줄 없는 중첩 행이 내용에 따라 성장하면 현재 글줄 컷을 보존한다.
+//! 중첩 RowBreak 행의 일반 글줄 컷을 상위 조각에도 보존한다.
 
-use super::{CellUnit, LayoutEngine};
-use crate::model::table::Cell;
+use super::{CellUnit, LayoutEngine, NestedTableUnitCut, ResolvedStyleSet};
+use crate::model::table::{Cell, Table};
 
 impl LayoutEngine {
-    pub(super) fn reflowed_nested_row_content_grew(
+    pub(super) fn nested_plain_text_row_has_line_cuts(
         &self,
         row_cells: &[&Cell],
         driver_units: &[CellUnit],
-        driver: usize,
-        declared_height: f64,
     ) -> bool {
-        let Some(cell) = row_cells.get(driver) else {
-            return false;
-        };
-        if driver_units.len() <= 1
-            || cell.paragraphs.is_empty()
-            || !cell.paragraphs.iter().all(|paragraph| {
-                paragraph.controls.is_empty()
-                    && crate::renderer::para_has_no_stored_line_segs(paragraph)
-            })
-            || !cell
-                .paragraphs
+        // CELL은 선언 높이가 있어도 셀 안 글줄에서 나눌 수 있다. 부모의 앞 내용이
+        // 늘어 남은 예산이 줄어드는 경우도 같으며, 자식 자신의 성장만 요구하지 않는다.
+        // 개체 혼재·rowspan 경로는 기존 분할 계약을 유지한다. 호출자가 rowspan과
+        // RowBreak를 확인하고, 여기서는 같은 CellUnit의 일반 글줄 경계만 승인한다.
+        driver_units.len() > 1
+            && driver_units
                 .iter()
-                .any(|paragraph| paragraph.text.chars().any(|ch| !ch.is_whitespace()))
-        {
-            return false;
-        }
-        // 부모의 현재 내용 유닛을 다시 재거나 선언 크기 비율로 추정하지 않는다.
-        // 같은 유닛의 전진이 선언 최소 높이를 채웠는지만 비교한다.
-        let content_height: f64 = driver_units.iter().map(|unit| unit.height).sum();
-        let roundoff =
-            f64::EPSILON * content_height.abs().max(declared_height.abs()).max(1.0) * 8.0;
-        content_height > declared_height + roundoff
+                .all(|unit| unit.nested_row.is_none() && unit.vis_start < unit.vis_end)
+            && !row_cells.is_empty()
+            && row_cells.iter().all(|cell| {
+                !cell.paragraphs.is_empty()
+                    && cell
+                        .paragraphs
+                        .iter()
+                        .all(|paragraph| paragraph.controls.is_empty())
+            })
+    }
+
+    /// 자식 배치에 전달하는 것과 같은 시작·종료 컷의 물리 상자를 예약한다.
+    /// 마지막 유닛을 소비하면 배치도 빈 end_cut으로 행 전체를 닫는다. 이때
+    /// 마지막 줄까지의 내용 높이만 쓰면 선언 상자의 남은 띠가 원장에서 사라진다.
+    pub(super) fn nested_plain_row_unit_height(
+        &self,
+        table: &Table,
+        row_frame: (usize, f64),
+        frame_start: &[usize],
+        fragment: &NestedTableUnitCut,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        let (row, whole_height) = row_frame;
+        let origin = if frame_start.iter().all(|&cut| cut == 0) {
+            &[][..]
+        } else {
+            frame_start
+        };
+        let end = if fragment.terminal {
+            &[][..]
+        } else {
+            fragment.end_cut.as_slice()
+        };
+        let previous = if fragment.start_cut == frame_start {
+            0.0
+        } else {
+            self.row_cut_content_height(table, row, origin, &fragment.start_cut, styles)
+        };
+        let required = self.row_cut_content_height(table, row, origin, end, styles);
+        let required = if origin.is_empty() && fragment.terminal {
+            required.max(whole_height)
+        } else {
+            required
+        };
+        (required - previous).max(0.0)
     }
 }
