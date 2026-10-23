@@ -682,3 +682,37 @@ Native135의 실제 빌드 소스는 `producers/native135-source-overlay/manifes
 맞게 정리했으며, 다음 제품 빌드와 최종 head의 필수 검증은 새 소스에서 수행한다. 이번
 프레임 보정의 fresh WASM 검증과 정식 회귀 추가는 아직 완료하지 않았다. 제한 없는 자식의
 독립 스트림·부모 물리 프레임을 함께 보정한 뒤 최종 후보에서 검증을 묶어 진행한다.
+
+## HWPX 표 삽입 자기검증의 저장 줄 캐시 계약
+
+기존 실패 `issue_5819_insert_table_options`는 원 PR #7068과 그 검토 기록을 먼저
+확인했다. 같은 입력 `samples/issue5162_field_wraps_table.hwpx`에서 실제 표 삽입과
+저장은 성공하지만 `--verify`가 임시 재조판 캐시 12개 차이를 원본 손실로 판정했다.
+원인과 값은 `table-insert-roundtrip-2096/`과 `logs/table-insert-cache-provenance-2098.log`에
+보존했다. 선행 #5847·#5850·통합 #5853의 계약은 합성 줄을 저장하지 않고, 정상 원본의
+쪽 상대 세로 위치를 복원하는 것이다. 이 저장 계약과 메모리 조판 캐시를 구분한다.
+
+`source_vertical_positions`를 저장기와 HWPX 자기검증이 공유한다. 자기검증은 두 IR의
+사본에서 저장 대상 줄 캐시를 비교하며 원본 문서와 저장 바이트를 수정하지 않는다.
+기존 엄격 `diff_documents`와 HWP5 검증 경로는 유지한다. 자식 표·캡션·도형·머리말·
+각주 등도 같은 저장 계약으로 순회한다. 문자 모양이나 정상 원본 줄의 속성 차이는
+계속 검출한다. 렌더링·조판 계산이나 시각 기준값을 바꾼 수정이 아니다.
+
+Native136은 HEAD `3871c5b5468d903875f6ecf8a839e8774831c09d`와 해당 dirty 소스의
+해시를 기록하고 공용 target·잡 8개로 238.62초, 종료 코드 0을 확인했다.
+`char-overlap-native-build-136-result.json`이 실제 소스·제품·라이브러리 해시를 고정한다.
+새 구조 검사 7개는 기존 엄격 비교를 사용한 선행 실행에서 5 PASS / 2 FAIL,
+보정된 API에서 7 PASS다. 원본 속성 손실 반례는 유지한다. 기존 #5819 CLI/MCP 검사도
+원본 함수 그대로 5 PASS이며, 이전 실패 2개가 해소됐다. 다른 기존 실패를 통과로
+계산하지 않는다. 명령·로그·결과는 `table-export-cache-after-2104/`에 보존했다.
+같은 표 삽입의 저장 HWPX는 수정 전후 SHA-256이
+`2e12401c6a942d21b1749f831272acce600d9501f8bd6e1454c0351a06c473cb`로 동일하고,
+ZIP 내부 11개 항목도 모두 동일하다. 새 `--verify`는 종료 코드 0·차이 0개다.
+
+신규 검사 수집 중 발견한 suite target 예산 문제는 예산을 늘리지 않고 처리했다.
+크레이트 루트 참조가 없는 #4969 request contract를 기존 정책의 모듈 통합 방식으로
+수집한다. 원본 standalone 실행과 중첩 모듈 실행 모두 39 PASS이며 정규화한 검사 이름
+목록도 같다. 다른 shaping 예외는 유지한다. canonical generator로 Cargo target을
+동기화한 뒤 1748 sources / 7601 static test attrs / 28 suites + 19 exceptions =
+47/48 targets를 확인했다. 로그는 `logs/table-export-cache-suite-check-2103.log`다.
+전체 Rust 재실행과 제한 없는 자식 흐름의 보정·최종 fresh 검증은 계속 필요하다.

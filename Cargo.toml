@@ -253,10 +253,6 @@ name = "issue_4969_shaping_paragraph_transaction"
 path = "tests/cases/issue_4969_shaping_paragraph_transaction.rs"
 
 [[test]]
-name = "issue_4969_shaping_request_contract"
-path = "tests/cases/issue_4969_shaping_request_contract.rs"
-
-[[test]]
 name = "issue_4969_shaping_shadow_context"
 path = "tests/cases/issue_4969_shaping_shadow_context.rs"
 

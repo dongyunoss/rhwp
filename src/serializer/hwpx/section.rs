@@ -913,10 +913,7 @@ pub(crate) fn render_paragraph_parts(
         // 쪽-상대 좌표로 되돌려 낸다 — 누적 좌표가 파일로 나가면 한글 2022 가
         // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
         // 접두 슬라이스라 인덱스가 그대로 대응한다.
-        let source_vpos = para
-            .source_line_seg_vertical_pos
-            .as_deref()
-            .filter(|v| v.len() == para.line_segs.len())
+        let source_vpos = crate::serializer::line_cache::source_vertical_positions(para)
             .map(|v| &v[..axis_line_segs.len()]);
         let linesegs = format!(
             "{}{}{}",
