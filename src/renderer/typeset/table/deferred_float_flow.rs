@@ -92,6 +92,34 @@ impl TypesetEngine {
         {
             return;
         }
+        self.prefill_computed_float_successors(
+            st,
+            para_idx,
+            para,
+            paragraphs_all,
+            composed_all,
+            styles,
+        );
+    }
+
+    /// 호스트 프레임은 남고 독립 자식만 전량 이월될 때도 같은 후속 흐름을 채운다.
+    #[allow(clippy::too_many_arguments)]
+    pub(in crate::renderer::typeset) fn prefill_computed_float_successors(
+        &self,
+        st: &mut TypesetState,
+        para_idx: usize,
+        para: &Paragraph,
+        paragraphs_all: &[Paragraph],
+        composed_all: &[ComposedParagraph],
+        styles: &ResolvedStyleSet,
+    ) {
+        if st.col_count != 1
+            || st.current_items.is_empty()
+            || para_has_visible_text(para)
+            || !crate::renderer::para_has_no_stored_line_segs(para)
+        {
+            return;
+        }
         for next_idx in (para_idx + 1)..paragraphs_all.len().min(para_idx + 1 + MAX_PREFILL) {
             let next = &paragraphs_all[next_idx];
             if !next.controls.is_empty()

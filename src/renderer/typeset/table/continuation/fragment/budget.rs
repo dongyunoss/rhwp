@@ -46,6 +46,11 @@ impl TypesetEngine {
         let cursor_row = input.start.cursor_row;
         let is_continuation = input.start.is_continuation;
         let start_cut = &input.start.start_cut;
+        let detached_child_fragment = !input.row_cursor_is_nested
+            && prepared
+                .layout_engine
+                .reflow_unrestricted_fragment_frame(table, start_cut, &[], input.source.styles)
+                .is_some_and(|frame| !frame.parent_owned);
         let caption_extra =
             if !is_continuation && cursor_row == 0 && start_cut.is_empty() && caption_is_top {
                 caption_overhead
@@ -104,13 +109,13 @@ impl TypesetEngine {
                     )
                 })
                 .flatten();
-        let repeat_fragment_outer_margin =
+        let repeat_fragment_outer_margin = !detached_child_fragment && (
             prepared.computed_host_tail.is_some() ||
             crate::renderer::float_placement::stored_empty_offset_rowbreak_fragment_repeats_outer_margin(
                 self.profile.get().hwp5_stored_pagination_layout() || self.profile.get().hwpx_stored_layout(),
                 para, table,
             ) || crate::renderer::float_placement::computed_rowbreak_owns_outer_frame(para, table)
-                || crate::renderer::float_placement::stored_rowbreak_owns_fragment_outer_frame(para, table);
+                || crate::renderer::float_placement::stored_rowbreak_owns_fragment_outer_frame(para, table));
         let repeated_header_outer_frame =
             crate::renderer::float_placement::stored_repeated_header_rowbreak_outer_frame(
                 st.profile, para, table,
@@ -134,6 +139,11 @@ impl TypesetEngine {
                 ),
                 self.dpi,
             );
+        let (host_before_overhead, fragment_outer_bottom_overhead) = if detached_child_fragment {
+            (0.0, 0.0)
+        } else {
+            (host_before_overhead, fragment_outer_bottom_overhead)
+        };
         let recursive_overlay_frame = prepared
             .layout_engine
             .reflow_recursive_overlay_frame(table, input.source.styles);

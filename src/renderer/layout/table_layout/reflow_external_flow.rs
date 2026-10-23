@@ -31,6 +31,18 @@ impl LayoutEngine {
             if cell.row_span != 1 || cell.text_direction != 0 {
                 return None;
             }
+            // 이 원장은 칸마다 연속된 자식 컷 하나를 소비한다. 같은 칸 안의 여러
+            // 독립 자식은 별도의 cursor 원장이 필요하므로 기존 경로를 유지한다.
+            if cell
+                .paragraphs
+                .iter()
+                .flat_map(|para| &para.controls)
+                .filter(|control| matches!(control, crate::model::control::Control::Table(_)))
+                .count()
+                != 1
+            {
+                return None;
+            }
             let flow = self.reflow_block_cell_flow(&cell.paragraphs, styles)?;
             // 포함 자식의 순차 밴드와 외부 공동 앵커가 섞인 경우 기존 원장을 유지한다.
             if flow
@@ -49,6 +61,7 @@ impl LayoutEngine {
             child_splittable |= flow.external_child_splittable;
         }
         let external_bottom = external_bottom?;
+        parent_frame_height += hwpunit_to_px(i32::from(table.cell_spacing), self.dpi) * 2.0;
         // Format의 host 간격은 부모 바깥여백을 이미 포함한다. 같은 root의 자식 끝을
         // 그 내부 높이 축으로 변환해 부모 여백과 오프셋을 이중 계상하지 않는다.
         let outside = hwpunit_to_px(

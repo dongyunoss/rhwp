@@ -133,7 +133,10 @@ impl RowEntryQuery<'_> {
             });
         let independent_child = layout_engine
             .reflow_unrestricted_table_flow(table, styles)
-            .is_some_and(|flow| flow.child_splittable);
+            .is_some_and(|flow| flow.child_splittable)
+            && layout_engine
+                .reflow_unrestricted_fragment_frame(table, self.row_start_cut, &[], styles)
+                .is_some();
         let splittable = can_intra_split
             && (intra_row_cut_here || independent_child)
             && (mt.is_row_splittable(r)
@@ -159,6 +162,12 @@ impl RowEntryQuery<'_> {
             styles,
             ..
         } = *rows;
+        if layout_engine
+            .reflow_unrestricted_fragment_frame(table, row_start_cut, &[], styles)
+            .is_some()
+        {
+            return 0.0;
+        }
         if mt.allows_row_break_split() {
             layout_engine.row_remaining_visible_padding_height(table, r, row_start_cut, styles)
         } else {

@@ -262,6 +262,13 @@ impl LayoutEngine {
         physical_budget: f64,
         styles: &ResolvedStyleSet,
     ) -> (RowCutResult, f64) {
+        // 외부 공동 앵커의 컷은 부모 패딩까지 포함한 물리 프레임과 비교했다.
+        // 일반 칸 예산으로 바꾸며 같은 패딩을 다시 빼지 않는다.
+        if let Some(cut) =
+            self.advance_reflow_external_row_cut(table, row, start_cut, physical_budget, styles)
+        {
+            return (cut, physical_budget);
+        }
         let padding = self.row_remaining_visible_cell_padding(table, row, start_cut, styles);
         let max_padding = padding.iter().copied().fold(0.0, f64::max);
         let mut physical_cut_budget = physical_budget;

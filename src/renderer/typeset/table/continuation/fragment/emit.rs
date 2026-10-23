@@ -869,8 +869,25 @@ impl TypesetEngine {
         // 최종 수용한 예약량을 기준으로 아직 소유되지 않은 흐름 잔여를 구한다.
         // 끝 조각의 물리 상자와 아래 바깥여백은 같은 영역을 소유한다.
         // 엄격 예산·캡션 등이 이미 예약한 몫을 다시 더하지 않는다.
-        let terminal_flow_outer_bottom =
-            (input.prepared.terminal_outer_bottom_flow - terminal_outer_bottom_overhead).max(0.0);
+        let parent_owned = (!row_cursor_is_nested)
+            .then(|| {
+                layout_engine.reflow_unrestricted_fragment_frame(
+                    table,
+                    start_cut,
+                    &split_end_cut,
+                    styles,
+                )
+            })
+            .flatten()
+            .is_none_or(|frame| frame.parent_owned);
+        if !parent_owned {
+            terminal_outer_bottom_overhead = 0.0;
+        }
+        let terminal_flow_outer_bottom = if parent_owned {
+            (input.prepared.terminal_outer_bottom_flow - terminal_outer_bottom_overhead).max(0.0)
+        } else {
+            0.0
+        };
         let host_spacing_after_only =
             input.prepared.host_spacing_after_only + terminal_flow_outer_bottom;
         // 행을 나누려고 이월했더라도 결국 통째 표로 확정하면 외곽 프레임을
@@ -1877,6 +1894,22 @@ impl TypesetEngine {
                 }
             });
         commit_fragment(st, caption_extra + partial_height, false, None);
+        // 부모 프레임만 현재 쪽에 남은 경우, 독립 자식의 이월은 뒤 본문까지
+        // 소유하지 않는다. 수용한 소스 컷의 사실로 기존 후속 선배치를 공유한다.
+        if !row_cursor_is_nested
+            && layout_engine
+                .reflow_unrestricted_fragment_frame(table, start_cut, &split_end_cut, styles)
+                .is_some_and(|frame| frame.parent_owned && !frame.external_content_owned)
+        {
+            self.prefill_computed_float_successors(
+                st,
+                para_idx,
+                input.source.paragraph,
+                input.source.paragraphs_all,
+                input.source.composed_all,
+                styles,
+            );
+        }
         if !is_continuation && stored_complete_extent.is_some() {
             // 내용 컷과 독립적으로 인증한 첫 조각 상자가 실제 지면을 차지했다.
             // 다음 조각의 여백은 같은 커서 사실을 예산·배치가 함께 소비한다.

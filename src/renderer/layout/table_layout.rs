@@ -6,7 +6,9 @@ mod nested_empty_line_flow;
 mod nested_header_frame;
 mod plain_cell_flow;
 mod reflow_block_frames;
+mod reflow_external_cut;
 mod reflow_external_flow;
+pub(in crate::renderer) use reflow_external_cut::ReflowExternalCutFrame;
 mod reflow_fragment_content;
 mod reflowed_nested_row;
 mod row_block_cut;
@@ -1693,6 +1695,32 @@ fn render_cell_box_borders(
         y + h,
     ));
     nodes
+}
+
+/// 셀 간격이 있으면 표 외곽과 칸 외곽은 서로 다른 네 변이다.
+/// 칸·cellzone의 선을 표 스타일로 대체하지 않고 표 자신의 프레임을 추가한다.
+pub(super) fn render_spaced_table_outer_frame(
+    tree: &mut PageLayoutContext,
+    table: &crate::model::table::Table,
+    styles: &ResolvedStyleSet,
+    frame: BoundingBox,
+    open_top: bool,
+) -> Vec<RenderNode> {
+    if table.cell_spacing == 0 {
+        return Vec::new();
+    }
+    let Some(style) = table
+        .border_fill_id
+        .checked_sub(1)
+        .and_then(|index| styles.border_styles.get(usize::from(index)))
+    else {
+        return Vec::new();
+    };
+    let mut border = style.clone();
+    if open_top {
+        border.borders[2].line_type = crate::model::style::BorderLineType::None;
+    }
+    render_cell_box_borders(tree, &border, frame.x, frame.y, frame.width, frame.height)
 }
 
 pub(crate) fn border_style_has_diagonal(bs: &ResolvedBorderStyle) -> bool {
@@ -4676,6 +4704,13 @@ impl LayoutEngine {
                 self.show_transparent_borders.get(),
             );
             table_node.children.extend(borders);
+            table_node.children.extend(render_spaced_table_outer_frame(
+                tree,
+                table,
+                styles,
+                table_node.bbox,
+                false,
+            ));
         } else if independent_col_row_y.is_none() {
             if let Some((start, end)) =
                 split_row_range.filter(|_| !repeated_headers.rows.is_empty())
@@ -22482,6 +22517,11 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         capacity: row_physical_band::RowCutCapacity<'_>,
     ) -> RowCutResult {
+        if let Some(cut) =
+            self.advance_reflow_external_row_cut(table, row, start_cut, avail_height, styles)
+        {
+            return cut;
+        }
         let row_cells: Vec<&crate::model::table::Cell> = self
             .indexed_row_cut_cell_order(table, row)
             .into_iter()
@@ -27063,6 +27103,13 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         purpose: row_physical_band::CutHeight,
     ) -> f64 {
+        if row == 0 {
+            if let Some(frame) =
+                self.reflow_external_cut_frame(table, start_cut, end_cut, styles, purpose)
+            {
+                return frame.occupied_height;
+            }
+        }
         if start_cut.is_empty()
             && end_cut.is_empty()
             && !self.profile.get().session_edited()

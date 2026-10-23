@@ -64,8 +64,11 @@ impl TypesetEngine {
         } = entry;
         let row_count = mt.row_heights.len();
         let cs = mt.cell_spacing;
-        let can_intra_split =
-            !mt.cells.is_empty() || ft.external_flow.is_some_and(|flow| flow.child_splittable);
+        let can_intra_split = !mt.cells.is_empty()
+            || super::unrestricted_float::independent_child_can_split(
+                input,
+                st.base_available_height(),
+            );
         let base_available = st.base_available_height();
         // 표 조각의 괘선은 실제 본문 영역에 그린다. 쪽 하단 허용치는 글줄 수용에
         // 사용하지만, 행 컷이 이 공간까지 쓰면 표 조각이 꼬리말이나 본문 경계에
@@ -863,7 +866,10 @@ impl TypesetEngine {
         let atomic_rule_applies = (none_table_is_atomic_here(table)
             || cell_unit_row_is_atomic_here(table))
             && !stored_declares_table_split
-            && !ft.external_flow.is_some_and(|flow| flow.child_splittable);
+            && !super::unrestricted_float::independent_child_can_split(
+                input,
+                st.base_available_height(),
+            );
         let split_unit_h = if atomic_rule_applies && none_table_is_atomic_here(table) {
             all_rows_h
         } else if first_block_protected {

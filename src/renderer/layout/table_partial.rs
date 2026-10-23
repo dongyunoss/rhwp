@@ -1091,12 +1091,14 @@ impl LayoutEngine {
         align_saved_opening_frame: bool,
         end_row_owns_stored_frame: bool,
         computed_fragment_frame: bool,
+        external_frame: Option<super::table_layout::ReflowExternalCutFrame>,
         // 원본 쪽 재시작과 전달된 물리 높이를 함께 확인한 시작/끝 행.
         original_restart_alignment_rows: [Option<usize>; 2],
         // [#6976] 접기 대상 행(모델 행 인덱스)과 그 행이 남긴 여분의 최솟값 수집기.
         fold_last_row: Option<usize>,
         fold_slack: &mut f64,
     ) {
+        let parent_owned = external_frame.is_none_or(|frame| frame.parent_owned);
         for (cell_idx, cell) in table.cells.iter().enumerate() {
             // [#4149] 프로브: 대상 셀만 방출. 셀 방출 루프는 셀-간 캐리가 없어
             // (실측 muts 0, 외부 sink = table_node 단일) 생략이 대상 셀 좌표를 바꾸지 않는다.
@@ -1257,24 +1259,35 @@ impl LayoutEngine {
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
                 cell_id,
-                RenderNodeType::TableCell(TableCellNode {
-                    col: cell.col,
-                    row: cell.row,
-                    col_span: cell.col_span,
-                    row_span: cell.row_span,
-                    border_fill_id: cell.border_fill_id,
-                    text_direction: cell.text_direction,
-                    clip: is_in_split_row || is_rowbreak_straddle || height_override_clip,
-                    // [#5862] 이 경로의 clip 셀은 전부 쪽 컷이 만든 조각이다.
-                    closed_reflow_frame: false,
-                    page_fragment: is_in_split_row || is_rowbreak_straddle || height_override_clip,
-                    model_cell_index: Some(cell_idx as u32),
-                }),
+                if parent_owned {
+                    RenderNodeType::TableCell(TableCellNode {
+                        col: cell.col,
+                        row: cell.row,
+                        col_span: cell.col_span,
+                        row_span: cell.row_span,
+                        border_fill_id: cell.border_fill_id,
+                        text_direction: cell.text_direction,
+                        clip: is_in_split_row || is_rowbreak_straddle || height_override_clip,
+                        // [#5862] 이 경로의 clip 셀은 전부 쪽 컷이 만든 조각이다.
+                        closed_reflow_frame: false,
+                        page_fragment: is_in_split_row
+                            || is_rowbreak_straddle
+                            || height_override_clip,
+                        model_cell_index: Some(cell_idx as u32),
+                    })
+                } else {
+                    RenderNodeType::Group(GroupNode {
+                        paint_transform: None,
+                        section_index: None,
+                        para_index: None,
+                        control_index: None,
+                    })
+                },
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
             );
 
             // 셀 BorderFill 조회
-            let border_style = if cell.border_fill_id > 0 {
+            let border_style = if parent_owned && cell.border_fill_id > 0 {
                 let idx = (cell.border_fill_id as usize).saturating_sub(1);
                 styles.border_styles.get(idx)
             } else {
@@ -4764,6 +4777,8 @@ impl LayoutEngine {
                                                 nested_table,
                                                 ctrl_area.x,
                                                 nested_y,
+                                                external_frame
+                                                    .is_none_or(|frame| frame.parent_owned),
                                             )
                                         });
                                     let unrestricted_reflow_block = reflow_block_origin.is_some()
@@ -5843,6 +5858,12 @@ impl LayoutEngine {
             outer_table
         };
         let _rows = self.table_rows_scope(table);
+
+        let external_frame = (!row_cursor_is_nested && !is_block_split && !start_cut_is_block)
+            .then(|| self.reflow_unrestricted_fragment_frame(table, start_cut, end_cut, styles))
+            .flatten();
+        let parent_owned = external_frame.is_none_or(|frame| frame.parent_owned);
+        let repeat_fragment_outer_margin = repeat_fragment_outer_margin && parent_owned;
 
         // 컷과 원본 물리 상자를 같은 확인 결과로 소비한다. 첫 조각의 남은 빈 띠와
         // 뒤 조각의 글줄 끝·패딩을 서로 다른 높이 추측으로 바꾸지 않는다.
@@ -6953,6 +6974,13 @@ impl LayoutEngine {
             )
         });
 
+        // 예약은 source 컷이, 부모의 실제 격자는 parent frame owner가 소유한다.
+        // 부모가 없는 이어받기는 가상 행을 유지해 자식 컷만 배치한다.
+        let external_reserved_height = external_frame.map(|frame| frame.occupied_height);
+        if let Some(frame) = external_frame.filter(|frame| frame.parent_owned) {
+            row_heights[0] = frame.parent_height - cell_spacing * 2.0;
+        }
+
         // ── 4. 렌더링할 행 목록 구성 ──
         // is_continuation && repeat_header → start_row 이전의 반복 제목행만 반복.
         // [Task #1716] 반복 대상은 표 상단의 연속 제목행 블록만(흩어진 하위 is_header 제외).
@@ -7068,22 +7096,31 @@ impl LayoutEngine {
         let table_id = tree.next_id();
         let mut table_node = RenderNode::new(
             table_id,
-            RenderNodeType::Table(TableNode {
-                row_count: table.row_count,
-                col_count: table.col_count,
-                border_fill_id: table.border_fill_id,
-                section_index: Some(section_index),
-                para_index: Some(node_para_index),
-                control_index: Some(node_control_index),
-                // [#4334] 표 분할 조각(partial table)도 원본 부모 셀 경로를 그대로
-                // 옮겨 담는다 — provenance para/control 과 같은 근거(#4252).
-                cell_context: enclosing_cell_ctx.cloned(),
-            }),
+            if parent_owned {
+                RenderNodeType::Table(TableNode {
+                    row_count: table.row_count,
+                    col_count: table.col_count,
+                    border_fill_id: table.border_fill_id,
+                    section_index: Some(section_index),
+                    para_index: Some(node_para_index),
+                    control_index: Some(node_control_index),
+                    // [#4334] 표 분할 조각(partial table)도 원본 부모 셀 경로를 그대로
+                    // 옮겨 담는다 — provenance para/control 과 같은 근거(#4252).
+                    cell_context: enclosing_cell_ctx.cloned(),
+                })
+            } else {
+                RenderNodeType::Group(GroupNode {
+                    paint_transform: None,
+                    section_index: None,
+                    para_index: None,
+                    control_index: None,
+                })
+            },
             BoundingBox::new(table_x, table_y, table_width, partial_table_height),
         );
 
         // ── 5-1. 표 배경 렌더링 (표 > 배경 > 색 > 면색) ──
-        if table.border_fill_id > 0 {
+        if parent_owned && table.border_fill_id > 0 {
             let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);
             if let Some(tbl_bs) = styles.border_styles.get(tbl_idx) {
                 self.render_cell_background(
@@ -7395,6 +7432,7 @@ impl LayoutEngine {
             align_saved_opening_frame,
             end_row_owns_stored_frame,
             computed_fragment_frame,
+            external_frame,
             original_restart_alignment_rows,
             fold_last_row,
             &mut fold_slack,
@@ -7479,240 +7517,251 @@ impl LayoutEngine {
             }
         }
 
-        // cellzone·표 외곽 테두리 덮어쓰기를 비분할 표와 같게 적용한다. 아래의 조각 경계
-        // 지우기보다 먼저 해야 열린 윗변·아랫변이 되살아나지 않는다. 그리드는 조각-지역
-        // 행(`render_rows` 순서)이므로 칸·zone 행 주소를 그 공간으로 옮긴다.
-        {
-            // 원본 행 [row, end) 중 이 조각에 그려지는 첫·끝 조각-지역 행
-            let local_rows = |row: usize, end: usize| {
-                let first = render_rows.iter().position(|&r| r >= row && r < end)?;
-                let last = render_rows.iter().rposition(|&r| r >= row && r < end)?;
-                Some((first, last))
-            };
-            let fragment_cells: Vec<Cell> = table
-                .cells
-                .iter()
-                .filter_map(|cell| {
-                    let row = cell.row as usize;
-                    let (first, last) = local_rows(row, row + (cell.row_span as usize).max(1))?;
-                    Some(Cell {
-                        row: first as u16,
-                        row_span: (last + 1 - first) as u16,
-                        col: cell.col,
-                        col_span: cell.col_span,
-                        border_fill_id: cell.border_fill_id,
-                        ..Default::default()
+        if parent_owned {
+            // cellzone·표 외곽 테두리 덮어쓰기를 비분할 표와 같게 적용한다. 아래의 조각 경계
+            // 지우기보다 먼저 해야 열린 윗변·아랫변이 되살아나지 않는다. 그리드는 조각-지역
+            // 행(`render_rows` 순서)이므로 칸·zone 행 주소를 그 공간으로 옮긴다.
+            {
+                // 원본 행 [row, end) 중 이 조각에 그려지는 첫·끝 조각-지역 행
+                let local_rows = |row: usize, end: usize| {
+                    let first = render_rows.iter().position(|&r| r >= row && r < end)?;
+                    let last = render_rows.iter().rposition(|&r| r >= row && r < end)?;
+                    Some((first, last))
+                };
+                let fragment_cells: Vec<Cell> = table
+                    .cells
+                    .iter()
+                    .filter_map(|cell| {
+                        let row = cell.row as usize;
+                        let (first, last) = local_rows(row, row + (cell.row_span as usize).max(1))?;
+                        Some(Cell {
+                            row: first as u16,
+                            row_span: (last + 1 - first) as u16,
+                            col: cell.col,
+                            col_span: cell.col_span,
+                            border_fill_id: cell.border_fill_id,
+                            ..Default::default()
+                        })
                     })
-                })
-                .collect();
-            let fragment_zones: Vec<_> = table
-                .zones
-                .iter()
-                .filter_map(|zone| {
-                    // 끝 주소는 칸 주소라 병합 span 끝까지가 zone 이다 (#6619).
-                    let end_cell = table
-                        .cells
-                        .iter()
-                        .find(|c| c.row == zone.end_row && c.col == zone.end_col);
-                    let (end_row, end_col) = end_cell.map_or(
-                        (zone.end_row as usize + 1, zone.end_col as usize + 1),
-                        |c| {
-                            (
-                                c.row as usize + (c.row_span as usize).max(1),
-                                c.col as usize + (c.col_span as usize).max(1),
-                            )
-                        },
-                    );
-                    let (first, last) = local_rows(zone.start_row as usize, end_row)?;
-                    let mut zone = zone.clone();
-                    zone.start_row = first as u16;
-                    zone.end_row = last as u16;
-                    zone.end_col = end_col.saturating_sub(1) as u16;
-                    Some(zone)
-                })
-                .collect();
-            apply_table_border_overrides(
-                &mut h_edges,
-                &mut v_edges,
-                table.border_fill_id,
-                &fragment_zones,
-                &fragment_cells,
-                styles,
-            );
-        }
-
-        // 어울림 표가 행 안에서 다음 쪽으로 이어지면 새 물리 조각의 맨 위는
-        // 원본 셀의 윗변이 아니다. 반복 제목행이 없는 경우 그 컷 경계에
-        // 수집된 가로선을 그리지 않는다. 2020 PDF의 #6756·#6549는 열린
-        // 윗변을, 자리차지 #5885는 닫힌 윗변을 각각 보여 준다.
-        if is_continuation
-            && !start_cut.is_empty()
-            && header_rows.is_empty()
-            && matches!(
-                table.common.text_wrap,
-                crate::model::shape::TextWrap::Square
-            )
-        {
-            if let Some(first_edge) = h_edges.first_mut() {
-                first_edge.fill(None);
+                    .collect();
+                let fragment_zones: Vec<_> = table
+                    .zones
+                    .iter()
+                    .filter_map(|zone| {
+                        // 끝 주소는 칸 주소라 병합 span 끝까지가 zone 이다 (#6619).
+                        let end_cell = table
+                            .cells
+                            .iter()
+                            .find(|c| c.row == zone.end_row && c.col == zone.end_col);
+                        let (end_row, end_col) = end_cell.map_or(
+                            (zone.end_row as usize + 1, zone.end_col as usize + 1),
+                            |c| {
+                                (
+                                    c.row as usize + (c.row_span as usize).max(1),
+                                    c.col as usize + (c.col_span as usize).max(1),
+                                )
+                            },
+                        );
+                        let (first, last) = local_rows(zone.start_row as usize, end_row)?;
+                        let mut zone = zone.clone();
+                        zone.start_row = first as u16;
+                        zone.end_row = last as u16;
+                        zone.end_col = end_col.saturating_sub(1) as u16;
+                        Some(zone)
+                    })
+                    .collect();
+                apply_table_border_overrides(
+                    &mut h_edges,
+                    &mut v_edges,
+                    table.border_fill_id,
+                    &fragment_zones,
+                    &fragment_cells,
+                    styles,
+                );
             }
-            // 블록 커서에서 이미 소비한 행의 물리 높이는 0이다.
-            // 내부 격자 경계도 조각 원점과 겹칠 수 있다. 새로 시작하는 원본 셀은 실제 경계를 유지하지만,
-            // 유닛을 이미 소비한 셀에 새 상단 경계를 부여하지 않는다.
-            if start_cut_is_block {
-                let (bs, be) = rowspan_block_range(table, start_row);
-                for (index, edge) in h_edges.iter_mut().enumerate().skip(1) {
-                    if grid_row_y[index] != 0.0 {
-                        break;
-                    }
-                    let Some(&row) = render_rows.get(index) else {
-                        break;
-                    };
-                    let has_new_owner = table.cells.iter().any(|cell| {
-                        cell.row as usize == row
-                            && block_cut_index(table, bs, be, cell)
-                                .and_then(|ordinal| start_cut.get(ordinal))
-                                .is_none_or(|&cut| cut == 0)
-                    });
-                    if !has_new_owner {
-                        edge.fill(None);
-                    }
-                }
-            }
-        }
 
-        // Square 흐름의 내부 컷은 쪽 조각을 소유하며 셀 하단 테두리는 소유하지 않는다.
-        // 다음 조각이 원래의 닫는 경계를 유지한다.
-        if !is_last_part
-            && !end_cut.is_empty()
-            && table.page_break == crate::model::table::TablePageBreak::RowBreak
-            && table.common.text_wrap == crate::model::shape::TextWrap::Square
-        {
-            if let Some(last_edge) = h_edges.last_mut() {
-                last_edge.fill(None);
-            }
-        }
-
-        // 복구한 Square 흐름의 마지막 줄은 최종 프레임 경계도 소유한다.
-        // 쪽 나누기가 소비한 높이는 이 그리기 전용 확장과 구분한다.
-        if self.profile.get().hwp5_stored_pagination_layout()
-            && enclosing_cell_ctx.is_none()
-            && is_continuation
-            && end_cut.is_empty()
-            && end_row >= row_count
-            && !table.common.treat_as_char
-            && matches!(
-                table.page_break,
-                crate::model::table::TablePageBreak::RowBreak
-            )
-        {
-            // 끝 띠는 위에서 이미 접혔을 수 있으므로 수용한 현재 물리 상자에서 시작한다.
-            // 접기 전 높이를 사용하면 복구한 줄이 없어도 버린 띠를 다시 되살린다.
-            let mut frame_height = table_node.bbox.height;
-            for child in &table_node.children {
-                let RenderNodeType::TableCell(meta) = &child.node_type else {
-                    continue;
-                };
-                if !meta.clip
-                    || !meta.page_fragment
-                    || usize::from(meta.row) + usize::from(meta.row_span) != row_count
-                {
-                    continue;
-                }
-                let Some(cell) = meta
-                    .model_cell_index
-                    .and_then(|idx| table.cells.get(idx as usize))
-                else {
-                    continue;
-                };
-                let has_stored_wrap = cell.paragraphs.iter().enumerate().any(|(pi, para)| {
-                    para.controls
-                        .iter()
-                        .enumerate()
-                        .any(|(ci, _)| stored_square_picture_has_adjacent_text(cell, pi, ci))
-                });
-                if has_stored_wrap {
-                    let body_bottom = col_area.y + col_area.height;
-                    let recovered_bottom = (child.bbox.y + child.bbox.height).min(body_bottom);
-                    frame_height = frame_height.max(recovered_bottom - table_y);
-                }
-            }
-            if let Some(last_edge) = grid_row_y.last_mut() {
-                *last_edge = frame_height;
-            }
-            table_node.bbox.height = frame_height;
-        }
-
-        // [#5877] `h_edges`/`v_edges`/`grid_row_y` 는 **조각-지역 행 인덱스**
-        // (`render_rows` 순서)인데 `row_col_x` 는 **원본 행 전체**다. 테두리
-        // 렌더러는 그 인덱스로 `row_col_x` 를 직접 참조하므로, 조각이 원본 행 18
-        // 부터 시작해도 조각-지역 0·1 이 원본 행 0·1(전폭 단일 셀 제목 행 —
-        // 행별 열 구획이 균등 보간된다)의 격자를 집는다. 그 결과 쪽을 넘어온
-        // 조각 상단에만 표폭/열수 균등 간격의 유령 세로 괘선이 그려졌다
-        // (2961515 150행×32열: 21.13px 간격, 셀 좌표는 정상).
-        // 렌더 순서에 맞춰 조각용 격자를 만들어 넘긴다.
-        let fragment_row_col_x: Vec<Vec<f64>> = render_rows
-            .iter()
-            .map(|&r| {
-                row_col_x
-                    .get(r)
-                    .or_else(|| row_col_x.last())
-                    .cloned()
-                    .unwrap_or_else(|| col_x.clone())
-            })
-            .collect();
-        let fragment_row_col_x = if fragment_row_col_x.is_empty() {
-            row_col_x.to_vec()
-        } else {
-            fragment_row_col_x
-        };
-
-        // 엣지 기반 테두리 렌더링
-        let body_top_clip = (enclosing_cell_ctx.is_none()
-            && self.is_body_flow_col_area(col_area)
-            && (table_y - col_area.y).abs() <= 0.5)
-            .then_some(col_area.y);
-        if table.cell_spacing > 0 {
-            let open_top_row = (is_continuation
+            // 어울림 표가 행 안에서 다음 쪽으로 이어지면 새 물리 조각의 맨 위는
+            // 원본 셀의 윗변이 아니다. 반복 제목행이 없는 경우 그 컷 경계에
+            // 수집된 가로선을 그리지 않는다. 2020 PDF의 #6756·#6549는 열린
+            // 윗변을, 자리차지 #5885는 닫힌 윗변을 각각 보여 준다.
+            if is_continuation
                 && !start_cut.is_empty()
                 && header_rows.is_empty()
                 && matches!(
                     table.common.text_wrap,
                     crate::model::shape::TextWrap::Square
-                ))
-            .then_some(start_row as u16);
-            let borders = render_spaced_cell_borders(
-                tree,
-                table,
-                styles,
-                &table_node.children,
-                open_top_row,
-                self.show_transparent_borders.get(),
-            );
-            table_node.children.extend(borders);
-        } else {
-            table_node.children.extend(render_edge_borders(
-                tree,
-                &h_edges,
-                &v_edges,
-                &fragment_row_col_x,
-                &grid_row_y,
-                table_x,
-                table_y,
-                body_top_clip,
-            ));
-            if self.show_transparent_borders.get() {
-                table_node.children.extend(render_transparent_borders(
+                )
+            {
+                if let Some(first_edge) = h_edges.first_mut() {
+                    first_edge.fill(None);
+                }
+                // 블록 커서에서 이미 소비한 행의 물리 높이는 0이다.
+                // 내부 격자 경계도 조각 원점과 겹칠 수 있다. 새로 시작하는 원본 셀은 실제 경계를 유지하지만,
+                // 유닛을 이미 소비한 셀에 새 상단 경계를 부여하지 않는다.
+                if start_cut_is_block {
+                    let (bs, be) = rowspan_block_range(table, start_row);
+                    for (index, edge) in h_edges.iter_mut().enumerate().skip(1) {
+                        if grid_row_y[index] != 0.0 {
+                            break;
+                        }
+                        let Some(&row) = render_rows.get(index) else {
+                            break;
+                        };
+                        let has_new_owner = table.cells.iter().any(|cell| {
+                            cell.row as usize == row
+                                && block_cut_index(table, bs, be, cell)
+                                    .and_then(|ordinal| start_cut.get(ordinal))
+                                    .is_none_or(|&cut| cut == 0)
+                        });
+                        if !has_new_owner {
+                            edge.fill(None);
+                        }
+                    }
+                }
+            }
+
+            // Square 흐름의 내부 컷은 쪽 조각을 소유하며 셀 하단 테두리는 소유하지 않는다.
+            // 다음 조각이 원래의 닫는 경계를 유지한다.
+            if !is_last_part
+                && !end_cut.is_empty()
+                && table.page_break == crate::model::table::TablePageBreak::RowBreak
+                && table.common.text_wrap == crate::model::shape::TextWrap::Square
+            {
+                if let Some(last_edge) = h_edges.last_mut() {
+                    last_edge.fill(None);
+                }
+            }
+
+            // 복구한 Square 흐름의 마지막 줄은 최종 프레임 경계도 소유한다.
+            // 쪽 나누기가 소비한 높이는 이 그리기 전용 확장과 구분한다.
+            if self.profile.get().hwp5_stored_pagination_layout()
+                && enclosing_cell_ctx.is_none()
+                && is_continuation
+                && end_cut.is_empty()
+                && end_row >= row_count
+                && !table.common.treat_as_char
+                && matches!(
+                    table.page_break,
+                    crate::model::table::TablePageBreak::RowBreak
+                )
+            {
+                // 끝 띠는 위에서 이미 접혔을 수 있으므로 수용한 현재 물리 상자에서 시작한다.
+                // 접기 전 높이를 사용하면 복구한 줄이 없어도 버린 띠를 다시 되살린다.
+                let mut frame_height = table_node.bbox.height;
+                for child in &table_node.children {
+                    let RenderNodeType::TableCell(meta) = &child.node_type else {
+                        continue;
+                    };
+                    if !meta.clip
+                        || !meta.page_fragment
+                        || usize::from(meta.row) + usize::from(meta.row_span) != row_count
+                    {
+                        continue;
+                    }
+                    let Some(cell) = meta
+                        .model_cell_index
+                        .and_then(|idx| table.cells.get(idx as usize))
+                    else {
+                        continue;
+                    };
+                    let has_stored_wrap = cell.paragraphs.iter().enumerate().any(|(pi, para)| {
+                        para.controls
+                            .iter()
+                            .enumerate()
+                            .any(|(ci, _)| stored_square_picture_has_adjacent_text(cell, pi, ci))
+                    });
+                    if has_stored_wrap {
+                        let body_bottom = col_area.y + col_area.height;
+                        let recovered_bottom = (child.bbox.y + child.bbox.height).min(body_bottom);
+                        frame_height = frame_height.max(recovered_bottom - table_y);
+                    }
+                }
+                if let Some(last_edge) = grid_row_y.last_mut() {
+                    *last_edge = frame_height;
+                }
+                table_node.bbox.height = frame_height;
+            }
+
+            // [#5877] `h_edges`/`v_edges`/`grid_row_y` 는 **조각-지역 행 인덱스**
+            // (`render_rows` 순서)인데 `row_col_x` 는 **원본 행 전체**다. 테두리
+            // 렌더러는 그 인덱스로 `row_col_x` 를 직접 참조하므로, 조각이 원본 행 18
+            // 부터 시작해도 조각-지역 0·1 이 원본 행 0·1(전폭 단일 셀 제목 행 —
+            // 행별 열 구획이 균등 보간된다)의 격자를 집는다. 그 결과 쪽을 넘어온
+            // 조각 상단에만 표폭/열수 균등 간격의 유령 세로 괘선이 그려졌다
+            // (2961515 150행×32열: 21.13px 간격, 셀 좌표는 정상).
+            // 렌더 순서에 맞춰 조각용 격자를 만들어 넘긴다.
+            let fragment_row_col_x: Vec<Vec<f64>> = render_rows
+                .iter()
+                .map(|&r| {
+                    row_col_x
+                        .get(r)
+                        .or_else(|| row_col_x.last())
+                        .cloned()
+                        .unwrap_or_else(|| col_x.clone())
+                })
+                .collect();
+            let fragment_row_col_x = if fragment_row_col_x.is_empty() {
+                row_col_x.to_vec()
+            } else {
+                fragment_row_col_x
+            };
+
+            // 엣지 기반 테두리 렌더링
+            let body_top_clip = (enclosing_cell_ctx.is_none()
+                && self.is_body_flow_col_area(col_area)
+                && (table_y - col_area.y).abs() <= 0.5)
+                .then_some(col_area.y);
+            if table.cell_spacing > 0 {
+                let open_top_row = (is_continuation
+                    && !start_cut.is_empty()
+                    && header_rows.is_empty()
+                    && matches!(
+                        table.common.text_wrap,
+                        crate::model::shape::TextWrap::Square
+                    ))
+                .then_some(start_row as u16);
+                let borders = render_spaced_cell_borders(
+                    tree,
+                    table,
+                    styles,
+                    &table_node.children,
+                    open_top_row,
+                    self.show_transparent_borders.get(),
+                );
+                table_node.children.extend(borders);
+                table_node
+                    .children
+                    .extend(super::table_layout::render_spaced_table_outer_frame(
+                        tree,
+                        table,
+                        styles,
+                        table_node.bbox,
+                        open_top_row.is_some(),
+                    ));
+            } else {
+                table_node.children.extend(render_edge_borders(
                     tree,
                     &h_edges,
                     &v_edges,
-                    &h_span_covered,
-                    &v_span_covered,
                     &fragment_row_col_x,
                     &grid_row_y,
                     table_x,
                     table_y,
+                    body_top_clip,
                 ));
+                if self.show_transparent_borders.get() {
+                    table_node.children.extend(render_transparent_borders(
+                        tree,
+                        &h_edges,
+                        &v_edges,
+                        &h_span_covered,
+                        &v_span_covered,
+                        &fragment_row_col_x,
+                        &grid_row_y,
+                        table_x,
+                        table_y,
+                    ));
+                }
             }
         }
 
@@ -7777,7 +7826,7 @@ impl LayoutEngine {
         // 경우에만** 그 도형 subtree를 계속 포함한다. 이 경계는 p17의 textbox-backed
         // rectangle은 보존하면서, 다른 문서의 다음 쪽 밖 도형을 table/body clip으로
         // 역류시키지 않는다.
-        {
+        if external_frame.is_none() || !parent_owned {
             let physical_page_bottom = col_area.y + col_area.height;
             let logical_table_bottom = table_node.bbox.y + table_node.bbox.height;
             let terminal_long_child_clip_only = is_continuation
@@ -8041,7 +8090,7 @@ impl LayoutEngine {
                 0.0
             };
         y_start
-            + partial_table_height
+            + external_reserved_height.unwrap_or(partial_table_height)
             + stored_reset_logical_height_delta
             + caption_total
             + caption_outer_bottom

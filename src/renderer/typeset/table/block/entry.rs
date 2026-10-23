@@ -2431,8 +2431,11 @@ impl TypesetEngine {
             .map(|placement| constrain_host_placement.constrain(placement, st))
         });
         let own_frame_budget = whole_frame_budget - placement_para_start_height;
-        let unrestricted_whole_object =
-            super::unrestricted_float::owns_whole_object(input, own_frame_budget);
+        let unrestricted_whole_object = super::unrestricted_float::owns_whole_object(
+            input,
+            own_frame_budget,
+            st.base_available_height(),
+        );
         let resolved_host_placement = resolved_host_placement.or_else(|| {
             (!legacy_whole_fits && unrestricted_whole_object)
                 .then(|| {
@@ -2441,6 +2444,7 @@ impl TypesetEngine {
                         placement_para_start_height,
                         self.dpi,
                         own_frame_budget,
+                        st.base_available_height(),
                     )
                 })
                 .flatten()

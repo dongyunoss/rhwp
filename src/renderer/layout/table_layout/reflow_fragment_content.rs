@@ -21,6 +21,20 @@ impl LayoutEngine {
         if cell.row_span != 1 {
             return None;
         }
+        if self
+            .reflow_unrestricted_table_flow(table, styles)
+            .is_some_and(|flow| {
+                self.current_body_area.get().3 > 0.0
+                    && flow.parent_frame_height <= self.current_body_area.get().3
+            })
+        {
+            return Some(if start == 0 {
+                self.reflow_block_cell_flow(&cell.paragraphs, styles)?
+                    .bottom
+            } else {
+                0.0
+            });
+        }
         let units = self.cell_units(cell, table, styles);
         let start = start.min(units.len());
         let end = end.clamp(start, units.len());

@@ -10,15 +10,23 @@ use crate::renderer::{
     hwpunit_to_px,
 };
 
-pub(super) fn owns_whole_object(input: BlockTableInput<'_>, frame_budget: f64) -> bool {
+pub(super) fn independent_child_can_split(input: BlockTableInput<'_>, fresh_height: f64) -> bool {
+    input
+        .ft
+        .external_flow
+        .is_some_and(|flow| flow.child_splittable && flow.parent_frame_height <= fresh_height)
+}
+
+pub(super) fn owns_whole_object(
+    input: BlockTableInput<'_>,
+    frame_budget: f64,
+    fresh_height: f64,
+) -> bool {
     is_para_topbottom_float(&input.table.common)
         && !input.table.common.flow_with_text
         && input.ft.table_footnotes.is_empty()
         && ((input.table.page_break == TablePageBreak::None
-            && !input
-                .ft
-                .external_flow
-                .is_some_and(|flow| flow.child_splittable))
+            && !independent_child_can_split(input, fresh_height))
             || atomic_external_children_fit_parent_frame(input, frame_budget))
 }
 
@@ -74,8 +82,9 @@ pub(super) fn missing_frame(
     origin: f64,
     dpi: f64,
     frame_budget: f64,
+    fresh_height: f64,
 ) -> Option<ParagraphFloatPlacement> {
-    if !owns_whole_object(input, frame_budget)
+    if !owns_whole_object(input, frame_budget, fresh_height)
         || !input.para.text.is_empty()
         || input.table.common.vert_align != VertAlign::Top
     {

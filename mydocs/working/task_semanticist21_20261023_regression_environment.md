@@ -800,3 +800,53 @@ Native138은 HEAD `99c0d7f10d7a2ab3c385c83192f38bc862c4ed26`와 dirty 소스에�
 PASS, 이전 실패 외부 47개는 5 PASS / 42 FAIL / 누락 0개로 이전과 같다
 (`current-previous-failures-2122-result.json`, `current-previous-failures-2123-result.json`).
 fresh WASM, 새 정식 렌더링 회귀 및 최종 전체 검증은 완료하지 않았다.
+## 독립 자식 조각과 부모 물리 프레임의 소유 분리
+
+전량 점유 보정 뒤에도 분할 자식이 부모 프레임과 바깥 아래 여백을 다음 쪽에 반복했다.
+`reflow_external_cut.rs`에서 원본 source cut이 선택한 자식 내용의 높이와 부모 프레임의
+소유를 함께 발행한다. `row_cut_height`와 물리 예산 스캐너는 같은 결과를 소비하며,
+부모 패딩을 예산에서 다시 차감하지 않는다. 부분 배치도 같은 소유를 소비해 첫 조각에만
+실제 부모 Table/Cell 프레임을 그리고, 이어받기는 원래 자식 소유 정보를 유지한다.
+유닛 삭제·선언 폭 축소·임의 clamp로 대신하지 않았다.
+
+첫 부모/호스트 앵커에서 소비한 자식의 세로 오프셋은 이어받기에서 반복하지 않는다.
+MCP 2020 Print의 양의 오프셋 대조군에서 첫 쪽 자식은 300HU 내려가지만 다음 쪽은
+오프셋 없는 사례와 같은 원점이다. 부모 프레임만 첫 쪽에 남고 자식 내용은 전량 이월되는
+대조군도 다음 쪽에서 같은 원점을 갖는다. 원본·변경점은
+`external-coordinate-inputs-2128.json`과 `external-child-opening-inputs-2137.json`,
+실제 Print 영수증과 PDF 해시는 대응 `mcp-*` 경로에 보존했다.
+
+셀 간격이 있는 표는 표 외곽과 칸 외곽의 스타일 소유를 분리했다. 공통
+`render_cell_box_borders`를 전체/부분 표의 바깥 프레임에서도 사용한다. 셀 테두리만
+NONE인 경우 표 외곽은 남고, 표 테두리만 NONE인 경우 칸 외곽은 남는 독립 Print 2개로
+확인했다. 간격 0의 기존 edge-grid 정책은 유지한다. #6311의 원 해결 PR #6420과
+통합 PR #6523을 추적했으며, 광범위한 fallback 완화로 기존 검사가 깨졌던 전력을 확인했다.
+근거는 `issue6311-outer-border-provenance-2135.json`과
+`pr6420-outer-border-provenance-2135.json`이다.
+
+Native140은 잡 8개·232.98초·종료 코드 0이다. 처음 빌드의 타입 경로 누락 오류와 로그를
+보존하고 보정 뒤 재빌드했다. 35개·66쪽의 Native TSV는 최저 95.93231%, 쪽수 일치이며
+34개 문서는 raw 100%다. 정책·full-fit·명시 경계·좌표·스타일 소유·첫 자식 수용 대조군은
+`reflow-*-native140-2141`부터 `2146`의 `results.json`에 있다. 실행 스크립트의 경로 치환
+오류로 중단한 마지막 그룹은 기존 로그를 보존하고 올바른 경로로 재실행했다.
+또한 마지막 두 입력의 PDF 연결 목록 오류를 MCP 영수증의 실제 입력 경로·SHA로 정정했으며,
+잘못된 목록은 `external-child-opening-matrix-2139-before-source-pairing-fix.json`에 남겼다.
+
+`unrestricted-split-native140-review-2154`의 2쪽 review·standalone overlay를 직접 확인하고
+사용자에게 함께 표시했다. 흑백 문자·부모 프레임 비반복·후속 본문 원점은 일치한다.
+raw 100%는 엄격 RGB 일치가 아니다. Print의 얇은 괘선은 0.36pt(96dpi에서 0.48px)이며
+같은 좌표에 셀·표 선을 중복 출력한다. Native tree의 반올림 두께는 0.5px다.
+근거는 `native140-border-and-body-observations-2155.json`이다.
+
+마지막 첫 자식 전량 이월 사례는 점수 통과와 별개로 미완료다. Print는 후속 본문을 첫 쪽에
+남기지만 Native140은 다음 쪽으로 보냈다. Native141은 같은 컷 결과에 자식 내용 소유를
+추가하고 기존 후속 선배치 공통 경로를 재사용해 쪽 소속을 보정했다. 다만 실제 배치는
+본문을 약 24px 위에 두어 93.32630%다. `external-opening-flow-native141-2169`에서
+최종 paint가 `ComputedEmptyHost`의 글줄 전진만 다시 소비하고 수용한 부모 프레임의
+흐름 끝을 전달받지 못함을 확인했다. 이 소비 경로를 다음 단계에서 보정한다.
+
+Native141은 233.41초·종료 코드 0이며 정상 대조군 22개, 기존 표 테두리·cellzone 5개는
+모두 PASS다. 과거 외부 실패 47개는 5 PASS / 42 FAIL / 누락 0개다
+(`current-previous-failures-2164/2165/2166-result.json`). Native141의 35개·66쪽 재실행은 쪽수 일치, 34개 문서 raw 100%, 최저 93.32630%다.
+`logs/native141-matrix-batch-2163.log`에서 모든 그룹의 종료 코드 0을 확인했다. 이 단계의 fresh WASM, 새 정식 렌더링
+회귀와 최종 전체 검증은 완료되지 않았으며 PR 준비 완료로 판정하지 않는다.

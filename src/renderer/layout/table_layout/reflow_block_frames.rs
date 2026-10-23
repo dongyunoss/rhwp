@@ -157,6 +157,7 @@ impl LayoutEngine {
         table: &Table,
         text_left: f64,
         selected_flow_top: f64,
+        owns_anchor: bool,
     ) -> Option<(Option<f64>, f64)> {
         let mut origin = *flow
             .origins
@@ -165,6 +166,9 @@ impl LayoutEngine {
             .as_ref()?;
         if !origin.host_relative {
             origin.top = hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+        } else if !owns_anchor {
+            // 같은 부모 프레임에서 이미 소비한 문단 오프셋은 다음 쪽에서 반복하지 않는다.
+            origin.top = 0.0;
         }
         self.resolve_reflow_block_origin(origin, table, text_left, selected_flow_top)
     }
