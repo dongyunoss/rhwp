@@ -850,3 +850,36 @@ Native141은 233.41초·종료 코드 0이며 정상 대조군 22개, 기존 표
 (`current-previous-failures-2164/2165/2166-result.json`). Native141의 35개·66쪽 재실행은 쪽수 일치, 34개 문서 raw 100%, 최저 93.32630%다.
 `logs/native141-matrix-batch-2163.log`에서 모든 그룹의 종료 코드 0을 확인했다. 이 단계의 fresh WASM, 새 정식 렌더링
 회귀와 최종 전체 검증은 완료되지 않았으며 PR 준비 완료로 판정하지 않는다.
+
+### 수용한 부모 흐름 끝의 최종 배치 전달
+
+Native141의 첫 쪽은 `ComputedEmptyHost { line_advance: 21.33333 }`가 수용한 부모
+프레임의 흐름 끝을 대체했다. `FLOW_ORIGIN/FLOW_END`에서 부모 조각 뒤 y=162.66667px를
+후속 본문 원점으로 쓰는 것을 확인했다. `layout.rs`의 최종 항목 전진은 기존
+`stored_paragraph_flow_ends`를 소비하므로, 후속 선배치가 가능한 계산 호스트의 마지막
+개체에 대해 수용한 `host_end`를 이 경로에 전달했다. 문서별 좌표 보정이나 paint 위치
+clamp를 추가하지 않았다. 선배치의 적용 가능 여부는 공통 helper가 반환하고, 다음 내용
+예약 뒤의 끝을 부모 프레임 끝으로 잘못 기록하지 않도록 선배치 전 값을 사용한다.
+
+Native142는 잡 8개·240.06초·종료 코드 0이다. 같은 35개·66쪽은 **전쪽 raw 100%**,
+전체 쪽수 일치, 누락 0쪽이다. `reflow-*-native142-2170`부터 `2175`의 TSV·results와
+`logs/native142-matrix-batch-2176.log`에 보존했다. 첫 자식 전량 이월 사례의 후속 본문은
+첫 쪽 y=187.3px로 돌아왔고, 두 번째 쪽에는 자식 3행이 원래 순서로 이어진다.
+`external-opening-native142-review-2182`의 두 쪽 review·standalone overlay를 직접
+확인하고 사용자에게 함께 표시했다. 흑백 문자와 내용 소유도 확인했으며 얇은 선의
+raster 농도 차이를 RGB 일치로 보고하지 않는다.
+
+같은 library에서 정상 대조군 22개와 표 테두리·cellzone 5개는 모두 PASS다. 외부 기존
+실패 47개는 여전히 5 PASS / 42 FAIL / 누락 0개다. 원 실패 API setup으로 현재 저장본
+20개를 내보내는 진단 1개도 PASS이며 정식 회귀 변경의 시각 선행 조건을 대신하지 않는다.
+`current-previous-failures-2177/2178/2179/2185-result.json`에 결과를 보존했다.
+
+#5790 원 해결 PR #5814와 archive 기록을 다시 읽었다. 과거 PDF의 Print 출처 확인을
+대신 추정하지 않고 같은 원본을 MCP 2020·PrintMethod 0으로 새로 인쇄했다. 실제 제품은
+11.0.0.9136, 모드는 `hancom2020_pdf_driver_one_up`이다. Native142의 전 13쪽은 쪽수 일치,
+최저 raw 96.10356%이며 `charoverlap-original-native142-2188`에 보존했다. 이 문서의
+fresh WASM·변경 영역 직접 판독과 실패한 SVG 검사 의미의 검토는 이어서 수행한다.
+
+fresh 빌드 전 원격 devel은 `def947c2149df5bc812d801e6e79be19a403b4d1`로 같아 추가
+리베이스가 없으며 본인 열린 PR은 0개다(`pre-wasm-*-2187`). Native 완료를 fresh WASM
+완료로 바꾸어 기록하지 않으며, 최종 전체 검증·새 회귀 등록·PR 제출은 아직 필요하다.

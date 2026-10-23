@@ -1897,18 +1897,24 @@ impl TypesetEngine {
         // 부모 프레임만 현재 쪽에 남은 경우, 독립 자식의 이월은 뒤 본문까지
         // 소유하지 않는다. 수용한 소스 컷의 사실로 기존 후속 선배치를 공유한다.
         if !row_cursor_is_nested
+            && ctrl_idx + 1 == input.source.paragraph.controls.len()
             && layout_engine
                 .reflow_unrestricted_fragment_frame(table, start_cut, &split_end_cut, styles)
                 .is_some_and(|frame| frame.parent_owned && !frame.external_content_owned)
         {
-            self.prefill_computed_float_successors(
+            let host_end = st.current_height;
+            if self.prefill_computed_float_successors(
                 st,
                 para_idx,
                 input.source.paragraph,
                 input.source.paragraphs_all,
                 input.source.composed_all,
                 styles,
-            );
+            ) {
+                // 수용한 부모 프레임의 끝을 paint에도 전달한다. 빈 호스트의
+                // 글줄 높이만 재사용하면 뒤 본문이 부모 칸 안으로 되돌아간다.
+                st.record_stored_paragraph_flow_end(para_idx, host_end);
+            }
         }
         if !is_continuation && stored_complete_extent.is_some() {
             // 내용 컷과 독립적으로 인증한 첫 조각 상자가 실제 지면을 차지했다.

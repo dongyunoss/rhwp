@@ -112,13 +112,13 @@ impl TypesetEngine {
         paragraphs_all: &[Paragraph],
         composed_all: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
-    ) {
+    ) -> bool {
         if st.col_count != 1
             || st.current_items.is_empty()
             || para_has_visible_text(para)
             || !crate::renderer::para_has_no_stored_line_segs(para)
         {
-            return;
+            return false;
         }
         for next_idx in (para_idx + 1)..paragraphs_all.len().min(para_idx + 1 + MAX_PREFILL) {
             let next = &paragraphs_all[next_idx];
@@ -136,6 +136,7 @@ impl TypesetEngine {
                 break;
             }
         }
+        true
     }
 
     /// 저장/재조판 경로가 같은 포맷·말미 간격·실제 본문 전진을 소비한다.
