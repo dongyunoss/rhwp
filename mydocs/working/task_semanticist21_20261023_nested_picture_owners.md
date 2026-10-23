@@ -535,3 +535,61 @@ leading을 원본 글자·문단 속성에서 매번 생산해 재발행 횟수�
 현재는 단계별 보정 커밋의 근거를 고정하는 시점이며 PR 제출 완료가 아니다. 필수
 fresh WASM·전체 Rust·WASM/workspace lint, 177~196쪽 미달·직접/재로드 차이,
 수식 모양·단위 줄 나눔과 전체 승인 범위의 검증을 계속한다.
+
+
+## 7차 분석: 기호 슬롯과 낱말 경계의 분리
+
+시작 head `1594516e2e`. 같은 수식·글자·문단 속성에서 표/셀 폭만 1000HU 줄인
+4개 대조군을 MCP 2024 Print한다(`equation-symbol-narrow-controls-2514`,
+`mcp-equation-symbol-narrow-controls-2515`). 한점 리더 U+2024와 분철점 U+2027은
+단위의 `m)`만 다음 줄로 나뉘지만 U+00B7은 `(kN·m)` 전체가 다음 줄로 간다.
+기존 넓은 표에서는 뒤 세 변형 모두 한 줄에 들어간다. 기호의 전각/반각 폭과
+낱말 경계를 구분할 독립적인 반례이며 실물 입력의 속성으로부터 생성했다.
+
+공통 `tokenize_paragraph`는 U+2024·U+2027을 이미 별도 토큰으로 나눈다. 그러나
+`fill_one_interval`은 한글·CJK 토큰 끝만 경계 후보로 등록해 뒤의 `m)`이 넘치면
+단위 앞 공백까지 되감는다. 기호 두 개의 끝도 같은 공통 경계 후보로 소비하게 한다.
+한글 글자/낱말 모드, 라틴 낱말 유지와 기존 금칙·fit 판정은 유지한다. 비교용 scalar
+경로도 같은 경계 helper를 소비한다. 문서 ID나 좌표·수식 폭을 기준으로 분기하지 않는다.
+
+이는 실행 전 후보다. Native161에서 독립 Print 대조, 기존 133건, 실제 API 저장·재로드,
+전쪽·보존 대조군을 확인한다. 시각 선행 조건이 남아 있어 새 회귀를 먼저 추가하지 않는다.
+
+
+### Native161 실행 결과
+
+- 8잡 빌드 247.8초, 종료 코드 0이다. 기존 회귀 133/133건, Native Clippy와
+  format check가 통과했다(`char-overlap-native-build-161-result.json`,
+  `reviewed-contract-tests-2518-result.json`, `logs/native161-native-clippy-2527.log`,
+  `logs/native161-fmt-check-2530.log`). 새 검사·fixture·기대값은 추가/갱신하지 않았다.
+- 수식/기호 대조군 13개를 동일한 독립 Print로 재실행했다
+  (`equation-spacing-native161-after-2520-result.json`). 원본 1704와 true HWPX는
+  60.84089% → 82.70120%, 좁힌 한점 리더는 61.65414% → 82.55597%, 좁힌
+  분철점은 61.80905% → 81.69761%다. 원래 가운뎃점·마침표의 낱말 유지와 넓은
+  분철점, 나머지 수식의 점수는 그대로다. 이 수치 통과 여부와 별도로 1704의
+  review·overlay를 함께 확인해 `m)`만 이어받는 줄 소속은 Print와 같아졌음을
+  확인했다(`equation-spacing-detail-review-2528`). 표시 수식 자체의 차이는 남았다.
+- 두 실제 API는 저장 SHA `0b3fe8886ad136e2c16d8da7095ce7330c9c2090ce14e2e4bcb91e655686928c`,
+  196쪽, 직접/재로드 완전 일치 194/196쪽이다. 176·178쪽 차이는 유지됐다
+  (`issue4138-direct-reload-native161-2519-result.json`).
+- 새 저장본도 MCP 2024 PrintMethod 0으로 출력했다. job
+  `d9950d93-8326-4d68-860d-d4f16aa3fa67`, PDF SHA
+  `19d20b17a357497220ad6eb143544cc031b44ee373c594eef329cf19dfff16c1`의 196쪽은
+  이전 Print와 전쪽 RGB가
+  같다(`issue4138-native160-native161-independent-print-comparison-2529.json`).
+  따라서 아래 변화는 기준 PDF가 달라진 효과가 아니다.
+- 196쪽 Native 전수 결과는 176쪽 90% 이상·20쪽 미달이다. 130쪽만
+  **96.17699% → 97.22911%**로 개선됐고 다른 195쪽은 같은 원래 소수값이다.
+  미달은 177~196쪽이고 최저 38.91518%다
+  (`issue4138-native161-boundary-batch-2525-candidate-result.json`). 원본 선택 6쪽,
+  #7840 전체 9쪽, 현대 v5/v6 전체 7쪽의 점수·쪽수도 유지했다.
+
+`equation-version-print-comparison-2526.json`은 수식의 `version` 하나만 바꾼 3개
+Print가 모두 다름을 입증한다. 빈 버전의 수식 문자는 Type3에 Unicode ASCII로 기록되고,
+`Equation Version 60`은 HYhwpEQ TTF/PUA로 기록된다. 첨자는 명목 9pt에 대해 각각
+5.7553pt·6.115pt, 곧 약 0.64·0.68배다. 기호 폭·원점·괄호 및 단위 줄 소속도 다르다.
+이 사실만으로 Type3의 원래 face나 모든 구조 메트릭을 추정하지 않는다. 현재 공통 표시
+경로가 원본의 구형 표시 계약을 유지하는지 다음 단계에서 독립 출력과 더 대조한다.
+
+시각 미달·직접/재로드 차이·전체 Rust 및 최종 fresh WASM/보존 범위 검증은 남아 있다.
+이번 커밋은 검증한 공통 줄 경계 보정의 단계 고정이며 PR 준비 완료 판정이 아니다.

@@ -278,6 +278,17 @@ fn break_before_text_token(
         })
 }
 
+/// 독립 Print에서 낱말 유지 문단도 한점 리더·분철점 뒤에서 나뉜다.
+/// 같은 폭의 U+00B7·ASCII 마침표는 라틴 낱말을 유지한다. 글꼴 슬롯과
+/// 줄 경계는 별도 계약이며, 이미 분리한 기호 토큰의 끝을 공통 소비한다.
+fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
+    if is_hangul(ch) {
+        korean_break_unit == 1
+    } else {
+        is_cjk_ideograph(ch) || matches!(ch, '\u{2024}' | '\u{2027}')
+    }
+}
+
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
     // ASCII 큰따옴표는 여는/닫는 모양이 같아 문자값만으로 줄끝 금칙으로
     // 분류할 수 없다. 독립 Print에서도 큰따옴표 뒤 한글 경계가 줄끝이 된다.
@@ -2376,12 +2387,7 @@ fn fill_one_interval(
                     // `…상호 협력·` 로 끝내는 자리에서 우리는 `…상호 협` 으로 끝나 두 글자를 잃었다.
                     // 1글자 토큰은 아래 슬라이스가 비어 `all()` 이 참이라 종전 동작 그대로다.
                     let c = text_chars[*start_idx];
-                    let allow_break = if is_hangul(c) {
-                        // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
-                        korean_break_unit == 1
-                    } else {
-                        is_cjk_ideograph(c)
-                    };
+                    let allow_break = can_break_after_text_token(c, korean_break_unit);
                     if allow_break {
                         cursor.last_break_token_idx = Some(ti);
                         cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
@@ -2695,12 +2701,7 @@ fn fill_lines_before_cursor(
                 // 위 `fill_one_interval` 과 같은 계약(흡수 묶음도 줄 끝 후보).
                 if tail_all_line_start_forbidden && *start_idx > line_start_idx && token_fits {
                     let c = text_chars[*start_idx];
-                    let allow_break = if is_hangul(c) {
-                        // [#2185] bit7=1 = 글자 단위 break 허용 (위 주석 참조)
-                        korean_break_unit == 1
-                    } else {
-                        is_cjk_ideograph(c)
-                    };
+                    let allow_break = can_break_after_text_token(c, korean_break_unit);
                     if allow_break {
                         last_break_token_idx = Some(ti);
                         last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
