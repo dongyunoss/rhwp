@@ -351,7 +351,7 @@ fn refresh_single_tac_host_row(
     });
 }
 
-/// 실제 재조판 뒤 수식 전용 줄을 composition과 같은 메트릭으로 저장한다.
+/// 실제 재조판 뒤 텍스트와 수식 줄을 composition과 같은 메트릭으로 저장한다.
 /// 단일/여러 수식의 실제 줄 소속은 기존 composition이 결정한다.
 pub(super) fn publish_regenerated_rows(para: &mut Paragraph, styles: &ResolvedStyleSet) {
     if para.controls.is_empty()
@@ -359,10 +359,6 @@ pub(super) fn publish_regenerated_rows(para: &mut Paragraph, styles: &ResolvedSt
             .controls
             .iter()
             .all(|c| matches!(c, Control::Equation(e) if e.common.treat_as_char))
-        || para
-            .text
-            .chars()
-            .any(|c| !c.is_whitespace() && !c.is_control() && c != '\u{fffc}')
     {
         return;
     }

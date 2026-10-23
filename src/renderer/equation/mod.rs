@@ -115,7 +115,9 @@ pub(crate) fn edited_size_hwp(equation: &crate::model::control::Equation) -> (u3
 /// legacy HFT 글리프 메트릭 선택 자체는 이 물리 상자의 재조판 증거가 아니다.
 /// 대체 경로는 폭·높이·기준선을 같은 AST에서 얻어 측정과 paint가 함께 소비한다.
 pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u32, u32, i32) {
-    if declared_frame::retains_unpositioned_host_frame(equation) {
+    if declared_frame::retains_unpositioned_host_frame(equation)
+        || equation.retains_legacy_source_frame()
+    {
         return (
             equation.common.width,
             equation.common.height,
