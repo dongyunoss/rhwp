@@ -211,17 +211,14 @@ impl LayoutEngine {
         } else {
             following
         };
-        let capacity = if original_slot && paragraph_end {
-            following
-        } else {
-            0.0
-        };
+        // 일반 문단의 끝이라는 사실만으로 저장 줄 슬롯의 수용량을 늘리지 않는다.
+        // 인증된 원본 프레임의 말미 차감은 stored가 이미 판정했다.
         let occupied = if paragraph_end || !original_slot {
             following
         } else {
             0.0
         };
-        (stored.max(capacity), stored.max(occupied))
+        (stored, stored.max(occupied))
     }
 
     /// 저장 줄이 증언한 컷의 수용량만 완화한다. 새 줄의 잉크 높이로 용량을 늘리지 않는다.

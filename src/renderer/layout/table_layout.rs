@@ -1,6 +1,7 @@
 //! 표 레이아웃 (layout_table + 셀 높이/줄범위 계산)
 
 mod cut_alignment;
+mod deferred_flow_units;
 mod empty_line_flow;
 mod nested_empty_line_flow;
 mod nested_header_frame;
