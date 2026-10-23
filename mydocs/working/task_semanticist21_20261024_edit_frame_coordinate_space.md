@@ -348,3 +348,146 @@ Native170이 저장한 실제 55·56·200자 입력은 `mcp-edited-controls-2686
 4·5·6쪽만 진단한 공식 review/overlay다. 전쪽 gate 통과 증거가 아니며, 5쪽
 raw 1.69110%의 큰 이어받기 차이가 남는다. 작은 경계와 이 직접 차이를 먼저 고친 뒤
 전체 Rust·fresh WASM·남은 45개 PR 범위의 최종 검증을 완료해야 한다.
+
+## 다음 후보 Native172의 공통 보정과 검증 계획
+
+Native171의 실제 55·56·200자 저장본도 한컴 2024 Print에서 모두 115쪽이다
+(`mcp-edited-controls-2695/results.json`). 기본/명시 세대 API 모두에서 같은
+116쪽 문제가 남아 환경 차이만의 문제가 아님을 다시 확인했다.
+
+- 물리 높이가 예산을 넘는 컷은 저장 꼬리 흡수를 허용한 채 다시 선택하지 않는다.
+  `RowCutCapacity::Physical`에 실제 수용 모드를 전달하고 첫 물리 초과 뒤 원래의
+  물리 예산에서 저장 꼬리 허용 없이 재선택한다. 알려진 초과분을 근거 없이 수용하거나
+  허용 px·baseline을 늘리지 않는다. 큰 첫 atom의 별도 진행 계약은 유지한다.
+- 행 유닛의 생산자가 실제 더한 호스트 앞뒤 공간을 `NestedRowFlowEdges`에 기록한다.
+  임의 상수나 문서 ID로 다시 추정하지 않는다. 기존 소유 줄·캡션·후행 간격은 그때
+  실제로 계상한 값이며, 같은 값이 자식 내용 컷의 물리 높이와 분리되어 소비된다.
+- `nested_row_projection_cut`이 예약과 실제 viewport의 자식 커서를 함께 만든다.
+  `reflow_recursive_run_extra`는 원본 호스트의 명시적인 행 내부 컷도 같은 실제
+  자식 상자로 대조하며 부분 컷이 소유하지 않는 물리 띠의 감소분도 전달한다.
+  반복 머리행은 상위에서 이미 예약한 몫을 다시 더하지 않는다.
+  `nested_table_split_from_cut_units`도 같은 조정을 받아 내용 컷·높이·배치가 연결된다.
+
+기존 검사 이름·기대값·baseline은 그대로 두고 Native172 한 번 빌드 후 집중 경계,
+실제 API 14종, 원본 230쪽, 실제 35문서/66쪽, 분할본과 정상 대조군, 동일 SHA의
+Native171 편집본 Print를 묶어 대조한다. 수정 뒤 결과가 나오기 전에는 개선 완료로
+판정하지 않는다. 새 저장 바이트는 SHA 대조 후 필요한 경우 다시 Print한다.
+
+## Native172 결과와 전진·점유 구분 보정
+
+Native172는 실제 174 PASS / 14 FAIL / 1 ignored로 아직 수용할 수 없다
+(`reviewed-contract-tests-2698-result.json`). 원본 HWP/HWPX 각 115쪽의 Native
+최저 95.69614%는 유지했지만, 55·56·200자 동일 저장본은 Print 115쪽과 쪽수가 다르다.
+새로 실패한 #7418의 70833 검사 3개와 auto-height 정상 대조군에서도 의미 있는 내용 귀속
+차이를 검출했다. 기대값·baseline을 바꾸지 않고 실패 증거를 보존한다.
+
+소비 경로를 다시 읽어 높이 계약의 차이를 확인했다. `CutHeight::Occupied`는
+마지막 줄 상자를 닫지만 `Capacity`는 자식 viewport에서 다음 내용으로 전진할
+줄간격을 유지한다. Native172는 같은 조정을 `visible_height`와 `flow_height`에
+모두 적용했고, 부모 컷에 후속 내용이 있어도 자식의 Occupied 높이를 썼다.
+빈 후속 문단도 같은 내용 순서의 소유자이므로 이 전진을 지우면 안 된다.
+
+Native173은 같은 자식 커서·같은 앞뒤 공간의 결과를 유지하면서 viewport에는
+Occupied, 흐름 전진에는 Capacity를 소비한다. 같은 부모 컷 안에서 뒤 유닛이
+있으면 중간 자식도 Capacity를 예약하고, 마지막 자식만 부모의 점유 끝 판정을
+받는다. 가시 글자의 유무를 흐름 전진의 대용으로 쓰지 않는다. 기존 집중 검사·
+실제 API·원본·정상 matrix·독립 Print의 같은 전체 범위를 다시 확인한다.
+
+항공교통관제사 CBTA 원본은 Hancom 2018 저장본이다. 과거 engine 2020 명칭의
+실제 Hancom 2022 PDF와 실제 HOffice110 11.0.0.9136의 새 Print를 분리했다
+(`mcp-cbta-source-2708/results.json`, 원본 204쪽·PrintMethod 0).
+Native172는 새 Print에서도 204쪽 중 12쪽 미달·최저 37.96169%로 아직 전쪽
+시각 자격을 충족하지 않는다(`cbta-native172-2710-result.json`). 단순 내부 컷
+번호가 바뀌었다고 회귀부터 고치지 않는다. 과거 PDF 비교는 2707, 새 실제
+한컴 2020 비교는 2710이며 라우팅 정정은 `cbta-baseline-routing-2709.json`에 있다.
+
+## Native173 결과와 후속 소비 지점 확인
+
+Native173도 기존 실제 174 PASS / 14 FAIL / 1 ignored이며 수정 완료가 아니다.
+동일 원본·새 실제 한컴 2020 Print의 70833은 기준 18쪽, Native173 19쪽으로
+불일치한다. 단순 내부 컷 번호나 오래된 PDF 차이만으로 해소할 수 없는 구현 차이다.
+`mcp-70833-source-2713/results.json`은 HOffice110 11.0.0.9136의 같은 원본 Print다.
+기본 스크립트는 저장 형식의 두 길이 지정 UTF16 문자열·말미 12바이트를 해석해
+읽기 전용 문서 별칭과 빈 OnDocument_New만 있음을 확인했다
+(`70833-inert-script-proof-2725.json`). 서비스의 scripts_disabled는 이 기본
+템플릿만 비활성화했으며 본문은 변경하지 않았다. 초기 로컬 검증·다운로드 실패와
+같은 완료 job에서 회수한 이력은 원 로그로 보존했다.
+
+다음 실제 소비 차이를 함께 보정한다.
+
+- 행 유닛의 첫·끝 여백만 전달해도, 재조판 자리차지 상자는 이어받는 중간
+  viewport마다 바깥 여백을 연다. 새 metadata 경로가 기존 공통
+  `reflow_nested_table_has_outer_frame` 계약을 건너뛰어 이 반복 여백을 빠뜨렸다.
+  첫·끝 유닛이 소유한 여백과 중간 조각의 반복 여백을 구분해 동일 계약으로 예약한다.
+- `advance_row_cut_inner`는 편집 provenance가 옛 저장 컷을 무효화했어도
+  원점 되감김에서 만든 hard/reset flag를 물리 쪽 경계로 재사용할 수 있었다.
+  좌표계·되감김 정보는 남기되 현재 컷의 수용은 같은 table_text_reflowed 출처로
+  판정한다. 모델의 명시적인 구역·쪽·단 나누기는 기존 권한을 유지한다.
+  본문 닫힘 보조 인증도 같은 provenance를 확인하며, 생성 줄이 보조 인증의
+  조기 반환으로 원본 경계에 승격되지 않게 한다.
+- `DIAG_RESET_OWNERS`는 환경 변수로 선택한 셀에서만 실제 cut 소유 근거를
+  기록한다. 일반 실행의 기하·수용 결과를 바꾸지 않는 진단이며 추가 gate가 아니다.
+
+Native174에서 기존 189개 항목·실제 API·원본·정상 matrix·독립 Print를 일괄
+재실행한다. CBTA 204쪽도 새 Print에 대해 대조하고 미달을 감추지 않는다.
+
+## Native174 결과와 devel 확인
+
+`upstream-rebase-check-2749.json`에서 fetch 종료 0, 기존/새 base
+`d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867` 동일과 HEAD의 조상 관계를 확인했다.
+작업지시자의 동일 HEAD에서는 리베이스하지 않는 지시에 따라 추가 리베이스는 하지 않았다.
+동결 Native174와 실행 소스의 SHA-256도 모두 일치한다. 이 기록은 최종 PR 검증 완료가 아니다.
+
+- 집중 검사: `reviewed-contract-tests-2732-result.json`, **178 PASS / 10 FAIL /
+  1 ignored**. 기존 189개 항목을 모두 확인했으며 기대값을 바꾸지 않았다.
+  #7114 저장·재열기 3건은 회복했다. #7418 3건, #7518 4건, #7902 원본 후속 줄
+  2건, CBTA 내부 컷 1건은 실패한다.
+- 실제 공개 API: `remaining-edit-snapshots-2733-result.json`, 14종 모두 live/재열기
+  115쪽이다. 13종은 쪽별 본문도 일치하지만 HWPX의 56자 입력 후 56자 삭제에는
+  6쪽부터 본문 소속 차이가 남는다. 쪽수만 같다는 이유로 보존 완료라고 하지 않는다.
+- 원본 HWP/HWPX: `issue1949-exact-originals-native174-2734-result.json`, 각
+  115쪽, 최저 95.69614%. fresh WASM 결과를 대신하지 않는다.
+- 실제 Native174의 35문서/66쪽 대조는 `native174-visual-batch-driver-2738.json`과
+  `logs/check_native174_batch_2735-driver.log`에서 종료 0을 확인했다.
+  고정 분할본의 기존 미달은 `issue4138-native174-boundary-batch-2736-result.json`에 남는다.
+- CBTA: 새 실제 한컴 2020 Print와 204쪽 대조를 완료했으며 최저 37.96169%·12쪽
+  미달이다(`cbta-native174-2745-result.json`). 2740의 최초 진단 스크립트는 PDF 해시의
+  복사 오타로 실행 전 중단됐다. PDF 바이트를 바꾸지 않고 변환 완료 manifest에서
+  해시를 직접 읽도록 고쳐 2745로 재실행했다. 최초 실패 로그도 보존했다.
+- 70833: 새 실제 한컴 2020 Print는 18쪽, Native174는 19쪽이다
+  (`70833-native174-2741-result.json`). TSV를 산출할 수 없는 쪽수 불일치를 통과로
+  집계하지 않는다.
+- 정상 이어받기 대조: `continuation-controls-native174-2743-result.json`.
+  auto/재저장 auto는 각 8쪽·최저 98.56458%다. terminal-tail은 3쪽·최저
+  57.39116%, picture-band는 2쪽·최저 80.65412%다. 동일 원본의 Native169 비교는
+  2742이며 base devel의 비교가 아니다. 실제 Native171 기하 비교는 2753에 있다.
+- `cargo fmt --all --check` 종료 0: `logs/native174-fmt-check-2752.log`.
+  전체 Rust·Clippy·fresh WASM의 최종 통과를 뜻하지 않는다.
+
+### 현재 후보가 저장한 바이트의 독립 Print
+
+과거 Native171 저장본은 Native174에서 다시 열어도 116쪽이다(2737).
+현재 Native174의 새 55·56·200자 저장본은 SHA를 고정해 각각 새 한컴 2024 Print를
+요청했다(`mcp-edited-controls-2746/results.json`, 실제 13.0.0.3901, PrintMethod 0).
+셋 모두 한컴과 Native가 115쪽이지만 시각 검증은 통과하지 못했다.
+
+| 현재 저장본 | Native/Print 쪽수 | Native 최저 raw | 90% 미만 쪽수 |
+| --- | --- | --- | --- |
+| 55자 | 115/115 | 11.38223% | 109 |
+| 56자 | 115/115 | 11.38223% | 109 |
+| 200자 | 115/115 | 15.47782% | 108 |
+
+원본·PDF SHA, 실행 명령과 전쪽 TSV는 `edited-print-native174-2747-result.json`과
+해당 출력 폴더에 보존했다. 55자 5·8쪽의 공식 review/standalone overlay는
+`edited-native174-reviews-2754/results.json`에서 연결하고 두 종류를 직접 열었다.
+5쪽 첫 중첩 표의 마지막 행은 PDF의 수평 괘선이 96dpi의 y=84~85/113~114에
+있는데 현재 표 상자는 y=85.0, h=17.3으로 더 짧다. 뒤 본문도 위로 이동한다.
+이는 관측 좌표이며 구현 상수나 회귀 기대값으로 사용하지 않는다. 같은 쪽수·같은
+본문 소속만으로 시각 개선을 선언할 수 없음을 확인했다.
+
+terminal-tail 2쪽의 raw 100%도 3쪽의 57.39116%를 상쇄하지 않는다. 공식 패널
+2748·2750에서 2쪽 내용과 3쪽 빈 물리 띠를 각각 확인했다. 후속 보정은 자식의
+내용 컷과 미소비 물리 상자, 실제 paint의 행 높이 소비 경로를 함께 대조해야 한다.
+명시적인 하위 쪽 나누기 보존도 확인해야 하며, 새 컷 유효성 조건을 부모 문단의
+명시적 속성만으로 완결된 계약이라고 판정하지 않는다. 기존 검사의 기대값과
+baseline을 유지한 채 같은 입력·Print에서 보정을 계속한다.

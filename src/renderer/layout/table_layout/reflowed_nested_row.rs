@@ -1,9 +1,44 @@
 //! 중첩 RowBreak 행의 일반 글줄 컷을 상위 조각에도 보존한다.
 
-use super::{CellUnit, LayoutEngine, NestedTableUnitCut, ResolvedStyleSet};
+use super::{CellUnit, LayoutEngine, NestedTableCut, NestedTableUnitCut, ResolvedStyleSet};
 use crate::model::table::{Cell, Table};
 
+/// 행 유닛 생산자가 실제로 계상한 호스트 앞·뒤 공간.
+/// 자식 컷의 셀 내용과 분리해 같은 값을 예약과 viewport에서 소비한다.
+#[derive(Clone, Copy, Debug, Default)]
+pub(super) struct NestedRowFlowEdges {
+    pub before: f64,
+    pub after: f64,
+}
+
 impl LayoutEngine {
+    /// 예약과 배치가 같은 행 유닛에서 같은 자식 커서를 만든다.
+    pub(super) fn nested_row_projection_cut(units: &[CellUnit]) -> Option<NestedTableCut> {
+        if units.iter().any(|unit| unit.nested_row.is_none()) {
+            return None;
+        }
+        let first = units.first()?;
+        let last = units.last()?;
+        Some(NestedTableCut {
+            start_row: first.nested_row?,
+            end_row: last.nested_row? + 1,
+            start_cut: first
+                .nested_table_fragment
+                .as_ref()
+                .filter(|fragment| fragment.start_cut.iter().any(|&cut| cut > 0))
+                .map(|fragment| fragment.start_cut.clone())
+                .unwrap_or_default(),
+            end_cut: last
+                .nested_table_fragment
+                .as_ref()
+                .filter(|fragment| !fragment.terminal)
+                .map(|fragment| fragment.end_cut.clone())
+                .unwrap_or_default(),
+            is_block_split: false,
+            start_cut_is_block: false,
+        })
+    }
+
     pub(super) fn nested_plain_text_row_has_line_cuts(
         &self,
         row_cells: &[&Cell],

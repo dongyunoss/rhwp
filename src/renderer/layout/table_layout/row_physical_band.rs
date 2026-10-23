@@ -19,14 +19,26 @@ pub(super) enum CutHeight {
 #[derive(Clone, Copy)]
 pub(super) enum RowCutCapacity<'a> {
     Content,
-    Physical(&'a [f64]),
+    Physical {
+        deltas: &'a [f64],
+        allow_stored_tail: bool,
+    },
 }
 
 impl<'a> RowCutCapacity<'a> {
     pub(super) fn deltas(self) -> Option<&'a [f64]> {
         match self {
             Self::Content => None,
-            Self::Physical(deltas) => Some(deltas),
+            Self::Physical { deltas, .. } => Some(deltas),
+        }
+    }
+
+    pub(super) fn allows_stored_tail(self) -> bool {
+        match self {
+            Self::Content => true,
+            Self::Physical {
+                allow_stored_tail, ..
+            } => allow_stored_tail,
         }
     }
 }
@@ -372,6 +384,7 @@ impl LayoutEngine {
         let max_padding = padding.iter().copied().fold(0.0, f64::max);
         let mut physical_cut_budget = physical_budget;
         let mut previous_cut = None;
+        let mut allow_stored_tail = true;
         loop {
             let budget = (physical_cut_budget - max_padding).max(0.0);
             let deltas: Vec<f64> = padding
@@ -384,7 +397,10 @@ impl LayoutEngine {
                 start_cut,
                 budget,
                 styles,
-                RowCutCapacity::Physical(&deltas),
+                RowCutCapacity::Physical {
+                    deltas: &deltas,
+                    allow_stored_tail,
+                },
             );
             let required = self.row_cut_height(
                 table,
@@ -417,6 +433,15 @@ impl LayoutEngine {
                     "DIAG_SCAN PHYSICAL_REFIT r={row} start={start_cut:?} end={:?} physical={physical_budget:.3} budget={budget:.3} required={required:.3} owners={owners:?}",
                     cut.end_cut,
                 );
+            }
+            // 실제 상자가 예산을 넘으면 옛 저장 reset까지의 꼬리 흡수는
+            // 현재 컷의 수용 근거가 아니다. 원래 물리 예산에서 다시 선택해
+            // 초과를 일으킨 허용량 때문에 정상 앞부분까지 물러나지 않는다.
+            if excess > ROW_CUT_CAPACITY_FP_EPSILON_PX && allow_stored_tail {
+                allow_stored_tail = false;
+                physical_cut_budget = physical_budget;
+                previous_cut = None;
+                continue;
             }
             if excess <= ROW_CUT_CAPACITY_FP_EPSILON_PX
                 || physical_cut_budget <= 0.0

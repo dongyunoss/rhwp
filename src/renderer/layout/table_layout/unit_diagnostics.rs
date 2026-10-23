@@ -71,6 +71,25 @@ pub(super) fn trace_reset_cut(
     }
 }
 
+/// 원점 되감김과 현재 물리 컷의 인증 근거를 선택한 셀에서 분리해 기록한다.
+pub(super) fn trace_reset_owners(
+    cell: &Cell,
+    cursor: (usize, usize),
+    unit: &CellUnit,
+    owners: &[(&str, bool)],
+) {
+    if selected(cell)
+        && (unit.page_frame_reset_before
+            || unit.stored_frame_break_before
+            || unit.hard_break_before)
+    {
+        eprintln!(
+            "DIAG_RESET_OWNERS row={} col={} start={} next={} para={} line={} owners={owners:?}",
+            cell.row, cell.col, cursor.0, cursor.1, unit.para_idx, unit.vis_start,
+        );
+    }
+}
+
 /// 같은 종료 행의 요구에서 실제 상자와 추정 띠 중 어느 원장을 썼는지 확인한다.
 pub(super) fn trace_span_remainder(
     cell: &Cell,

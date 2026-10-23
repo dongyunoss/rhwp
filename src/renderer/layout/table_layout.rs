@@ -1919,6 +1919,8 @@ pub(super) struct CellUnit {
     /// [Task #1073] 이 유닛이 중첩 표의 한 행을 표현하면 그 행 인덱스. 텍스트/일반 유닛은 None.
     /// 분할 행에서 컷 → `NestedTableSplit`(중첩행 범위) 매핑에 사용.
     nested_row: Option<usize>,
+    /// 같은 행 생산자가 계상한 호스트 공간. 자식 내용 컷의 물리 높이와 분리한다.
+    nested_row_flow_edges: Option<reflowed_nested_row::NestedRowFlowEdges>,
     /// [#4069] `CELL` 분할 중첩 표의 한 행을 셀별 cursor로 더 잘게 나눈 조각.
     /// 바깥 CellUnit 컷이 이 조각을 선택하면 렌더러도 같은 자식 컷을 사용한다.
     nested_table_fragment: Option<NestedTableUnitCut>,
@@ -14419,6 +14421,10 @@ impl LayoutEngine {
         if !(self.profile.get().hwp5_stored_pagination_layout()
             || self.profile.get().hwpx_stored_layout())
             || self.profile.get().session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table)
             || cell.dirty_flag
             || table.common.treat_as_char
             || table.page_break != crate::model::table::TablePageBreak::RowBreak
@@ -14595,6 +14601,7 @@ impl LayoutEngine {
                     vis_start: li,
                     vis_end: li + 1,
                     nested_row: None,
+                    nested_row_flow_edges: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -14637,6 +14644,7 @@ impl LayoutEngine {
                 vis_start: 0,
                 vis_end: 1,
                 nested_row: None,
+                nested_row_flow_edges: None,
                 nested_table_fragment: None,
                 mixed_nested_fragment: false,
                 mixed_nested_trailing: false,
@@ -14713,6 +14721,11 @@ impl LayoutEngine {
                 return false;
             }
             let profile = self.profile.get();
+            // 생성 줄은 원점 해석에 남길 수 있어도 원본 쪽 컷의 증거가 아니다.
+            // 보조 인증이 먼저 반환해 이 출처 검사를 우회하지 않게 한다.
+            if line_seg_is_synthetic(prev) || line_seg_is_synthetic(cur) {
+                return false;
+            }
             // 공통 판별자가 원본 줄의 물리 경계를 입증했다면 직접 HWPX의
             // 선언 셀 span 휴리스틱과 무관하게 같은 경계를 유닛에 전달한다.
             // 원점0으로 시작하는 짧은 첫 프레임도 이어받는 줄을 소유한다.
@@ -14765,12 +14778,10 @@ impl LayoutEngine {
                     let body = self.current_body_area.get().3;
                     body > 0.0 && closing <= body && closing + successor > body
                 };
-            if (!profile.hwp5_stored_pagination_layout()
+            if !profile.hwp5_stored_pagination_layout()
                 && !profile.hwp5_origin_hwpx()
                 && !direct_hwpx_stored_frame_cell
-                && !before_origin_frame_break)
-                || line_seg_is_synthetic(prev)
-                || line_seg_is_synthetic(cur)
+                && !before_origin_frame_break
             {
                 return false;
             }
@@ -15135,6 +15146,7 @@ impl LayoutEngine {
                         vis_start: 0,
                         vis_end: 0,
                         nested_row: None,
+                        nested_row_flow_edges: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -15173,6 +15185,7 @@ impl LayoutEngine {
                     vis_start: 0,
                     vis_end: 0,
                     nested_row: None,
+                    nested_row_flow_edges: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -16331,18 +16344,19 @@ impl LayoutEngine {
                                         end_cut,
                                         terminal,
                                     };
+                                    let mut flow_edges =
+                                        reflowed_nested_row::NestedRowFlowEdges::default();
+                                    let last_row_fragment =
+                                        fragment_index + 1 == driver_units.len();
+                                    if last_row_fragment && ri + 1 == nrow {
+                                        flow_edges.after = terminal_band + nt_cap_bot;
+                                    }
                                     let mut uh = driver_unit.height;
                                     if fragment_index == 0 {
                                         uh += row_extra * 0.5;
                                     }
-                                    if fragment_index + 1 == driver_units.len() {
+                                    if last_row_fragment {
                                         uh += row_extra - row_extra * 0.5;
-                                        if ri + 1 < nrow {
-                                            uh += ncs;
-                                        }
-                                        if ri + 1 == nrow {
-                                            uh += terminal_band + nt_cap_bot;
-                                        }
                                     }
                                     if row_has_plain_source_boundary || row_has_plain_line_cuts {
                                         if driver_unit.stored_frame_break_before {
@@ -16355,13 +16369,6 @@ impl LayoutEngine {
                                             &fragment,
                                             styles,
                                         );
-                                        if fragment_index + 1 == driver_units.len() {
-                                            uh += if ri + 1 < nrow {
-                                                ncs
-                                            } else {
-                                                terminal_band + nt_cap_bot
-                                            };
-                                        }
                                     }
                                     if parent_keeps_child_source_frame {
                                     if let Some(opening) = self.stored_joint_row_opening_height(
@@ -16375,8 +16382,11 @@ impl LayoutEngine {
                                         uh = opening;
                                     }
                                     }
+                                    if last_row_fragment {
+                                        uh += if ri + 1 < nrow { ncs } else { flow_edges.after };
+                                    }
                                     if ri == 0 && fragment_index == 0 {
-                                        uh += om_top
+                                        flow_edges.before = om_top
                                             + spacing_before
                                             + nt_cap_top
                                             + if host_is_cell_last_para
@@ -16386,6 +16396,7 @@ impl LayoutEngine {
                                             } else {
                                                 0.0
                                             };
+                                        uh += flow_edges.before;
                                     }
 
                                     let mut hard_break_before = driver_unit.hard_break_before
@@ -16462,7 +16473,9 @@ impl LayoutEngine {
                                                 target_top -= nested_total_px;
                                             }
                                             if target_top > unit_cum {
-                                                uh += target_top - unit_cum;
+                                                let gap = target_top - unit_cum;
+                                                uh += gap;
+                                                flow_edges.before += gap;
                                                 vpos_gap_before = true;
                                             }
                                         }
@@ -16480,6 +16493,7 @@ impl LayoutEngine {
                                         vis_start: 0,
                                         vis_end: line_count.max(1),
                                         nested_row: Some(ri),
+                                        nested_row_flow_edges: Some(flow_edges),
                                         nested_table_fragment: Some(fragment),
                                         mixed_nested_fragment: false,
                                         mixed_nested_trailing: false,
@@ -16504,6 +16518,7 @@ impl LayoutEngine {
                         }
 
                         let mut uh = *rh;
+                        let mut flow_edges = reflowed_nested_row::NestedRowFlowEdges::default();
                         let hard_break_before =
                             (reset_before && ri == 0) || stored_object_frame_row == Some(ri);
                         let mut vpos_gap_before = vpos_gap_before_para && ri == 0;
@@ -16543,7 +16558,9 @@ impl LayoutEngine {
                                     target_top -= nested_total_px;
                                 }
                                 if target_top > unit_cum {
-                                    uh += target_top - unit_cum;
+                                    let gap = target_top - unit_cum;
+                                    uh += gap;
+                                    flow_edges.before += gap;
                                     vpos_gap_before = true;
                                 }
                             }
@@ -16552,7 +16569,7 @@ impl LayoutEngine {
                             uh += ncs;
                         }
                         if ri == 0 {
-                            uh += om_top
+                            let leading = om_top
                                 + spacing_before
                                 + nt_cap_top
                                 + if host_is_cell_last_para
@@ -16562,9 +16579,12 @@ impl LayoutEngine {
                                 } else {
                                     0.0
                                 };
+                            uh += leading;
+                            flow_edges.before += leading;
                         }
                         let mut host_trailing_spacing_charged = false;
                         if ri + 1 == nrow {
+                            let before_trailing = uh;
                             uh += terminal_band + nt_cap_bot;
                             // [#5880] 직접 HWPX 의 저장 사다리는 중첩 표 host 문단
                             // 뒤 흐름을 `lh + ls` 만큼 전진시킨다(2737927 p71:
@@ -16648,6 +16668,7 @@ impl LayoutEngine {
                                     }
                                 }
                             }
+                            flow_edges.after += uh - before_trailing;
                         }
                         units.push(CellUnit {
                             height: uh,
@@ -16665,6 +16686,7 @@ impl LayoutEngine {
                             vis_start: 0,
                             vis_end: line_count.max(1),
                             nested_row: Some(ri),
+                            nested_row_flow_edges: Some(flow_edges),
                             // Repeated headers require a child row cursor even
                             // when every body row is atomic. A scalar viewport
                             // cannot represent the additional header ownership.
@@ -16702,6 +16724,9 @@ impl LayoutEngine {
                             if let Some(last) = units.last_mut().filter(|unit| unit.para_idx == pi) {
                                 last.height += spacing;
                                 last.nested_host_closing_line_height += spacing;
+                                if let Some(edges) = last.nested_row_flow_edges.as_mut() {
+                                    edges.after += spacing;
+                                }
                                 unit_cum += spacing;
                             }
                         }
@@ -16930,6 +16955,7 @@ impl LayoutEngine {
                                 vis_start: line_count,
                                 vis_end: line_count,
                                 nested_row: None,
+                                nested_row_flow_edges: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -17058,6 +17084,7 @@ impl LayoutEngine {
                             vis_start: li,
                             vis_end: li + 1,
                             nested_row: None,
+                            nested_row_flow_edges: None,
                             nested_table_fragment: None,
                             mixed_nested_fragment: false,
                             mixed_nested_trailing: false,
@@ -17241,6 +17268,7 @@ impl LayoutEngine {
                                 vis_start: line_count,
                                 vis_end: line_count,
                                 nested_row: None,
+                                nested_row_flow_edges: None,
                                 nested_table_fragment: None,
                                 mixed_nested_fragment: true,
                                 mixed_nested_trailing: fragment.trailing,
@@ -17505,6 +17533,7 @@ impl LayoutEngine {
                         line_count.max(1)
                     },
                     nested_row: None,
+                    nested_row_flow_edges: None,
                     nested_table_fragment: None,
                     mixed_nested_fragment: false,
                     mixed_nested_trailing: false,
@@ -17672,6 +17701,7 @@ impl LayoutEngine {
                             row_end
                         },
                         nested_row: None,
+                        nested_row_flow_edges: None,
                         nested_table_fragment: None,
                         mixed_nested_fragment: false,
                         mixed_nested_trailing: false,
@@ -22709,6 +22739,10 @@ impl LayoutEngine {
             table.page_break,
             crate::model::table::TablePageBreak::RowBreak
         ) && !table.common.treat_as_char;
+        let source_frames_are_current = !self
+            .render_normalization
+            .borrow()
+            .table_text_reflowed(table);
         for (i, cell) in row_cells.iter().enumerate() {
             // Parallel cells own their padding independently. A short sibling
             // with larger padding must not shorten this cell's content band.
@@ -22719,6 +22753,20 @@ impl LayoutEngine {
                     .copied()
                     .unwrap_or(0.0);
             let units = self.cell_units(cell, table, styles);
+            // 재조판은 옛 좌표계 전체를 없애지 않는다. 그러나 그 좌표의 reset을
+            // 현재 물리 컷으로 재사용할 수는 없다. 명시적인 구역·쪽·단 나누기는
+            // 원본 속성 계약이므로 기존 컷 권한을 유지한다.
+            let frame_cut_is_current = |index: usize| {
+                source_frames_are_current
+                    || units.get(index).is_some_and(|unit| {
+                        unit.vis_start == 0
+                            && (index == 0 || units[index - 1].para_idx != unit.para_idx)
+                            && cell.paragraphs.get(unit.para_idx).is_some_and(|paragraph| {
+                                paragraph.column_type
+                                    != crate::model::paragraph::ColumnBreakType::None
+                            })
+                    })
+            };
             let source_row_height = self.stored_full_width_row_source_height(table, row, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let nested_header = self.nested_continuation_header_height(cell, &units, start, styles);
@@ -22730,6 +22778,7 @@ impl LayoutEngine {
                 self.cell_cut_flow_range(cell, table, &units, start, units.len(), styles);
             while j < units.len() {
                 let u = &units[j];
+                let current_frame_cut = frame_cut_is_current(j);
                 // 시작 유닛(j==start)은 항상 소비 — 진행 보장.
                 if j < flow_range.start {
                     j += 1;
@@ -22829,7 +22878,8 @@ impl LayoutEngine {
                         .is_some_and(|previous| {
                             self.stored_row_reset_closes_declared_frame(cell, table, previous)
                         });
-                let body_frame_reset = u.page_frame_reset_before
+                let body_frame_reset = current_frame_cut
+                    && u.page_frame_reset_before
                     && self.stored_cell_reset_closes_body(
                         cell,
                         table,
@@ -22858,7 +22908,8 @@ impl LayoutEngine {
                 // 표 전체가 여러 저장 프레임을 가진다는 사실만으로 각 문단의
                 // 원점 되감김을 현재 쪽의 강제 끝으로 보지 않는다. 해당 경계의
                 // 선언·본문·공유 셀 소유가 입증되지 않으면 실제 가용 높이로 나눈다.
-                let strict_saved_frame_break = u.stored_frame_break_before
+                let strict_saved_frame_break = current_frame_cut
+                    && u.stored_frame_break_before
                     && (plain_zero_origin_boundary
                         || body_frame_reset
                         || self.stored_joint_zero_origin_boundary(cell, table)
@@ -22882,7 +22933,7 @@ impl LayoutEngine {
                 // 소실된다. 판별자는 리셋까지 쌓인 높이 — 진짜 쪽 프레임은
                 // 예산의 큰 몫(≥70%)을 채우고, 기계 문서의 촘촘한 로컬 리셋
                 // (#1658 낭비쪽 회귀의 근거)은 h 가 작아 걸리지 않는다.
-                let hwpx_page_scale_cross_para_reset = self.profile.get().hwpx_stored_layout()
+                let hwpx_page_scale_cross_para_reset = current_frame_cut && self.profile.get().hwpx_stored_layout()
                     && !table.common.treat_as_char
                     && matches!(
                         table.page_break,
@@ -22897,7 +22948,8 @@ impl LayoutEngine {
                     && cell.col_span == table.col_count
                     && !u.empty_spacer
                     && h >= avail_height * 0.7;
-                let shared_empty_frame = self.profile.get().hwp5_stored_pagination_layout()
+                let shared_empty_frame = current_frame_cut
+                    && self.profile.get().hwp5_stored_pagination_layout()
                     && u.empty_spacer
                     && Self::cell_has_stored_line_segs(cell)
                     && Self::cut_has_shared_stored_frame(cell, table, &units, j);
@@ -22915,7 +22967,7 @@ impl LayoutEngine {
                 // the topology of the enclosing table. A full-width cell in a
                 // multi-row table has the same page-scale rewind contract as
                 // the sole cell of a 1x1 table.
-                let hwp5_page_scale_cross_para_reset = self
+                let hwp5_page_scale_cross_para_reset = current_frame_cut && self
                     .profile
                     .get()
                     .hwp5_stored_pagination_layout()
@@ -22943,7 +22995,8 @@ impl LayoutEngine {
                     || hwpx_page_scale_cross_para_reset
                     || hwp5_page_scale_cross_para_reset
                     || shared_empty_frame
-                    || (u.page_frame_reset_before
+                    || (current_frame_cut
+                        && u.page_frame_reset_before
                         && self.stored_shared_cell_frame(table, cell, j, styles));
                 // [#7870] 저장 되감김이 relaxed 규칙으로 흡수되는지 볼 때도 아래 용량 컷과
                 // 같은 점유 높이를 쓴다. 중첩 표 atom 의 상자 아래 이송 여백(#5920)은 쪽
@@ -22973,8 +23026,24 @@ impl LayoutEngine {
                     strict_saved_frame_break,
                     || self.stored_cut_has_zero_before_origin(cell, table, styles, j),
                 );
+                unit_diagnostics::trace_reset_owners(
+                    cell,
+                    (start, j),
+                    u,
+                    &[
+                        ("source_current", current_frame_cut),
+                        ("body", body_frame_reset),
+                        ("declared", declared_saved_frame_break),
+                        ("plain_zero", plain_zero_origin_boundary),
+                        ("following_nested", follows_single_cell_nested_host),
+                        ("hwp_scale", hwp5_page_scale_cross_para_reset),
+                        ("hwpx_scale", hwpx_page_scale_cross_para_reset),
+                        ("shared_empty", shared_empty_frame),
+                        ("strict", strict_saved_frame_break),
+                    ],
+                );
                 if j > start
-                    && (u.hard_break_before
+                    && ((current_frame_cut && u.hard_break_before)
                         || body_frame_reset
                         || hwp5_page_scale_cross_para_reset
                         || shared_empty_frame)
@@ -23082,7 +23151,7 @@ impl LayoutEngine {
                                 j + 1,
                                 styles,
                             ),
-                        row_physical_band::RowCutCapacity::Physical(_) => self
+                        row_physical_band::RowCutCapacity::Physical { .. } => self
                             .row_cut_capacity_trailing_trim(
                                 table,
                                 cell,
@@ -23123,6 +23192,7 @@ impl LayoutEngine {
                     // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
                     // provenance가 있을 때는 일반 capacity cut으로 새 줄을 분할한다.
                     if self.profile.get().hwp5_stored_pagination_layout()
+                        && capacity.allows_stored_tail()
                         && !self
                             .render_normalization
                             .borrow()
@@ -23190,7 +23260,9 @@ impl LayoutEngine {
                 // 남겨 continuation 에서 선행 설명 박스가 사라지지 않게 한다.
             }
             if j < units.len()
-                && units[j..].iter().any(|unit| unit.hard_break_before)
+                && units[j..].iter().enumerate().any(|(offset, unit)| {
+                    unit.hard_break_before && frame_cut_is_current(j + offset)
+                })
                 && Self::rewind_rowbreak_tail_before_pending_hard_break(
                     table,
                     &units,
@@ -23206,7 +23278,7 @@ impl LayoutEngine {
                 row_physical_band::RowCutCapacity::Content => {
                     self.native_saved_reset_cut_trailing_trim(table, cell, &units, start, j, styles)
                 }
-                row_physical_band::RowCutCapacity::Physical(_) => {
+                row_physical_band::RowCutCapacity::Physical { .. } => {
                     self.physical_cut_trailing_trim(table, cell, &units, start, j, styles)
                 }
             };
@@ -26053,7 +26125,19 @@ impl LayoutEngine {
         let hi = end_unit.min(units.len()).max(lo);
         let mut first_unit: Option<&CellUnit> = None;
         let mut last_unit: Option<&CellUnit> = None;
-        let mut has_fragment = false;
+        let run_start = units
+            .iter()
+            .position(|unit| unit.para_idx == para_idx && unit.nested_row.is_some())?;
+        let run_end = units
+            .iter()
+            .rposition(|unit| unit.para_idx == para_idx && unit.nested_row.is_some())?
+            + 1;
+        if !units[run_start..run_end]
+            .iter()
+            .any(|unit| unit.nested_table_fragment.is_some())
+        {
+            return None;
+        }
         let mut visible_height = 0.0;
         let mut flow_height = 0.0;
         for unit in units.iter().take(hi).skip(lo) {
@@ -26062,47 +26146,53 @@ impl LayoutEngine {
             }
             first_unit.get_or_insert(unit);
             last_unit = Some(unit);
-            has_fragment |= unit.nested_table_fragment.is_some();
             flow_height += unit.height;
             visible_height += unit.height - unit.nested_host_closing_line_height;
-        }
-        if !has_fragment {
-            return None;
         }
         let (first_unit, last_unit) = (first_unit?, last_unit?);
         let first_index = units
             .iter()
             .position(|unit| std::ptr::eq(unit, first_unit))?;
+        let last_index = units
+            .iter()
+            .rposition(|unit| std::ptr::eq(unit, last_unit))?;
         let header = self.nested_continuation_header_height(cell, &units, first_index, styles);
         visible_height += header;
         flow_height += header;
-        let first_row = first_unit.nested_row?;
-        let last_row = last_unit.nested_row?;
-        let start_cut = first_unit
+        let cut = Self::nested_row_projection_cut(&units[first_index..=last_index])?;
+        let terminal = last_unit
             .nested_table_fragment
             .as_ref()
-            .map(|fragment| {
-                if fragment.start_cut.iter().all(|cut| *cut == 0) {
-                    Vec::new()
-                } else {
-                    fragment.start_cut.clone()
-                }
-            })
-            .unwrap_or_default();
-        let (end_cut, terminal) = last_unit
-            .nested_table_fragment
-            .as_ref()
-            .map(|fragment| {
-                if fragment.terminal {
-                    (Vec::new(), true)
-                } else {
-                    (fragment.end_cut.clone(), false)
-                }
-            })
-            .unwrap_or_else(|| (Vec::new(), true));
+            .is_none_or(|fragment| fragment.terminal);
+        if let Some(adjustment) = self.reflow_recursive_run_extra(
+            cell,
+            styles,
+            &units,
+            run_start,
+            run_end,
+            first_index,
+            last_index + 1,
+            row_physical_band::CutHeight::Occupied,
+        ) {
+            visible_height += adjustment;
+        }
+        if let Some(advance) = self.reflow_recursive_run_extra(
+            cell,
+            styles,
+            &units,
+            run_start,
+            run_end,
+            first_index,
+            last_index + 1,
+            row_physical_band::CutHeight::Capacity,
+        ) {
+            // 다음 내용으로의 전진은 마지막 잉크 상자보다 클 수 있다.
+            // viewport 끝의 줄간격을 없애도 다음 원점의 예약까지 없애지 않는다.
+            flow_height += advance;
+        }
         Some(NestedTableSplit {
-            start_row: first_row,
-            end_row: last_row + 1,
+            start_row: cut.start_row,
+            end_row: cut.end_row,
             visible_height,
             flow_height,
             offset_within_start: 0.0,
@@ -26110,14 +26200,7 @@ impl LayoutEngine {
             force_source_start_cut: false,
             replay_terminal_boundary_unit: false,
             terminal,
-            recursive_cut: Some(NestedTableCut {
-                start_row: first_row,
-                end_row: last_row + 1,
-                start_cut,
-                end_cut,
-                is_block_split: false,
-                start_cut_is_block: false,
-            }),
+            recursive_cut: Some(cut),
         })
     }
 
@@ -26369,7 +26452,10 @@ impl LayoutEngine {
     ) -> Option<f64> {
         let pi = units[run_start].para_idx;
         let para = cell.paragraphs.get(pi)?;
-        if !crate::renderer::para_has_no_stored_line_segs(para) {
+        let has_row_cuts = units[run_start..run_end]
+            .iter()
+            .any(|unit| unit.nested_table_fragment.is_some());
+        if !crate::renderer::para_has_no_stored_line_segs(para) && !has_row_cuts {
             return None;
         }
         let child = para.controls.iter().find_map(|control| match control {
@@ -26382,8 +26468,6 @@ impl LayoutEngine {
             return Some(0.0);
         }
         let selected = &units[start..end];
-        let first = selected.first()?;
-        let last = selected.last()?;
         let cut = if units[run_start..run_end]
             .iter()
             .all(|unit| unit.mixed_nested_fragment && unit.mixed_nested_recursive)
@@ -26404,28 +26488,8 @@ impl LayoutEngine {
                 is_block_split: false,
                 start_cut_is_block: false,
             }
-        } else if selected
-            .iter()
-            .any(|unit| unit.nested_table_fragment.is_some())
-        {
-            NestedTableCut {
-                start_row: first.nested_row?,
-                end_row: last.nested_row? + 1,
-                start_cut: first
-                    .nested_table_fragment
-                    .as_ref()
-                    .filter(|fragment| fragment.start_cut.iter().any(|cut| *cut > 0))
-                    .map(|fragment| fragment.start_cut.clone())
-                    .unwrap_or_default(),
-                end_cut: last
-                    .nested_table_fragment
-                    .as_ref()
-                    .filter(|fragment| !fragment.terminal)
-                    .map(|fragment| fragment.end_cut.clone())
-                    .unwrap_or_default(),
-                is_block_split: false,
-                start_cut_is_block: false,
-            }
+        } else if has_row_cuts {
+            Self::nested_row_projection_cut(selected)?
         } else if start == run_start
             && end == run_end
             && selected.iter().all(|unit| unit.mixed_nested_fragment)
@@ -26445,6 +26509,31 @@ impl LayoutEngine {
             return None;
         };
         let mut physical = self.nested_cut_height(child, &cut, styles, purpose);
+        if selected
+            .iter()
+            .all(|unit| unit.nested_row_flow_edges.is_some())
+        {
+            physical += selected
+                .iter()
+                .filter_map(|unit| unit.nested_row_flow_edges)
+                .map(|edges| edges.before + edges.after)
+                .sum::<f64>();
+            // 재조판한 자리차지 상자는 이어받은 viewport마다 바깥 여백을 연다.
+            // 첫·끝 유닛이 이미 계상한 여백과 중간 조각의 반복 여백을 구분한다.
+            if reflow_nested_table_has_outer_frame(para, child) {
+                if start > run_start {
+                    physical += hwpunit_to_px(child.outer_margin_top as i32, self.dpi);
+                }
+                if end < run_end {
+                    physical += hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi);
+                }
+            }
+            // 반복 머리행은 상위 컷과 viewport가 이미 한 번 더한다.
+            physical -= self.nested_continuation_header_height(cell, units, start, styles);
+            // 완결 행에 예약한 물리 띠를 부분 컷이 모두 소유하지는 않는다.
+            // 감소분도 같은 자식 컷의 실제 상자로 예약·viewport에 전달한다.
+            return Some(physical - selected.iter().map(|unit| unit.height).sum::<f64>());
+        }
         let style = styles.para_styles.get(para.para_shape_id as usize);
         let reopens_outer_frame = reflow_nested_table_has_outer_frame(para, child);
         if start == run_start || reopens_outer_frame {
@@ -26561,10 +26650,11 @@ impl LayoutEngine {
         while u < units.len() {
             // Reflow recursive runs use their actual child RowCut even on the
             // first fragment. Group once so the parent scan remains O(U).
-            if cell
+            if (cell
                 .paragraphs
                 .get(units[u].para_idx)
                 .is_some_and(crate::renderer::para_has_no_stored_line_segs)
+                || units[u].nested_row_flow_edges.is_some())
                 && (units[u].mixed_nested_fragment || units[u].nested_row.is_some())
             {
                 let run_start = u;
@@ -26573,9 +26663,23 @@ impl LayoutEngine {
                     issue4129_visited += 1;
                     u += 1;
                 }
-                if let Some(reserve) = self
-                    .reflow_recursive_run_extra(cell, styles, &units, run_start, u, lo, hi, purpose)
-                {
+                // 같은 부모 컷 안에 뒤 유닛이 있으면 자식은 점유 끝이 아니라
+                // 다음 내용으로의 전진을 소유한다. 빈 뒤 문단도 순서에서 제외하지 않는다.
+                let run_purpose = if hi > u {
+                    row_physical_band::CutHeight::Capacity
+                } else {
+                    purpose
+                };
+                if let Some(reserve) = self.reflow_recursive_run_extra(
+                    cell,
+                    styles,
+                    &units,
+                    run_start,
+                    u,
+                    lo,
+                    hi,
+                    run_purpose,
+                ) {
                     extra += reserve;
                     continue;
                 }
@@ -28178,6 +28282,7 @@ mod row_cut_tests {
             vis_start: 0,
             vis_end,
             nested_row: None,
+            nested_row_flow_edges: None,
             nested_table_fragment: None,
             mixed_nested_fragment: false,
             mixed_nested_trailing: false,
@@ -28223,6 +28328,7 @@ mod row_cut_tests {
             vis_start: 0,
             vis_end: 1,
             nested_row: None,
+            nested_row_flow_edges: None,
             nested_table_fragment: None,
             mixed_nested_fragment: true,
             mixed_nested_trailing: false,
