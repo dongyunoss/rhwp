@@ -8692,6 +8692,23 @@ export class HwpDocument {
         return HwpDocument.__wrap(ret[0]);
     }
     /**
+     * 일반 FontFace 전용 기본 윤곽 사본. 원본·컬러 자원·문서 상태는 변경하지 않는다.
+     * @param {Uint8Array} bytes
+     * @param {number} face_index
+     * @returns {Uint8Array | undefined}
+     */
+    ordinaryTextFontProgram(bytes, face_index) {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_ordinaryTextFontProgram(this.__wbg_ptr, ptr0, len0, face_index);
+        let v2;
+        if (ret[0] !== 0) {
+            v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v2;
+    }
+    /**
      * 총 페이지 수를 반환한다.
      * @returns {number}
      */
