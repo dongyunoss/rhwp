@@ -551,6 +551,11 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         self.assertEqual(len(actions), 4)
         for action in actions:
             self.assertRegex(action, r"^[\w-]+/[\w-]+@[0-9a-f]{40}$")
+        ci = (REPO_ROOT / ".github/workflows/ci.yml").read_text()
+        ci_toolchains = set(re.findall(r"(?m)^\s+toolchain: ([0-9][\d.]+)$", ci))
+        package_toolchains = re.findall(r"(?m)^\s+toolchain: ([0-9][\d.]+)$", workflow)
+        self.assertEqual(len(ci_toolchains), 1)
+        self.assertEqual(package_toolchains, list(ci_toolchains))
         self.assertIn("cancel-in-progress: false", workflow)
         self.assertIn("timeout-minutes: 60", workflow)
 
