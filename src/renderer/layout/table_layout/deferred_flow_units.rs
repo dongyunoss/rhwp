@@ -142,10 +142,12 @@ impl LayoutEngine {
 }
 
 /// 자식에서 전파된 reset은 부모 셀의 저장 프레임을 닫지 않는다.
-/// 같은 셀의 인접 원본 줄이 실제로 되감긴 경계만 사용한다.
+/// 같은 셀의 인접 원본 줄이 실제로 되감긴 경계만 사용한다. 그림 띠가
+/// 다음 글줄 앞을 소유한 양수 원점 재시작은 hard break로만 발행된다.
+/// 그 경계도 이미 선택된 컷 앞에서 그림을 닫되, 새 저장 줄 경계로 승격하지 않는다.
 fn same_cell_stored_frame_boundary(cell: &crate::model::table::Cell, unit: &CellUnit) -> bool {
     use crate::model::paragraph::LineSeg;
-    if !unit.stored_frame_break_before {
+    if !unit.stored_frame_break_before && !unit.hard_break_before {
         return false;
     }
     let Some(para) = cell.paragraphs.get(unit.para_idx) else {
