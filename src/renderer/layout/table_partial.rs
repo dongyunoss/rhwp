@@ -4905,6 +4905,7 @@ impl LayoutEngine {
                                                             .or_else(|| {
                                                                 self.reflow_nested_table_origin(
                                                                     para,
+                                                                    styles,
                                                                     nested_table,
                                                                     &ctrl_area,
                                                                     nested_w,
@@ -5090,6 +5091,7 @@ impl LayoutEngine {
                                                 .or_else(|| {
                                                     self.reflow_nested_table_origin(
                                                         para,
+                                                        styles,
                                                         nested_table,
                                                         &ctrl_area,
                                                         nested_w,
@@ -5274,6 +5276,18 @@ impl LayoutEngine {
                                     .get(para.para_shape_id as usize)
                                     .map_or(0.0, |style| style.spacing_after);
                         }
+                    }
+                    if !nested_table_continues
+                        && nested_cursor_split.is_none()
+                        && mixed_nested_split.is_none()
+                        && !matches!(
+                            stored_host_flow,
+                            Some(StoredNestedHostFlow::BeforeLine { .. })
+                        )
+                    {
+                        para_y += self.block_following_host_line_for_cut(
+                            cell, table, styles, cp_idx, cut_units,
+                        );
                     }
                     // [#6122] 폭 초과로 내린 개체는 composed 줄 높이에 없다 — 그 아래로
                     // 흐름을 밀지 않으면 다음 문단(캡션)이 그림 위에 겹쳐 그려진다.

@@ -1,5 +1,6 @@
 //! 표 레이아웃 (layout_table + 셀 높이/줄범위 계산)
 
+mod block_host_lines;
 mod cut_alignment;
 mod deferred_flow_units;
 mod empty_line_flow;
@@ -6449,9 +6450,11 @@ impl LayoutEngine {
     /// 중첩 표 자체 배치와 달리 unwrap은 부모와 같은 depth를 사용하므로 소유를 명시한다.
     /// A reflowed floating host has no saved line anchor. Resolve its declared
     /// paragraph/column anchor and outer margins once for full and cut rendering.
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn reflow_nested_table_origin(
         &self,
         para: &Paragraph,
+        styles: &ResolvedStyleSet,
         table: &crate::model::table::Table,
         area: &LayoutRect,
         width: f64,
@@ -6459,14 +6462,15 @@ impl LayoutEngine {
         opens_outer_frame: bool,
     ) -> Option<(f64, f64)> {
         reflow_nested_table_has_outer_frame(para, table).then(|| {
+            let style = styles.para_styles.get(para.para_shape_id as usize);
             let x = self.compute_table_x_position(
                 table,
                 width,
                 area,
                 0,
                 Alignment::Left,
-                0.0,
-                0.0,
+                style.map_or(0.0, |style| style.margin_left),
+                style.map_or(0.0, |style| style.margin_right),
                 None,
                 false,
                 None,
@@ -9804,6 +9808,7 @@ impl LayoutEngine {
                                         .or_else(|| {
                                             self.reflow_nested_table_origin(
                                                 para,
+                                                styles,
                                                 nested_table,
                                                 &ctrl_area,
                                                 hwpunit_to_px(
@@ -10123,6 +10128,17 @@ impl LayoutEngine {
                         }
                     }
                 }
+            }
+            if let Some(height) = self.block_following_host_flow_height(
+                cell,
+                table,
+                styles,
+                cp_idx,
+                fragment_cut_units,
+            ) {
+                // 수용한 한 단위는 표 본체와 뒤 공백 글줄을 함께 소유한다.
+                // 개체 배치의 반환값으로 이 부모 글줄의 예약을 덮어쓰지 않는다.
+                para_y = para_y_before_compose + height;
             }
         }
         self.render_para_border_groups(
@@ -11304,6 +11320,21 @@ impl LayoutEngine {
                         flow_y = flow_y.max(group_top + group_advance);
                     }
                 }
+            }
+            if crate::renderer::float_placement::whitespace_follows_block_table(para) {
+                // 표 뒤의 실제 공백 줄은 개체의 빈 앵커가 아니다.
+                // 유닛 생산과 같은 구성 글줄의 높이를 측정 흐름도 소비한다.
+                flow_y += self.calc_para_lines_height(
+                    &composed.lines,
+                    para,
+                    false,
+                    !crate::renderer::para_has_no_stored_line_segs(para),
+                    pidx,
+                    paragraphs.len(),
+                    style,
+                    styles,
+                );
+                layout.bottom = layout.bottom.max(flow_y);
             }
             // [#7872] 저장 host 줄이 자란 표를 담지 못하면 그 줄은 재조판 줄이다 — 줄 뒤
             // 간격을 저장 줄 없는 host 와 같은 글자 크기 기준 값으로 전진한다. 측정
@@ -15939,6 +15970,26 @@ impl LayoutEngine {
             } else {
                 line_core_height
             };
+            let following_block_host_height = if has_separate_table_units
+                && line_count == 1
+                && !p.controls.iter().enumerate().any(|(ci, control)| {
+                    matches!(control, Control::Table(child) if crate::renderer::float_placement::block_table_trailing_whitespace_line_hu(p, child, ci).is_some())
+                })
+                && crate::renderer::float_placement::whitespace_follows_block_table(p)
+            {
+                self.calc_para_lines_height(
+                    &comp.lines,
+                    p,
+                    false,
+                    !crate::renderer::para_has_no_stored_line_segs(p),
+                    pi,
+                    para_count,
+                    para_style,
+                    styles,
+                )
+            } else {
+                0.0
+            };
             let para_non_inline_extra_h = if p.text.trim().is_empty() && line_count > 0 {
                 (para_non_inline_h - overlapping_host_height).max(0.0)
             } else {
@@ -16044,9 +16095,9 @@ impl LayoutEngine {
                     let ncs = hwpunit_to_px(nt.cell_spacing as i32, self.dpi);
                     let om_top = hwpunit_to_px(nt.outer_margin_top as i32, self.dpi);
                     let om_bot = hwpunit_to_px(nt.outer_margin_bottom as i32, self.dpi);
-                    // Use the same authenticated object frame as whole/partial paint.
-                    // A stored successor that closes the table owns the trailing
-                    // paragraph band; adding spacing-after again changes the cut.
+                    // 일반/부분 배치가 인증한 개체 상자를 행 예약도 소비한다.
+                    // 앞 호스트 줄에서 내려가는 개체는 오프셋까지 첫 행이 소유한다.
+                    // 저장 후속 줄이 표를 닫으면 종료 문단 밴드도 그 프레임의 몫이다.
                     let stored_frame =
                         source_controls
                             .iter()
@@ -16069,7 +16120,9 @@ impl LayoutEngine {
                     });
                     let (om_top, terminal_band) = stored_frame
                         .filter(|frame| {
-                            frame.stored_successor_line_origin.is_some()
+                            (frame.stored_successor_line_origin.is_some()
+                                || frame.flow
+                                    == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion)
                                 && frame.occupied_bottom - frame.table_top >= measured_body
                         })
                         .map_or(
@@ -16672,6 +16725,15 @@ impl LayoutEngine {
                             let last = units.last_mut().expect("projected nested rows");
                             last.height += closing;
                             last.nested_host_closing_line_height = closing;
+                        }
+                    }
+                    if following_block_host_height > 0.0 {
+                        if let Some(last) = units.last_mut().filter(|unit| {
+                            unit.para_idx == pi && unit.nested_host_closing_line_height == 0.0
+                        }) {
+                            last.height += following_block_host_height;
+                            last.nested_host_closing_line_height = following_block_host_height;
+                            last.host_trailing_spacing_charged = true;
                         }
                     }
                     attach_stored_square_picture_owner(&mut units, pi);
@@ -20092,6 +20154,8 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> f64 {
         if unit.empty_spacer
+            // 별도로 소유한 실제 호스트 글줄은 보이지 않는 이송 꼬리가 아니다.
+            || unit.nested_host_closing_line_height > 0.0
             || unit.nested_row.is_some()
             || unit.nested_table_fragment.is_some()
             || unit.mixed_nested_fragment
@@ -22695,6 +22759,16 @@ impl LayoutEngine {
                         }
                     }
                 }
+                if h > 0.0
+                    && Self::block_following_host_needs_fresh_band(
+                        cell,
+                        &units,
+                        j,
+                        avail_height - h,
+                    )
+                {
+                    break;
+                }
                 if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, avail_height)
                 {
                     break;
@@ -23671,6 +23745,7 @@ impl LayoutEngine {
         if !(self.profile.get().hwp5_stored_pagination_layout()
             || self.profile.get().hwpx_stored_layout())
             || self.profile.get().session_edited()
+            || para.cell_format_vpos_dirty
             || para
                 .controls
                 .iter()
@@ -23719,10 +23794,18 @@ impl LayoutEngine {
             )
         })
         .or_else(|| {
-            if self
-                .render_normalization
-                .borrow()
-                .table_text_reflowed(child)
+            // 앞의 세 경로는 현재 호스트 줄과 제어 슬롯만으로 앵커를 인증한다.
+            // 다른 문단의 편집은 그 지역 근거를 무효화하지 않는다. 앞뒤 문단의
+            // 저장 원점을 역산하는 아래 경로는 기존 프레임 수용 조건을 유지한다.
+            if self.profile.get().session_edited()
+                || self
+                    .render_normalization
+                    .borrow()
+                    .table_text_reflowed(parent)
+                || self
+                    .render_normalization
+                    .borrow()
+                    .table_text_reflowed(child)
             {
                 return None;
             }

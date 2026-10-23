@@ -1087,6 +1087,25 @@ pub(crate) fn block_table_trailing_whitespace_line_hu(
         .then_some(advance)
 }
 
+/// 첫 개체 뒤의 한 줄 공백도 실제 글줄이다. 빈 개체 앵커와 달리
+/// 자리차지 표 뒤에서 자신의 줄 상자를 소비한다. 여러 줄·캡션·별도 앵커는
+/// 각각의 기존 줄 구성과 개체 상자 계약을 유지한다.
+pub(crate) fn whitespace_follows_block_table(para: &Paragraph) -> bool {
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        return false;
+    };
+    !para.text.is_empty()
+        && para.text.chars().all(char::is_whitespace)
+        && !para.text.contains(['\r', '\n'])
+        && para.char_offsets.len() == para.text.chars().count()
+        && para.control_text_positions().first() == Some(&0)
+        && is_para_topbottom_float(&table.common)
+        && table.common.flow_with_text
+        && table.common.vert_align == VertAlign::Top
+        && table.common.vertical_offset == 0
+        && table.caption.is_none()
+}
+
 /// 제한 없는 문단 기준 자리차지 개체는 셀 내용 clip 밖에서도 그린다.
 /// 실제 개체 주소는 CellContext로 보존하며 부모 글줄의 clip은 유지한다.
 pub(crate) fn unrestricted_cell_float(common: &CommonObjAttr) -> bool {

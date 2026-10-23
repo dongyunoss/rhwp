@@ -145,25 +145,17 @@ fn stored_frame_prefix(
     {
         return None;
     }
-    let Some(previous_page) = st
+    let previous_page = st
         .pages
         .iter()
         .rev()
         .nth(1)
-        .filter(|page| page.section_index == st.section_index)
-    else {
-        return None;
-    };
-    let Some(previous) = previous_page
+        .filter(|page| page.section_index == st.section_index)?;
+    let previous = previous_page
         .column_contents
         .last()
-        .and_then(|col| col.items.last())
-    else {
-        return None;
-    };
-    let Some(first) = st.current_items.first() else {
-        return None;
-    };
+        .and_then(|col| col.items.last())?;
+    let first = st.current_items.first()?;
     let complete_tac_source = |para: &Paragraph| {
         matches!(para.controls.as_slice(), [crate::model::control::Control::Table(table)]
             if table.common.treat_as_char)
@@ -181,9 +173,7 @@ fn stored_frame_prefix(
         } if paragraphs.get(*para_index).is_some_and(complete_tac_source) => (*para_index, 0),
         _ => return None,
     };
-    let Some(para) = paragraphs.get(owner) else {
-        return None;
-    };
+    let para = paragraphs.get(owner)?;
     let valid_source = |para: &Paragraph| {
         !para.stored_text_partition_is_dirty()
             && !para.cell_format_vpos_dirty
@@ -220,15 +210,10 @@ fn stored_frame_prefix(
             && (0..start).any(|line| position(para, line) == 0))
         .then_some(StoredFramePrefix::ConsumedOnEarlierPage);
     }
-    let Some(before_index) = owner.checked_sub(1) else {
-        return None;
-    };
-    let Some(before) = paragraphs
+    let before_index = owner.checked_sub(1)?;
+    let before = paragraphs
         .get(before_index)
-        .filter(|para| valid_source(para))
-    else {
-        return None;
-    };
+        .filter(|para| valid_source(para))?;
     let complete = match previous {
         PageItem::FullParagraph { para_index } => *para_index == before_index,
         PageItem::PartialParagraph {
