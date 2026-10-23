@@ -2,7 +2,7 @@ import { fontProgramOwnsFamily, intrinsicCanvasSourceFamily } from './canvas-int
 import { getHostFontState, localFontFaceKey, loadRendererLocalFont,
   onHostFontsChanged, resolveRendererLocalFont, type LocalFontRecord } from './local-fonts.ts';
 import { parseCssFontFamilyList, formatCssFontFamilyList } from './font-substitution.ts';
-import { normalizeFontFaceData } from './sfnt-face.ts';
+import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinary-text-font.ts';
 
 interface CanvasHostFace {
   alias: string;
@@ -13,7 +13,7 @@ interface CanvasHostFace {
   ownership: Map<string, boolean>;
 }
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
-interface CanvasFontSourceOwner {
+interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
   registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
 }
@@ -99,7 +99,7 @@ export class HostCanvasFontSession {
           try {
             const data = await loadRendererLocalFont(record);
             if (stale()) return;
-            const bytes = data ? normalizeFontFaceData(data.bytes, data.faceIndex ?? 0) : null;
+            const bytes = data ? ordinaryTextFontFaceData(data.bytes, data.faceIndex ?? 0, sourceOwner) : null;
             if (!bytes) throw new Error('Host font has no usable face');
             const alias = `__rhwp_host_face_${this.id}_${++this.serial}`;
             const face = record.hostReference!.face;

@@ -4891,6 +4891,18 @@ fn svg_outline_font_face_data<'a>(
     face_index: u32,
     extract_collection: bool,
 ) -> std::borrow::Cow<'a, [u8]> {
+    if let Some(program) = crate::renderer::text_font_presentation::ordinary_text_font_program(data, face_index) {
+        return std::borrow::Cow::Owned(svg_outline_font_face_data_impl(&program, chars, 0, false).into_owned());
+    }
+    svg_outline_font_face_data_impl(data, chars, face_index, extract_collection)
+}
+
+fn svg_outline_font_face_data_impl<'a>(
+    data: &'a [u8],
+    chars: &std::collections::HashSet<char>,
+    face_index: u32,
+    extract_collection: bool,
+) -> std::borrow::Cow<'a, [u8]> {
     let original = || std::borrow::Cow::Borrowed(data);
     // collection 테이블 오프셋은 파일 전체 기준이며, 선택 face 헤더만 다르다.
     let sfnt_offset = if data.get(..4) == Some(b"ttcf") {

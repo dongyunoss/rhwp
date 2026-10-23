@@ -758,6 +758,12 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    /// 일반 FontFace 전용 기본 윤곽 사본. 원본·컬러 자원·문서 상태는 변경하지 않는다.
+    #[wasm_bindgen(js_name = ordinaryTextFontProgram)]
+    pub fn ordinary_text_font_program(&self, bytes: &[u8], face_index: u32) -> Option<Vec<u8>> {
+        crate::renderer::text_font_presentation::ordinary_text_font_program(bytes, face_index)
+    }
+
     /// 문서 측정 slot과 별도로 SVG/WMF paint에 실제 선택한 font face를 공급한다.
     #[wasm_bindgen(js_name = registerMetafileFont)]
     pub fn register_metafile_font(

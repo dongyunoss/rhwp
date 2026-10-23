@@ -1,6 +1,7 @@
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
 import { CanvasMetricSession, withPortableMetrics } from './canvas-metric-session';
 import { HostCanvasFontSession, scopedHostCanvasFont, withHostCanvasFonts } from './host-canvas-fonts';
+import { ordinaryTextFontFaceData, type OrdinaryTextFontSource } from './ordinary-text-font';
 import { NativePuaFontSession, type NativePuaFontDocument } from './native-pua-font-session';
 import { CanvasFontResolutionScope } from './canvas-font-resolution-scope';
 import { MetafileFontSession, type MetafileFontDocument } from './metafile-font-session';
@@ -403,6 +404,11 @@ export class WasmBridge {
 
   getHostCanvasFontDiagnostics(): { loaded: number; pending: number; failed: number } {
     return this.hostCanvasFonts.diagnostics();
+  }
+
+  /** CanvasKit의 일반 텍스트도 현재 문서의 공통 기본 윤곽 처리를 소비한다. */
+  prepareOrdinaryTextFont(data: ArrayBuffer, faceIndex = 0): ArrayBuffer | null {
+    return ordinaryTextFontFaceData(data, faceIndex, this.doc as OrdinaryTextFontSource | null);
   }
 
   withPortableMetrics<T>(operation: () => T): T {

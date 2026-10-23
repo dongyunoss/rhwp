@@ -883,7 +883,9 @@ export class CanvasKitLayerRenderer {
   }
 
   /** Host records have already been selected from actual text styles. */
-  async prepareHostFonts(records: readonly LocalFontRecord[]): Promise<number> {
+  async prepareHostFonts(records: readonly LocalFontRecord[],
+    prepareTextFont: (bytes: ArrayBuffer, faceIndex: number) => ArrayBuffer | null = canvasKitFontFaceData,
+  ): Promise<number> {
     const documentGeneration = this.documentGeneration;
     const hostGeneration = getHostFontState().generation;
     let registered = 0;
@@ -896,7 +898,7 @@ export class CanvasKitLayerRenderer {
         const data = await loadRendererLocalFont(record);
         if (this.disposed || documentGeneration !== this.documentGeneration
           || hostGeneration !== getHostFontState().generation) return registered;
-        const bytes = data ? canvasKitFontFaceData(data.bytes, data.faceIndex ?? 0) : null;
+        const bytes = data ? prepareTextFont(data.bytes, data.faceIndex ?? 0) : null;
         if (!bytes) { this.localTypefaceLoadFailures.add(key); continue; }
         let typeface: Typeface | null = null;
         let fontManager: FontMgr | null = null;

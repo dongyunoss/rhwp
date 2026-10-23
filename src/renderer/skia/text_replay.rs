@@ -21,6 +21,7 @@ use super::synthetic_typeface::{draw_synthetic_bold_paths, unemboldened_typeface
 pub(super) mod fonts;
 mod lines;
 mod marks;
+mod monochrome;
 mod overlap;
 
 pub(super) struct SkiaTextReplay<'a> {

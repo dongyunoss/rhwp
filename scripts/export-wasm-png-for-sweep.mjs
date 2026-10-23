@@ -291,15 +291,21 @@ async function main() {
             if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
             const bytes = await response.arrayBuffer();
             for (const family of selected) {
-              // 실제 family 등록과 HFT 원본 윤곽 바인딩을 같은 helper가 소유한다.
+              let textProgramSha256 = null;
               let font;
               try {
-                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc, metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`), intrinsicRequested.has(family.toLowerCase()));
+                font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
+                  metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
+                  intrinsicRequested.has(family.toLowerCase()), async program => {
+                    const digest = await crypto.subtle.digest('SHA-256', program);
+                    textProgramSha256 = [...new Uint8Array(digest)]
+                      .map(byte => byte.toString(16).padStart(2, '0')).join('');
+                  });
                 if (font.family !== family) throw Error(`Canvas 글꼴의 등록 이름이 다릅니다: ${family} → ${font.family}`);
               }
               catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
               supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}`);
-              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
+              loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
             }
           }
           await document.fonts.ready;

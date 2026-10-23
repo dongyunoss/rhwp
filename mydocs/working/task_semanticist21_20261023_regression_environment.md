@@ -421,3 +421,76 @@ Windows 검증 호스트의 원본 `C:\Windows\Fonts\seguiemj.ttf`를 ignored �
 반올림한 PNG 점수와 구분한다. 글꼴 공급과 일반 텍스트의 흑백 윤곽 선택은 별개 원인이다.
 해당 출력은 진단 결과이며 수정 완료 증거가 아니다. 일반 텍스트 fallback과 명시적인
 컬러 글리프 payload 계약을 구분해 공통 경로의 해결 방법을 검토한다.
+
+## 일반 텍스트의 COLR 기본 윤곽 선택 보정 계획
+
+Native131의 실제 렌더러 snapshot을 쓴 `emoji-font-probe-2021/findings.json`에서
+문서 face는 함초롬바탕, 로컬 paint 선택은 Noto Color Emoji, Windows 프로그램 공급 시
+선택은 Segoe UI Emoji로 확인했다. 독립 PDF의 부분 글꼴 glyph 3은 Windows 원본
+U+1F9A6의 기본 윤곽과 98개 명령의 좌표까지 동일하다
+(`emoji-font-probe-2021/pdf-outline-comparison.json`).
+
+`emoji-presentation-controls-2026/plan.json`은 원본 복사와 face/VS16만 바꾼 수동 대조군의
+생성 차이를 기록한다. 2020의 명시 face/VS16, 2024의 원본과 명시 face/VS16 Print
+3건 모두 같은 흑백 기본 윤곽을 출력했다. 실제 engine·PrintMethod 0·1-up 경로를
+`mcp-emoji-presentation-2026/`에서 확인했다. 2024 교차 버전 출력은 동작 대조 자료이며
+2020 원본의 정식 기준 PDF를 대체하지 않는다. OpenType COLR 사양도 기본 glyph에
+윤곽이 있으면 비컬러 glyph로 그리는 경로를 정의한다
+([공식 COLR 사양](https://learn.microsoft.com/en-us/typography/opentype/spec/colr)).
+
+공통 Rust 처리에서 COLR 기본 glyph 모두에 유효한 기본 윤곽이 있는 프로그램만
+일반 텍스트용 SFNT 사본으로 만든다. cmap·glyph ID·윤곽·advance·GSUB/GPOS·이름은
+유지하고, 컬러 레이어 선택 표와 사본에서 무효가 된 서명만 제외한다. 원본 파일과
+명시적인 GlyphRun/GlyphOutline 컬러 자원은 변경하지 않는다. 윤곽 없는 컬러 전용
+프로그램은 이 변환을 적용하지 않는다. 특정 문서·문자·face 이름으로 분기하지 않는다.
+Native의 nominal·shaping font 생성과 브라우저 일반 FontFace 공급이 같은 함수를
+소비하게 하고, strict 자원 replay는 원 프로그램을 계속 사용한다. 공급 글꼴의
+원본 해시와 paint 사본 해시를 구분한다. 같은 source/PDF의 Native/fresh WASM과
+명시 컬러 자원 대조 검사가 끝나기 전 수정 완료로 판정하지 않는다.
+
+## 일반 텍스트 보정의 Native132 결과
+
+공용 target·잡 8개로 243.53초에 Native132 빌드 종료 코드 0을 확인했다.
+`text_font_presentation::ordinary_text_font_program`이 COLR 기본 glyph 전체의 윤곽을
+확인하고 SFNT 사본을 만든다. Native의 `fonts::finish`가 이 사본을 캐시해 nominal과
+SkShaper 양쪽에 공급한다. 일반 Canvas FontFace와 CanvasKit의 host font 준비는
+문서의 같은 Rust API를 소비하며, SVG 임베드도 같은 함수를 사용한다. strict
+GlyphRun/GlyphOutline 자원의 원본 프로그램은 이 준비 경로에 넣지 않는다.
+
+Windows 원본 Segoe UI Emoji를 `/usr/local/share/fonts/rhwp-hancom-fallback/seguiemj.ttf`에
+등록했다. 원본 SHA-256은 이전 진단과 같으며 실제 `fc-match`가 Noto Color Emoji에서
+Segoe UI Emoji로 바뀌었음을 `emoji-system-font-registration-2033.json`에 기록했다.
+글꼴 파일은 Git에 추가하지 않았다. 이후 base/후보 비교에는 같은 새 공급 환경을 사용한다.
+과거 Noto 환경의 숫자를 새 환경의 무회귀 증거로 재사용하지 않는다.
+
+같은 새 시스템 글꼴·입력·2020 Print·96DPI에서 다음과 같이 직접 대조했다.
+
+| 출력 | 1쪽 raw | 2쪽 raw |
+| --- | ---: | ---: |
+| Native131, 색 레이어 선택 | 97.91111% | 97.41572% |
+| Native132, 기본 윤곽 선택 | 98.82051% | 98.57706% |
+
+증적은 `restricted-child-margin-native131-2034/`와
+`restricted-child-margin-native132-2034/`다. 새 2쪽 review·standalone overlay를 함께
+확인했으며 해당 문자가 한컴과 같은 흑백 윤곽으로 바뀌었다. 부모 오른쪽 괘선의 폭 차이는
+여전히 보이고, 이 페이지를 완료된 98% px 고정 대상으로 승격하지 않는다.
+
+`ordinary-text-font-contract-2035/`는 실제 원본 프로그램에서 12,189개 glyph의 전진폭과
+경계 상자, glyph 수·em·cmap·그 외 표의 바이트 보존을 확인했다. 2,786개 컬러 기본 glyph가
+일반 사본에서만 비컬러가 되며, 원본에 대한 명시 COLRv0 디코드는 8개 컬러 레이어와 strict
+계약을 유지했다. 전체 checksum·재적용의 비적용·잘못된 face/잘린 입력 거절도 통과했다.
+비컬러 함초롬바탕과 윤곽 없는 Noto Color Emoji는 사본 변환을 적용하지 않는다.
+이는 실행 진단이며 정식 렌더링 회귀나 fresh WASM 완료를 대신하지 않는다.
+
+TypeScript 검사와 기존 글꼴 계약 26개·Sweep 브라우저 계약 2개는 통과했다.
+`ordinary-text-font.test.ts`는 원본 바이트 보존·WASM 반환 view와 수명 분리·비적용·무효 face
+선택을 검사하며, 기존 계약과 함께 29개 통과했다. 로그는 각각
+`ordinary-text-font-tsc-2029.log`, `ordinary-text-font-ts-contracts-2036.log`,
+`ordinary-text-font-sweep-browser-2031.log`다. 새 Rust 처리의 직접 실행과 브라우저 연결
+계약을 구분하며, 최적화 fresh WASM의 실제 출력 확인 후 최종 판정한다.
+
+앞 단계 Native131과 같은 소스의 WASM045는 864.77초에 빌드·Studio 동기화를 완료했다.
+`inline-axis-wasm045-2025/results.json`의 저장본 6개는 모두 raw 100%·전체 쪽수 1 대 1·
+누락 0쪽이다. 첫 결과 집계기가 잘못된 manifest 파일명을 읽어 gate를 null로 둔 문제를
+바로잡았고, 실제 `silhouette_manifest.json`의 전체 쪽수와 미달/누락 목록을 다시 확인했다.
+이 증거는 이전 소스의 TAC 뒤 글자 대조이며 Native132의 fresh 검증으로 재인용하지 않는다.

@@ -29,11 +29,15 @@ export function selectMetafileFontFaces(fonts, requests) {
   return selected;
 }
 
-export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false, intrinsicRequested = false) {
-  const font = new FontFace(family, bytes, descriptors);
+export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false, intrinsicRequested = false, onPrepared = null) {
+  // 제품과 같은 Rust 함수를 사용한다. 원본 메타파일·명시 컬러 자원은 바꾸지 않는다.
+  const prepared = sourceOwner?.ordinaryTextFontProgram?.(new Uint8Array(bytes), 0);
+  const paintBytes = prepared ? Uint8Array.from(prepared).buffer : bytes;
+  await onPrepared?.(paintBytes);
+  const font = new FontFace(family, paintBytes, descriptors);
   await font.load();
   document.fonts.add(font);
-  if (intrinsicRequested) await installIntrinsicCanvasFont(family, bytes, descriptors);
+  if (intrinsicRequested) await installIntrinsicCanvasFont(family, paintBytes, descriptors);
   // Canvas의 모든 굵기를 paint에 복제하면 미사용 face로 바이트 상한을 소진한다.
   // 같은 catalog에서 요청에 맞게 선택한 실제 프로그램만 별도 세션에 공급한다.
   if (metafileSelected && typeof sourceOwner?.registerMetafileFont === 'function') {
@@ -41,12 +45,12 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
   }
   // 브라우저와 같은 프로그램만 paint 세션에 전달한다.
   if (typeof sourceOwner?.registerTextFontGlyphCoverage === 'function') {
-    sourceOwner.registerTextFontGlyphCoverage(family, new Uint8Array(bytes), 0);
+    sourceOwner.registerTextFontGlyphCoverage(family, new Uint8Array(paintBytes), 0);
   }
   if (typeof sourceOwner?.registerHftOutlineFont === 'function'
       && String(descriptors.weight || '400') === '400'
       && (descriptors.style || 'normal') === 'normal') {
-    sourceOwner.registerHftOutlineFont(family, new Uint8Array(bytes), 0);
+    sourceOwner.registerHftOutlineFont(family, new Uint8Array(paintBytes), 0);
   }
   return font;
 }

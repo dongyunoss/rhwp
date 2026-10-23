@@ -82,6 +82,8 @@ fn finish(tf: Typeface, size: f32, style: &TextStyle, font_mgr: &FontMgr) -> Fon
     } else {
         tf
     };
+    // nominal과 SkShaper가 같은 일반 텍스트용 기본 윤곽 프로그램을 소비한다.
+    let tf = super::monochrome::text_typeface(font_mgr, &tf).unwrap_or(tf);
     let owns_heavy = owns_intrinsic_heavy_face(&tf, style);
     let tf = if owns_heavy {
         // source의 bold가 아닌 fallback 보완 weight다. fontconfig가 붙인
