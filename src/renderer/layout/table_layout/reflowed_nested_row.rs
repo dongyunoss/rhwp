@@ -12,6 +12,36 @@ pub(super) struct NestedRowFlowEdges {
 }
 
 impl LayoutEngine {
+    /// 독립 저장 줄로 닫힌 전체 표의 마지막 빈 행 공간을 같은 계산으로 회수한다.
+    /// 부분 내용 컷은 선언된 행의 미소비 물리 띠를 소유하므로 이 전체 상자 규칙과 다르다.
+    pub(super) fn fit_complete_stored_row_frame(
+        &self,
+        table: &Table,
+        rows: &mut [f64],
+    ) -> Option<f64> {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        use crate::model::table::TablePageBreak;
+        let profile = self.profile.get();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || table.common.treat_as_char
+            || table.common.text_wrap != TextWrap::TopAndBottom
+            || table.common.vert_rel_to != VertRelTo::Para
+            || table.page_break != TablePageBreak::RowBreak
+        {
+            return None;
+        }
+        let target = crate::renderer::table_row_frame::declared_tail_row_height(
+            table,
+            rows,
+            crate::renderer::hwpunit_to_px(i32::from(table.cell_spacing), self.dpi),
+            self.dpi,
+        )?;
+        let last = rows.last_mut()?;
+        let delta = target - *last;
+        *last = target;
+        Some(delta)
+    }
+
     /// 예약과 배치가 같은 행 유닛에서 같은 자식 커서를 만든다.
     pub(super) fn nested_row_projection_cut(units: &[CellUnit]) -> Option<NestedTableCut> {
         if units.iter().any(|unit| unit.nested_row.is_none()) {

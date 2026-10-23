@@ -26393,6 +26393,13 @@ impl LayoutEngine {
         } else {
             0.0
         };
+        let complete_frame = cut.start_row == 0
+            && cut.end_row == usize::from(child.row_count)
+            && cut.start_cut.is_empty()
+            && cut.end_cut.is_empty()
+            && !cut.is_block_split
+            && !cut.start_cut_is_block;
+        let mut complete_rows = complete_frame.then(|| Vec::with_capacity(cut.end_row));
         for row in cut.start_row..cut.end_row {
             let start_cut = if row == cut.start_row {
                 cut.start_cut.as_slice()
@@ -26405,7 +26412,7 @@ impl LayoutEngine {
                 &[]
             };
             let content = self.row_cut_height(child, row, start_cut, end_cut, styles, purpose);
-            physical += if start_cut.is_empty()
+            let row_height = if start_cut.is_empty()
                 && end_cut.is_empty()
                 && (self.reflowed_fragment_row_uses_measured_height(child, row)
                     || (self.whole_fragment_row_uses_measured_height(child, row)
@@ -26428,9 +26435,18 @@ impl LayoutEngine {
             } else {
                 content
             };
+            physical += row_height;
+            if let Some(rows) = complete_rows.as_mut() {
+                rows.push(row_height);
+            }
             if row + 1 < cut.end_row {
                 physical += hwpunit_to_px(child.cell_spacing as i32, self.dpi);
             }
+        }
+        if let Some(rows) = complete_rows.as_mut() {
+            physical += self
+                .fit_complete_stored_row_frame(child, rows)
+                .unwrap_or(0.0);
         }
         physical
     }
@@ -26455,12 +26471,6 @@ impl LayoutEngine {
         let has_row_cuts = units[run_start..run_end]
             .iter()
             .any(|unit| unit.nested_table_fragment.is_some());
-        // 자식 내용 커서의 존재는 저장 호스트의 물리 띠를 재조판으로
-        // 교체할 근거가 아니다. 저장 경로의 행 유닛은 생산자가 산출한
-        // 원본 프레임을 소유하며, 이 보조 예약은 NO_LS 재조판만 확장한다.
-        if !crate::renderer::para_has_no_stored_line_segs(para) {
-            return None;
-        }
         let child = para.controls.iter().find_map(|control| match control {
             Control::Table(child) => Some(child.as_ref()),
             _ => None,
@@ -26471,6 +26481,44 @@ impl LayoutEngine {
             return Some(0.0);
         }
         let selected = &units[start..end];
+        if !crate::renderer::para_has_no_stored_line_segs(para) {
+            // 저장한 물리 띠의 부분 컷은 재해석하지 않는다. 전체 원본 표가
+            // 선택됐고 저장 줄이 남은 빈 띠를 입증할 때만 공통 전체 상자를 쓴다.
+            if start != run_start
+                || end != run_end
+                || !selected
+                    .iter()
+                    .all(|unit| unit.nested_row_flow_edges.is_some())
+            {
+                return None;
+            }
+            let cut = Self::nested_row_projection_cut(selected)?;
+            if cut.start_row != 0
+                || cut.end_row != usize::from(child.row_count)
+                || !cut.start_cut.is_empty()
+                || !cut.end_cut.is_empty()
+            {
+                return None;
+            }
+            let mut rows = self.resolve_row_heights(
+                child,
+                usize::from(child.col_count),
+                usize::from(child.row_count),
+                None,
+                styles,
+                true,
+            );
+            self.fit_complete_stored_row_frame(child, &mut rows)?;
+            let physical = rows.iter().sum::<f64>()
+                + hwpunit_to_px(i32::from(child.cell_spacing), self.dpi)
+                    * rows.len().saturating_sub(1) as f64
+                + selected
+                    .iter()
+                    .filter_map(|unit| unit.nested_row_flow_edges)
+                    .map(|edge| edge.before + edge.after)
+                    .sum::<f64>();
+            return Some(physical - selected.iter().map(|unit| unit.height).sum::<f64>());
+        }
         let cut = if units[run_start..run_end]
             .iter()
             .all(|unit| unit.mixed_nested_fragment && unit.mixed_nested_recursive)
@@ -27069,6 +27117,19 @@ impl LayoutEngine {
             if let Some(last) = end_row.checked_sub(1).filter(|r| *r < row_count) {
                 row_heights[last] = limit.max(0.0);
             }
+        }
+        if !has_measurement
+            && start_row == 0
+            && end_row == row_count
+            && start_cut.is_empty()
+            && end_cut.is_empty()
+            && !is_continuation
+            && start_row_height_override.is_none()
+            && end_row_height_override.is_none()
+            && straddle_row_relief.is_empty()
+            && straddle_page_bands.is_empty()
+        {
+            self.fit_complete_stored_row_frame(table, &mut row_heights);
         }
         row_heights
     }
