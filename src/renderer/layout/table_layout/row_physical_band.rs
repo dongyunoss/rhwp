@@ -105,6 +105,16 @@ impl LayoutEngine {
         }
     }
 
+    /// 바깥 조각의 예산은 행 전체가 아닌 표의 실제 프레임 소유로 정한다.
+    /// 부모가 크기를 정하는 중첩 viewport는 자신의 예산을 유지한다.
+    pub(crate) fn row_uses_outer_fragment_frame(&self, table: &Table, row: usize) -> bool {
+        !self
+            .nested_table_ptrs
+            .borrow()
+            .contains(&(table as *const Table as usize))
+            && !Self::row_cut_cell_order(table, row).is_empty()
+    }
+
     /// 내용 커서는 무높이 보조 spacer도 소비한다. 이어받은 조각의 실제
     /// 전진 범위는 이 공통 소유 판정으로 컷 선택과 물리 높이 측정에 전달한다.
     /// 다른 컷 경로의 원본 빈 문단 소유까지 이 전진 범위로 대체하지 않는다.
@@ -166,8 +176,8 @@ impl LayoutEngine {
     }
 
     /// 수용 용량과 실제 마지막 줄 상자를 같은 유닛의 서로 다른 값으로 구분한다.
-    /// 저장 슬롯이 없는 새 줄은 다음 줄 전진까지 들어가야 수용할 수 있다.
-    /// 수용한 뒤 다음 조각으로 넘어가는 전진은 실제 끝 상자에 다시 포함하지 않는다.
+    /// 다음 줄로 가는 전진은 마지막 줄 상자의 바깥에 있다.
+    /// 같은 내용 컷을 수용한 뒤 그 전진을 실제 끝 상자에 다시 포함하지 않는다.
     fn cut_trailing_advances(
         &self,
         table: &Table,
@@ -185,17 +195,6 @@ impl LayoutEngine {
         if start >= end || end >= units.len() {
             return (stored, stored);
         }
-        let original_slot = !last.reflowed_line_slot
-            && cell.paragraphs.get(last.para_idx).is_some_and(|para| {
-                !para.stored_text_partition_is_dirty()
-                    && !para.cell_format_vpos_dirty
-                    && last.vis_end.checked_sub(1).is_some_and(|line| {
-                        para.line_segs.get(line).is_some_and(|seg| {
-                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                                == 0
-                        })
-                    })
-            });
         let paragraph_end = last.para_idx != units[end].para_idx;
         let following = self.stored_span_line_tail_spacing(last);
         // 문단 끝 유닛에는 줄간격과 문단 뒤 간격이 함께 들어 있다.
@@ -211,17 +210,20 @@ impl LayoutEngine {
         } else {
             following
         };
-        // 일반 문단의 끝이라는 사실만으로 저장 줄 슬롯의 수용량을 늘리지 않는다.
-        // 인증된 원본 프레임의 말미 차감은 stored가 이미 판정했다.
-        let occupied = if paragraph_end || !original_slot {
-            following
+        // 조판이 발행한 일반 글줄의 뒤 간격만 분리한다. 원본 프레임의
+        // 별도 말미 계약과는 최댓값으로 합쳐 같은 간격을 두 번 빼지 않는다.
+        let trailing = stored.max(following);
+        // 자식 viewport의 전진은 부모 조각의 유닛 원장에 예약된다.
+        // 바깥 페이지에서 뒤 간격을 넘기는 계약으로 그 원장을 늘리지 않는다.
+        let capacity = if self.row_uses_outer_fragment_frame(table, usize::from(cell.row)) {
+            trailing
         } else {
-            0.0
+            stored
         };
-        (stored, stored.max(occupied))
+        (capacity, trailing)
     }
 
-    /// 저장 줄이 증언한 컷의 수용량만 완화한다. 새 줄의 잉크 높이로 용량을 늘리지 않는다.
+    /// 같은 물리 밴드에 마지막 글줄 상자가 들어가는지 확인한다.
     pub(super) fn row_cut_capacity_trailing_trim(
         &self,
         table: &Table,

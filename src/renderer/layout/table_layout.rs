@@ -15335,11 +15335,11 @@ impl LayoutEngine {
             let is_empty_spacer_para = p.text.trim().is_empty() && source_controls.is_empty();
             // This source relation is certified from the two unchanged
             // paragraphs. Editing another paragraph does not invalidate it.
-            let stored_empty_successor_advance =
+            let stored_empty_successor_geometry =
                 (self.profile.get().hwp5_stored_pagination_layout()
                     || self.profile.get().hwpx_stored_layout())
                 .then(|| {
-                    crate::renderer::float_placement::stored_empty_successor_advance(
+                    crate::renderer::float_placement::stored_empty_successor_geometry(
                         &cell.paragraphs,
                         pi,
                         styles,
@@ -15347,6 +15347,9 @@ impl LayoutEngine {
                     )
                 })
                 .flatten();
+            let stored_empty_successor_advance = stored_empty_successor_geometry
+                .as_ref()
+                .map(|geometry| geometry.advance);
             let closing_empty_line_advance = is_empty_spacer_para
                 .then(|| {
                     self.stored_closing_empty_line_advance_hu(
@@ -15553,9 +15556,12 @@ impl LayoutEngine {
             // own an additional sequential advance. The existing band owner
             // applies to picture flow too, not just nested-table flow.
             // Standalone empty paragraphs keep their successor advance.
-            let stored_empty_successor_advance = stored_empty_successor_advance.filter(|_| {
+            let stored_empty_successor_geometry = stored_empty_successor_geometry.filter(|_| {
                 !collapse_stored_square_picture_empty_run && !collapse_native_float_ladder_spacer
             });
+            let stored_empty_successor_advance = stored_empty_successor_geometry
+                .as_ref()
+                .map(|geometry| geometry.advance);
             // [#6923] 저장 전진량이 있는 겹침 걸음 빈 줄은 접지 않는다 — 접으면 유닛의
             // 가시 범위가 비어 배치 루프가 이 문단을 통째로 건너뛰고(`start_line >=
             // end_line`) 흐름이 전진하지 않는다. 그러면 측정만 커지고 내용은 제자리라
@@ -17345,7 +17351,9 @@ impl LayoutEngine {
                         }
                     }
                 }
-                let following_line_advance = if closing_empty_line_advance.is_some() {
+                let following_line_advance = if let Some(geometry) = &stored_empty_successor_geometry {
+                    geometry.trailing
+                } else if closing_empty_line_advance.is_some() {
                     p.line_segs
                         .last()
                         .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, self.dpi))
@@ -17520,22 +17528,24 @@ impl LayoutEngine {
                     }
                     // 줄간격은 실제 조판 결과에서 한 번 생산한다. 빈 줄·개체의
                     // 대체 점유나 저장 spacer는 글줄 뒤의 여백으로 추측하지 않는다.
-                    let following_line_advance = if closing_empty_line_advance.is_some() {
-                        p.line_segs
-                            .get(last_fragment)
-                            .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, self.dpi))
-                    } else if source_controls.is_empty()
-                        && line.runs.iter().any(|run| !run.text.trim().is_empty())
-                        && include_trailing_ls
-                        && stored_empty_successor_advance.is_none()
-                        && stored_overlap_spacer_advance_px.is_none()
-                        && !collapse_empty_rowbreak_spacer
-                        && !collapse_stored_square_picture_source_line
-                    {
-                        ls.max(0.0)
-                    } else {
-                        0.0
-                    };
+                    let following_line_advance =
+                        if let Some(geometry) = &stored_empty_successor_geometry {
+                            geometry.trailing
+                        } else if closing_empty_line_advance.is_some() {
+                            p.line_segs
+                                .get(last_fragment)
+                                .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, self.dpi))
+                        } else if source_controls.is_empty()
+                            && include_trailing_ls
+                            && stored_empty_successor_advance.is_none()
+                            && stored_overlap_spacer_advance_px.is_none()
+                            && !collapse_empty_rowbreak_spacer
+                            && !collapse_stored_square_picture_source_line
+                        {
+                            ls.max(0.0)
+                        } else {
+                            0.0
+                        };
                     units.push(CellUnit {
                         height: lh,
                         following_line_advance,

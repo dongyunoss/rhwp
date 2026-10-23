@@ -485,8 +485,7 @@ impl LayoutEngine {
     }
 
     pub(super) fn stored_span_line_tail_spacing(&self, unit: &CellUnit) -> f64 {
-        if (unit.empty_spacer && !unit.owns_stored_closing_line)
-            || unit.vis_start >= unit.vis_end
+        if unit.vis_start >= unit.vis_end
             || unit.nested_row.is_some()
             || unit.mixed_nested_fragment
             || unit.non_inline_control_range.is_some()
