@@ -1,7 +1,7 @@
 import { replayComposedCharOverlap } from './canvaskit-char-overlap';
 import { compatibilityGlyphView } from './canvaskit/compatibility-glyph-view.ts';
 import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
-import { parseCssFontFamilyList } from '../core/font-substitution.ts';
+import { ordinaryTextFontFamilies, parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
 import { singleDigitGeometry } from './canvaskit/boxed-digit-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
@@ -1348,9 +1348,11 @@ export class CanvasKitLayerRenderer {
         : primary
           ? 'default'
           : null;
+    const familyTypefaces = this.ordinaryTextTypefaces(requested);
     const candidates = [
       requestedFamily,
       primary?.fontFamily ?? '',
+      ...familyTypefaces.map(candidate => candidate.fontFamily ?? ''),
       this.defaultFontFamily ?? 'CanvasKit default',
       'CanvasKit symbol fallback',
     ].filter((family, index, all) => family && all.indexOf(family) === index);
@@ -1389,6 +1391,9 @@ export class CanvasKitLayerRenderer {
       }
     };
     const selected = observe(primary?.typeface ?? null, primary?.fontFamily ?? requestedFamily, primarySource ?? 'default')
+      ?? familyTypefaces.map(candidate => observe(candidate.typeface, candidate.fontFamily ?? requestedFamily,
+        candidate.record ? 'local' : candidate.typeface === this.defaultTypeface ? 'default' : 'bundled'))
+        .find(candidate => candidate !== null)
       ?? (primary?.typeface !== this.defaultTypeface
         ? observe(this.defaultTypeface, this.defaultFontFamily ?? 'CanvasKit default', 'default')
         : null)
@@ -3192,8 +3197,7 @@ export class CanvasKitLayerRenderer {
             setSkewX?: (skew: number) => void;
             setScaleX?: (scale: number) => void;
           };
-          const physical = target === font && preparedTypeface?.record
-            ? localFontFaceStyle(preparedTypeface.record) : null;
+          const physical = selected?.record ? localFontFaceStyle(selected.record) : null;
           adjustable.setEmbolden?.(selected?.syntheticStyle?.bold
             ?? (style.bold === true && (selected?.hostFace?.weight ?? physical?.weight ?? 400) < 600));
           const physicalItalic = selected?.hostFace
@@ -3245,6 +3249,17 @@ export class CanvasKitLayerRenderer {
           oldHangulTypeface = hasOldHangul
             ? this.findPreparedTypeface(OLD_HANGUL_FONT_FAMILY)
             : null;
+          for (const candidate of this.ordinaryTextTypefaces(style.fontFamily, style)) {
+            if (candidate.typeface === typeface || !candidate.typeface) continue;
+            if (!codePoints.some((_, index) => candidateGlyphIds.every(ids => (ids[index] ?? 0) === 0))) break;
+            const fallbackFont = this.makeFont(candidate.typeface, fontSize);
+            adjustFont(fallbackFont, candidate);
+            fallbackFonts.push(fallbackFont);
+            candidateFonts.push(fallbackFont);
+            candidateFontSources.push('missingGlyphFamily');
+            candidateFontFamilies.push(candidate.fontFamily ?? 'CanvasKit family fallback');
+            candidateGlyphIds.push(fallbackFont.getGlyphIDs(glyphReplayText, codePoints.length));
+          }
           if (primaryGlyphIds.some(glyphId => glyphId === 0)
             && this.defaultTypeface !== null
             && typeface !== this.defaultTypeface) {
@@ -4482,6 +4497,21 @@ export class CanvasKitLayerRenderer {
     } finally { if (blob && !retained) blob.delete(); }
   }
 
+  /** 요청 글꼴의 준비 계약은 유지하고, 같은 일반 글리프 후보를 paint와 관측에 전달한다. */
+  private ordinaryTextTypefaces(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface[] {
+    const primary = this.findPreparedTypeface(fontFamily, style);
+    if (!primary) return [];
+    const candidates = [primary];
+    const seen = new Set<Typeface | null>([primary.typeface]);
+    for (const family of ordinaryTextFontFamilies(fontFamily ?? '')) {
+      const candidate = this.findPreparedTypeface(family, style);
+      if (!candidate?.typeface || seen.has(candidate.typeface)) continue;
+      seen.add(candidate.typeface);
+      candidates.push(candidate);
+    }
+    return candidates;
+  }
+
   private resolvePreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
     const families = parseCssFontFamilyList(fontFamily ?? '');
     if (families.length > 1) {
@@ -5092,7 +5122,7 @@ export class CanvasKitLayerRenderer {
     if (!text || text.length > CanvasKitLayerRenderer.MAX_EQUATION_TEXT_LENGTH
       || !nativeFinite(x, y, fontSize, targetWidth ?? 0)
       || fontSize <= 0 || (targetWidth !== undefined && targetWidth < 0)) return false;
-    const candidates = [...options.fontFamilies.map(family => this.findPreparedTypeface(family, { bold, italic })), this.oldHangulTypeface,
+    const candidates = [...options.fontFamilies.flatMap(family => this.ordinaryTextTypefaces(family, { bold, italic })), this.oldHangulTypeface,
       { typeface: this.defaultTypeface, fontManager: this.defaultFontManager, fontFamily: this.defaultFontFamily },
       { typeface: this.symbolFallbackTypeface, fontManager: null, fontFamily: null },
       { typeface: this.mathFallbackTypeface, fontManager: null, fontFamily: null }];

@@ -883,3 +883,75 @@ fresh WASM·변경 영역 직접 판독과 실패한 SVG 검사 의미의 검토
 fresh 빌드 전 원격 devel은 `def947c2149df5bc812d801e6e79be19a403b4d1`로 같아 추가
 리베이스가 없으며 본인 열린 PR은 0개다(`pre-wasm-*-2187`). Native 완료를 fresh WASM
 완료로 바꾸어 기록하지 않으며, 최종 전체 검증·새 회귀 등록·PR 제출은 아직 필요하다.
+
+### fresh WASM048과 실제 Studio 일반 글리프 소비
+
+`8c32167d3d87f41beb5c6b045615f4f4e7df112d`에서 표준 release·잡 8개로 빌드한
+WASM048은 849.05초·종료 코드 0이다. `char-overlap-fresh-wasm-build-048-result.json`과
+`release-standard-wasm048-2184/build.json`에 보존했다. 실제 앱 초기화 응답도 WASM
+SHA-256 `ce0e060772086f2e6bc907b70224c083cb3c48e728b00cda468ad0762c00cc22`와
+일치하며 `logs/wasm048-release-consumption-2196.log`에서 세 배포 위치를 확인했다.
+
+- 표·이월 대조군 35개·66쪽: 전쪽 raw 100%, 쪽수 일치.
+  `reflow-wasm048-full-matrix-2203-result.json`과 그룹별 원본 TSV에 기록했다.
+- 원 caret API 저장본 20개·20쪽: 전쪽 raw 100%, 쪽수 일치.
+  `caret-original-current-api-wasm048-2206-result.json`에 기록했다.
+- #5790 실제 원본 13쪽: 최저 raw 96.10629%, 쪽수 일치.
+  `charoverlap-original-wasm048-2207-result.json`에 기록했다.
+
+이 Sweep은 Rust WebCanvas를 호출한다. 이 결과나 일반 글꼴 변환 API의 성공만으로
+Studio TypeScript CanvasKit의 글리프 소비까지 검증했다고 판단하지 않았다. 사용자가
+함초롬바탕으로 확인한 U+1F9A6은 해당 글꼴 프로그램에 없으며, 한컴 Print PDF는
+Segoe UI Emoji의 검은 윤곽을 사용한다. 원본 글자모양 이름은 그대로 유지한다.
+
+실제 파일 선택 → loadFile → loadBytes → renderer session 경로에서 기존 코드는
+HCR Batang만 읽고 Segoe 프로그램은 읽지 않았다. 단독 그림문자도 복합 문자로 분류해
+`🦦나나끝` 전체를 그리지 않는 별도 소비 결함을 재현했다
+(`ordinary-text-browser-consumption-2213-result.json`). 다음 공통 경로를 보정했다.
+
+1. 일반 텍스트 후보를 문서 선언·본문 대체·그림문자·generic 순서로 구성하고,
+   host 준비와 CanvasKit의 실제 글리프 선택·관측이 같은 후보를 소비한다.
+   기존 #8109의 주 글꼴 준비 요건과 문서 두 번째 후보 선택 계약은 유지한다.
+2. Unicode Extended_Pictographic의 단독 문자는 명목 글리프로 그린다. 기존 그림자
+   원형 기호도 유지하며 VS·ZWJ·결합 부호·피부색 수식자·국기 조합은 보류한다.
+3. Canvas2D의 host 별칭을 주 글꼴뿐 아니라 준비된 글리프 대체 후보에도 전달한다.
+   원래 OS의 컬러 프로그램으로 다시 넘어가지 않도록 하며 원본 bytes는 변경하지 않는다.
+
+실제 시스템의 HCR Batang·Segoe UI Emoji를 기존 HostFontProvider API로 공급했다.
+headless Local Font Access가 0개를 반환한 환경과 구분했으며, 실제 공급 프로그램의
+경로·SHA·face 이름은 `ordinary-text-real-host-fonts-2208.json`에 고정했다. 글꼴 파일은
+커밋하지 않는다. `ordinary-text-browser-consumption-2231/2228-result.json`은 두 프로그램의
+실제 읽기, 앞뒤 한글, 원래 producer positions, backend와 frontend 파일 해시를 기록한다.
+
+동일한 2쪽 한컴 Print PDF·96dpi·실제 앱 캡처의 raw 값은 CanvasKit 98.68405% /
+98.48776%, Canvas2D 96.87361% / 97.23718%다. `ordinary-text-studio-canvaskit-2231`과
+`ordinary-text-studio-canvas2d-2228`의 `tsv/silhouette.tsv`·review·standalone overlay를
+생성하고 첫 쪽과 CanvasKit 둘째 쪽을 직접 대조했다. 흑백 윤곽과 뒤 한글은 복원됐다.
+앱의 표 경계·편집 가이드 차이는 남아 있어 이 점수로 문서 전체 개선 완료나 px 핀의
+추가 요건을 충족했다고 선언하지 않는다. Rust WebCanvas의 raw 100%와도 구분한다.
+
+검증은 `rhwp-studio`에서 수행했다. 관련 단위 검사 37건 PASS, 전체 `npm test`는
+2,384 PASS / 2 SKIP / 0 FAIL, `npx tsc --noEmit`과 `npm run build`도 종료 코드 0이다.
+로그는 `logs/ordinary-text-focused-ts-2226-attempt02.log`,
+`logs/ordinary-text-studio-full-unit-2229.log`, `logs/ordinary-text-tsc-2227.log`,
+`logs/ordinary-text-studio-build-2230.log`에 있다. 정식 #7688 E2E에 서로 다른 실제 cmap의
+혼합 런을 독립 face별 그리기와 대조하는 검사를 추가했다. 이 합성 자원 소비 계약을
+한컴 배치의 시각 정답지로 승격하지 않는다. 해당 검사와 기존 #8109의 두 번째 후보·
+주 글꼴 우선·늦은 갱신·실패 시 Canvas2D 전환은 모두 PASS다
+(`logs/ordinary-text-font-preservation-2227.log`). 같은 정식 브라우저 검사를 수정 전
+`8c32167d`의 소스에서 실행해 혼합 런의 독립 face 소비 오류로 FAIL함을 확인했다.
+이 단계에서 소유한 다섯 코드 파일만 전후 bytes·SHA로 고정했고 `finally`에서 현재
+수정본을 정확히 복원했다. 같은 검사의 수정 후 PASS와 함께
+`ordinary-text-font-before-after-2233-result.json`에 기록했다. 최종 실물 앱 캡처와
+글꼴 관측도 재실행해 요청 `함초롬바탕` → 실제 `Segoe UI Emoji`·local face·실패 0을
+확인했다(`ordinary-text-browser-consumption-2231-result.json`,
+`logs/ordinary-text-real-host-paint-trace-2231-attempt02.log`). 최종 관측 분류 수정의
+TypeScript 재검사는 `logs/ordinary-text-final-tsc-2232.log`에서 종료 코드 0이다.
+
+#4138의 두 현재 API 저장 HWP는 SHA-256이 같아 같은 입력을 MCP 2024에서 Print했다.
+제품 13.0.0.3901·PrintMethod 0·`frame_print_to_pdf_ex_one_up`이며 PDF는 196쪽이다.
+`input_preprocess=scripts_disabled`를 숨기지 않는다. 원본의 DefaultJScript는 실행
+코드가 없는 빈 저장 스트림임을 `issue4138-empty-script-proof-2212.json`에 입증했다.
+현재 Native도 196쪽이지만 전쪽 대조에서는 195쪽 미달·최저 raw 17.92141%다.
+`issue4138-native142-2217/results.json`에 보존했다. 쪽수 일치만으로 기존 197쪽 검사를
+196쪽으로 갱신하지 않으며, 이 문서와 나머지 실패·최종 전체 검증은 계속 해결해야 한다.
