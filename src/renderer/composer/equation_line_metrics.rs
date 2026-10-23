@@ -58,6 +58,7 @@ fn refresh_rows(
         let mut new_logical_height = 0_i32;
         let mut new_ascent = 0_i32;
         let mut new_descent = 0_i32;
+        let mut spacing_object_height = 0_i32;
         let mut changed = false;
         let mut has_equation = false;
         let mut supported = true;
@@ -86,6 +87,9 @@ fn refresh_rows(
                     new_logical_height = new_logical_height.max(height);
                     new_ascent = new_ascent.max(baseline);
                     new_descent = new_descent.max(height - baseline);
+                    if equation.common.affect_line_spacing {
+                        spacing_object_height = spacing_object_height.max(height);
+                    }
                     // 한글 대체 글꼴 경로도 같은 flow 메트릭을 발행한다.
                     // 특정 정규화 helper의 실행 여부 대신 실제 변경을 소비한다.
                     changed |= height != old_height || baseline != old_baseline;
@@ -197,11 +201,43 @@ fn refresh_rows(
             || owned_equation_row
         {
             let occupied_height = new_ascent + new_descent;
+            let leading = if owned_equation_row {
+                // 새 줄의 간격은 원본 글자·문단 속성에서 매번 같은 값으로 생산한다.
+                // 이미 합집합 차이를 뺀 leading을 다시 빼면 재구성마다 줄이 짧아진다.
+                let font_size = line
+                    .runs
+                    .iter()
+                    .filter(|run| !run.text.is_empty())
+                    .filter_map(|run| styles.char_styles.get(run.char_style_id as usize))
+                    .map(|style| style.font_size)
+                    .reduce(f64::max)
+                    .or_else(|| {
+                        para.char_shapes
+                            .first()
+                            .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))
+                            .map(|style| style.font_size)
+                    })
+                    .unwrap_or(12.0);
+                let ps = styles.para_styles.get(para.para_shape_id as usize);
+                // '줄 간격에 영향'이 켜진 개체만 비율 간격의 기준 상자에 참여한다.
+                // 물리 기준선 합집합은 위에서 별도로 계산한 같은 결과를 유지한다.
+                super::frame_metrics_for_line(
+                    font_size.max(hwpunit_to_px(spacing_object_height, dpi)),
+                    font_size,
+                    ps.map_or(crate::model::style::LineSpacingType::Percent, |style| {
+                        style.line_spacing_type
+                    }),
+                    ps.map_or(160.0, |style| style.line_spacing),
+                    dpi,
+                )
+                .line_spacing
+            } else {
+                line.line_spacing
+            };
             // 저장 간격은 논리 상자 높이 뒤의 leading이다. 실제 기준선 합집합이
             // 더 크면 그 차이는 leading에서 소비해 상자/간격을 이중 예약하지 않는다.
-            line.line_spacing = line
-                .line_spacing
-                .saturating_add(new_logical_height.saturating_sub(occupied_height));
+            line.line_spacing =
+                leading.saturating_add(new_logical_height.saturating_sub(occupied_height));
             line.line_height = occupied_height;
             line.baseline_distance = new_ascent;
             debug_assert!(hwpunit_to_px(line.line_height, DEFAULT_DPI) > 0.0);

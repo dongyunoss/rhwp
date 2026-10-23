@@ -446,3 +446,92 @@ workspace/all-targets lint·전체 Rust·fresh WASM·전쪽 시각 gate를 완�
 
 현재 PR 제출 조건은 충족하지 않았다. 196쪽 미달 21쪽과 직접/재로드 2쪽, 새 경계 2개,
 수식/미세 모양, 기존 전체 회귀 실패, fresh WASM과 보존 범위 검증을 계속한다.
+
+## 6차 분석: 실제 수식의 줄 간격 속성과 재발행의 멱등성
+
+시작 head `b4f9764731`. `equation-affect-spacing-raw-proof-2488.json`에서 원본 제어
+1698/1704의 공통 속성은 `0x0c2a2215`로 bit 2가 켜지고, 1701은 꺼짐을 확인했다.
+HWPX를 왕복하면 세 수식이 모두 `0x0c2a2211`이다. 수식 HWPX serializer는
+`affectLSpacing="0"`을 하드코딩한다. 원본 제어를 직접 보존한 축약 HWP의 독립 Print는
+1698/1704의 다음 문단을 각각 약 620/108HU 늦추며, 1701은 같다
+(`equation-original-controls-print-comparison-2487.json`). 형식 분기가 아니라 실제 속성의
+손실과 소비 누락을 먼저 수정한다. 해당 속성 하나만 바꾼 HWPX 3개도 Print해 교차 검증한다.
+
+공통 줄 구성의 `refresh_rows`는 합집합 높이의 차이를 기존 leading에서 매 호출 빼고
+있다. 합성 줄을 다시 구성할 때 이미 뺀 leading을 재차 빼는지, 원본 글자/문단 속성에서
+생산한 같은 leading을 소비해 멱등성을 확보할 수 있는지 대조한다. 실제 저장 줄의 별도
+예약 계약과 새로 만든 줄을 구분한다. #2784 원 해결과 현재 parser/serializer/줄 구성/저장
+실행 경로를 추적한 뒤 구현하며, 새 테스트·기대값은 시각 선행 조건을 만족한 후 추가한다.
+
+원 해결은 PR #2822, 통합 #3197의 `9c387b8346`이다(`issue2784-origin-2491.json`,
+`pr2822-origin-2491.json`, `pr3197-origin-2491.json`). 같은 실물 문서를 원래 재현으로 썼고,
+당시 모델/파서와 그림·도형·표 serializer는 고쳤으나 수식 방출은 여전히 상수다. 해당
+수식 방출을 실제 공통 속성으로 바꾼다. parser는 이미 공통 pos helper로 그 값을 읽는다.
+
+`equation-affect-spacing-print-proof-2492.json`에서 속성 하나를 켠 HWPX는 원본 HWP
+1698/1704의 Print와 96dpi RGB까지 같았다. 원래 꺼진 1701을 켜면 후속 baseline은
+36HU 상당 이동한다(96dpi 래스터에서는 같은 픽셀에 남음). 새 줄 구성은 실제 소속한
+수식 중 속성이 켜진 개체만 간격 기준 높이에 포함한다. 기존 `frame_metrics_for_line`의
+문단 줄간격 계산을 재사용하고, 기준선 합집합의 물리 높이와 분리한다. 새/재생성 줄의
+leading을 원본 글자·문단 속성에서 매번 생산해 재발행 횟수에 따른 중복 차감을 막는다.
+정상 저장 줄의 별도 leading은 유지한다. 실행 결과는 아래에 기록한다.
+
+
+### Native160 실행 결과와 남은 차이
+
+- `upstream/devel`을 다시 fetch한 결과 `d9fd85ed5b`로 변함없고 현재 head의 조상이다
+  (`logs/rebase-fetch-2505.log`). 같은 head에 불필요한 리베이스를 수행하지 않았다.
+- `char-overlap-native-build-160-result.json`은 stage 6 제품 소스의 해시, head
+  `b4f9764731`, base와 8잡 빌드를 고정한다. 빌드 종료 코드 0, 246초다. 기존 23개
+  회귀 모듈 133건 모두 통과했다(`reviewed-contract-tests-2498-result.json`). 새 검사나
+  기대값·fixture는 추가하거나 갱신하지 않았다. Native Clippy와 format check도 종료
+  코드 0이다(`logs/native160-native-clippy-2510.log`, `logs/native160-fmt-check-2513.log`).
+- 값의 실제 소비 경로는 `Equation.common.affect_line_spacing` → 공통
+  `equation_line_metrics::refresh_rows`의 소속 수식 높이 → 원본 글자·문단 속성의
+  `frame_metrics_for_line` → 같은 composed row의 `line_height`·`line_spacing`이다.
+  수식이 없는 줄과 유효한 자연 저장 줄에는 새 leading 생산을 적용하지 않는다.
+  HWPX의 `render_equation`도 같은 공통 속성을 방출하며 파서의 기존 pos helper가 읽는다.
+- 실제 두 분할 API의 저장 SHA는 모두
+  `66edefe421b0714340251c82a6e208c51dc59f2d96b42971a2b6f53d13594c0f`다. 직접/재로드는
+  각각 196쪽이며 194/196쪽의 render tree가 완전히 같다. 176·178쪽 차이는 남아 있다
+  (`issue4138-direct-reload-native160-2499-result.json`).
+- 바뀐 저장본을 MCP 2024의 PDF Print로 새로 출력했다. job
+  `ce9137d8-8438-40cb-b2ae-1139881b913e`, 한컴 `13.0.0.3901`, PrintMethod 0,
+  196쪽, PDF SHA `cc474afb353392e1d3a83a0f9838bdab35249b6425b2268b7615bc0d624508b0`다.
+  알려진 빈 스크립트 placeholder만 별도 해시 대조 후 비활성화했고 실행 코드는 없다.
+  이전 독립 Print와 새 Print는 196쪽 전부 96dpi RGB가 같았다
+  (`issue4138-native159-native160-independent-print-comparison-2512.json`).
+- 새 Print와 전쪽 Native 대조는 176쪽이 90% 이상, 20쪽이 미달이다. 130쪽은
+  **29.40116% → 96.17699%**, 129쪽은 96.42798% → 97.26796%다. 나머지 변화는
+  44쪽·45쪽의 소폭 개선이며 하락한 쪽은 없다. 미달은 177~196쪽이고 최저는
+  186쪽 38.91518%다(`issue4138-native160-boundary-batch-2503-candidate-result.json`).
+  종료 코드 1은 이 미달을 검출한 `re_review_required`이며 성공으로 바꾸지 않는다.
+- 원본 HWP 선택 6쪽, #7840 전쪽 9쪽, 현대 v5/v6 전쪽 7쪽은 각각 이전 값·쪽수를
+  유지했다. 최저 99.15773%·93.43362%·99.98497%·100%다. 이 선택 검증을 원본
+  115쪽 전체 또는 최종 fresh WASM 검증 완료로 표시하지 않는다.
+- 130쪽 공식 `issue4138-native160-selected-review-2511/review/review_130.png`와
+  `overlay/overlay_130.png`를 함께 직접 판독했다. 후속 본문의 누적 세로 오차는
+  해소됐지만 수식 자체의 폭·간격과 `(kN․m)`의 줄 소속은 아직 다르다. 별도 축약
+  수식 1698은 60.19814% → 73.34630%, 1704는 63.67781% → 60.84089%다.
+  1701은 93.52332%를 유지한다. 문서 전체 점수로 축약 입력의 결함을 면제하지 않고
+  계속 보정한다(`equation-spacing-native160-after-2501-result.json`,
+  `equation-spacing-detail-review-2504/results.json`).
+
+새 빈/공백 호스트 8개는 Native159와 같은 결과다. 6문서는 전쪽 90% 이상이며,
+35개 앞 문단 뒤의 2문서는 미달이다. 마지막 두 줄을 같은 문단으로 둔 경우와 별도
+문단으로 나눈 경우를 새로 만들어 LineSeg 없이 독립 Print했다. 두 Print는 동일한
+쪽에 같은 내용을 소유한다. Native도 두 경우 모두 86.19227%·31.55436%다
+(`mcp-paragraph-boundary-controls-2497/results.json`,
+`paragraph-boundary-native160-2509-result.json`). 따라서 같은 문단 내부 컷만 별도로
+완화하자는 가정은 기각한다. 실제 조각의 바깥여백·패딩·글줄 슬롯 계상을 추적한다.
+
+단위 문자열의 구분 기호만 바꾼 독립 Print 3개도 확보했다
+(`mcp-equation-symbol-break-controls-2507/results.json`,
+`equation-symbol-break-independent-geometry-2508.json`). U+00B7·U+2027·ASCII 마침표는
+기존 폭에서 한 줄에 들어가며 원래 U+2024는 `m)`만 다음 줄로 간다. 단순한 글꼴
+교체나 수식의 선언 폭 삭제로 이 차이를 숨기지 않는다. 다음 단계에서 남은 가용 폭과
+구분 기호의 낱말 경계를 같은 공통 줄 나눔 경로에서 확인한다.
+
+현재는 단계별 보정 커밋의 근거를 고정하는 시점이며 PR 제출 완료가 아니다. 필수
+fresh WASM·전체 Rust·WASM/workspace lint, 177~196쪽 미달·직접/재로드 차이,
+수식 모양·단위 줄 나눔과 전체 승인 범위의 검증을 계속한다.
