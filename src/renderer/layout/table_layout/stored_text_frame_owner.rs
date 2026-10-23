@@ -29,30 +29,48 @@ impl LayoutEngine {
             && Self::stored_row_boxes_exceed_object_frame(table)
     }
 
-    /// 원본 부모 셀의 실제 쪽 재시작이 남아 있는가.
-    /// 자식 표의 reset이나 단조 재생성 사다리는 부모의 저장 쪽 프레임이 아니다.
-    pub(crate) fn stored_table_has_original_page_restarts(&self, table: &Table) -> bool {
-        if !self.original_stored_table_frame_is_usable(table)
-            || table.cells.iter().any(|cell| cell.dirty_flag)
+    /// 부모의 저장 조각 좌표계가 남아 있는가. 옛 컷의 수용 가능 여부와는 별도다.
+    /// 다른 문단의 편집 provenance로 남은 셀/페이지 상대 좌표계까지 기각하지 않는다.
+    pub(crate) fn table_uses_stored_fragment_coordinates(&self, table: &Table) -> bool {
+        let profile = self.profile.get();
+        if !(profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            || table.common.treat_as_char
+            || table.page_break != TablePageBreak::RowBreak
+            || table.common.height == 0
         {
             return false;
+        }
+        let source_geometry = |cell: &Cell| {
+            !cell.dirty_flag
+                && !cell.paragraphs.is_empty()
+                && cell.paragraphs.iter().all(|para| {
+                    !para.stored_text_partition_is_dirty()
+                        && !para.cell_format_vpos_dirty
+                        && !crate::renderer::para_has_no_stored_line_segs(para)
+                        && para.line_segs.iter().all(|line| {
+                            line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                                && line.vertical_pos >= 0
+                                && line.line_height > 0
+                        })
+                })
+        };
+        // 셀 안에서 단조인 저장 좌표도 선언 첫 조각보다 큰 행 상자와 함께
+        // 원본 분할 프레임을 나타낸다. 생성한 placeholder 높이로 인증하지 않는다.
+        if Self::stored_row_boxes_exceed_object_frame(table)
+            && table.cells.iter().all(source_geometry)
+        {
+            return true;
         }
         // cell.height에는 패딩만 저장되는 원본도 있다. 이 값들의 합으로
         // 실제 원본 줄의 쪽 재시작을 기각하거나 재생성 사다리를 인증하지 않는다.
         table.cells.iter().any(|cell| {
+            if !source_geometry(cell) {
+                return false;
+            }
             let mut previous = None;
             let mut restarted = false;
             for para in &cell.paragraphs {
-                if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
-                    return false;
-                }
                 for line in &para.line_segs {
-                    if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                        || line.vertical_pos < 0
-                        || line.line_height <= 0
-                    {
-                        return false;
-                    }
                     restarted |= previous.is_some_and(|pos| line.vertical_pos < pos);
                     previous = Some(line.vertical_pos);
                 }

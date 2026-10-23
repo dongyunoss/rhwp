@@ -3,7 +3,11 @@
 use super::{
     CellUnit, LayoutEngine, ResolvedStyleSet, RowCutResult, ROW_CUT_CAPACITY_FP_EPSILON_PX,
 };
-use crate::model::table::{Cell, Table};
+use crate::model::{
+    control::Control,
+    paragraph::LineSeg,
+    table::{Cell, Table},
+};
 
 /// 같은 내용 컷의 수용 전진과 실제 마지막 상자를 재귀 부모까지 구분한다.
 #[derive(Clone, Copy)]
@@ -105,6 +109,51 @@ impl LayoutEngine {
         }
     }
 
+    /// 같은 저장 줄의 TAC 표 본체와 위·아래 여백이 그 줄 상자를 실제로 소유한다.
+    fn unit_owns_stored_inline_table_frame(&self, cell: &Cell, unit: &CellUnit) -> bool {
+        if !(self.profile.get().hwp5_stored_pagination_layout()
+            || self.profile.get().hwpx_stored_layout())
+        {
+            return false;
+        }
+        let Some(para) = cell.paragraphs.get(unit.para_idx) else {
+            return false;
+        };
+        if !para.text.trim().is_empty()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || crate::renderer::para_has_no_stored_line_segs(para)
+        {
+            return false;
+        }
+        para.controls.iter().enumerate().any(|(index, control)| {
+            let Control::Table(child) = control else {
+                return false;
+            };
+            if !child.common.treat_as_char
+                || child.common.height == 0
+                || self
+                    .render_normalization
+                    .borrow()
+                    .table_text_reflowed(child)
+            {
+                return false;
+            }
+            let Some(line_index) = super::super::control_line_seg_index(para, index) else {
+                return false;
+            };
+            let height = i64::from(child.common.height)
+                + i64::from(child.outer_margin_top)
+                + i64::from(child.outer_margin_bottom);
+            unit.vis_start <= line_index
+                && line_index < unit.vis_end
+                && para.line_segs.get(line_index).is_some_and(|line| {
+                    line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                        && i64::from(line.line_height) == height
+                })
+        })
+    }
+
     /// 바깥 조각의 예산은 행 전체가 아닌 표의 실제 프레임 소유로 정한다.
     /// 부모가 크기를 정하는 중첩 viewport는 자신의 예산을 유지한다.
     pub(crate) fn row_uses_outer_fragment_frame(&self, table: &Table, row: usize) -> bool {
@@ -146,6 +195,9 @@ impl LayoutEngine {
                 .unwrap_or(start)
                 .clamp(start, units.len());
             for unit in &units[start..end] {
+                if self.unit_owns_stored_inline_table_frame(&table.cells[index], unit) {
+                    return false;
+                }
                 if unit.nested_row.is_some()
                     || unit.nested_table_fragment.is_some()
                     || unit.mixed_nested_fragment
@@ -155,7 +207,7 @@ impl LayoutEngine {
                     // 저장 부모 프레임이 없는 재구성 사다리는 이 viewport도
                     // 현재 바깥 조각 안에서 예약해야 한다. 자식 reset을 부모
                     // 쪽 프레임의 증거로 대신하지 않는다.
-                    return !self.stored_table_has_original_page_restarts(table);
+                    return !self.table_uses_stored_fragment_coordinates(table);
                 }
                 has_content = true;
             }
