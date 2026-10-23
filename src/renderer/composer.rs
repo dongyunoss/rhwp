@@ -107,6 +107,7 @@ impl ComposedTextRun {
         if self.supplemental_metrics_blocked {
             style.supplemental_metrics = None;
         }
+        conjoining_jamo::apply_font(self, &mut style);
         self.space_metric.apply_to_style(&mut style);
         style.regenerated_font_metrics = self.regenerated_font_metrics;
         style.literal_figure_space = self.literal_figure_space;
@@ -135,6 +136,7 @@ impl ComposedTextRun {
 }
 
 mod auto_number_projection;
+mod conjoining_jamo;
 mod equation_line_metrics;
 mod mapped_symbol_fonts;
 mod stored_row_fragments;
