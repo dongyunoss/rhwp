@@ -588,3 +588,113 @@ Print의 배율·반올림을 고려하면 각각 전체 표 높이/분할 행 �
 기록(2787)을 읽었다. 커서의 `start_row_height_override`로 같은 수용 띠를 scan과 paint에
 전달하는 계약이며, 자식 내용 커서만으로 같은 사실을 입증할 수 없다. 이 축과 남은 전체
 Rust·lint·차트·45개 PR 범위 검증이 끝나기 전에는 새 PR을 제출하지 않는다.
+
+## fresh WASM049와 완료 원본 4쪽의 새 회귀
+
+2026-10-24 `git fetch upstream devel`을 실행했다. `upstream/devel`은
+`d9fd85ed5bc3c4d9ce6b2981422e48bf9bb90867`로 바뀌지 않았고 현재 후보의 조상이다.
+사용자의 동일 head 생략 지시에 따라 리베이스하지 않았다(2795). 새로운 외부 PR은 적용하지 않았다.
+
+동결 제품 소스 `adc54cb8847ebc06637d6f6df296be5887658e2f`의 standard release
+fresh WASM049 빌드 종료 0·878.09초와 `verify_release_wasm.py` 패키지 검증을 확인했다.
+공유 `target/pr-review`·빌드 잡 8개이며 pkg와 Studio public의 JS/WASM 해시가 같다.
+Native176과 같은 제품 소스 바이트인지 빌드 전에 대조했고 검증 중 제품 소스를 바꾸지 않았다.
+이는 최종 전체 Rust·lint·Studio 검증 완료를 뜻하지 않는다.
+
+각 원본 115쪽, 합계 230쪽을 같은 글꼴·96dpi·Print 프로필로 비교했다.
+Native 최저 95.77381%, fresh WASM 최저 95.70233%이며 미달·누락 쪽은 없다.
+원본 4쪽은 각각 99.99055% / 100%다. 2801의 공식 review와 standalone overlay에서
+표의 위·아래 괘선, 헤더·재료 3줄·압력 값과 앞 본문을 같은 쪽에서 직접 판독했다.
+글자 잉크 굵기·색상 차이는 남으며 raw 100%를 RGB 일치나 문서 전체 정확도로 해석하지 않는다.
+실루엣-only gate의 `not_evaluated`도 전체 PR 승인으로 바꾸지 않는다.
+
+### 정식 입력과 독립 Print
+
+기존 원본 입력은 그대로 재사용한다. 새 MCP Print PDF는 임시 진단 위치의 파일을 숨기지 않고
+다음 정식 경로에 바이트 그대로 보존했다. 둘 다 원문 그대로 PrintMethod=0 전체 출력이다.
+
+- `samples/issue1949_giant_cell_nested_tables_perf.hwp`: SHA-256 `ef10261cd29325116028e4f4f3e6be1a72c675eb771bddfd8484e7fe5aa94b4e`.
+  기준: [`original-hwp-2024.pdf`](../../pdf/issue1949-original-print-20261024/original-hwp-2024.pdf),
+  SHA-256 `88706653cafe77001bcaa3f0ecfb4e64f08987c8d2caa08a66673822cc0fc52a`, engine 2024, 115쪽.
+  MCP job `ae492a86-fbf1-403e-a0c9-4e07e3ec16cc`.
+  제출 TSV와 4쪽 대표 PNG:
+  - [native TSV](../pr/assets/issue_1949_complete_stored_frame/native/hwp_silhouette.tsv)
+    (최저 95.77381%, SHA-256 `5033bfd29c9372587591de536e773f0541af2e9a52312f3fb455d1fda57c2839`).
+    [review](../pr/assets/issue_1949_complete_stored_frame/native/hwp_p004_review.png) ·
+    [overlay](../pr/assets/issue_1949_complete_stored_frame/native/hwp_p004_overlay.png).
+  - [wasm TSV](../pr/assets/issue_1949_complete_stored_frame/wasm/hwp_silhouette.tsv)
+    (최저 95.70233%, SHA-256 `1b807f6866b0c1851a8a63792771ea654385eb4504fabc7600023750227db77a`).
+    [review](../pr/assets/issue_1949_complete_stored_frame/wasm/hwp_p004_review.png) ·
+    [overlay](../pr/assets/issue_1949_complete_stored_frame/wasm/hwp_p004_overlay.png).
+- `samples/issue1949_giant_cell_nested_tables_perf.hwpx`: SHA-256 `fc6e5f156de470dfbb14aab392389491720ee7fb1bf6f03fe9a018e93b420c65`.
+  기준: [`original-hwpx-2020.pdf`](../../pdf/issue1949-original-print-20261024/original-hwpx-2020.pdf),
+  SHA-256 `d3af0cbddf49bce84d25083775ed4e05f7f9bde0fe01af8b772fb7b8dd36a08e`, engine 2020, 115쪽.
+  MCP job `d3f25cae-9be4-4501-ada1-04da03fbb04a`.
+  제출 TSV와 4쪽 대표 PNG:
+  - [native TSV](../pr/assets/issue_1949_complete_stored_frame/native/hwpx_silhouette.tsv)
+    (최저 95.77381%, SHA-256 `9881adb58845de4b78108cc5876c40e51ecb7b132c4f42e519b8da911b286f65`).
+    [review](../pr/assets/issue_1949_complete_stored_frame/native/hwpx_p004_review.png) ·
+    [overlay](../pr/assets/issue_1949_complete_stored_frame/native/hwpx_p004_overlay.png).
+  - [wasm TSV](../pr/assets/issue_1949_complete_stored_frame/wasm/hwpx_silhouette.tsv)
+    (최저 95.70233%, SHA-256 `76ccdb4118f839988e4d827f5294f92942f6d3076e67f015bfbfce01bc7099f0`).
+    [review](../pr/assets/issue_1949_complete_stored_frame/wasm/hwpx_p004_review.png) ·
+    [overlay](../pr/assets/issue_1949_complete_stored_frame/wasm/hwpx_p004_overlay.png).
+
+### 검사와 실패 진단
+
+새 이름 `tests/cases/issue_1949_complete_nested_stored_frame.rs`의 HWP/HWPX 2개 검사는
+원본 문단 81·컨트롤 0·3×3 표를 소유 정보로 선택한다. 독립 PDF 괘선의
+`[154.797333, 969.658691, 669.079997, 1071.308024]`를 96dpi에서 ±2px로 검사하고
+바깥 셀 포함, 재료별 내용의 단일 소유·순서·줄 비겹침 및 각 셀의 글줄 포함을 함께 검사한다.
+좌표로 검사 대상을 찾거나 전체 SVG 해시를 고정하지 않았다. 해당 쪽 양쪽 98% 조건을 먼저 충족했다.
+
+같은 새 검사·기대값을 이전 Native175와 Native176에 각각 링크한 2803에서
+**수정 전 2 FAIL → 수정 후 2 PASS**를 확인했다. 이전 아래 경계 1076.32px가
+독립 Print 1071.308024px ±2px를 벗어난 것이 실패 원인이다. 다른 결함으로 인한 실패나
+수정 전에도 통과하던 검사를 수정 효과로 표시하지 않는다. 정식 suite 자동 수집은 현재
+정본의 `--prepare`로 생성했다(2806). 초기 legacy `--adopt`/`--generate`의 파생 manifest
+오류는 로그를 보존한 뒤 현행 절차로 재생성했으며 파생 파일은 커밋하지 않는다.
+
+편집 복원 진단은 별개다. 실제 56자 삽입·삭제 후 같은 모델의 새 Print(2794)는 두 형식 모두
+115쪽이다. HWP 현재 재열기는 116쪽으로 전체 대조가 중단됐고 8·102쪽은 각각
+26.27084%·39.97791%다. HWPX 재열기는 115쪽·전쪽 최저 95.77381%(2796)지만
+편집 중 live와 재열기 간 6쪽 내용 소속 차이는 남는다. 이 실패를 원본 통과로 면제하지 않는다.
+
+2797/2800에서 복원 직후 표의 직렬화 모델과 DocInfo 진단값이 원본과 같음을 확인했다.
+현재 live 쪽별 내용은 원본과 다르지만 같은 문서 모델을 `set_document`로 재구성하면
+두 형식 모두 원본 115쪽의 내용과 일치한다. 남은 파생 상태·재조판 provenance를 추적할
+근거이며 자동 제거 규칙을 구현한 상태는 아니다. 최초 2797 진단은 DocInfo에 Serialize가
+없어 컴파일이 실패했다. 제품 코드를 바꾸지 않고 진단 표현만 고쳐 재실행했다.
+실행 로그·중간 JSON·진단 스크립트는 ignored output에 보존한다.
+
+남은 편집본·부분 행·차트·전체 Rust/lint와 PR 기능 보존 검증이 끝나기 전에는
+PR 준비 완료·생성·승인·통합으로 판정하지 않는다.
+
+### 현행 suite 정책과 실행 경로 보존
+
+정확한 devel base의 manifest 검사는 기존 커밋 `36b64bccfe`의 #4969 request contract
+target 이동과 bidi 의존성 추가가 같은 PR에 섞인 것을 거부했다(2807/2808).
+당시 이동은 독립/중첩 39개 검사의 동일성에 근거했으나, 현행 registry 유지보수 정책은
+Cargo marker 바깥 변경과의 혼합을 허용하지 않는다. 정책·target 예산을 완화하지 않고
+해당 target과 분류만 devel의 원래 독립 실행 경로로 복구했다. 기존 39개 검사의 내용은
+바꾸지 않았다. 예외 20개·전체 target 48/48이며 source 1750개가 자동 수집된다.
+커밋된 HEAD를 대조하는 정책 검사는 이 복구 커밋 뒤 정확한 같은 devel SHA로 다시 수행한다.
+policy 단위 검사 25개는 통과했다(2810). 새 회귀 2개와 기존 shaping 39개는 같은
+Cargo/nextest 실행 2809에서 함께 검증하며, 그 결과를 확인한 뒤 단계 커밋을 만든다.
+
+4쪽의 원본 HWP/HWPX Native raster는 서로 SHA-256이 같고, WASM raster도 서로
+같으며, 두 독립 Print의 해당 raster도 같다(2801). 직접 판독한 두 backend의 동일
+바이트 쌍이므로 같은 그림을 형식별로 반복 표시하지 않았다. 전체 TSV는 형식별 원본을
+각각 보존하며, 페이지 단위 동등성을 전쪽 동등성으로 확장하지 않는다.
+
+추가 2813 대조에서 HWP 재열기 표는 원본보다 저장 `vertical_pos` 3473개·tag 2개가
+달라졌다. 첫 차이는 문단158의 첫 줄 0→73560이며, HWPX의 차이는 raw header
+바이트뿐이다. 표 JSON 비교는 serde 제외 필드의 동등성까지 입증하지 않는다. 전체
+파생 상태 재구성으로 양쪽 내용이 회복된 사실과 함께 다음 원인 분석에 사용한다.
+문서의 새 상대 링크 14개는 파일별로 존재를 확인했다(2812). 공통 링크 검사기의
+전역 redirect 탐색은 중단했으며 이를 정식 검사 통과로 기록하지 않는다.
+
+2809 정식 Cargo/nextest는 종료0, 266.96초이며 **41 PASS / 0 FAIL**이다.
+새 표 프레임 2개와 원래 독립 shaping 39개가 실제 실행됐다. 다른 suite의 275개 필터
+skip은 성공 수에 넣지 않았다. 이 실행은 전체 Rust 검증이 아니다. 제품 구현은 Native176
+그대로이며 이번 단계의 추가 변경은 테스트·target 라우팅·증거와 기록이다.

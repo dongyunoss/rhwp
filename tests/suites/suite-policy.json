@@ -57,13 +57,6 @@
       ]
     },
     {
-      "path": "tests/cases/issue_4969_shaping_request_contract.rs",
-      "allowBlockers": [
-        "path_attr",
-        "root_mod"
-      ]
-    },
-    {
       "path": "tests/issue_2225_missing_picture_placeholder.rs",
       "allowBlockers": [
         "function_gated_native_skia"
