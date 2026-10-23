@@ -115,6 +115,54 @@ impl LayoutEngine {
             && !Self::row_cut_cell_order(table, row).is_empty()
     }
 
+    /// 현재 밴드가 실제로 소비하는 일반 글줄의 바깥 프레임이다.
+    /// 먼 개체의 존재나 표의 중첩 깊이만으로 현재 컷의 소유자를 추정하지 않는다.
+    pub(crate) fn row_cut_uses_outer_line_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        start_cut: &[usize],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !self.row_uses_outer_fragment_frame(table, row) {
+            return false;
+        }
+        if self.row_has_plain_line_units(table, row, styles) {
+            return true;
+        }
+        // 내용 선택과 같은 물리 컷 생산자를 사용한다. 개체 viewport가 예약한
+        // 몫까지 일반 글줄의 바깥 예산으로 다시 차감하지 않는다.
+        let (cut, _) =
+            self.advance_row_cut_for_physical_band(table, row, start_cut, available, styles);
+        let mut has_content = false;
+        for (slot, index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
+            let units = self.cell_units(&table.cells[index], table, styles);
+            let start = start_cut.get(slot).copied().unwrap_or(0).min(units.len());
+            let end = cut
+                .end_cut
+                .get(slot)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            for unit in &units[start..end] {
+                if unit.nested_row.is_some()
+                    || unit.nested_table_fragment.is_some()
+                    || unit.mixed_nested_fragment
+                    || unit.top_and_bottom_flow
+                    || unit.non_inline_control_range.is_some()
+                {
+                    // 저장 부모 프레임이 없는 재구성 사다리는 이 viewport도
+                    // 현재 바깥 조각 안에서 예약해야 한다. 자식 reset을 부모
+                    // 쪽 프레임의 증거로 대신하지 않는다.
+                    return !self.stored_table_has_original_page_restarts(table);
+                }
+                has_content = true;
+            }
+        }
+        has_content
+    }
+
     /// 내용 커서는 무높이 보조 spacer도 소비한다. 이어받은 조각의 실제
     /// 전진 범위는 이 공통 소유 판정으로 컷 선택과 물리 높이 측정에 전달한다.
     /// 다른 컷 경로의 원본 빈 문단 소유까지 이 전진 범위로 대체하지 않는다.

@@ -101,8 +101,9 @@ impl TypesetEngine {
         let owns_plain_row_frame = ordinary_row_can_split
             && (reflow_minimum.is_some() || continuing_reflow_minimum)
             && plain_reflow_line_units;
-        // 본문을 전진시키는 일반 글줄은 저장 여부와 무관하게 같은 물리 하단을 쓴다.
-        // paint의 바깥여백/쪽 끝 경계를 넘는 줄을 먼저 소비한 뒤 잘라내지 않는다.
+        // 현재 컷이 소유한 일반 글줄에 같은 물리 하단을 적용한다.
+        // 개체 viewport의 독립 예약과 먼 다음 조각의 개체를 혼동하지 않는다.
+        let row_start = if r == cursor_row { start_cut } else { &[] };
         let plain_body_band = matches!(
             table.common.text_wrap,
             crate::model::shape::TextWrap::TopAndBottom

@@ -14,6 +14,7 @@ pub(crate) fn rowbreak_fragment_bounds(
     body_bottom: f64,
     dpi: f64,
     body_filling_source_frame: bool,
+    has_original_page_frames: bool,
 ) -> RowbreakFragmentBounds {
     let outer_bottom = body_bottom - hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi);
     let blank_bottom = if body_filling_source_frame {
@@ -38,7 +39,7 @@ pub(crate) fn rowbreak_fragment_bounds(
     RowbreakFragmentBounds {
         // 단독 셀과 출처가 인증된 분할 본문은 쪽 조각 자체가 이 프레임을 소유한다.
         // 일반 격자의 글줄에는 빈 종료 띠의 inset을 수용 예산으로 중복 적용하지 않는다.
-        content_bottom: if (table.row_count == 1 && table.col_count == 1) || reparsed_body_owner {
+        content_bottom: if !has_original_page_frames || (table.row_count == 1 && table.col_count == 1) || reparsed_body_owner {
             blank_bottom
         } else {
             outer_bottom
@@ -53,5 +54,6 @@ pub(crate) fn rowbreak_fragment_frame_bottom(
     dpi: f64,
     body_filling_source_frame: bool,
 ) -> f64 {
-    rowbreak_fragment_bounds(table, body_bottom, dpi, body_filling_source_frame).content_bottom
+    rowbreak_fragment_bounds(table, body_bottom, dpi, body_filling_source_frame, true)
+        .content_bottom
 }

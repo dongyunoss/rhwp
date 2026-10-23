@@ -29,6 +29,38 @@ impl LayoutEngine {
             && Self::stored_row_boxes_exceed_object_frame(table)
     }
 
+    /// 원본 부모 셀의 실제 쪽 재시작이 남아 있는가.
+    /// 자식 표의 reset이나 단조 재생성 사다리는 부모의 저장 쪽 프레임이 아니다.
+    pub(crate) fn stored_table_has_original_page_restarts(&self, table: &Table) -> bool {
+        if !self.original_stored_table_frame_is_usable(table)
+            || table.cells.iter().any(|cell| cell.dirty_flag)
+        {
+            return false;
+        }
+        // cell.height에는 패딩만 저장되는 원본도 있다. 이 값들의 합으로
+        // 실제 원본 줄의 쪽 재시작을 기각하거나 재생성 사다리를 인증하지 않는다.
+        table.cells.iter().any(|cell| {
+            let mut previous = None;
+            let mut restarted = false;
+            for para in &cell.paragraphs {
+                if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
+                    return false;
+                }
+                for line in &para.line_segs {
+                    if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                        || line.vertical_pos < 0
+                        || line.line_height <= 0
+                    {
+                        return false;
+                    }
+                    restarted |= previous.is_some_and(|pos| line.vertical_pos < pos);
+                    previous = Some(line.vertical_pos);
+                }
+            }
+            restarted
+        })
+    }
+
     /// 같은 원본 문단의 좌표 재시작이다. 이 사실만으로 물리 쪽을 강제하지 않는다.
     /// 측정의 지역 좌표 변환과 물리 프레임 인증이 같은 원본 경계를 조회한다.
     pub(super) fn native_intra_paragraph_source_restart(

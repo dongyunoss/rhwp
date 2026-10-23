@@ -1802,13 +1802,14 @@ impl TypesetEngine {
                 frame_boundary,
                 self.dpi,
                 body_filling,
+                prepared.layout_engine.stored_table_has_original_page_restarts(table),
             );
             // 내용 컷이 이미 소비한 원본 하단 inset을 빈 띠 예산에서 되돌리지 않는다.
             // 현재 각주 등으로 좁아진 본문과 인증한 이어받기 프레임의 교집합이다.
             let bottom = accepted_frame_bottom
                 .map_or(bounds.content_bottom, |saved| bounds.content_bottom.min(saved));
             let blank_bottom = accepted_frame_bottom
-                .map_or(bounds.blank_bottom, |saved| bounds.content_bottom.min(saved));
+                .map_or(bounds.blank_bottom, |saved| bounds.blank_bottom.min(saved));
             let top = fragment_placement.map_or(
                 fragment_flow_origin + host_before_overhead + vert_offset_overhead,
                 |placement| placement.table_top,
