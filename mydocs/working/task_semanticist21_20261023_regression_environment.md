@@ -618,3 +618,22 @@ overlay 두 쪽을 직접 읽어 흑백 문자와 부모 셀의 클립을 확인
 확인했다(`inline-axis-native133-2068/results.json`). 이 여섯 입력의 현재 fresh 검증과 정식
 helper 보정은 이어서 진행해야 한다. 아직 남은 11개 재조판 정책 미달과 전체 Rust 실패의
 해소를 이 결과로 대신하지 않으며, PR 준비 전체 완료로 판정하지 않는다.
+
+## TAC 뒤 글자 회귀 helper의 위치 축 보정
+
+원 해결 PR #7616의 공개 API 재현·원 테스트와 #7882 통합 근거를 다시 대조했다. 기존
+`char_box` helper는 `RenderRun.char_start`의 논리 위치를 본문 글자 번호와 바로 비교했다.
+표·누름틀·책갈피 슬롯 뒤에서는 두 축이 달라지므로 문서의 `logical_to_text_offset`으로
+변환한 뒤 해당 글자를 찾도록 보정했다. 원래 문단 내용·저장 LineSeg 시작점·앞 글자 같은 줄·
+표와 뒤 글자의 순서 관계는 그대로 유지했다. 절대 좌표 핀이나 새 수치 기대값을 넣지 않았다.
+
+같은 원본 HWP/HWPX 저장본 6개와 독립 2020 Print는 Native133·WASM047에서 각각 전쪽
+raw 100%, 전체 쪽수 1 대 1, 누락 0쪽이다. 증거는 `inline-axis-native133-2068/results.json`과
+`inline-axis-wasm047-2073/results.json`이다. `inline-axis-direct-review-2076/`에서 동일 원본
+raster의 6개 확대 비교와 대표 review·standalone overlay를 생성해 내용과 표 앞뒤 순서를
+직접 읽었다. 표시용 crop은 별도 manifest에 기록했고 원본 raster와 TSV는 유지했다.
+
+`inline-axis-formal-2077/`은 이전 정식 파일의 사본과 보정한 정식 파일을 같은 Native133
+library에 연결해 실행했다. 수정 전 3 FAIL, 수정 후 3 PASS이며 실패를 숨기는 필터·expectation
+완화는 없다. 로그는 `logs/inline-axis-formal-2077-{before,after}.log`다. 정식 파일과 기존
+자동 suite 경로를 유지했으며, helper 보정은 제품 library의 코드 변경이 아니다.
