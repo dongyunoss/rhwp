@@ -35,7 +35,7 @@ jobs:
             target: x86_64-pc-windows-msvc
             library: rhwp_native_ffi.dll
     env:
-      CARGO_TARGET_DIR: ${{ runner.temp }}/rhwp-native-host-target
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target/native-host-package
       CARGO_TERM_COLOR: always
     defaults:
       run:
