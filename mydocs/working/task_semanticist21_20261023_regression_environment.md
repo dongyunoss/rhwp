@@ -716,3 +716,52 @@ ZIP 내부 11개 항목도 모두 동일하다. 새 `--verify`는 종료 코드 
 동기화한 뒤 1748 sources / 7601 static test attrs / 28 suites + 19 exceptions =
 47/48 targets를 확인했다. 로그는 `logs/table-export-cache-suite-check-2103.log`다.
 전체 Rust 재실행과 제한 없는 자식 흐름의 보정·최종 fresh 검증은 계속 필요하다.
+
+## 제한 없는 원자 자식의 부모 프레임과 이어받기 진단
+
+`unrestricted-policy-2106/implementation-plan.md`에 독립 Print·선행 #7288 근거와
+공통 소비 경로를 정리한 뒤 수정했다. 쪽 제한을 끈 부모 안의 자식 표가 모두 NONE
+원자 개체이고, 측정기가 인증한 부모 프레임이 현재 쪽에 들어가면 부모의 CELL/TABLE
+설정만으로 자식을 다음 쪽으로 분리하지 않는다. `row_frame_heights`의 부모 프레임으로
+통째 수용을 판정하되, 자식의 선언 정책·원점·내용 유닛과 기존 전체 흐름 예약은 보존한다.
+제한된 자식·분할 자식·걸침 칸은 이 새 수용 조건의 대상이 아니다. 부모의 프레임이
+들어가지 않는 경우도 기존 경로를 유지한다.
+
+Native137은 공용 target·잡 8개로 243.04초, 종료 코드 0을 확인했다. 실제 HEAD는
+`51e31ba54036151bf535b2f977a89d58d956b677`이며 dirty 소스 2개를 포함한 해시는
+`char-overlap-native-build-137-result.json`에 있다. 기존 23개 정책·여백 대조군은
+17개가 전쪽 raw 100%로 통과했고 6개는 여전히 미달이다. 부모 CELL/TABLE·자식 NONE
+두 조건의 최저값은 각각 2.16283%에서 100%로 개선됐다. 쪽수도 Print의 2쪽과 같다.
+`reflow-policy-native137-2108/results.json`이 전체 결과이며, 별도의 명시적 쪽 나눔·
+뒤 문단 두 개 반례도 각각 3쪽/2쪽·전쪽 raw 100%다
+(`reflow-policy-prefill-native137-2109/results.json`). 개선한 원자 자식 사례의 1·2쪽
+review와 standalone overlay를 `unrestricted-atomic-native137-review-2112/`에 생성했다.
+1쪽에서 자식 3행의 보존과 짧은 부모 외곽을 직접 확인했다. 엄격 픽셀은 35.73%로,
+raw 100%를 색·두께·픽셀 전체 일치로 보고하지 않는다.
+
+같은 동결 제품에서 완료 페이지·저장 프레임 22개는 모두 PASS다
+(`current-previous-failures-2110-result.json`). 이전 전체 실행에서 실패한 외부 47개를
+현재 정식 소스에서 재컴파일·재실행한 결과는 5 PASS / 42 FAIL / 누락 0개다
+(`current-previous-failures-2111-result.json`). CLI 실패 2개가 통과로 바뀌었고,
+이 결과는 전체 Rust·fresh WASM 통과를 뜻하지 않는다.
+
+### 후속 본문 원점의 직접 대조와 잘못된 진단의 정정
+
+남은 분할 자식의 범위를 분석하려고 본문 가용 공간만 늘린 대조군 2개를 추가했다.
+변경은 `hp:pagePr/hp:margin`의 bottom 69000 → 62000뿐이며 내용·표·글꼴은 그대로다.
+`unrestricted-fullfit-inputs-2113.json`에 원본·수동 대조군 SHA와 변경점을 보존했다.
+MCP 2020의 독립 Print 2개는 모두 성공했고 `pdf_print_method=0`을 확인했다.
+`mcp-unrestricted-fullfit-2113/`에 job·실제 출력 모드·PDF SHA를 기록했다.
+Native137 결과는 두 파일 모두 1쪽 일치·raw 97.07029%이나 직접 원점 대조는 실패다.
+후속 본문의 Native 기준선은 258.53333px, Print 기준선은 225.67338px로 약 32.86px
+차이다. 점수 통과로 배치 결함을 면제하지 않는다.
+
+작은 용지의 분할 사례도 후속 본문 기준선은 Native 91.50667px, Print 83.90830px로
+약 7.60px 차이다. 앞선 ignored 진단에서 PDF `blocks`의 y=19.82px를 이 본문의
+원점으로 해석한 가설은 잘못됐다. 그 블록에는 자식 표 글자가 함께 묶여 있었다.
+실제 본문 `span`의 bbox 윗변은 72.89793px이며 기준선은 별도로 위와 같다.
+`unrestricted-policy-2106/frame-stream-observations.json`을 정정했다. 진단 Rust의
+실제 run baseline·반올림 전 bbox는 `logs/unrestricted-line-origins-2115.log`에 있다.
+다음 보정은 부모의 물리 프레임 소유, 공동 앵커 자식들의 최대 점유 끝, 분할 뒤 여백과
+후속 본문 예약을 같은 원장으로 연결한다. 소스 유닛 삭제나 부모 괘선 숨김으로 대신하지
+않는다. 이 단계의 fresh WASM·새 정식 렌더링 회귀와 최종 전체 검증은 아직 필요하다.
