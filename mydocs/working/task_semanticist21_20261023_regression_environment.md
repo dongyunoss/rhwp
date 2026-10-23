@@ -301,3 +301,123 @@ raw는 약 80.62%이며 시각 완료가 아니다. 구조 차이·글꼴 차이
 여전히 logical index 6이다. 따라서 단순히 테스트 helper에 공개 변환을 호출하는 것만으로
 해결된다고 결론 내릴 수 없다. 원래 원인·축 계약·독립 출력의 대조를 이어간다.
 진단 실행 성공을 올바른 화면 배치나 신규 회귀의 시각 선행 조건 충족으로 보고하지 않는다.
+
+## 제한된 자식 조각의 시작·종료 여백 보정 계획
+
+1997은 동결 Native129의 소스 유닛·선택 컷을 6조건에서 실제 실행했다. 자식 3행은
+55.533333·51.760000·55.533333px 유닛으로 투영된다. 실제 행 본체는 각각 51.76px이며
+위·아래 여백은 전체 자식의 첫·마지막 유닛에만 들어 있다. 그러므로 첫 두 행의 컷과
+마지막 한 행의 이어받기에 유닛 합만 사용하면 각 조각의 닫기/열기 여백이 빠진다.
+선행 저장 줄의 21.333333px 전진과 자식이 이월된 호스트 빈 줄도 구분해야 한다.
+
+선택된 `nested_row`·재귀 `NestedTableCut`에서 자식의 실제 조각 높이를 질의하고,
+동일한 호스트 줄 높이와 자기 양쪽 여백으로 제한된 자식의 내용 프레임을 계산한다.
+이 결과를 행의 수용/점유 높이와 셀의 가시 높이가 함께 소비하도록 한다. 유닛 주소와
+저장 컷을 바꾸지 않는다. 제한 없는 자식은 부모 외부 프레임과 독립된 내용 스트림을
+가지므로 이 포함 관계를 적용하지 않으며, 그 예약·정책 소유 보정은 계속 필요하다.
+18정책과 서로 다른 여백/위치 대조군, 기존 완료 페이지 계약을 같은 후보로 확인한다.
+
+## 공통 컷 높이의 Native130 결과와 소비 경로 추가 보정
+
+Native130은 잡 8개·공용 target으로 256.37초에 빌드 종료 코드 0을 확인했다.
+첫 실행기는 진행 중이던 fmt를 감지해 컴파일 전에 거절됐다. fmt 호출 형식을 고친
+재검사가 끝난 뒤 실제 빌드를 순차 실행했다. 실패한 fmt와 실행기 기록을 보존한다.
+
+- `current-previous-failures-1999-result.json`: 기존 계약 22 통과·실패 0·누락 0.
+- `reflow-policy-native130-2000/results.json`: 18조건·36쪽 중 6조건 통과,
+  12조건 미달. 제한 true·부모 CELL·자식 CELL/TABLE은 84.22101%에서
+  94.63329%로 개선됐다. 정책 전체가 완료됐다는 뜻은 아니다.
+- `fragment-margin-owner-native130-2001/results.json`: 제한 true의 자식 여백은
+  52.83858% → 93.93876%, 부모 여백은 84.92662% → 94.52942%다.
+  제한 false의 두 조건은 81.43136/52.14760%로 미달이다.
+- `fragment-parent-position-native130-2002/results.json`: 제한 true는
+  52.49219% → 94.71542%, false는 81.26038%로 미달이다.
+- `two-tac-child-height-native130-2003/results.json`: 원래 4조건은 모두 90% 이상이며
+  Native129의 점수와 쪽수를 유지했다.
+
+`restricted-child-margin-review-2006/`의 2쪽 review와 standalone overlay를 함께
+직접 읽었다. 93.94% 통과 이후에도 부모 외곽을 자식 폭에 맞춰 늘린 파란 선과
+이모지 모양·색 차이가 보인다. 수치만으로 완료하지 않는다. source/Print의 이모지
+차이와 프레임 차이를 분리해 남긴다.
+
+생산·소비 경로는 `reflow_cut_content_height` → `row_cut_height`의 Capacity/Occupied와
+`cell_cut_visible_height` → 부분 배치의 행 높이다. 그 뒤의 별도 소비도 대조했다.
+`extend_clipped_cell_horizontal_clip_to_nested_table_borders`가 부모 칸 폭을 바꾸고,
+`fold_last_row`가 선행 저장 줄간격 8px를 다시 접으며, 정렬은 별도 내용 높이를 선택한다.
+현재 후속 후보는 같은 컷의 명시적 프레임을 정렬·셀 clip·꼬리 접기에 전달한다.
+부모 괘선 폭과 자식 viewport를 분리하고, 컷을 받은 자식을 부모 clip으로 다시 자르지 않는다.
+여러 행에 걸친 칸은 기존 걸침 조각 원장이 소유하므로 단일 행의 인증을 그대로 적용하지 않는다.
+Native131의 실제 실행 결과는 별도로 확인하며 Native130을 새 후보 검증으로 재인용하지 않는다.
+
+## TAC 뒤 글자 실패 원 PR과 현재 독립 Print
+
+기존 통합 기록에서 원 PR #7616을 찾고 GitHub 본문·커밋 목록을 다시 확보했다
+(`inline-axis-pr7616-2016.json`). 원 등록 46a8bd7b9d가 인용한 테스트 전용 커밋은
+7a58f1d7c7이며 원 PR은 줄 경계·누름틀/책갈피 갭과 뒤 글자 소유의 결함을 설명한다.
+원 PR은 한컴 출력·fresh WASM 미실행을 명시했고, 이후 통합 보정의 Print 100% 근거는
+기존 `semanticist21_20261008_integrated_review.md`에 있다. 원 커밋의 자동 PR 연결
+조회는 빈 배열이었으며 이를 원 PR 부재로 판정하지 않고 기존 통합 기록으로 추적했다.
+
+현재 테스트 helper 그대로 만든 HWP/HWPX 6개의 한컴 2020 MCP Print를 완료했다.
+HWP에는 템플릿의 2010, HWPX에는 2020 저장 메타데이터가 있으며 실제 생성은
+Native129의 공개 API와 기존 helper다. 메타데이터를 한컴 저작·저장 실행 증거로
+승격하지 않는다. 각 요청의 실제 engine 2020·PrintMethod 0·1-up 출력 모드·입력/PDF
+해시는 `mcp-inline-axis-2005/`에 보존했다. 실패 0건이다.
+
+`inline-axis-native130-2007/results.json`에서 6개 모두 Print와 1쪽 일치·raw 100%다.
+렌더 런은 논리 축으로 표 슬롯을 포함하지만 기존 `char_box`는 텍스트 글자 인덱스와
+직접 비교한다. `text_to_logical_offset`은 같은 위치의 개체 앞 삽입 경계를 반환하므로
+그 함수 호출만 넣는 수정은 부적절하다. 실제 런의 논리 시작을 텍스트 축으로 역변환해
+소유 글자를 찾는 방향으로 진단한다. formal 검사 변경은 같은 원본의 fresh WASM과
+직접 판독까지 확인한 뒤 수행하며, 기존 내용·줄 순서 관계와 실패 검출은 유지한다.
+
+## Native131의 실제 배치 소비 결과와 남은 차이
+
+공용 `target/pr-review`·잡 8개로 246.04초에 빌드 종료 코드 0을 확인했다.
+산출물 SHA-256은 `ce7943ec066da88c1f7ddf159ff793e0709099713b8b9d10234020e54e7eaac0`이며
+`char-overlap-native-build-131-result.json`의 소스 628개 해시와 현재 바이트를 대조했다.
+`current-previous-failures-2010-result.json`의 기존 계약 22개는 모두 통과했다.
+
+- `reflow-policy-native131-2011/results.json`: 18조건 중 7조건 통과·11조건 미달이다.
+  제한 true·부모 CELL·자식 NONE은 40.79432% → 93.37929%로 개선됐다.
+  자식 CELL/TABLE은 93.95085%이며, 부모 NONE의 세 조건은 93.39512%다.
+  Native130 대비 각각 0.68244%p와 1.71550%p 하락했다. 후자는 내용 경계의
+  좌표 이동 없이 기존 clip 밖 잉크가 드러난 차이를 포함하므로 수치만으로 완료하지 않는다.
+- 여백 4조건과 위치 2조건은 Native130의 점수와 쪽수를 유지했다
+  (`fragment-margin-owner-native131-2012/`, `fragment-parent-position-native131-2013/`).
+- 기존 자식 높이 4조건은 모두 90% 이상이다. 제한 false의 큰/작은 글자는
+  96.09434/99.87220%, 제한 true는 95.15682/99.03650%다
+  (`two-tac-child-height-native131-2014/results.json`). true의 값은 이전보다 낮아
+  clip 변경 영역을 직접 판독해야 하며 기존 결과를 그대로 재인용하지 않는다.
+- TAC 뒤 글자 6개 저장본은 모두 Native raw 100%·독립 Print 1쪽과 일치했다
+  (`inline-axis-native131-2015/results.json`). 원 검사는 변경하지 않았다.
+  `inline-axis-helper-diagnostic-2019/`의 별도 진단에서 원 helper 3개는 실패하고
+  실제 런의 논리 시작을 텍스트 축으로 변환한 helper 3개는 통과했다. 원본 내용과
+  LineSeg·앞뒤 순서 검사는 유지했다. fresh WASM 확인 전 정식 검사 변경은 보류한다.
+
+`restricted-child-margin-review-2018/`의 review와 standalone overlay를 직접 읽었다.
+부모 오른쪽 괘선의 폭 차이는 여전히 남아 있다. 앞 절에서 clip 경로를 소비 지점으로
+찾았다는 사실이 폭 문제의 해결을 뜻하지 않는다. 선언 폭·행 격자·부분 배치의 최종
+폭 선택을 계속 대조한다. 제한 false의 독립 스트림과 부모 TABLE 정책도 미해결이다.
+fmt와 diff 공백 검사는 통과했으며, 현재 단계는 로컬 WIP 고정이다. PR 완료 판정이 아니다.
+
+## 함초롬바탕 지정 문자와 실제 흑백 대체 글꼴
+
+사용자가 한컴 GUI의 지정 글꼴을 함초롬바탕으로 확인했다. 원본 HWPX도 같은 글꼴이며,
+U+1F9A6 문자는 시스템의 해당 프로그램 cmap에 없다. 독립 Print PDF의 이 문자 네 런은
+`SegoeUIEmoji`·색 0의 흑백 출력이다. 지정 글꼴과 실제 fallback을 구분한다
+(`emoji-font-source-observations-2020.json`). 기존 RHWP는 로컬 Noto Color Emoji를
+사용해 다른 모양과 색을 보였으며, 이를 올바른 출력이나 해결 불가능한 차이로 판정하지 않는다.
+
+Windows 검증 호스트의 원본 `C:\Windows\Fonts\seguiemj.ttf`를 ignored 진단 경로로
+읽기 전용 복사했다. 버전 1.29·SHA-256
+`7c0244dd8eeb7c6bdecdfc3f9e59833527fc18a66d0295ce47339069692a2b4f`이며,
+해당 문자에는 7개 윤곽과 별도 COLRv0 색상 레이어가 모두 존재한다
+(`emoji-font-probe-2021/seguiemj.json`). 시스템 등록이나 저장소 글꼴 추가는 하지 않았다.
+
+같은 Native131에 이 프로그램만 추가 공급한 `restricted-child-margin-segoe-2022/`의
+새 review·overlay를 함께 판독했다. 2쪽 raw는 93.93876% → 97.41572%로 높아졌고
+모양은 가까워졌지만, RHWP의 색상 레이어가 여전히 표시된다. 실제 `overlay_metrics.json` 값을 우선하며
+반올림한 PNG 점수와 구분한다. 글꼴 공급과 일반 텍스트의 흑백 윤곽 선택은 별개 원인이다.
+해당 출력은 진단 결과이며 수정 완료 증거가 아니다. 일반 텍스트 fallback과 명시적인
+컬러 글리프 payload 계약을 구분해 공통 경로의 해결 방법을 검토한다.

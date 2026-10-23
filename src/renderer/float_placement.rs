@@ -22,7 +22,7 @@ pub(crate) use stored_cell_flow_picture::{
 mod reflow_block_cell;
 mod stored_closed_cell_frame;
 pub(crate) use reflow_block_cell::{
-    reflow_block_cell_flow, ReflowBlockCellFlow, ReflowBlockOrigin,
+    reflow_block_cell_flow, reflow_host_line_height, ReflowBlockCellFlow, ReflowBlockOrigin,
 };
 mod stored_empty_host_frame;
 mod stored_nested_before_host;

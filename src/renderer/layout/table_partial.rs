@@ -1859,6 +1859,17 @@ impl LayoutEngine {
             };
             let inner_height = (content_cell_h - pad_top - pad_bottom).max(0.0);
 
+            let reflow_content_height = cut_units.and_then(|(start, end)| {
+                self.reflow_partial_cell_content_height(cell, table, start, end, styles)
+            });
+            if reflow_content_height.is_some() {
+                if let RenderNodeType::TableCell(meta) = &mut cell_node.node_type {
+                    // 자식의 가시 폭은 부모의 물리 괘선 폭을 늘리지 않는다.
+                    // 내용 컷은 이미 자식 viewport를 정했으므로 부모 clip으로 다시 자르지 않는다.
+                    meta.closed_reflow_frame = true;
+                    meta.clip = false;
+                }
+            }
             let line_ranges: Option<Vec<(usize, usize)>> = cut_units
                 .map(|(su, eu)| self.cell_line_ranges_from_cut(cell, table, styles, su, eu));
             let authenticated_hwpx_frame =
@@ -2178,6 +2189,7 @@ impl LayoutEngine {
                     stored_empty_picture_frame
                         .map(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi))
                 })
+                .or(reflow_content_height)
                 .unwrap_or(total_content_height);
             // [#3820 Stage 78] RowBreak 마지막 physical tail은 paginator가 정한
             // 정확한 높이(override)를 사용한다. 저장 LINE_SEG가 glyph em보다 작은
@@ -2237,6 +2249,8 @@ impl LayoutEngine {
             } else if let Some(frame) = mixed_opening_frame {
                 // 예약한 상자와 같은 source host/child의 닫힌 점유 끝을 정렬한다.
                 frame.content_height
+            } else if let Some(height) = reflow_content_height {
+                height
             } else if let Some(frame) = &stored_mixed_opening_frame {
                 frame.content_height
             } else if let Some(height) = declared_opening_content_height {
@@ -7266,6 +7280,12 @@ impl LayoutEngine {
                 && !align_saved_opening_frame
                 && !end_row_owns_stored_frame
                 && !(computed_fragment_frame && end_row_height_override.is_some())
+                && !(!is_block_split && !start_cut_is_block
+                    && self.reflow_partial_row_frame_height(
+                        table, fold_row,
+                        if fold_row == start_row { start_cut } else { &[] },
+                        if fold_row + 1 == end_row { end_cut } else { &[] }, styles,
+                    ).is_some_and(|height| (height - row_heights[fold_row]).abs() <= 0.5))
                 // 저장 걸침 칸의 두 조각에 이미 배분한 물리 높이는 옆 칸의
                 // 후행 줄간격이 아니다. 다시 접으면 앞 조각의 공간만 유실된다.
                 && center_saved_spanning_cell.is_none()

@@ -23,6 +23,38 @@ pub(crate) struct ReflowBlockCellFlow {
     pub(crate) bottom: f64,
 }
 
+/// 온전한 호스트와 부분 조각이 같은 빈 글줄의 점유 높이를 사용한다.
+pub(crate) fn reflow_host_line_height(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    last: bool,
+) -> Option<f64> {
+    let em = para
+        .char_shapes
+        .first()
+        .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))?
+        .font_size;
+    if em <= 0.0 {
+        return None;
+    }
+    Some(if last {
+        em
+    } else {
+        styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map_or(em, |style| {
+                crate::renderer::corrected_line_height(
+                    hwpunit_to_px(400, dpi),
+                    em,
+                    style.line_spacing_type,
+                    style.line_spacing,
+                )
+            })
+    })
+}
+
 /// 저장된 선행 글줄 뒤의 NO_LS 호스트도 동일한 재조판 프레임을 연다.
 /// 다른 개체와 혼합된 호스트·저장 위치로 돌아오는 후속 문단은 각각의 기존
 /// 줄 구성/저장 프레임 계약을 유지한다. 자식 높이는 바깥여백을 제외한 실제 본체다.
@@ -130,26 +162,7 @@ pub(crate) fn reflow_block_cell_flow(
             }
         } else {
             flow.paragraph_origins.push(cursor);
-            let em = para
-                .char_shapes
-                .first()
-                .and_then(|shape| styles.char_styles.get(shape.char_shape_id as usize))
-                .map_or(0.0, |style| style.font_size);
-            if em <= 0.0 {
-                return None;
-            }
-            let line_height = if last {
-                em
-            } else {
-                style.map_or(em, |style| {
-                    crate::renderer::corrected_line_height(
-                        hwpunit_to_px(400, dpi),
-                        em,
-                        style.line_spacing_type,
-                        style.line_spacing,
-                    )
-                })
-            };
+            let line_height = reflow_host_line_height(para, styles, dpi, last)?;
             let mut block_height = 0.0_f64;
             for group in super::nested_table_groups(para, false) {
                 let mut group_height = 0.0_f64;

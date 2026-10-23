@@ -6,6 +6,7 @@ mod nested_empty_line_flow;
 mod nested_header_frame;
 mod plain_cell_flow;
 mod reflow_block_frames;
+mod reflow_fragment_content;
 mod reflowed_nested_row;
 mod row_block_cut;
 mod row_defaults;
@@ -10235,6 +10236,11 @@ impl LayoutEngine {
             });
             let cell = fragment_cell.as_ref().unwrap_or(cell);
 
+            let closed_reflow_frame = row_filter.is_none()
+                && !single_row_fragment
+                && self
+                    .reflow_block_cell_flow(&cell.paragraphs, styles)
+                    .is_some();
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
                 cell_id,
@@ -10245,12 +10251,8 @@ impl LayoutEngine {
                     row_span: cell.row_span,
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
-                    clip: true,
-                    closed_reflow_frame: row_filter.is_none()
-                        && !single_row_fragment
-                        && self
-                            .reflow_block_cell_flow(&cell.paragraphs, styles)
-                            .is_some(),
+                    clip: !closed_reflow_frame,
+                    closed_reflow_frame,
                     page_fragment: false,
                     model_cell_index: Some(cell_idx as u32),
                 }),
@@ -24407,6 +24409,18 @@ impl LayoutEngine {
         let units = self.cell_units(cell, table, styles);
         let su = start_unit.min(units.len());
         let eu = end_unit.clamp(su, units.len());
+        if let Some(content) = self.reflow_cut_content_height(
+            cell,
+            table,
+            &units,
+            su,
+            eu,
+            styles,
+            row_physical_band::CutHeight::Occupied,
+        ) {
+            let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
+            return content + if eu > su { top + bottom } else { 0.0 };
+        }
         let advance = units[su..eu].iter().map(|u| u.height).sum::<f64>();
         row_block_cut::CellCutFrame::new(self, cell, table, styles, &units, su).height(eu, advance)
     }
@@ -27151,12 +27165,17 @@ impl LayoutEngine {
             // 온전한 닫힌 저장 프레임의 빈 꼬리는 내용 유닛과 별개의 물리 공간이다.
             // 측정·중첩 배치가 이미 소비한 같은 결과를 전체 행 높이에도 쓴다.
             // 부분 컷은 선택된 CellUnit의 소유 높이를 그대로 유지한다.
-            let content = if is_whole_row
+            let content = if let Some(height) =
+                self.reflow_cut_content_height(cell, table, &units, su, eu, styles, purpose)
+            {
+                height
+            } else if is_whole_row
                 && cell.paragraphs.iter().any(|para| {
                     para.controls
                         .iter()
                         .any(|control| matches!(control, Control::Table(_)))
-                }) {
+                })
+            {
                 crate::renderer::float_placement::stored_block_cell_flow(
                     &cell.paragraphs,
                     styles,

@@ -1,0 +1,204 @@
+//! 제한된 자식의 실제 소유 컷에서 호스트 내용 프레임을 재구성한다.
+
+use super::{row_physical_band::CutHeight, CellUnit, LayoutEngine, ResolvedStyleSet};
+use crate::model::{
+    control::Control,
+    table::{Cell, Table},
+};
+use crate::renderer::hwpunit_to_px;
+
+impl LayoutEngine {
+    /// 실제 배치와 정렬은 수용한 같은 컷의 내용 프레임을 소비한다.
+    pub(in crate::renderer::layout) fn reflow_partial_cell_content_height(
+        &self,
+        cell: &Cell,
+        table: &Table,
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        // 여러 행을 소유한 칸의 프레임은 걸침 조각 원장이 결정한다.
+        if cell.row_span != 1 {
+            return None;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let start = start.min(units.len());
+        let end = end.clamp(start, units.len());
+        self.reflow_cut_content_height(cell, table, &units, start, end, styles, CutHeight::Occupied)
+    }
+
+    /// 모든 칸의 같은 컷이 닫은 행 프레임은 paint의 꼬리 접기 대상이 아니다.
+    pub(in crate::renderer::layout) fn reflow_partial_row_frame_height(
+        &self,
+        table: &Table,
+        row: usize,
+        start: &[usize],
+        end: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> Option<f64> {
+        let cells = self.indexed_row_cut_cell_order(table, row);
+        if cells.is_empty() {
+            return None;
+        }
+        let mut height = 0.0_f64;
+        for (slot, index) in cells.into_iter().enumerate() {
+            let cell = &table.cells[index];
+            let content = self.reflow_partial_cell_content_height(
+                cell,
+                table,
+                start.get(slot).copied().unwrap_or(0),
+                end.get(slot).copied().unwrap_or(usize::MAX),
+                styles,
+            )?;
+            let (_, _, top, bottom) = self.resolve_stored_nested_cell_padding(cell, table, styles);
+            height = height.max(content + top + bottom);
+        }
+        Some(height)
+    }
+
+    /// 소스 유닛 주소는 유지하고 각 조각이 여는 여백과 닫는 여백을 함께 센다.
+    /// 제한 없는 자식은 부모 밖의 독립 프레임이므로 포함 높이로 환산하지 않는다.
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn reflow_cut_content_height(
+        &self,
+        cell: &Cell,
+        table: &Table,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
+        purpose: CutHeight,
+    ) -> Option<f64> {
+        if cell.text_direction != 0 {
+            return None;
+        }
+        let flow = self.reflow_block_cell_flow(&cell.paragraphs, styles)?;
+        if flow
+            .origins
+            .iter()
+            .flatten()
+            .flatten()
+            .any(|o| o.host_relative)
+        {
+            return None;
+        }
+        if start == 0 && end == units.len() {
+            return Some(flow.bottom);
+        }
+        let selected = units.get(start..end)?;
+        let Some(last_selected) = selected.last() else {
+            return Some(0.0);
+        };
+        // 문단마다 전체 유닛을 다시 훑지 않고 원본 소유 범위를 한 번만 색인한다.
+        let mut bounds = vec![None; cell.paragraphs.len()];
+        for (index, unit) in units.iter().enumerate() {
+            let slot = bounds.get_mut(unit.para_idx)?;
+            let (first, _) = slot.unwrap_or((index, index));
+            *slot = Some((first, index + 1));
+        }
+        let mut height = 0.0;
+        for (pi, para) in cell.paragraphs.iter().enumerate() {
+            let source = bounds[pi];
+            let own = source.map_or(&units[0..0], |(first, last)| {
+                let lo = first.max(start).min(last);
+                let hi = last.min(end).max(lo);
+                &units[lo..hi]
+            });
+            if own.is_empty() {
+                // 자식을 다음 쪽으로 보낸 첫 호스트도 자신의 빈 줄 상자를 소유한다.
+                if pi == last_selected.para_idx + 1
+                    && flow.origins[pi].iter().any(Option::is_some)
+                    && end == bounds[last_selected.para_idx]?.1
+                {
+                    height += crate::renderer::float_placement::reflow_host_line_height(
+                        para,
+                        styles,
+                        self.dpi,
+                        pi + 1 == cell.paragraphs.len(),
+                    )?;
+                }
+                continue;
+            }
+            let children: Vec<_> = para
+                .controls
+                .iter()
+                .filter_map(|c| {
+                    if let Control::Table(t) = c {
+                        Some(t.as_ref())
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            if children.is_empty() {
+                height += own.iter().map(|u| u.height).sum::<f64>();
+                continue;
+            }
+            // 한 소스 유닛에 여러 자식이 섞이면 기존 원장이 개체 소유를 결정한다.
+            let [child] = children.as_slice() else {
+                return None;
+            };
+            let (first, last) = source?;
+            let owns_start = start <= first;
+            let owns_end = end >= last;
+            let body = if let Some(cut) = self
+                .nested_table_split_from_cut_units(cell, table, styles, start, end, pi)
+                .and_then(|s| s.recursive_cut)
+            {
+                self.nested_cut_height(child, &cut, styles, purpose)
+            } else if let Some((start_row, end_row)) =
+                self.nested_row_range_from_cut_units(cell, table, styles, start, end, pi)
+            {
+                self.nested_cut_height(
+                    child,
+                    &super::NestedTableCut {
+                        start_row,
+                        end_row,
+                        start_cut: Vec::new(),
+                        end_cut: Vec::new(),
+                        is_block_split: false,
+                        start_cut_is_block: false,
+                    },
+                    styles,
+                    purpose,
+                )
+            } else {
+                self.nested_table_body_height(child, styles)
+            };
+            let offset = if owns_start {
+                hwpunit_to_px(child.common.vertical_offset as i32, self.dpi)
+            } else {
+                0.0
+            };
+            let object = offset
+                + body
+                + hwpunit_to_px(
+                    i32::from(child.outer_margin_top) + i32::from(child.outer_margin_bottom),
+                    self.dpi,
+                );
+            let last_para = pi + 1 == cell.paragraphs.len();
+            let line = crate::renderer::float_placement::reflow_host_line_height(
+                para, styles, self.dpi, last_para,
+            )?;
+            let style = styles.para_styles.get(para.para_shape_id as usize);
+            let before = if owns_start {
+                crate::renderer::cell_paragraph_spacing::paragraph_before(
+                    para,
+                    pi,
+                    style.map_or(0.0, |s| s.spacing_before),
+                    self.dpi,
+                )
+                .occupied_before()
+            } else {
+                0.0
+            };
+            let after = if owns_end && !last_para {
+                style.map_or(0.0, |s| s.spacing_after)
+            } else {
+                0.0
+            };
+            height += before + line.max(object) + after;
+        }
+        Some(height)
+    }
+}
