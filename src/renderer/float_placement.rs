@@ -197,7 +197,8 @@ pub(crate) fn stored_plain_cell_ink_height(cell: &crate::model::table::Cell) -> 
 /// Every saved row closes at the same declared horizontal table boundary.
 /// A nested table may extend beyond its parent's content area; shrinking a
 /// complete source grid invalidates its line metrics and cell boundaries.
-/// Callers exclude edit-session/reflow profiles.
+/// 호출자는 실제 표의 재조판 여부를 확인한다. 다른 문단의 편집 여부는
+/// 이 표의 완전한 열 구획을 무효화하는 근거가 아니다.
 pub(crate) fn stored_complete_column_frame(table: &Table) -> bool {
     let rows = usize::from(table.row_count);
     let cols = usize::from(table.col_count);

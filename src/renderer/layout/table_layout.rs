@@ -4299,11 +4299,12 @@ impl LayoutEngine {
         let fit_avail_w = (col_area.width - fit_om_left).max(0.0);
         let stored_column_frame = (self.profile.get().hwp5_stored_pagination_layout()
             || self.profile.get().hwpx_stored_layout())
-            && !self.profile.get().session_edited()
             && !self
                 .render_normalization
                 .borrow()
                 .table_text_reflowed(table)
+            // 다른 문단이나 조상 셀의 편집은 이 표의 저장 열 구획을 무효화하지 않는다.
+            // 실제 자식 셀·글줄의 dirty 상태와 행별 폭 닫힘을 같은 원본에서 확인한다.
             && crate::renderer::float_placement::stored_complete_column_frame(table);
         // 안 여백은 내용의 시작점이며 원본 개체 폭의 축소 명령이 아니다.
         // 같은 원점에서 원본 표가 부모의 물리 셀 안에 들어가면 저장 열 구획을 유지한다.
