@@ -585,3 +585,36 @@ TABLE 원자 행 이월을 해결해야 한다. 지적한 제한 true·자식 �
 release 경로와 실제 wasm-opt 관측 manifest를 사용한다. pkg·Studio·보존 package의 바이트
 일치를 확인하며, 최종 브라우저 소비까지 같은 package를 사용해야 한다. 새 source SHA를
 이전 build receipt에 대입해 release 검증을 우회하지 않는다.
+
+## WASM047의 실제 소비와 흑백 문자 재검증
+
+사용자가 한컴 UI에서 확인한 지정 글꼴을 원본 HWPX와 다시 대조했다. 원본의 이름은
+`함초롬바탕`이다. 이 환경의 같은 글꼴 프로그램에는 U+1F9A6 glyph가 없으며, 독립 Print
+PDF에 포함된 `SegoeUIEmoji`의 해당 윤곽은 Windows 원본 글꼴의 U+1F9A6 윤곽과 같다.
+지정 글꼴과 실제 출력에 사용한 대체 글꼴을 구분한다. 지정명을 바꾸지 않고 일반 텍스트의
+대체 글꼴을 흑백 기본 윤곽으로 준비하는 공통 처리를 Native와 fresh WASM에서 확인했다.
+
+WASM047은 source SHA `bbd1bfab9af431b44e5ed85d1ff302438cf7a506`의 깨끗한 tracked
+소스에서 standard release·잡 8개로 840.78초에 종료 코드 0을 확인했다. 실제 wasm-opt 실행,
+`pkg`·Studio·보존 package의 JS/WASM 해시 일치를 확인했다. 같은 앱 초기화에서 받은 WASM
+응답을 CDP로 관측한 해시는 `147d3556d226a353184389787a3179a5cb4ad9525ac30c031849f59763f80bba`다.
+`verify_release_wasm.py --require-consumption`도 통과했다. 재요청한 파일이나 추정 해시로
+브라우저 소비를 대신하지 않았다. 근거는 `release-standard-wasm047-2063/build.json`,
+그 아래 `consumption/`, `logs/wasm047-release-consumption-2070.log`다.
+
+`ordinary-text-browser-consumption-2069-result.json`에서 실제 CanvasKit 앱과 WASM bridge를
+통한 일반 글꼴 준비를 확인했다. 입력 프로그램 해시는 `7c0244dd…a2b4f`, 일반 텍스트용 사본은
+`4206bc9c…961d8`이며 원본 바이트는 보존된다. 이 관측은 명시 컬러 자원 재생의 계약과 구분한다.
+
+같은 원본과 2020 Print의 전체 2쪽을 Native133과 WASM047에서 다시 비교했다. 양쪽 모두
+raw 실루엣 100/100%, 쪽수 2 대 2, 누락 0쪽이다. TSV는
+`restricted-child-margin-native133-scores-2067/silhouette.tsv`와
+`restricted-child-margin-wasm047-scores-2071/silhouette.tsv`에 있다. fresh의 review·standalone
+overlay 두 쪽을 직접 읽어 흑백 문자와 부모 셀의 클립을 확인했다. 2쪽 엄격 내용 픽셀은
+38.29%이므로 raw 100%를 전체 색·픽셀 동일로 보고하지 않는다. fresh 원본 이미지·전체 쪽수
+메타데이터는 `restricted-child-margin-wasm047-2066/`에 보존했다.
+
+기존 TAC 뒤 글자 helper의 저장본 6개도 Native133에서 전체 1쪽 대 1쪽, 각 raw 100%를
+확인했다(`inline-axis-native133-2068/results.json`). 이 여섯 입력의 현재 fresh 검증과 정식
+helper 보정은 이어서 진행해야 한다. 아직 남은 11개 재조판 정책 미달과 전체 Rust 실패의
+해소를 이 결과로 대신하지 않으며, PR 준비 전체 완료로 판정하지 않는다.
