@@ -4396,8 +4396,7 @@ impl LayoutEngine {
                                         // 첫 표의 앞 간격은 내용 유닛에 이미 포함되어 있다.
                                         // 뒤 문단은 자신의 저장 좌표 스냅을 계속 소비한다.
                                         para_y_before_lines + lead
-                                    } else if resumed_stored_frame_origin.is_some()
-                                        && nested_table.common.treat_as_char
+                                    } else if nested_table.common.treat_as_char
                                         && table_host_line_only_fragment
                                     {
                                         // 앞쪽 원본 줄이 비어 있어도 자신의 슬롯을 소유한다.
