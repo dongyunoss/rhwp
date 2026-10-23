@@ -108,3 +108,51 @@ live의 다음 조각에서는 무높이로 지나가나, 재열기는 `owns_sto
 다시 소유해 같은 컷의 요구가 한 줄(25.6px) 커지고 추가 쪽이 생긴다.
 종료 줄 자체의 앞 조각 점유는 보존하고, 다음 조각의 시작에서는 앞 프레임 소유 줄을
 중복 계상하지 않아야 한다. 원래 값이나 테스트 허용치를 변경할 근거가 아니다.
+
+## Native167: 종료 빈 줄의 앞 조각 소유
+
+`is_free_leading_spacer`의 공통 술어에서 `owns_stored_closing_line` 유닛은 다음
+조각의 시작 전진으로 다시 예약하지 않는다. 앞 조각 안의 같은 유닛 높이는 그대로다.
+컷 선택·물리 범위 측정·저장 시작 컷은 기존 공통 술어를 함께 소비한다.
+
+- `char-overlap-native-build-167-result.json`: 8잡·공용 target 빌드 exit 0, 247.36초.
+- `reviewed-contract-tests-2614-result.json`: 기존 **189개 중 188 PASS / 1 FAIL**.
+  55/56/61자의 세 실패가 통과했고 기존 185개 정상 검사도 유지했다. 새 검사나 기대값 변경은 없다.
+  남은 실패는 200자 편집의 중첩 표 내부 컷 뒤 저장·재열기 내용 소속이다.
+- `remaining-edit-snapshots-2615-result.json`: 55/56/61자 모두 live/reload 115쪽과
+  쪽별 본문이 같다. 200자는 live 116·재열기 117쪽, 첫 내용 차이는 103쪽이다.
+  무편집·즉시/지연 한 글자 HWP·지연 한 글자 HWPX도 115쪽과 본문을 보존한다.
+- 8개 API 저장 바이트는 Native166과 모두 SHA-256이 같다. 읽기·이어받기 처리가 바뀐 것이며
+  새 저장 바이트를 Print했다고 보고하지 않는다. 같은 SHA의 `mcp-edited-controls-2600`
+  Print를 재사용한다. `edited-print-pagecounts-2625.json`의 실제 PDF는 세 파일 모두 115쪽이다.
+- `issue1949-exact-originals-native167-2616-result.json`: 원본 HWP/HWPX 각 115쪽,
+  최저 95.69614% 유지. `issue4138-native167-boundary-batch-2617-result.json`의 고정
+  분할본 196쪽은 최저 38.91518%로 미달 유지, #7840·현대 수식 대조군도 이전 값을 유지했다.
+- `logs/native167-clippy-2622.log`: 기본 Native Clippy exit 0. 전체 Rust·WASM lint·
+  workspace lint·fresh WASM 완료를 뜻하지 않는다.
+
+### 쪽수·본문 왕복 통과와 독립 Print의 시각 미달
+
+`edited-print-native167-2623-result.json`은 같은 API 저장본·같은 SHA의 독립 Print로
+전쪽을 확인했다. 56자 저장본은 115/115쪽이지만 **102쪽 미달·최저 11.38223%**이며,
+한 글자 저장본은 **8·104·105쪽 미달·최저 19.93037%**다. 200자 저장본은 쪽수가
+다르므로 TSV를 산출하지 못했다. 두 측정 가능 문서의 gate는 `re_review_required`이며,
+쪽수 불일치도 통과가 아니다. 관계 검사 통과를 독립 출력 일치로 승격하지 않는다.
+
+새 공식 PNG는 `native166-7336-reviews-2612`의 #7336 6쪽 review/overlay와
+`native166-edited-reviews-2618`의 한 글자 저장본 105쪽 review/overlay다. 후자는
+그림이 다른 쪽에 놓이고 본문 원점도 크게 달라 직접 판독에서도 실패했다.
+`untouched-one-character-print-boundaries-2626.json`에서 원본·무편집 저장본·한 글자
+저장본의 실제 한컴 Print 104/105쪽 이미지 bbox는 같다. 반면
+`one-character-all-source-lines-2621.json`에서 rhwp 저장기는 편집하지 않은 부모 문단
+54개의 LineSeg 원점을 바꿨다. 빈 시작 문단 158과 TAC 그림 호스트 2290의 원본 재시작이
+그 뒤 문단으로 옮겨졌다. 단순히 페이지 수·낱말만 비교하면 이 배치 차이를 검출하지 못한다.
+
+다음 분석은 줄 기하가 같은 편집까지 전체 표의 저장 프레임 되쓰기를 요구하는 출처 표식과,
+부모 사다리의 실제 쪽 경계·개체 로컬 원점의 구분이다. 원본 줄이 남아 있는데 다른 호스트의
+생성 tag 하나 때문에 셀 전체의 저장 좌표계를 기각하는 조건도 200자 재열기와 함께 확인한다.
+같은 높이만으로 불변을 판정하지 않고 줄별 원점·높이·간격·소유 변화를 함께 대조한다.
+
+`native167-focused-summary-2628.json`에서 전체 producer source hash 일치, 8개 저장 바이트
+불변, 기존 188 PASS / 1 FAIL과 35문서/66쪽 raw 100%를 묶어 확인했다.
+정식 회귀 추가·변경과 PR 제출의 시각 선행 조건은 충족하지 않았으며 보정을 계속한다.

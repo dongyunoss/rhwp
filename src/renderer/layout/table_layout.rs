@@ -18216,7 +18216,11 @@ impl LayoutEngine {
     ) -> bool {
         unit.empty_spacer
             && !unit.hard_break_before
-            && !self.empty_unit_owns_flow_line_box(cell, table, unit, styles)
+            // 앞 저장 프레임을 닫는 줄은 앞 조각에서 높이를 소유한다.
+            // 이어받은 조각의 첫머리에서 그 높이를 다시 예약하지 않는다.
+            // 같은 유닛을 조각 중간에서 소비할 때의 점유는 그대로 유지한다.
+            && (unit.owns_stored_closing_line
+                || !self.empty_unit_owns_flow_line_box(cell, table, unit, styles))
     }
 
     /// 연속 소스 컷으로부터, 칸마다 **앞 쪽 프레임의 꼬리**인 빈 spacer를 제외한 물리 시작점.
