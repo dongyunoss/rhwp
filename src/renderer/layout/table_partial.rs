@@ -2700,6 +2700,7 @@ impl LayoutEngine {
                 ),
                 (None, None) => (0, cell.paragraphs.len()),
             };
+            let reflow_block_flow = self.reflow_block_cell_flow(&cell.paragraphs, styles);
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
                 if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
@@ -4740,7 +4741,32 @@ impl LayoutEngine {
                                     let derived_table_meta = nested_ctx
                                         .as_ref()
                                         .and_then(CellContext::nested_table_meta);
+                                    let reflow_block_origin =
+                                        reflow_block_flow.as_ref().and_then(|flow| {
+                                            self.reflow_block_fragment_table_origin(
+                                                flow,
+                                                cp_idx,
+                                                ctrl_idx,
+                                                nested_table,
+                                                ctrl_area.x,
+                                                nested_y,
+                                            )
+                                        });
+                                    let unrestricted_reflow_block = reflow_block_origin.is_some()
+                                        && crate::renderer::float_placement::unrestricted_cell_float(
+                                            &nested_table.common,
+                                        );
+                                    let ctrl_area = reflow_block_origin
+                                        .filter(|_| unrestricted_reflow_block)
+                                        .map_or(ctrl_area, |origin| {
+                                            self.unrestricted_cell_float_area(&ctrl_area, origin)
+                                        });
                                     let first_new_child = cell_node.children.len();
+                                    let nested_parent = if unrestricted_reflow_block {
+                                        &mut *table_node
+                                    } else {
+                                        &mut cell_node
+                                    };
                                     let table_h_rendered = if let Some(recursive_cut) = split_info
                                         .as_ref()
                                         .and_then(|split| split.recursive_cut.as_ref())
@@ -4833,7 +4859,7 @@ impl LayoutEngine {
                                             });
                                         let rendered_bottom = self.layout_partial_table_resolved(
                                             tree,
-                                            &mut cell_node,
+                                            nested_parent,
                                             nested_table.as_ref(),
                                             PartialTableHostContext {
                                                 paragraphs: &[],
@@ -4844,7 +4870,9 @@ impl LayoutEngine {
                                                 pre_emitted_host_content_height: 0.0,
                                                 host_line_spacing: 0.0,
                                                 predecessor_flow_bottom: None,
-                                                resolved_table_left: stored_inline_left.or_else(
+                                                resolved_table_left: reflow_block_origin
+                                                    .and_then(|origin| origin.0)
+                                                    .or(stored_inline_left).or_else(
                                                     || {
                                                         stored_float_frame
                                                             .and_then(|f| f.table_left)
@@ -4854,7 +4882,9 @@ impl LayoutEngine {
                                                 computed_fragment_frame: false,
                                                 // 같은 원본 프레임의 바깥여백은 부모 흐름에 예약했다.
                                                 // 실제 표 원점에서는 위 여백만 한 번 소비한다.
-                                                resolved_table_top: source_frame_height
+                                                resolved_table_top: reflow_block_origin
+                                                    .map(|origin| origin.1)
+                                                    .or_else(|| source_frame_height
                                                     .map(|_| {
                                                         nested_y
                                                             + hwpunit_to_px(
@@ -4909,7 +4939,7 @@ impl LayoutEngine {
                                                                     self.dpi,
                                                                 )
                                                         })
-                                                    }),
+                                                    })),
                                             },
                                             section_index,
                                             styles,
@@ -4959,7 +4989,7 @@ impl LayoutEngine {
                                     } else {
                                         let rendered_height = self.layout_table(
                                             tree,
-                                            &mut cell_node,
+                                            nested_parent,
                                             nested_table,
                                             section_index,
                                             styles,
@@ -4989,24 +5019,26 @@ impl LayoutEngine {
                                             false,
                                             clamp_header_negative_para_offset,
                                             0.0,
-                                            stored_inline_left
-                                                .map(|left| {
-                                                    (
-                                                        Some(left),
-                                                        self.compute_table_y_position(
-                                                            nested_table,
-                                                            nested_h,
-                                                            nested_y,
-                                                            &ctrl_area,
-                                                            1,
-                                                            0.0,
-                                                            0.0,
-                                                            None,
-                                                            None,
-                                                            false,
-                                                            false,
-                                                        ),
-                                                    )
+                                            reflow_block_origin
+                                                .or_else(|| {
+                                                    stored_inline_left.map(|left| {
+                                                        (
+                                                            Some(left),
+                                                            self.compute_table_y_position(
+                                                                nested_table,
+                                                                nested_h,
+                                                                nested_y,
+                                                                &ctrl_area,
+                                                                1,
+                                                                0.0,
+                                                                0.0,
+                                                                None,
+                                                                None,
+                                                                false,
+                                                                false,
+                                                            ),
+                                                        )
+                                                    })
                                                 })
                                                 .or_else(|| {
                                                     empty_inline_table.then(|| {
@@ -5773,6 +5805,11 @@ impl LayoutEngine {
             end_row_owns_stored_frame,
             computed_fragment_frame,
         } = host;
+        let _host_scope = self.reflow_block_host_scope(
+            enclosing_cell_ctx.is_none(),
+            col_area.x + host_margin_left,
+            y_start,
+        );
 
         // [Issue #4326] 쪽 나누기는 투명한 1×1 감싸기 표 안의 중첩 표 행을 의도적으로 사용할 수 있다.
         // 측정 경로는 감싸기 해제 규칙 도입 때부터 이 유효 표를 사용했지만, `PartialTable`은

@@ -3654,6 +3654,11 @@ impl LayoutEngine {
         host_char_border_fill_id: TableCharBorder,
     ) -> f64 {
         let _rows = self.table_rows_scope(table);
+        let _host = self.reflow_block_host_scope(
+            depth == 0 && enclosing_cell_ctx.is_none(),
+            col_area.x + host_margin_left,
+            y_start,
+        );
         self.layout_table_with_wrapper_margin(
             tree,
             col_node,
@@ -9054,8 +9059,6 @@ impl LayoutEngine {
                                     cp_idx,
                                     ctrl_idx,
                                     nested_table,
-                                    cell_node.bbox.x,
-                                    content_cell_y,
                                     inner_x,
                                     text_y_start,
                                 )

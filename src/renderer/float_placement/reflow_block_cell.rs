@@ -11,8 +11,8 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 
 #[derive(Clone, Copy)]
 pub(crate) struct ReflowBlockOrigin {
-    /// 제한이 꺼진 부동 표는 글줄 흐름과 별개인 물리 셀 상자에 놓인다.
-    pub(crate) cell_relative: bool,
+    /// 제한이 꺼진 부동 표는 부모 셀과 별개인 외부 호스트 문단을 참조한다.
+    pub(crate) host_relative: bool,
     /// 제한을 켜면 내용 원점 기준이며 표의 위 바깥여백까지 포함한다.
     pub(crate) top: f64,
 }
@@ -165,7 +165,7 @@ pub(crate) fn reflow_block_cell_flow(
                         group_height
                     };
                     flow.origins[pi][ci] = Some(ReflowBlockOrigin {
-                        cell_relative: !restricted,
+                        host_relative: !restricted,
                         top: if restricted {
                             cursor
                                 + block_height

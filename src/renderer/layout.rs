@@ -3439,6 +3439,8 @@ pub struct LayoutEngine {
     /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
     /// (x, y, width, height). 미설정 시 (0, 0, 0, 0) — 호출부에서 col_area로 폴백.
     current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
+    /// 셀 제한을 해제한 NO_LS 자식이 참조하는 외부 호스트 문단 원점.
+    reflow_block_host_anchor: std::cell::Cell<Option<(f64, f64)>>,
     /// 현재 페이지의 물리 높이 (px).
     ///
     /// [#3637] 셀 안 넘침 진단의 기준선이다. 본문 하단이 아니라 **쪽 하단**이어야 한다 —
@@ -3664,6 +3666,7 @@ impl LayoutEngine {
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
+            reflow_block_host_anchor: std::cell::Cell::new(None),
             current_page_height: std::cell::Cell::new(0.0),
             overflow_cell_lines: std::cell::Cell::new(0),
             profile: std::cell::Cell::new(Default::default()),
@@ -12448,6 +12451,9 @@ impl LayoutEngine {
                 } else {
                     margin_left
                 };
+            // 여백·이동이 반영된 표 원점과 원래 문단 앵커를 구분한다.
+            let _host_scope =
+                self.reflow_block_host_scope(true, col_area.x + effective_margin, para_y_for_table);
             let table_y_before = y_offset;
             let tbl_is_square = matches!(t.common.text_wrap, crate::model::shape::TextWrap::Square);
             // [#4533 ⑥] '위 예약' Square float — 저장 사다리가 표 공간을

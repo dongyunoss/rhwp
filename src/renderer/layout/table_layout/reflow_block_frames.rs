@@ -3,11 +3,37 @@
 use super::{LayoutEngine, ResolvedStyleSet};
 use crate::model::paragraph::Paragraph;
 use crate::model::table::Table;
-use crate::renderer::float_placement::ReflowBlockCellFlow;
+use crate::renderer::float_placement::{ReflowBlockCellFlow, ReflowBlockOrigin};
 use crate::renderer::hwpunit_to_px;
 use crate::renderer::page_layout::LayoutRect;
 
+pub(in crate::renderer::layout) struct ReflowBlockHostScope<'a> {
+    slot: &'a std::cell::Cell<Option<(f64, f64)>>,
+}
+
+impl Drop for ReflowBlockHostScope<'_> {
+    fn drop(&mut self) {
+        self.slot.set(None);
+    }
+}
+
 impl LayoutEngine {
+    /// 셀·투명 래퍼의 재귀 배치가 외부 문단의 원점을 덮어쓰지 않는다.
+    pub(in crate::renderer::layout) fn reflow_block_host_scope(
+        &self,
+        root: bool,
+        x: f64,
+        y: f64,
+    ) -> Option<ReflowBlockHostScope<'_>> {
+        if !root || self.reflow_block_host_anchor.get().is_some() {
+            return None;
+        }
+        self.reflow_block_host_anchor.set(Some((x, y)));
+        Some(ReflowBlockHostScope {
+            slot: &self.reflow_block_host_anchor,
+        })
+    }
+
     /// 빈 재조판 호스트의 글자 높이가 아니라 실제 첫 소유 유닛의 컷 높이.
     /// 사전 이월과 부분 배치가 같은 자식 행·여백의 원장을 소비한다.
     pub(in crate::renderer) fn reflow_row_opening_cut_height(
@@ -33,7 +59,7 @@ impl LayoutEngine {
     }
 
     /// 부모 셀의 흐름 예산은 제한 없는 부동 개체의 가시 viewport가 아니다.
-    /// 소스 컷이 없는 개체는 현재 용지 상자를 소비하며 부모 Cell clip은 넘는다.
+    /// 원본 컷은 보존하고 가시 viewport는 물리 용지 경계를 소비한다.
     pub(in crate::renderer::layout) fn unrestricted_cell_float_area(
         &self,
         fallback: &LayoutRect,
@@ -72,8 +98,6 @@ impl LayoutEngine {
         paragraph_index: usize,
         control_index: usize,
         table: &Table,
-        cell_left: f64,
-        cell_top: f64,
         text_left: f64,
         text_top: f64,
     ) -> Option<(Option<f64>, f64)> {
@@ -82,18 +106,49 @@ impl LayoutEngine {
             .get(paragraph_index)?
             .get(control_index)?
             .as_ref()?;
+        self.resolve_reflow_block_origin(*origin, table, text_left, text_top)
+    }
+
+    /// 부분 컷이 확정한 본문 원점을 유지하며 같은 참조계로 각 조각을 배치한다.
+    pub(in crate::renderer::layout) fn reflow_block_fragment_table_origin(
+        &self,
+        flow: &ReflowBlockCellFlow,
+        paragraph_index: usize,
+        control_index: usize,
+        table: &Table,
+        text_left: f64,
+        selected_flow_top: f64,
+    ) -> Option<(Option<f64>, f64)> {
+        let mut origin = *flow
+            .origins
+            .get(paragraph_index)?
+            .get(control_index)?
+            .as_ref()?;
+        if !origin.host_relative {
+            origin.top = hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+        }
+        self.resolve_reflow_block_origin(origin, table, text_left, selected_flow_top)
+    }
+
+    fn resolve_reflow_block_origin(
+        &self,
+        origin: ReflowBlockOrigin,
+        table: &Table,
+        text_left: f64,
+        text_top: f64,
+    ) -> Option<(Option<f64>, f64)> {
         let offset = hwpunit_to_px(table.common.horizontal_offset as i32, self.dpi);
+        let margin_left = hwpunit_to_px(i32::from(table.outer_margin_left), self.dpi);
+        if origin.host_relative {
+            let (x, y) = self.reflow_block_host_anchor.get()?;
+            return Some((
+                Some(x + offset + margin_left),
+                y + origin.top + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi),
+            ));
+        }
         Some((
-            Some(if origin.cell_relative {
-                cell_left + offset
-            } else {
-                text_left + offset + hwpunit_to_px(i32::from(table.outer_margin_left), self.dpi)
-            }),
-            if origin.cell_relative {
-                cell_top
-            } else {
-                text_top
-            } + origin.top,
+            Some(text_left + offset + margin_left),
+            text_top + origin.top,
         ))
     }
 }
