@@ -390,12 +390,18 @@ fn refresh_single_tac_host_row(
 /// 실제 재조판 뒤 텍스트와 수식 줄을 composition과 같은 메트릭으로 저장한다.
 /// 단일/여러 수식의 실제 줄 소속은 기존 composition이 결정한다.
 pub(super) fn publish_regenerated_rows(para: &mut Paragraph, styles: &ResolvedStyleSet) {
-    if para.controls.is_empty()
-        || !para
-            .controls
-            .iter()
-            .all(|c| matches!(c, Control::Equation(e) if e.common.treat_as_char))
-    {
+    let mut has_inline_equation = false;
+    let supported = para.controls.iter().all(|control| match control {
+        Control::Equation(equation) if equation.common.treat_as_char => {
+            has_inline_equation = true;
+            true
+        }
+        // 구역·단 선언과 책갈피는 이 줄의 개체 점유를 바꾸지 않는다.
+        // 첫 문단도 동일한 실제 수식 줄 결과를 소비하며, 다른 흐름 개체는 제외한다.
+        Control::SectionDef(_) | Control::ColumnDef(_) | Control::Bookmark(_) => true,
+        _ => false,
+    });
+    if !has_inline_equation || !supported {
         return;
     }
     let mut composed = super::compose_paragraph(para);
