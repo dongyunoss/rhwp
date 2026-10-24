@@ -815,6 +815,9 @@ impl TypesetState {
                 }
                 | crate::renderer::float_placement::ParagraphFloatFlow::StoredPictureGroup {
                     next_flow_y,
+                }
+                | crate::renderer::float_placement::ParagraphFloatFlow::InlineHostPicture {
+                    next_flow_y,
                 } => next_flow_y,
                 _ => deferred.placement.occupied_bottom,
             };

@@ -10315,6 +10315,7 @@ impl LayoutEngine {
                             placement.flow,
                             super::float_placement::ParagraphFloatFlow::StoredPicture { .. }
                                 | super::float_placement::ParagraphFloatFlow::StoredPictureGroup { .. }
+                                | super::float_placement::ParagraphFloatFlow::InlineHostPicture { .. }
                                 | super::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
                         )
                     {

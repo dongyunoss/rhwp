@@ -30,6 +30,7 @@ pub(super) mod deferred_placement;
 pub(super) mod empty_float;
 pub(super) mod flow_table;
 pub(super) mod host_wrap;
+pub(super) mod mixed_host_line;
 pub(super) mod order;
 pub(super) mod paragraph_flow;
 pub(super) mod physical_tac;

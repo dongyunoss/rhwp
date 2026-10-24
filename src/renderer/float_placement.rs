@@ -3624,6 +3624,11 @@ pub enum ParagraphFloatFlow {
     StoredPictureGroup {
         next_flow_y: f64,
     },
+    /// TAC 줄과 함께 수용한 그림이다. 호스트 줄은 다른 쪽에 남을 수도
+    /// 있으며, 문단 끝은 표의 흐름과 그림의 점유를 합쳐 닫는다.
+    InlineHostPicture {
+        next_flow_y: f64,
+    },
     /// 용지 기준 프레임은 쪽 시작 본문을 예약하되 뒤 호스트 글줄을 되감지 않는다.
     AbsolutePageFrame,
 }
@@ -5613,6 +5618,7 @@ impl ParagraphFloatPlacement {
                     None => text_flow_end.max(self.occupied_bottom + spacing_after),
                 }
             }
+            ParagraphFloatFlow::InlineHostPicture { next_flow_y } => text_flow_end.max(next_flow_y),
             ParagraphFloatFlow::StoredPicture { next_flow_y }
             | ParagraphFloatFlow::StoredPictureGroup { next_flow_y } => next_flow_y,
             ParagraphFloatFlow::AbsolutePageFrame => text_flow_end.max(self.occupied_bottom),
