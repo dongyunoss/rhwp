@@ -41,4 +41,3 @@ ID만 다르면 구간을 끊는 가정은 두 반례의 독립 Print RGB가 동
 ![review](wasm/different-styles-review.png)
 
 ![overlay](wasm/different-styles-overlay.png)
-

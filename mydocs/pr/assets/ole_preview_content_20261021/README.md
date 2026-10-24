@@ -20,7 +20,7 @@
 | [HWPX 원본→HWP](inputs/ole-caption-hwpx-source-as-hwp.hwp) | [2020](pdf/ole-caption-hwpx-source-as-hwp-hwp-2020.pdf) | [원문](native/ole-caption-hwpx-source-as-hwp-hwp.tsv) | [원문](wasm/ole-caption-hwpx-source-as-hwp-hwp.tsv) |
 | [HWPX 원본→HWPX](inputs/ole-caption-hwpx-source-as-hwpx.hwpx) | [2024](pdf/ole-caption-hwpx-source-as-hwpx-hwpx-2024.pdf) | [원문](native/ole-caption-hwpx-source-as-hwpx-hwpx.tsv) | [원문](wasm/ole-caption-hwpx-source-as-hwpx-hwpx.tsv) |
 
-네 입력 모두 양쪽 전체1쪽=PDF1쪽이며 raw 일치율은100%다. 
+네 입력 모두 양쪽 전체1쪽=PDF1쪽이며 raw 일치율은100%다.
 
 ## 원인·같은 영역 직접 판독
 

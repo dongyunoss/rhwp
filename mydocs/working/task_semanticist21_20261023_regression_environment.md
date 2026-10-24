@@ -1391,3 +1391,35 @@ helper 분리로 생긴 path 속성을 수집기가 독립 target 예외로 분�
 등록한다. 예산은 늘리지 않고 기존 28개 suite 안에 통합한다. 3210 재준비는
 1805 sources / 7839 static test attrs / 28 suites + 20 exceptions = 48/48개로
 통과했다. 전체 검증은 이 정책 보정까지 커밋한 별도 Rust 검증 worktree에서 실행한다.
+
+### 광범위 양쪽 전쪽 검증 완료와 전체 Rust 컴파일 보정 — 2026-10-24
+
+3194의 fresh WASM 49조건 1772쪽은 실제 종료·exit 0·overall_pass=true다.
+최저는 original-sample11-user-print p50의 92.47460%이며 모든 쪽이 90% 이상이고
+독립 PDF와 쪽수가 같다. 같은 base의 TSV와 십진수로 비교한 최대 하락은
+Native 0.46069%p / fresh WASM 0.49098%p다. 현행 2%p 초과 하락은 양쪽 0쪽,
+별도 진단용 0.1%p 초과는 Native 44쪽 / fresh WASM 29쪽이다. 양쪽 base/후보의
+TSV 원본 196개와 입력·PDF·TSV SHA, 전쪽 비교표를
+`mydocs/pr/assets/semanticist21_final_20261024/`에 보존했다. 지침이나 판정 도구를
+변경하거나 이 수치를 반올림해 하락 0쪽으로 바꾸지 않았다.
+
+3211/3212는 별도 worktree의 초기 준비와 Cargo의 상위 workspace 자동 탐색 때문에
+본 검사 전에 실패했다. worktree를 기본 저장소 바깥
+`/home/tsjang/rhwp-rust-review-semanticist21-20261024`로 옮겼으며 고정 공유
+`/home/tsjang/rhwp/target/pr-review`는 그대로다. 전체 tracked 입력을 checkout했고
+source diff가 없음을 확인했다. 3214의 suite 준비와 전체 포맷 검사는 통과했다.
+
+3214의 전체 Rust 컴파일은 cfg(test) helper에서 인자 불일치 7건을 검출했다.
+원인은 리베이스로 반영한 #8191(6097253468)의 dash plan helper와 현재 브랜치의
+9d13ca7a9e의 trailing_note_slots 계약이 내부 unit-test wrapper에서 연결되지 않은
+것이다. 고정 base에는 note 슬롯 인자가 없고 현재 운영 함수에는 있으므로 base 자체의
+오류로 보고하지 않는다. wrapper에 같은 인자를 전달하고 주석 없는 대조군은 0으로
+명시한다. assertion·기대값·운영 함수는 바꾸지 않는다. 큰 기존 조판 파일의 테스트
+helper 인자 3줄만 보정하며 이 오류 때문에 전체 조판 파일을 재구성하지 않는다.
+수정 후 전체 Rust와 lint는 다시 실제 실행해 확인한다.
+
+3217은 완료된 과거 Native193/195/196/197/200/201/202 전쪽 실행의 열린 파일
+참조가 없음을 확인했다. 그 실행들의 PNG·render-tree·SVG 임시 캐시 37212개를
+정리해 약 4.23GiB를 확보했다. 현재 base/후보, 원문 TSV·실행 로그·review·overlay는
+보존했다. cache 확장자 검사에서 중단된 3216은 삭제 전에 실패했고, 수정된 3217의
+실제 삭제 목록과 확보 공간은 output receipt에 있다.

@@ -11774,6 +11774,7 @@ mod issue_2809_split_alignment_tests {
         total_text_width: f64,
         available_width: f64,
         tab_width: f64,
+        trailing_note_slots: usize,
     ) -> (f64, f64, f64) {
         let mut dash_extra_by_run = None;
         compute_line_extra_spacing_with_dash_plan(
@@ -11801,6 +11802,7 @@ mod issue_2809_split_alignment_tests {
             available_width,
             tab_width,
             &mut dash_extra_by_run,
+            trailing_note_slots,
         )
     }
 
@@ -11970,6 +11972,7 @@ mod issue_2809_split_alignment_tests {
                         total_text_width,
                         120.0,
                         40.0,
+                        0,
                     );
                     text_style.extra_word_spacing = word;
                     text_style.extra_char_spacing = character;
