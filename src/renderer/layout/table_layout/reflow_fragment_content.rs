@@ -187,7 +187,15 @@ impl LayoutEngine {
             let object = offset
                 + body
                 + hwpunit_to_px(
-                    i32::from(child.outer_margin_top) + i32::from(child.outer_margin_bottom),
+                    if owns_start {
+                        i32::from(child.outer_margin_top)
+                    } else {
+                        0
+                    } + if owns_end {
+                        i32::from(child.outer_margin_bottom)
+                    } else {
+                        0
+                    },
                     self.dpi,
                 );
             let last_para = pi + 1 == cell.paragraphs.len();

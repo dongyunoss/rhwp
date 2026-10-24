@@ -145,7 +145,7 @@ impl LayoutEngine {
             .get(paragraph_index)?
             .get(control_index)?
             .as_ref()?;
-        self.resolve_reflow_block_origin(*origin, table, text_left, text_top)
+        self.resolve_reflow_block_origin(*origin, table, text_left, text_top, true)
     }
 
     /// 부분 컷이 확정한 본문 원점을 유지하며 같은 참조계로 각 조각을 배치한다.
@@ -165,12 +165,16 @@ impl LayoutEngine {
             .get(control_index)?
             .as_ref()?;
         if !origin.host_relative {
-            origin.top = hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+            origin.top = if owns_anchor {
+                hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi)
+            } else {
+                0.0
+            };
         } else if !owns_anchor {
             // 같은 부모 프레임에서 이미 소비한 문단 오프셋은 다음 쪽에서 반복하지 않는다.
             origin.top = 0.0;
         }
-        self.resolve_reflow_block_origin(origin, table, text_left, selected_flow_top)
+        self.resolve_reflow_block_origin(origin, table, text_left, selected_flow_top, owns_anchor)
     }
 
     fn resolve_reflow_block_origin(
@@ -179,6 +183,7 @@ impl LayoutEngine {
         table: &Table,
         text_left: f64,
         text_top: f64,
+        opens_outer_top: bool,
     ) -> Option<(Option<f64>, f64)> {
         let offset = hwpunit_to_px(table.common.horizontal_offset as i32, self.dpi);
         let margin_left = hwpunit_to_px(i32::from(table.outer_margin_left), self.dpi);
@@ -186,7 +191,12 @@ impl LayoutEngine {
             let (x, y) = self.reflow_block_host_anchor.get()?;
             return Some((
                 Some(x + offset + margin_left),
-                y + origin.top + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi),
+                y + origin.top
+                    + if opens_outer_top {
+                        hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi)
+                    } else {
+                        0.0
+                    },
             ));
         }
         Some((
