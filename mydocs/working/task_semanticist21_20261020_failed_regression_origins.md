@@ -1657,3 +1657,21 @@ TABLE/CELL 예산 4조건은 총 22조건 47쪽이며 전쪽 raw 최저 97.30241
 대체가 아니다. Native219 빌드·rustfmt 검사는 종료 코드 0이며 소스 불변을 확인했다.
 새 보정의 fresh WASM과 최종 공식 전체 게이트는 아직 남아 있으므로 PR 준비 완료로
 판정하지 않는다. fresh060은 앞선 b12357d79a 런타임의 증거로만 사용한다.
+
+### #6133 휴먼명조 수동 Print 확보
+
+작업지시자가 `C:\temp\full-source-156483831-2020.pdf`에 저장한 수동 Print를 가져왔다.
+양쪽 SHA-256은 `0cf13bad0700f54d775efeb346a38253eb9dd1d914bbd476185bf99984993d5a`다.
+4쪽과 휴먼명조 포함을 확인했다. 실제 Creator는 한컴 2022 12.0.0.4605이며, 파일 이름을
+제품 버전 증거로 사용하지 않는다. 원본 전체 HWP와 기준 PDF를 정식 경로에 함께 보존했다.
+
+같은 Native215/fresh059 런타임의 전쪽 최저 raw는 90.70001/90.31892%이며, Native219도
+90.70001%다. `manual-full-source-comparison-3494-result.json`에 전쪽 점수와 명령을 남겼다.
+`current-panels-3495/manual-full-source-wasm059-p2/`의 review·overlay를 직접 판독했다.
+문단 순서와 줄바꿈은 맞지만 굵은 글자의 농도·일부 글자 위치 차이는 남는다. 기존 MCP의
+Gulim 대체 증거와 혼용하거나, 이 점수만으로 미세 차이까지 완료 판정하지 않는다.
+새 표 호스트 보정 62656a8c80의 fresh061은 별도 고정 archive에서 빌드한다.
+
+Windows의 직접 복사 전용 폴더는 Hwp.exe PID 125764가 여전히 참조하고 있어 삭제하지 않았다.
+사용자가 저장한 `C:\temp`의 수동 PDF도 보존한다. 원본 SHA·보관·검증 상태의 요약은
+`pdf/issue6133-mixed-host-line/README.md`를 따른다.
