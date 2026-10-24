@@ -4745,9 +4745,9 @@ impl LayoutEngine {
                                             let end = end.clamp(start, units.len());
                                             Self::reflow_units_open_outer_frame(
                                                 &units[start..end],
-                                                split_info.as_ref().and_then(|split| {
-                                                    split.recursive_cut.as_ref()
-                                                }),
+                                                split_info
+                                                    .as_ref()
+                                                    .and_then(|split| split.recursive_cut.as_ref()),
                                             )
                                         });
                                     let reflow_block_origin =
@@ -4868,6 +4868,27 @@ impl LayoutEngine {
                                                 .max(0.0);
                                                 Some(content + extra.min(spare))
                                             });
+                                        let reflow_closing_band = (!is_block_split
+                                            && !start_cut_is_block)
+                                            .then(|| {
+                                                self.reflow_nested_band_at_height(
+                                                    table,
+                                                    usize::from(cell.row),
+                                                    if usize::from(cell.row) == start_row {
+                                                        start_cut
+                                                    } else {
+                                                        &[]
+                                                    },
+                                                    if usize::from(cell.row) + 1 == end_row {
+                                                        end_cut
+                                                    } else {
+                                                        &[]
+                                                    },
+                                                    cell_h,
+                                                    styles,
+                                                )
+                                            })
+                                            .flatten();
                                         let rendered_bottom = self.layout_partial_table_resolved(
                                             tree,
                                             nested_parent,
@@ -4975,7 +4996,8 @@ impl LayoutEngine {
                                             source_frame_height
                                                 .filter(|_| !recursive_cut.end_cut.is_empty())
                                                 .or(joint_opening_height)
-                                                .or(plain_source_height),
+                                                .or(plain_source_height)
+                                                .or_else(|| reflow_closing_band.as_ref().map(|band| band.last_row_height)),
                                             source_frame_height
                                                 .filter(|_| !recursive_cut.start_cut.is_empty()),
                                             &[],
@@ -7320,6 +7342,12 @@ impl LayoutEngine {
                 && !align_saved_opening_frame
                 && !end_row_owns_stored_frame
                 && !(computed_fragment_frame && end_row_height_override.is_some())
+                && !(end_row_height_override.is_some()
+                    && !is_block_split && !start_cut_is_block
+                    && self.reflow_nested_band_at_height(table, fold_row,
+                        if fold_row == start_row { start_cut } else { &[] },
+                        if fold_row + 1 == end_row { end_cut } else { &[] },
+                        row_heights[fold_row], styles).is_some())
                 && !(!is_block_split && !start_cut_is_block
                     && self.reflow_partial_row_frame_height(
                         table, fold_row,

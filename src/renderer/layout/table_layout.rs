@@ -12,6 +12,7 @@ mod reflow_external_cut;
 mod reflow_external_flow;
 pub(in crate::renderer) use reflow_external_cut::ReflowExternalCutFrame;
 mod reflow_fragment_content;
+mod reflow_nested_band;
 mod reflowed_nested_row;
 mod row_block_cut;
 mod row_defaults;
@@ -26541,6 +26542,13 @@ impl LayoutEngine {
                         && !unit.top_and_bottom_flow
                         && unit.non_inline_control_range.is_none())
                         || unit.mixed_nested_recursive
+                        || (unit.nested_row.is_some()
+                            && cell.paragraphs.get(unit.para_idx).is_some_and(|para| {
+                                para.controls.iter().any(|control| {
+                                    matches!(control, Control::Table(child)
+                                        if reflow_nested_band::owns_constrained_row_frame(para, child))
+                                })
+                            }))
                         || unit.nested_table_fragment.as_ref().is_some_and(|cut| {
                             !cut.terminal || cut.start_cut.iter().any(|&consumed| consumed > 0)
                         }))

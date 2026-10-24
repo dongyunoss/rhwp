@@ -94,16 +94,16 @@ impl TypesetEngine {
         let row_start = if r == cursor_row { start_cut } else { &[] };
         // 미래 문단의 자식 표가 현재 글줄 컷의 물리 최소 소유를 지우지 않는다.
         // 같은 물리 예산으로 실제 선택한 유닛만 분류하며 개체 viewport는 제외한다.
-        let plain_reflow_line_units =
-            layout_engine.row_has_plain_reflow_line_units(table, r, styles)
-                || ((reflow_minimum.is_some() || continuing_reflow_minimum)
-                    && layout_engine.row_cut_has_plain_reflow_units(
-                        table,
-                        r,
-                        row_start,
-                        (v.blank_row_available_height() - consumed - cs_before).max(0.0),
-                        styles,
-                    ));
+        let plain_reflow_line_units = layout_engine
+            .row_has_plain_reflow_line_units(table, r, styles)
+            || ((reflow_minimum.is_some() || continuing_reflow_minimum)
+                && layout_engine.row_cut_has_plain_reflow_units(
+                    table,
+                    r,
+                    row_start,
+                    (v.blank_row_available_height() - consumed - cs_before).max(0.0),
+                    styles,
+                ));
         let physical_minimum_splittable =
             mt.allows_row_break_split() && reflow_minimum.is_some() && plain_reflow_line_units;
         let row_units_splittable = mt.is_row_splittable(r) || physical_minimum_splittable;
@@ -1306,7 +1306,15 @@ impl TypesetEngine {
             // consumed_height 는 패딩을 제외하므로, 좁은 #2439 strict 경로의 orphan
             // 판정은 렌더러가 실제로 그리는 이 높이를 사용한다(content 24px + pad 3.8px).
             let split_total = saved_opening_frame_height.unwrap_or_else(|| {
-                layout_engine.row_cut_content_height(table, r, row_start_cut, &res.end_cut, styles)
+                res.physical_height.unwrap_or_else(|| {
+                    layout_engine.row_cut_content_height(
+                        table,
+                        r,
+                        row_start_cut,
+                        &res.end_cut,
+                        styles,
+                    )
+                })
             });
             let source_blank_band = layout_engine
                 .stored_nested_plain_cut_frame_extra(table, r, row_start_cut, &res.end_cut, styles)
@@ -1862,7 +1870,10 @@ impl TypesetEngine {
                         * (end_row - cursor_row + 2) as f64;
                     plain_cut_owns_blank_band |= physical - content > roundoff;
                 }
-                if let Some(height) = plain_cut_frame.or(source_blank_band) {
+                if let Some(height) = plain_cut_frame
+                    .or(source_blank_band)
+                    .or(res.physical_height)
+                {
                     end_row_height_override = Some(height);
                 }
                 if let Some(height) = layout_engine.saved_single_cell_opening_frame_height(

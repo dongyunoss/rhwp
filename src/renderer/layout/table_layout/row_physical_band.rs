@@ -457,6 +457,16 @@ impl LayoutEngine {
                     allow_stored_tail,
                 },
             );
+            if let Some(fitted) = self.advance_reflow_nested_closing_band(
+                table,
+                row,
+                start_cut,
+                cut.clone(),
+                physical_budget,
+                styles,
+            ) {
+                return (fitted, budget);
+            }
             let required = self.row_cut_height(
                 table,
                 row,
