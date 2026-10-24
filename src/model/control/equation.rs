@@ -96,4 +96,10 @@ impl Equation {
         self.legacy_source_frame_seal
             .is_some_and(|signature| signature == self.declared_frame_signature())
     }
+
+    /// 표시 세대는 파일 속성이다. 내용·크기 편집이나 JSON 왕복으로 사라지는
+    /// 런타임 캐시 출처를 조건으로 사용하지 않는다. 새 편집 수식은 Version 60이다.
+    pub(crate) fn uses_legacy_display(&self) -> bool {
+        self.version_info.is_empty() && self.font_name.eq_ignore_ascii_case("HYhwpEQ")
+    }
 }

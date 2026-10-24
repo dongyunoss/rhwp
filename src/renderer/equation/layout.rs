@@ -57,6 +57,7 @@ pub struct EqLayout {
     hancom_math_face: bool,
     hancom_eqn: bool,
     legacy_equation: bool,
+    legacy_math_face: bool,
     math_digit_advance: Option<u16>,
     variable_italic: bool,
     variable_bold: bool,
@@ -143,6 +144,7 @@ impl EqLayout {
             hancom_math_face: false,
             hancom_eqn: false,
             legacy_equation: false,
+            legacy_math_face: false,
             math_digit_advance: None,
             variable_italic: true,
             variable_bold: false,
@@ -166,6 +168,7 @@ impl EqLayout {
             hancom_math_face: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
             hancom_eqn: equation.font_name.eq_ignore_ascii_case("HancomEQN"),
             legacy_equation: legacy::matches_version(equation),
+            legacy_math_face: equation.uses_legacy_display(),
             // 두 face의 수학 PUA 숫자만 같은 512/1024 전진폭이다.
             // 영문·기호는 서로 다르므로 HancomEQN을 HYhwpEQ로 치환하지 않는다.
             math_digit_advance: (equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
