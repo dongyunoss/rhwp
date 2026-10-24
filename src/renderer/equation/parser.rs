@@ -70,6 +70,8 @@ pub struct EqParser {
     /// O(n^2) 행(hang)을 없앤다. LParen 이 아니거나 짝이 없으면 `tokens.len()`.
     paren_match: Vec<usize>,
     document_terms: bool,
+    /// 구형 표시 세대의 잘못된 열 인자는 앞 항도 포함해 수식을 무효화한다.
+    legacy_display: bool,
     term_limit: usize,
     /// 독립 Print의 명령형 첨자 오류는 중첩 그룹/행을 포함한 수식 전체에 적용된다.
     invalid_document_script: bool,
@@ -99,6 +101,7 @@ impl EqParser {
             depth: 0,
             paren_match,
             document_terms: false,
+            legacy_display: false,
             term_limit,
             invalid_document_script: false,
             stopped_document_input: false,
@@ -126,6 +129,16 @@ impl EqParser {
         Self {
             document_terms: true,
             ..Self::new(tokens)
+        }
+    }
+
+    pub(crate) fn for_equation(
+        tokens: Vec<Token>,
+        equation: &crate::model::control::Equation,
+    ) -> Self {
+        Self {
+            legacy_display: equation.uses_legacy_display(),
+            ..Self::for_document(tokens)
         }
     }
 

@@ -3,6 +3,11 @@
 use super::dispatch::{classify_command, EqCommandClass};
 use super::tokenizer::{self, Token, TokenType};
 
+/// 파일 속성의 표시 세대를 측정과 모든 실제 배치 경로에 함께 전달한다.
+pub(crate) fn parse(equation: &crate::model::control::Equation) -> super::ast::EqNode {
+    super::parser::EqParser::for_equation(tokenize(&equation.script), equation).parse()
+}
+
 /// bare LaTeX 전용 이름은 문서에서 일반 문자다. 인자와 첨자는 원래 토큰을
 /// 유지한다. 백슬래시의 문서 해석도 공개 LaTeX API와 구분한다.
 pub(crate) fn tokenize(script: &str) -> Vec<Token> {

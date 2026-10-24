@@ -261,6 +261,17 @@ impl Tokenizer {
             }
         }
 
+        // COL 계열도 붙은 피연산자와 분리한다. COLOR는 더 긴 별도 명령이다.
+        // 따옴표·백슬래시 문자 전환과 공개 호환 tokenizer에는 적용하지 않는다.
+        if self.document_commands && !value.to_ascii_uppercase().starts_with("COLOR") {
+            for name in ["LCOL", "RCOL", "COL"] {
+                if value.len() > name.len() && value[..name.len()].eq_ignore_ascii_case(name) {
+                    self.pos = start + name.len();
+                    return Token::new(TokenType::Command, value[..name.len()].to_string(), start);
+                }
+            }
+        }
+
         // 알려진 그리스 기호와 RIGHT가 닫는 구분자 앞에서 붙은 경우다.
         // sigmaRIGHT )를 문자로 그리지 않으며 뒤의 구분자 경계를 보존한다.
         if let Some(prefix_len) = value

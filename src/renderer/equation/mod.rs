@@ -137,10 +137,7 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
     // 빈 글줄은 여전히 점유한다. 캐시를 표시 상자의 크기로 보정하지 않는다.
     if !equation.common.size_protect
         && !(0..=100).contains(&equation.baseline)
-        && matches!(
-            parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse(),
-            ast::EqNode::Empty
-        )
+        && matches!(document_script::parse(equation), ast::EqNode::Empty)
     {
         return (0, 0, 0);
     }
@@ -161,8 +158,7 @@ pub(crate) fn flow_metrics_hwp(equation: &crate::model::control::Equation) -> (u
             .chars()
             .any(|ch| matches!(ch, '\u{AC00}'..='\u{D7A3}'))
     {
-        let ast =
-            parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse();
+        let ast = document_script::parse(equation);
         let intrinsic = layout::EqLayout::for_equation(equation, super::DEFAULT_DPI).layout(&ast);
         let font_frame = (equation.attr & 1 == 0 && equation.font_size > 0)
             .then(|| {
@@ -208,7 +204,7 @@ pub(crate) fn normalized_simple_math_metrics(
     {
         return None;
     }
-    let ast = parser::EqParser::for_document(document_script::tokenize(&equation.script)).parse();
+    let ast = document_script::parse(equation);
     let intrinsic = layout::EqLayout::for_equation(equation, super::DEFAULT_DPI).layout(&ast);
     let fs = super::hwpunit_to_px(equation.font_size.max(1) as i32, super::DEFAULT_DPI);
     if intrinsic.width <= 0.0

@@ -9072,11 +9072,7 @@ impl LayoutEngine {
                             };
                             let eq_y = para_y_before_compose;
 
-                            let tokens =
-                                super::super::equation::document_script::tokenize(&eq.script);
-                            let ast =
-                                super::super::equation::parser::EqParser::for_document(tokens)
-                                    .parse();
+                            let ast = super::super::equation::document_script::parse(eq);
                             let font_size_px = hwpunit_to_px(eq.font_size as i32, self.dpi);
                             let layout_box =
                                 super::super::equation::layout_for_paint(eq, &ast, self.dpi);
