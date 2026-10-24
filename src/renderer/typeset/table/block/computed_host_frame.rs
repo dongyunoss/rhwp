@@ -29,8 +29,9 @@ pub(super) fn resolve(
         + ft.host_spacing.before
         + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
     let table_end = table_top + ft.effective_height + ft.host_spacing.after;
+    let outer_box_top = table_top - hwpunit_to_px(i32::from(table.outer_margin_top), dpi);
     let line_end = origin + fmt.total_height;
-    if ![origin, table_top, table_end, line_end]
+    if ![origin, table_top, outer_box_top, table_end, line_end]
         .iter()
         .all(|value| value.is_finite())
     {
@@ -39,6 +40,7 @@ pub(super) fn resolve(
     Some(ParagraphFloatPlacement {
         flow: ParagraphFloatFlow::ComputedEmptyHost {
             line_advance: fmt.total_height,
+            outer_box_top,
         },
         anchor_y: origin,
         stored_host_origin: None,

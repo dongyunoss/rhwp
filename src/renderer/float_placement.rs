@@ -3610,6 +3610,8 @@ pub enum ParagraphFloatFlow {
     /// 배제 영역으로 남겨 다음 줄이 그 위의 빈 공간을 사용할 수 있게 한다.
     ComputedEmptyHost {
         line_advance: f64,
+        /// 괘선 앞의 바깥 위 여백도 점유한다. 세로 오프셋의 실제 빈 공간과 구별한다.
+        outer_box_top: f64,
     },
     /// The trailing object cannot fit in the host line's remaining inline space.
     NextLine,
@@ -5594,7 +5596,9 @@ impl ParagraphFloatPlacement {
         match self.flow {
             ParagraphFloatFlow::Exclusion | ParagraphFloatFlow::StoredSquareWrap => text_flow_end,
             ParagraphFloatFlow::EmptyHost => self.occupied_bottom,
-            ParagraphFloatFlow::ComputedEmptyHost { line_advance } => self.anchor_y + line_advance,
+            ParagraphFloatFlow::ComputedEmptyHost { line_advance, .. } => {
+                self.anchor_y + line_advance
+            }
             ParagraphFloatFlow::NextLine | ParagraphFloatFlow::SplitHost { .. } => {
                 // A certified successor line at or below the accepted frame
                 // bottom already closes this paragraph. Adding the host's

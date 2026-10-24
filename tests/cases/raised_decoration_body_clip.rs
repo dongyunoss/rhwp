@@ -48,14 +48,30 @@ fn top_line_ink(svg: &str) -> f64 {
         .fold(f64::INFINITY, f64::min)
 }
 
-/// SVG 가 발행한 강조점 `<text ...>●</text>` 의 em 상자 상단(기준선 - 글자 크기).
-fn top_dot_ink(svg: &str) -> f64 {
-    svg.split("<text ")
-        .skip(1)
-        .map(|c| format!(" {c}"))
-        .filter(|c| c.contains(">●</text>"))
-        .map(|tag| attr(&tag, "y") - attr(&tag, "font-size"))
-        .fold(f64::INFINITY, f64::min)
+/// 독립 Print와 같은 결합점(U+0307)의 em 상자를 SVG 변환 후 좌표로 읽는다.
+/// 실제 잉크보다 보수적인 em 경계를 포함하는지 검사하며 글꼴 외곽선을 고정하지 않는다.
+fn top_dot_em_bound(svg: &str) -> f64 {
+    let doc = roxmltree::Document::parse(svg).unwrap();
+    doc.descendants()
+        .filter(|node| node.has_tag_name("text") && node.text() == Some("\u{0307}"))
+        .map(|node| {
+            let number = |name| node.attribute(name).unwrap().parse::<f64>().unwrap();
+            let x = number("x");
+            let y = number("y");
+            let em = number("font-size");
+            let transform = node
+                .attribute("transform")
+                .unwrap_or("matrix(1 0 0 1 0 0)")
+                .parse::<svgtypes::Transform>()
+                .unwrap();
+            [(x, y - em), (x + em, y - em), (x, y), (x + em, y)]
+                .into_iter()
+                .map(|(x, y)| transform.b * x + transform.d * y + transform.f)
+                .reduce(f64::min)
+                .unwrap()
+        })
+        .reduce(f64::min)
+        .expect("실제 SVG의 결합 강조점이 있어야 한다")
 }
 
 #[test]
@@ -84,7 +100,7 @@ fn first_line_emphasis_dot_ink_is_inside_body_clip() {
     let plain_doc = fixture("");
     let plain = body_clip(&plain_doc);
     let doc = fixture(r#"{"emphasisDot":1}"#);
-    let ink_top = top_dot_ink(&doc.render_page_svg_native(0).unwrap());
+    let ink_top = top_dot_em_bound(&doc.render_page_svg_native(0).unwrap());
     assert!(ink_top < plain.y, "fixture: 강조점이 본문 위로 나가야 함");
     assert!(body_clip(&doc).y <= ink_top + 1e-6);
     // 글자 상자를 키우지 않으므로 캐럿 위치는 그대로다.
