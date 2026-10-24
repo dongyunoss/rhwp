@@ -114,6 +114,7 @@ pub(crate) fn normalize(
     styles: &ResolvedStyleSet,
     page: &PageDef,
     initial_columns: &ColumnDef,
+    refresh_markers: bool,
     dpi: f64,
     previous_margin_styles: Option<&ResolvedStyleSet>,
 ) -> Option<Vec<Paragraph>> {
@@ -123,6 +124,7 @@ pub(crate) fn normalize(
         uniform_column_width(page, initial_columns, dpi),
         Some(page),
         true,
+        refresh_markers,
         dpi,
         previous_margin_styles,
     )
@@ -136,6 +138,7 @@ fn normalize_flow(
     mut width: Option<f64>,
     body_page: Option<&PageDef>,
     refresh_text: bool,
+    refresh_markers: bool,
     dpi: f64,
     previous_margin_styles: Option<&ResolvedStyleSet>,
 ) -> Option<Vec<Paragraph>> {
@@ -284,6 +287,7 @@ fn normalize_flow(
                     Some(inner),
                     None,
                     stale,
+                    refresh_markers,
                     dpi,
                     previous_margin_styles,
                 ) {
@@ -340,16 +344,22 @@ fn normalize_flow(
                 .and_then(|_| project_current_body_box_rows(&paragraph, &box_, styles, dpi))
                 .or_else(|| project_current_source_program_rows(&paragraph, &box_, styles, dpi))
                 .or_else(|| project_current_marker_height_rows(&paragraph, &box_, styles, dpi));
+            let selected_program_rows =
+                crate::renderer::composer::project_stored_rows_with_selected_program(
+                    &paragraph, &box_, styles, dpi,
+                );
             let marker_rows = || {
-                ((refresh_text || spans_physical_frames)
-                    && projects_current_marker_geometry(&paragraph, &box_, styles))
-                .then(|| {
-                    let first = paragraph.line_segs[0].vertical_pos;
-                    project_stored_soft_wraps(&paragraph, &box_.frame(first), styles, dpi, false)
-                })
-                .flatten()
+                if !refresh_markers
+                    || !(refresh_text || spans_physical_frames)
+                    || !projects_current_marker_geometry(&paragraph, &box_, styles)
+                {
+                    return None;
+                }
+                let first = paragraph.line_segs[0].vertical_pos;
+                let frame = box_.frame(first);
+                project_stored_soft_wraps(&paragraph, &frame, styles, dpi, false)
             };
-            if let Some((lines, spaces)) = current_rows.or_else(marker_rows) {
+            if let Some((lines, spaces)) = selected_program_rows.or(current_rows).or_else(marker_rows) {
                 let old_advance = frame_advance(&paragraph.line_segs)?;
                 let new_advance = frame_advance(&lines)?;
                 shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;
