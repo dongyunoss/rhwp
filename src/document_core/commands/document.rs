@@ -437,6 +437,7 @@ impl DocumentCore {
         // 이후 본문 변경은 편집 명령(raw_stream 무효화 동반) 또는 공개 모델 직접
         // 변경(봉인이 잡아야 할 대상)뿐이다.
         doc.document.seal_body_raw_provenance();
+        doc.capture_loaded_source_frames();
         Ok(doc)
     }
 
@@ -2220,6 +2221,7 @@ impl DocumentCore {
         self.recompose_all_with_horizontal_shaping();
         self.paginate();
 
+        self.capture_loaded_source_frames();
         Ok(self.get_document_info())
     }
 
@@ -3055,6 +3057,7 @@ impl DocumentCore {
         self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();
         self.rebuild_derived_state();
+        self.capture_loaded_source_frames();
     }
 
     /// Host font selection이 확정한 exact face를 글자모양·언어 slot에 등록한다.

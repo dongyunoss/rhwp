@@ -4751,6 +4751,7 @@ impl DocumentCore {
         self.invalidate_page_tree_cache();
         self.overflow_links_cache.borrow_mut().clear();
         self.paginate();
+        self.sync_loaded_frame_text_balance();
     }
 
     /// Batch 모드가 아닐 때만 paginate를 실행한다.
@@ -6475,6 +6476,25 @@ impl DocumentCore {
         parent_para_idx: usize,
         control_idx: usize,
     ) -> Result<(), HwpError> {
+        self.mark_table_text_reflowed_owner(section_idx, parent_para_idx, control_idx, false)
+    }
+
+    pub(crate) fn mark_table_text_reflowed_after_cell_edit(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<(), HwpError> {
+        self.mark_table_text_reflowed_owner(section_idx, parent_para_idx, control_idx, true)
+    }
+
+    fn mark_table_text_reflowed_owner(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+        cell_text: bool,
+    ) -> Result<(), HwpError> {
         let table = self
             .document
             .sections
@@ -6490,9 +6510,14 @@ impl DocumentCore {
                 "text-reflowed table path mismatch: section={section_idx} para={parent_para_idx} control={control_idx}"
             )));
         };
-        self.render_normalization
-            .text_reflowed_tables
-            .insert(super::super::TableTextReflowKey::from_table(table));
+        let key = super::super::TableTextReflowKey::from_table(table);
+        if cell_text {
+            self.render_normalization
+                .text_reflowed_tables
+                .insert_cell_text(key);
+        } else {
+            self.render_normalization.text_reflowed_tables.insert(key);
+        }
         Ok(())
     }
 

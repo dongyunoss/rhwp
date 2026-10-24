@@ -2031,6 +2031,8 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let source_text_before =
+            crate::model::raw_provenance::bytes_digest(cell_para.text.as_bytes());
         let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
@@ -2063,7 +2065,12 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        let (flow_advance_after, local_contribution_after, stored_frame_unchanged) = {
+        let (
+            flow_advance_after,
+            local_contribution_after,
+            stored_frame_unchanged,
+            source_text_after,
+        ) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -2083,10 +2090,11 @@ impl DocumentCore {
                 stored_frame_before
                     .as_ref()
                     .is_some_and(|before| before.matches(cell_para_after)),
+                crate::model::raw_provenance::bytes_digest(cell_para_after.text.as_bytes()),
             )
         };
         // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
-        // 이전 편집이 이미 기록한 재조판 표식은 그대로 유지한다.
+        // 이전 편집의 표식은 구역 전체의 로드 상태 복원 근거가 있을 때만 해제한다.
         if !stored_frame_unchanged
             && matches!(
                 self.document.sections[section_idx].paragraphs[parent_para_idx]
@@ -2095,21 +2103,33 @@ impl DocumentCore {
                 Some(Control::Table(_))
             )
         {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-        let units_fp_unchanged = self
-            .get_cell_paragraph_ref(
+            self.mark_table_text_reflowed_after_cell_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
-                cell_idx,
-                cell_para_idx,
-            )
-            .is_some_and(|p| {
-                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
-                    == units_fp_before
-            });
-        let cell_flow_changed = flow_advance_before != flow_advance_after;
+            )?;
+        }
+        let loaded_frame_restored = self.restore_loaded_frames_after_cell_text_edit(
+            section_idx,
+            old_text_len,
+            old_text_len - deleted_count + new_chars_count,
+            source_text_before,
+            source_text_after,
+        );
+        let units_fp_unchanged = !loaded_frame_restored
+            && self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .is_some_and(|p| {
+                    crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                        == units_fp_before
+                });
+        let cell_flow_changed = loaded_frame_restored || flow_advance_before != flow_advance_after;
         let new_offset = char_offset + new_chars_count;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
@@ -2202,16 +2222,20 @@ impl DocumentCore {
             });
         }
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변, section dirty만 설정)
-        self.document.sections[section_idx].raw_stream = None;
+        let source_cache_restored =
+            self.finish_loaded_source_cache_after_cell_edit(section_idx, loaded_frame_restored);
         if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
         }
-        if has_compat_projection && !paginate_immediately {
+        if (has_compat_projection || loaded_frame_restored || source_cache_restored)
+            && !paginate_immediately
+        {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
         let new_text_len = old_text_len - deleted_count + new_chars_count;
         let focused_page_tree_patched = if !paginate_immediately
+            && !source_cache_restored
             && !cell_flow_changed
             && !had_pending_flow_change
             && focused_delta_x.is_some()
@@ -2372,6 +2396,8 @@ impl DocumentCore {
             cell_para_idx,
         )?;
         let old_text_len = cell_para.text.chars().count();
+        let source_text_before =
+            crate::model::raw_provenance::bytes_digest(cell_para.text.as_bytes());
         let stored_frame_before = StoredVerticalFrame::capture(cell_para);
         let flow_advance_before = relative_paragraph_flow_advance(cell_para);
         let local_contribution_before =
@@ -2404,7 +2430,12 @@ impl DocumentCore {
             cell_para_idx,
             None,
         );
-        let (flow_advance_after, local_contribution_after, stored_frame_unchanged) = {
+        let (
+            flow_advance_after,
+            local_contribution_after,
+            stored_frame_unchanged,
+            source_text_after,
+        ) = {
             let cell_para_after = self
                 .get_cell_paragraph_ref(
                     section_idx,
@@ -2424,6 +2455,7 @@ impl DocumentCore {
                 stored_frame_before
                     .as_ref()
                     .is_some_and(|before| before.matches(cell_para_after)),
+                crate::model::raw_provenance::bytes_digest(cell_para_after.text.as_bytes()),
             )
         };
         // 실제 줄 프레임이 같으면 표 전체의 저장 사다리를 무효화하지 않는다.
@@ -2436,21 +2468,33 @@ impl DocumentCore {
                 Some(Control::Table(_))
             )
         {
-            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
-        }
-        let units_fp_unchanged = self
-            .get_cell_paragraph_ref(
+            self.mark_table_text_reflowed_after_cell_edit(
                 section_idx,
                 parent_para_idx,
                 control_idx,
-                cell_idx,
-                cell_para_idx,
-            )
-            .is_some_and(|p| {
-                crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
-                    == units_fp_before
-            });
-        let cell_flow_changed = flow_advance_before != flow_advance_after;
+            )?;
+        }
+        let loaded_frame_restored = self.restore_loaded_frames_after_cell_text_edit(
+            section_idx,
+            old_text_len,
+            old_text_len.saturating_sub(deleted_count),
+            source_text_before,
+            source_text_after,
+        );
+        let units_fp_unchanged = !loaded_frame_restored
+            && self
+                .get_cell_paragraph_ref(
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    cell_idx,
+                    cell_para_idx,
+                )
+                .is_some_and(|p| {
+                    crate::renderer::layout::LayoutEngine::cell_paragraph_units_fingerprint(p)
+                        == units_fp_before
+                });
+        let cell_flow_changed = loaded_frame_restored || flow_advance_before != flow_advance_after;
         let focused_after = if focused_target_is_table_cell {
             self.get_cell_paragraph_ref(
                 section_idx,
@@ -2539,19 +2583,23 @@ impl DocumentCore {
         }
 
         // raw 스트림 무효화, 재페이지네이션 (셀 편집 → composed 불변)
-        self.document.sections[section_idx].raw_stream = None;
+        let source_cache_restored =
+            self.finish_loaded_source_cache_after_cell_edit(section_idx, loaded_frame_restored);
         // Immediate edits need the same revision bump as deferred edits and
         // insertion. Otherwise pagination can reuse a projection that still
         // paints text which has already been deleted from the editable IR.
         if has_compat_projection {
             self.invalidate_render_normalization_section(section_idx);
         }
-        if has_compat_projection && !paginate_immediately {
+        if (has_compat_projection || loaded_frame_restored || source_cache_restored)
+            && !paginate_immediately
+        {
             self.compute_render_normalized();
         }
         self.mark_section_pagination_dirty(section_idx);
         let new_text_len = old_text_len.saturating_sub(deleted_count);
         let focused_page_tree_patched = if !paginate_immediately
+            && !source_cache_restored
             && !cell_flow_changed
             && !had_pending_flow_change
             && focused_delta_x.is_some()
