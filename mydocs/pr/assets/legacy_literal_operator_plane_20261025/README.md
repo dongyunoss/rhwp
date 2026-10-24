@@ -80,6 +80,27 @@ raw는 2px 관용 실루엣이며 RGB 완전 일치나 다른 수식 전체의 �
 | modern-color p1 | [review](images/native-modern-color-review-001.png) / [overlay](images/native-modern-color-overlay-001.png) | [review](images/wasm-modern-color-review-001.png) / [overlay](images/wasm-modern-color-overlay-001.png) |
 | real130 p130 | [review](images/native-real130-review-130.png) / [overlay](images/native-real130-overlay-130.png) | [review](images/wasm-real130-review-130.png) / [overlay](images/wasm-real130-overlay-130.png) |
 
+## 고정 devel 대조와 실제 쪽수 보정
+
+`6097253468`에서 빌드한 base producer와 정책 base `9418ed0c7c` 사이의 제품 코드·Cargo·
+자원·wrapper가 같은 것을 확인하고 동일 환경으로 비교했다. 13개 조건은 양쪽 전쪽 raw를 측정했다.
+나머지 세 조건은 다음과 같이 devel의 실제 쪽수가 Print와 달라 전쪽 비교가 exit 1로 중단됐다.
+이 결과를 성공으로 바꾸거나 없는 쪽의 점수를 만들지 않았다.
+
+| 범위 | 실제 base 쪽수 | 후보 = Print 쪽수 | 원본 수식 수 | base의 잘못된 쪽 소속 | 후보의 잘못된 쪽 소속 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 기존 문자 평면 | 8 | 9 | 186 | 131 | 0 |
+| literal grid | 9 | 10 | 108 | 72 | 0 |
+| CJK grid | 6 | 7 | 72 | 36 | 0 |
+
+[실제 쪽 소유 대조](base_page_ownership.json)에서 두 backend 모두 원본 수식이 누락·중복 없이
+한 번씩 보존됐고 후보의 쪽 소속은 모두 Print와 일치했다. 실제로 있는 공통 8·9·6쪽은 기존
+PNG를 같은 raw 방식으로 측정했다. 다른 13개 조건과 합친 backend별 236개 비교 가능 페이지에서
+2%p 초과 하락은 없다. base에 없는 쪽은 가짜 흰 페이지나 점수를 만들지 않고 쪽 소속 보정으로
+기록한다. 세 후보 문서는 양쪽 전쪽 실측과 대표 영역 직접 판독을 마쳤다.
+이 구조 개선 증거와 정식 전쪽 raw 비교의 쪽수 불일치를 구분하며 전체 PR 판정을 자동 승인하지 않는다.
+base TSV 32개와 비교 범위·명령은 [evidence.json](evidence.json)의 `base_comparison`에 있다.
+
 ## 단계 완료와 전체 PR의 구분
 
 이 기록은 해당 수식 보정과 정식 회귀의 증거다. 남은 필수 실패, 최종 전체 Rust·lint·Skia·Studio,
