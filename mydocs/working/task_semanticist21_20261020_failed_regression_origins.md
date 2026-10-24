@@ -1675,3 +1675,23 @@ Gulim 대체 증거와 혼용하거나, 이 점수만으로 미세 차이까지 
 Windows의 직접 복사 전용 폴더는 Hwp.exe PID 125764가 여전히 참조하고 있어 삭제하지 않았다.
 사용자가 저장한 `C:\temp`의 수동 PDF도 보존한다. 원본 SHA·보관·검증 상태의 요약은
 `pdf/issue6133-mixed-host-line/README.md`를 따른다.
+
+### Native219 추가 검증과 수동 PDF의 글꼴 동일성
+
+`current-runtime-native219-3499-result.json`의 추가 23조건 34쪽은 전쪽 raw 90% 이상이다.
+#8054의 22조건 47쪽과 합쳐 동일 런타임 62656a8c80의 대상 45조건 81쪽을 확인했으며
+최저값은 수동 Print 전체 원본 2쪽의 90.70001%다. 점 기호 3조건과 나머지 혼합 호스트
+17조건은 100%이며, 원본 HWP/HWPX의 워터마크 계약도 99.28794/99.27978%를 유지했다.
+이는 변경된 경로의 검증이며 전체 Rust와 #8064의 179원본 검증을 완료했다는 의미가 아니다.
+
+수동 PDF 2쪽의 휴먼명조 subset 249글리프를 설치된 HMKMM.TTF의 분해한 윤곽과 대조했고
+249개 모두 같은 윤곽이다. `manual-human-outline-identity-3503.json`에 입력/프로그램 해시와
+일치 개수를 기록했다. PDF 내용 연산도 일반 fill과 같은 프로그램의 fill+stroke 0.02em을
+구분한다(`manual-human-font-program-3500.json`). 현재 직접 판독에서 남은 농도·글자 위치
+차이는 glyph 프로그램 부재로 단정하지 않는다. 과거 SVG의 HCR bold 대체 설명이 실제
+현재 Native/Canvas 선택까지 입증하지 않으므로 출력 경로별 소비를 계속 대조한다.
+
+새 fresh061은 해당 소스의 고정 archive로 표준 release 및 실제 wasm-opt를 실행 중이다.
+종료와 artifact/source SHA 확인을 통과한 뒤 같은 45조건 81쪽을 대조하도록
+`verify_current_runtime_scope_3499.py wasm`을 연결했다. 최종 확대 판독·정식 회귀 변경·전체
+필수 검증은 아직 남아 있으며 제출 완료로 표시하지 않는다.
