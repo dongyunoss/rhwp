@@ -1201,3 +1201,40 @@ pkg-node 미준비로 실행하지 못한 실제 WASM 왕복 검사다. 후보 W
 이어받은 ComputedEmptyHost는 원래 글줄을 다시 소비하지 않고 EmptyHost의 확정
 물리 끝을 사용한다. 아직 첫 조각을 소비하지 않고 이월한 경우에는 계산 글줄을 유지한다.
 정확한 기존 검사·독립 PDF·실제 후속 본문 위치를 다시 확인한다.
+
+
+### 리베이스 뒤 현재 판정과 직접 판독 잔차 — 2026-10-24
+
+현재 code source는 `35911dd623664de14dcb3f6c1de843a4bdce8216`, base는
+`9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`다. Native202 빌드 3142는
+270.19초·exit 0·source_unchanged=true다. 기존 50개 모듈의 3143은 전체
+249 PASS·0 FAIL·1 ignore다. 테스트·기대값·baseline은 이번 보정에서 변경하지 않았다.
+
+3144의 전쪽 Native 대조는 같은 9개 입력과 독립 PDF 각 52쪽이다. 후보 최저는
+nested-split 96.66160%, terminal-follower 95.73533%, terminal-tail 98.46727%,
+두 orientation 재귀 대조군 98.86792%, 두 generated 재귀 대조군 98.18859%다.
+follower p3의 raw는 100%이며 표·후속 본문의 같은 영역을 3148 review/overlay로 남겼다.
+원본 그림 띠는 p2 89.14359%이며 base 89.14610%와 별도로 최소 gate 미달이다.
+이 수치들을 fresh WASM 또는 최종 시각 수용으로 표시하지 않는다.
+
+Native201의 #8191 전49조건·1,772쪽은 모두 90% 이상이고, 3149의 Decimal 대조에서
+2%p 초과 하락은 0쪽이다. 현재 Native202의 같은 전쪽 검증은 3145에서 진행 중이다.
+Native201 결과를 Native202의 완료 증거로 대체하지 않는다. #8178의 Node/실제 browser,
+#8195의 양쪽 Node와 새 base 실제 browser 증거는 앞 기록과 연결하며 후보 fresh browser,
+pkg-node 두 실제 왕복 검사, 최종 전체 Rust/lint는 아직 완료 전이다. PR 생성은 사용자
+지시에 따라 계속 대기한다.
+
+3148의 최신 nested-split p5 review와 standalone overlay를 실제로 열었다. raw 96.66%여도
+내부 표의 위 선·가운데 정렬 글자가 PDF보다 위에 있는 차이가 보인다. 현재 정식 grid
+검사는 첫 조각 뒤 outer top을 0으로 기대하지만, 이 직접 PDF 판독을 그 기대값의 근거로
+대신할 수 없다. 셀 내부 컷 대조군의 반복 물리 프레임 계약과 행 사이 컷의 실제 소유를
+생산 유닛·측정 높이·최종 원점에서 다시 연결한다. 이미 예약된 여백을 paint가 잃었는지,
+측정까지 달라진 것인지 먼저 구분하며 임의 좌표 보정이나 기대값 완화로 닫지 않는다.
+현재 249 PASS를 이 시각 잔차의 해결로 보고하지 않는다. 관련 Native/fresh WASM 전쪽과
+독립 기대값 조건을 충족한 뒤에만 필요한 회귀 변경을 한다.
+
+리베이스 전에 별도 보존한 수식 명령 작업 `d9bb9772b0561cb22cc2d4866b5be878ecb3c36f`는
+아직 적용하지 않았으며 보존돼 있다. 3146의 read-only patch preflight는
+legacy_coordinate_plane.rs의 현재 bool 반환·HFT 우선순위 보정과 자동 적용이 충돌함을
+확인했다. 현재 source에 부분 적용하거나 그 파일을 되돌리지 않았다. 이 작업도 최종 PR
+준비의 완료된 구현으로 표시하지 않는다.
