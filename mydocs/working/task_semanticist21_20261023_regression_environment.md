@@ -1423,3 +1423,30 @@ helper 인자 3줄만 보정하며 이 오류 때문에 전체 조판 파일을 
 정리해 약 4.23GiB를 확보했다. 현재 base/후보, 원문 TSV·실행 로그·review·overlay는
 보존했다. cache 확장자 검사에서 중단된 3216은 삭제 전에 실패했고, 수정된 3217의
 실제 삭제 목록과 확보 공간은 output receipt에 있다.
+
+### 전체 컴파일의 이름 충돌과 package 소비 확인 — 2026-10-24
+
+3218은 인자 보정 후 실제 전체 컴파일을 571.48초 실행했으나 OLE 회귀 모듈의
+E0618 1건으로 종료됐다. #8191의 새 SVG 문자열 변수 visible_text가 현재 브랜치의
+5544aba532의 표시 문자열 helper를 가렸다. 지역 변수만 svg_visible_text로 바꾸고
+검사 대상·기대값은 유지한다. 큰 기존 파일의 이 이름 충돌만 고치며 전체 재구성으로
+범위를 넓히지 않는다. 다음 준비 컴파일에는 --keep-going을 사용해 나머지 target의
+컴파일 오류도 한 번에 수집한 뒤 정식 전체 nextest를 실행한다.
+
+3218 실행기의 처음 head 필드는 checkout 종료 전에 읽은 c0722f7921이었다.
+실제 컴파일 전 worktree의 b0a05a86fe와 source diff 없음·바뀐 unit source 해시를
+독립적으로 확인했으며 3219 audit에 남겼다. 실행 로그를 이전 head의 검사로
+표시하지 않고 이 source audit과 함께 사용한다. 현재 오류는 테스트의 컴파일
+실패이며 전체 Rust PASS가 아니다.
+
+3220에서 승인된 원 PR 45개 head가 모두 그대로임을 원격으로 재확인했다.
+원 PR 테스트 파일은 전부 현재 경로에 있고 실제 suite 연결을 개별 로컬 리뷰 초안에
+추가했다. 원격 리뷰·추가 체리픽·PR 생성은 수행하지 않았다.
+3221의 @rhwp/editor unit, frontend WASM binding·embed 계약, TypeScript 타입,
+npm pack --dry-run과 실제 Chromium embed 검사는 모두 exit 0이다. 동결 4adb7faf48의
+검증 사본을 사용했으며 이후 source 변경은 cfg(test) helper 또는 테스트 파일뿐이다.
+
+3222에서 기본 pkg와 public의 생성 WASM도 fresh054와 해시를 맞췄다.
+public/rhwp.js는 이미 fresh054와 같아 tracked 변경이 없었고, 이전 생성 파일은
+output에 백업했다. source 입력과 실행 로그는 보존했다. 3223 unit-tier 사전 검사도
+exit 0이며 최종 전체 lint·검증의 완료를 대신하지 않는다.

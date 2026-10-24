@@ -877,15 +877,15 @@ fn assert_ole_caption_properties_roundtrip(rel: &str) {
     assert_eq!(number_run.text, " ", "모델의 번호 공백 한 자리를 보존");
     let svg = core.render_page_svg_native(0).expect("OLE 캡션 SVG");
     let svg_document = roxmltree::Document::parse(&svg).expect("SVG XML");
-    let visible_text = svg_document
+    let svg_visible_text = svg_document
         .descendants()
         .filter(|node| node.has_tag_name("text"))
         .flat_map(|node| node.descendants().filter(|child| child.is_text()))
         .filter_map(|node| node.text())
         .collect::<String>();
     assert!(
-        visible_text.contains("그림1."),
-        "SVG의 글자별 출력에도 접두어와 번호가 순서대로 있어야 함: {visible_text:?}"
+        svg_visible_text.contains("그림1."),
+        "SVG의 글자별 출력에도 접두어와 번호가 순서대로 있어야 함: {svg_visible_text:?}"
     );
     assert!(
         caption_run.bbox.x > ole_right,
