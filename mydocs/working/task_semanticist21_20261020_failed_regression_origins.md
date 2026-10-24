@@ -1137,3 +1137,47 @@ fresh056은 같은 fb759a980d의 정확한 Git archive에서 표준 release·loc
 wasm-opt 경로로 실행을 시작했다(3294·3296). Cargo 잡 8개와 같은 절대 target을 재사용한다.
 Native209와 외부 Rust 검사 종료를 확인한 뒤 시작했으며, 완료·최적화·패키지 해시와 실제
 후속 시각 출력 확인 전에는 fresh 결과를 통과로 기록하지 않는다.
+
+
+### #265의 fresh 완료와 새 이름의 독립 Print 회귀
+
+같은 `fb759a980d50268b29274f94ccaee406a7e975fd`의 fresh056은 표준 release·locked wrapper와
+실제 wasm-opt 경로로 1,249.44초 후 exit 0이었다. 빌드 중 소스 변경이 없었고 WASM SHA는
+`fedb086262904227ce5e72ede9c162e2db10ce5d162acf96eeb2d595f8c48fcf`다.
+루트 pkg와 Studio public의 실제 JS·WASM 바이트를 이 생산물과 대조해 동기화했다.
+이는 Studio 전체 Node·브라우저 재검증 완료를 뜻하지 않는다.
+
+원본·본문 필드·캡션 중복 대조군 각각 16쪽의 Native209/fresh056, 후보 총 96쪽 모두
+독립 Print와 쪽수가 같고 90% 이상이었다. fresh 최저는 각각 99.54115%, 99.60389%,
+99.60125%다. base 대비 페이지별 최대 하락은 Native 0.01987%p, fresh 0.00736%p로
+2%p 초과는 양쪽 모두 0쪽이다. 1쪽 Before 1/1과 15쪽 After 5/5의 review·standalone
+overlay를 같은 배율로 판독했다. 작은 글자의 raster 농도 차이와 엄격 RGB 점수는 구분한다.
+
+15쪽은 Native 100%, fresh 99.97071%여서 독립 Print 원점의 ±2 CSSpx와 본문 소유·
+원문 공백·표시 5·누락/중복 관계를 새 이름의 정식 CLI 검사로 추가했다. CLI JSON의
+소수 한 자리 반올림 오차도 2px 허용폭 안에서 소비한다. 기존 1쪽 검사와 번호·캡션
+관계는 유지했다. 같은 새 검사 소스가 실제 Native208 CLI에서는 번호 0개/기대 2개로
+FAIL(3320), Native209에서는 PASS였고, 관련 전체 묶음은 **28 PASS / 0 FAIL / 0 ignore**(3321)다.
+외부 harness의 지원 library는 Native209이며 수정 전 실행에서 호출한 CLI가 Native208임을
+분리해 기록했다. 수정 전 library로 컴파일했다거나 전체 nextest가 통과했다고 보고하지 않는다.
+해당 Rust 파일 rustfmt와 diff check도 통과했다.
+
+[전체 TSV 12개·대표 PNG 8개·입력/PDF/생산물 SHA·독립 좌표](../pr/assets/issue265_body_number_projection_20261025/README.md)를
+정식 경로에 보존했다. 입력과 독립 PDF는 기존 추적 파일을 그대로 재사용했고,
+fixture README의 과거 Mac 절대 링크는 같은 파일의 저장소 상대 링크로 고쳤다.
+과거 12입력 검증과 이번 3입력의 현재 검증 범위도 구분했다.
+
+### 다음 공통 원인 분석과 보류 중인 경계
+
+3307의 기존 helper에서 정확히 만든 14조건을 독립 한컴 2020 Print로 출력하고,
+3314에서 Native209/fresh056의 28조건을 모두 실행했다. 강조점 및 표 바깥여백 0 대조군은
+양쪽 100%였으나 바깥여백 5,000HU와 #6812 수동 입력, 구형 literal 및 현대 COLOR 일부는
+90% 미만이었다. 이를 #265 통과와 합치지 않고 해당 기대값·baseline 변경을 보류했다.
+강조점의 실제 U+0307·transform과 옛 helper의 U+25CF 가정을 먼저 대조한다.
+
+구형 수식 합성 helper의 char_count 2는 8코드 유닛 개체와 문단 끝의 소유 길이 9와
+다르다. 9로 바꾼 입력은 원본과 구분한 진단 대조군이며 원본 통과로 바꾸어 보고하지 않는다.
+독립 Print의 literal 108조건·324개 glyph 원점은 기존 구형 좌표 평면의 차원 없는
+advance 9/2와 최대 0.33973 CSSpx 차이였다. 이 관측은 세 기호의 공통 규칙 후보이며,
+아직 엔진 구현·회귀 변경을 완료했다는 의미가 아니다. 기존 ASCII·정상 수식·현대 group의
+적용/비적용 경로와 반례를 함께 확인한 뒤 공통 생산 결과를 고친다.
