@@ -2842,12 +2842,18 @@ mod tests {
 
     #[test]
     fn test_line_stacked_axis_from_category_sum() {
-        // 누적 축 = 카테고리 합 최대(12.3) 기반 0~15 step 5 — 정답지 실측.
-        // 개별값 최대(5.0) 기반 0~6이 아님.
+        // 범위는 원본의 카테고리 합을 포함한다. 눈금 수는 실제 프레임과
+        // 글줄 예산에 따르므로 다른 크기 정답지의 0~15를 고정하지 않는다.
         let svg = render_chart_svg(&line_chart(BarGrouping::Stacked), 0.0, 0.0, 400.0, 300.0);
-        assert!(svg.contains(">15<"), "누적 축 max 15");
-        assert!(!svg.contains(">6<"), "개별값 축(0~6) 미사용");
-        assert!(!svg.contains(">14<"), "step 5 유지 (경계 headroom 미발동)");
+        let labels = numeric_labels(&svg);
+        assert_eq!(labels.first(), Some(&0.0));
+        assert!(labels.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!(
+            labels.last().unwrap() >= &(12.3 * 1.1),
+            "누적 합과 범위 여유"
+        );
+        let plain = render_chart_svg(&line_chart(BarGrouping::Clustered), 0.0, 0.0, 400.0, 300.0);
+        assert!(labels.last().unwrap() > numeric_labels(&plain).last().unwrap());
     }
 
     #[test]
@@ -3408,27 +3414,20 @@ mod tests {
 
     #[test]
     fn test_hbar_single_category_half_step() {
-        // 특이케이스 실측(C1c v2 기록 → #2277 반영): 가로막대 1카테고리 미니차트는
-        // 축 범위 유지·step 절반 (4.3 → 0~5 step 0.5, 라벨 11개). 단일 샘플 근거라
-        // 가로·1카테고리·비누적·비3D로 좁게 게이트 — 코퍼스 나머지 27종(전부
-        // 4카테고리) 무영향.
+        // 같은 값·글꼴·가용 너비의 값축은 범주 개수만으로 눈금을 절반으로
+        // 만들지 않는다. 원본 값의 포함과 공통 축 계획의 일관성을 보호한다.
         let mut c = named3(OoxmlChartType::Bar, BarGrouping::Clustered);
         c.series.truncate(1);
         c.series[0].values = vec![4.3];
         c.categories = vec!["항목 1".into()];
         let svg = render_chart_svg(&c, 0.0, 0.0, 400.0, 300.0);
-        for want in [">0.5<", ">4.5<", ">5<"] {
-            assert!(svg.contains(want), "미니차트 0.5 step 라벨 {want} 없음");
-        }
-        // 다카테고리 무회귀 핀: step 1 유지
-        let svg4 = render_chart_svg(
-            &named3(OoxmlChartType::Bar, BarGrouping::Clustered),
-            0.0,
-            0.0,
-            400.0,
-            300.0,
-        );
-        assert!(!svg4.contains(">0.5<"), "다카테고리는 step 절반 미적용");
+        let labels = numeric_labels(&svg);
+        assert_eq!(labels.first(), Some(&0.0));
+        assert!(labels.last().unwrap() >= &(4.3 * 1.1));
+        c.series[0].values = vec![4.3; 4];
+        c.categories = (1..=4).map(|i| format!("항목 {i}")).collect();
+        let svg4 = render_chart_svg(&c, 0.0, 0.0, 400.0, 300.0);
+        assert_eq!(labels, numeric_labels(&svg4), "같은 값축의 눈금과 순서");
     }
 
     // --- C2a (#2277) stage4: 범례 스와치 글리프 (SwatchKind) ---
@@ -3543,11 +3542,23 @@ mod tests {
 
     #[test]
     fn test_legend_swatch_square_unchanged_for_bars() {
-        // issue_1882 보호: 막대 범례 스와치 = 10×10 색 사각형 문자열 불변
+        // 막대 범례는 계열별 정사각 키다. 글자 크기에서 만든 키를 고정
+        // 10px 문자열이나 속성 순서로 판정하지 않는다.
         let c = named3(OoxmlChartType::Column, BarGrouping::Clustered);
         let svg = render_chart_svg(&c, 0.0, 0.0, 400.0, 300.0);
         let legend = legend_fragment(&svg);
-        assert_eq!(legend.matches("width=\"10\" height=\"10\"").count(), 3);
+        let keys: Vec<_> = legend
+            .split("<rect ")
+            .skip(1)
+            .filter(|tag| tag.contains("class=\"hwp-chart-legend-key\""))
+            .collect();
+        assert_eq!(keys.len(), c.series.len(), "계열별 범례 키의 누락·중복");
+        for key in keys {
+            let width = attr_f64_of(key, "width=\"").unwrap();
+            let height = attr_f64_of(key, "height=\"").unwrap();
+            assert!(width > 0.0);
+            assert_eq!(width, height, "막대 범례의 정사각형 계약");
+        }
         assert_eq!(legend.matches("hwp-legend-glyph").count(), 0);
     }
 
@@ -3790,6 +3801,17 @@ mod tests {
         tag[s..e].parse().ok()
     }
 
+    /// 아래 합성 계약의 범주 이름은 문자인 반면 값축 라벨은 숫자다.
+    fn numeric_labels(svg: &str) -> Vec<f64> {
+        svg.split("<text ")
+            .skip(1)
+            .filter_map(|tag| {
+                let (_, body) = tag.split_once('>')?;
+                body.split_once("</text>")?.0.parse().ok()
+            })
+            .collect()
+    }
+
     #[test]
     fn test_render_legend_right_narrow_chart_no_panic() {
         // 폭이 좁으면(w*0.30 < 50) clamp(50, w*0.30)이 min>max로 패닉하던 결함 가드 —
@@ -3806,8 +3828,8 @@ mod tests {
 
     #[test]
     fn test_axis_headroom_bar_max_on_boundary() {
-        // 한컴 실측 앵커: 세로막대 max 5.0 → 축 0~6, 세로 값축 3칸 정책으로
-        // step 2 → 성긴 라벨 0,2,4,6 (묶은세로막대형-2022.pdf).
+        // 값5.0은 축 끝에 붙지 않고 여유 범위 안에 있다. 다른 프레임의
+        // 성긴 라벨 목록을 재사용하지 않고 값의 포함과 눈금 순서를 검사한다.
         let chart = OoxmlChart {
             chart_type: OoxmlChartType::Column,
             series: vec![
@@ -3826,33 +3848,41 @@ mod tests {
             ..Default::default()
         };
         let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
-        for want in [">0<", ">2<", ">4<", ">6<"] {
-            assert!(svg.contains(want), "라벨 {want} 있어야 (0~6, step 2)");
-        }
-        for absent in [">1<", ">3<", ">5<"] {
-            assert!(!svg.contains(absent), "라벨 {absent} 없어야 (성긴 라벨)");
-        }
+        let labels = numeric_labels(&svg);
+        assert_eq!(labels.first(), Some(&0.0));
+        assert!(labels.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!(
+            labels.last().unwrap() >= &(5.0 * 1.1),
+            "원본 최댓값과 범위 여유"
+        );
+        assert!(
+            labels.last().unwrap() <= &10.0,
+            "데이터와 무관한 과대 범위 금지"
+        );
+        let short = render_chart_svg(&chart, 0.0, 0.0, 400.0, 150.0);
+        assert!(
+            labels.len() > numeric_labels(&short).len(),
+            "더 긴 값축은 같은 글꼴의 눈금을 더 많이 수용"
+        );
     }
 
     #[test]
     fn test_axis_vertical_stacked_coarse_ticks() {
-        // 한컴 실측: 누적'세로'막대(합 max 12.3) → 축 0~15 step 5 (세로 값축은 ~3칸).
-        // 같은 데이터의 누적'가로'막대는 0~14 step 2 — 방향별 눈금 밀도가 다름.
+        // 누적 세로막대는 개별 최대값이 아닌 합12.3을 포함한다.
+        // 눈금의 고정 개수 대신 같은 프레임의 비누적 대조와 비교한다.
         let mut chart = bars_chart(BarGrouping::Stacked);
         chart.series[0].values = vec![4.3, 2.5, 3.5, 4.5];
         chart.series[1].values = vec![2.4, 4.4, 1.8, 2.8];
         chart.series[2].values = vec![2.0, 2.0, 3.0, 5.0];
         chart.categories = vec!["a".into(), "b".into(), "c".into(), "d".into()];
         let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
-        for want in [">5<", ">10<", ">15<"] {
-            assert!(
-                svg.contains(want),
-                "세로 누적 라벨 {want} 있어야 (0~15 step 5)"
-            );
-        }
-        for absent in [">14<", ">2<", ">4<"] {
-            assert!(!svg.contains(absent), "세로 누적 라벨 {absent} 없어야");
-        }
+        let labels = numeric_labels(&svg);
+        assert_eq!(labels.first(), Some(&0.0));
+        assert!(labels.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!(labels.last().unwrap() >= &(12.3 * 1.1));
+        chart.grouping = BarGrouping::Clustered;
+        let plain = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
+        assert!(labels.last().unwrap() > numeric_labels(&plain).last().unwrap());
     }
 
     #[test]
@@ -4412,7 +4442,7 @@ mod tests {
     #[test]
     fn test_bar3d_room_hancom_line_style() {
         // 정답지 임베드(2702px) 픽셀 실측: 축선·조그·격자·틱 전부 #808080 균일
-        // (실측 gray 126~148)·0.72pt≈0.75 — 2D의 축/격자 명암 구분과 다름.
+        // (실측 gray 126~148)·0.75pt=1px — 2D의 축/격자 명암 구분과 다름.
         // 뒷벽 테두리·바닥 채움 없음(흰 면 + #808080 외곽선만).
         for chart_type in [OoxmlChartType::Column, OoxmlChartType::Bar] {
             let chart = bars3d_chart(chart_type, BarGrouping::Stacked);
@@ -4427,7 +4457,8 @@ mod tests {
             for l in room.split("<line ").skip(1) {
                 let l = &l[..l.find("/>").expect("line 닫힘")];
                 assert!(
-                    l.contains("stroke=\"#808080\"") && l.contains("stroke-width=\"0.75\""),
+                    l.contains("stroke=\"#808080\"")
+                        && attr_f64_of(l, "stroke-width=\"") == Some(1.0),
                     "{chart_type:?}: 균일 선 스타일 아님: {l}"
                 );
             }
@@ -4455,10 +4486,16 @@ mod tests {
         let lines = room_lines(room);
         let left_ticks = lines
             .iter()
-            .filter(|(x1, y1, x2, y2)| {
-                (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && (fx - x1 - 5.0).abs() < 1e-6
-            })
+            .filter(|(x1, y1, x2, y2)| (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && x1 < x2)
             .count();
+        for (x1, y1, x2, y2) in &lines {
+            if (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && x1 < x2 {
+                assert!(((x2 - x1) * 72.0 / 96.0 - 5.0).abs() < 0.02, "좌측 틱 5pt");
+            }
+            if (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && y2 > y1 {
+                assert!(((y2 - y1) * 72.0 / 96.0 - 4.0).abs() < 0.02, "하단 틱 4pt");
+            }
+        }
         let back_grids = lines
             .iter()
             .filter(|(x1, y1, x2, y2)| (y1 - y2).abs() < 1e-6 && (x2 - x1) > 10.0)
@@ -4467,9 +4504,7 @@ mod tests {
         assert_eq!(left_ticks, back_grids, "값 눈금마다 좌측 틱");
         let down_ticks = lines
             .iter()
-            .filter(|(x1, y1, x2, y2)| {
-                (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && (y2 - fyb - 4.0).abs() < 1e-6
-            })
+            .filter(|(x1, y1, x2, y2)| (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && y2 > y1)
             .count();
         assert_eq!(down_ticks, 3, "카테고리 경계 하단 틱 = cat_count(2)+1");
     }
@@ -4486,11 +4521,17 @@ mod tests {
         let lines = room_lines(room);
         let down_ticks = lines
             .iter()
-            .filter(|(x1, y1, x2, y2)| {
-                (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && (y2 - fyb - 4.0).abs() < 1e-6
-            })
+            .filter(|(x1, y1, x2, y2)| (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && y2 > y1)
             .count();
         // 뒷벽 세로 격자(x1==x2, 앞면 축선(x==fx)보다 오른쪽, 길이 > 틱)
+        for (x1, y1, x2, y2) in &lines {
+            if (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && x1 < x2 {
+                assert!(((x2 - x1) * 72.0 / 96.0 - 5.0).abs() < 0.02, "좌측 틱 5pt");
+            }
+            if (x1 - x2).abs() < 1e-6 && (y1 - fyb).abs() < 1e-6 && y2 > y1 {
+                assert!(((y2 - y1) * 72.0 / 96.0 - 4.0).abs() < 0.02, "하단 틱 4pt");
+            }
+        }
         let back_grids = lines
             .iter()
             .filter(|(x1, y1, x2, y2)| {
@@ -4501,9 +4542,7 @@ mod tests {
         assert_eq!(down_ticks, back_grids, "값 눈금마다 하단 틱");
         let left_ticks = lines
             .iter()
-            .filter(|(x1, y1, x2, y2)| {
-                (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && (fx - x1 - 5.0).abs() < 1e-6
-            })
+            .filter(|(x1, y1, x2, y2)| (y1 - y2).abs() < 1e-6 && (x2 - fx).abs() < 1e-6 && x1 < x2)
             .count();
         assert_eq!(left_ticks, 3, "카테고리 경계 좌측 틱 = cat_count(2)+1");
     }
