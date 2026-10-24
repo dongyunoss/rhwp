@@ -1537,3 +1537,80 @@ Native215/fresh059도 100%여서 이 반례의 기존 정상 출력을 보존했
 `rebase-native216-build-3450-result.json`, `pr8057-native216-3451-result.json`,
 `pr8057-primary-hit-before-3454-result.json`이다. 새 런타임의 fresh 검증과 직접 판독은
 이어 진행하며, 아직 원래 실패 테스트를 바꾸거나 새 회귀를 활성 경로에 등록하지 않았다.
+
+Native216의 세 정식 review와 standalone overlay에서 같은 영역을 확대 판독했다.
+Arial·굴림의 점과 뒤 글자, 함초롬바탕 자체 U+2024의 기준선 위치를 대조했다. 세 입력의
+raw 100%는 RGB 완전 일치를 뜻하지 않는다. 원본 이미지와 확대 파생물은 각각
+`pr8057-native216-panels-3457-result.json`, `pr8057-native216-details-3459/`에 있다.
+런타임 `b12357d79a7ae8d2f09847ad8fe7ac22014c86d0`을 고정 archive로 만들고
+fresh060 표준 release·실제 wasm-opt를 진행 중이다. 완료 후 같은 3조건을 재검증한다.
+
+### #8054: 실제 편집 입력과 독립 Print의 임계값
+
+원 PR #8054(`f033d7c7e3317e76773b6375dedc7224030998ee`), 로컬 반영
+`f940e9c2a50ddc70746802bfeb78066df3e1a503`을 다시 읽었다. 원 설명은 저장 사다리
+조건으로 #1549·#6929를 보호한다고 하면서, 새 테스트는 동적 편집 입력을 사용한다.
+현재 실패를 저장 줄이 없다는 이유로 잘못된 기대값으로 판정하지 않았다.
+
+기존 Node9f79 API로 테스트와 같은 blank 생성 → 3행2열 표 → Para TopAndBottom·
+vertOffset 600HU 설정 → 표 뒤 날짜 → 다음 문단 학교장 삽입을 수행했다. 표 컨트롤
+인덱스는 반환값 2를 사용하며, 저장한 XML에서 실제 표·날짜 순서와 저장 LineSeg가
+없음을 확인했다. 메모리 상태와 저장한 HWP/HWPX를 구별해 보존했다.
+`pr8054-edited-helper-source-3460/`의 생성 스크립트·operations·메모리 배치와
+`mcp-pr8054-edited-helper-source-3461/`의 독립 Print가 근거다. HWP는 기존 blank의
+Script storage를 MCP가 비활성화했고 HWPX는 전처리 없음이다. 두 PDF는 같은 표·날짜·
+학교장 위치를 출력했다. 이 차이를 숨기거나 HWP도 전처리 없음으로 기록하지 않는다.
+
+Native216은 두 저장본 모두 raw 90.81908%지만 날짜가 표 위에 있고 학교장이 앞당겨져 있다.
+독립 Print는 표가 144.003~195.147CSSpx이며 날짜 잉크 상단 199.320, 학교장 220.577이다.
+메모리 출력도 날짜 줄이 132.3으로 잘못 남는다. 점수만으로 완료나 회귀 변경을 허용하지 않는다.
+실제 source의 기대 관계가 맞는 배치 결함이다. 현재 source8054의 테스트 기대값을 유지한다.
+`pr8054-native216-3464-result.json`, `pr8054-native216-panels-3467-result.json`과 같은
+영역의 review·overlay 확대물 3471을 함께 직접 확인했다.
+
+추가 7조건에서 오프셋과 소스 순서를 독립 대조했다. 모두 같은 API로 생성한 정상 재조판
+입력이며 저장 줄을 합성하지 않았다. 실제 한컴 Print의 경계는 다음과 같다.
+
+| 표 오프셋 HU | 원문 순서 | Print의 날짜 | Native216 raw |
+| ---: | --- | --- | ---: |
+| 0 | 표 → 날짜 | 표 아래 | 100% |
+| 600 | 표 → 날짜 / 날짜 → 표 | 표 아래 | 두 경우 90.81908% |
+| 999 | 표 → 날짜 | 표 아래 | 84.90181% |
+| 1000 | 표 → 날짜 | 표 위 | 100% |
+| 1001 | 표 → 날짜 | 표 위 | 100% |
+| 2000 | 표 → 날짜 / 날짜 → 표 | 표 위 | 두 경우 100% |
+
+현재 10pt의 1000HU 글줄이 위쪽 오프셋 공간에 들어가는지의 경계다. PDF 인쇄 좌표의
+장치 반올림으로 999/1000의 표 상단이 같아도 글줄 소속은 다르므로, 반올림한 px 좌표로
+조건을 정하지 않는다. `pr8054-offset-order-controls-3465/manifest.json`, MCP3466,
+`pr8054-boundary-native216-3468-result.json`, `pr8054-independent-offset-order-oracles-3469.json`
+에 입력·PDF SHA와 독립 벡터/글자 원점·전처리를 보존했다.
+
+원인 경로는 `paragraph::format의 computed_host_lines → block::entry의
+ParagraphFloatPlacement::from_computed_host / from_computed_head_host →
+from_computed_host_at`이다. 현재 공통 함수는 모든 글줄이 오프셋 위에 들어갈 때만 계획을
+반환하고, 들어갈 수 없는 경우 None으로 빠져 양수 오프셋의 과거 제목 보정으로 되돌아간다.
+후보 보정은 같은 실제 구성 줄과 표 점유로 위/아래 호스트 원점을 확정해야 한다. 일부 앞줄만
+들어가는 경계·기존 점유에 의한 표 이동·쪽 예산도 소유 결과로 다뤄야 하므로, 저장 LineSeg
+조건을 없애거나 높이를 임의의 px 값으로 추정하는 수정은 하지 않았다.
+
+확정 계획의 소비는 typeset post-text에서 `stored_host_origin`으로 흐름을 옮기고,
+layout의 table 배치가 확정 `table_top`을 우선하며, 글줄 생성은 같은 원점을 사용하는 경로다.
+표를 뒤에서 이동할 때 호스트 원점도 함께 따라야 하는 소유 차이와 요구 높이/이월을
+검토한 뒤 공통 결과를 보정한다. #1549는 이미 같은 원본 Print의 표 세 개 → 제목 관계로
+정정된 검사이며, 과거 제목 선행 가정을 복원하지 않는다. #6929 빈 앵커도 대조군으로 유지한다.
+
+확대물의 괘선 농도 차이도 확인했다. 실제 Native SVG와 독립 PDF의 stroke는 모두 검정,
+폭은 각각 0.48/0.480000019CSSpx다. 흐름 결함과 구분하며 반복 셀 경계·raster의 AA를
+좌표나 선 폭 차이로 오인해 보정하지 않는다(`pr8054-svg-stroke-diagnostic-3472/strokes.json`).
+
+### #1019·#1156의 워터마크 검사와 현재 출력
+
+원 #1019의 화면 근사 opacity 0.26/0.15 계약과, 후속 보정 `4bdec58908`의 독립 Print RGB
+계약을 대조했다. 현재 `resolve_page_background_tone`은 원본 모델을 보존하면서 실제 보정
+픽셀을 만들고 render node의 밝기·대비만 소비 완료로 정규화한다. 현재 canonical/legacy SVG의
+출력에 opacity 문자열이 없는 원인이며, 문자열만 재추가해 픽셀에 이중 감쇠를 적용하지 않는다.
+Native216에서 동일 원본 HWP/HWPX와 기존 독립 Print는 raw 99.28794/99.27978%다.
+`watermark-svg-consumer-diagnostic-3462/`와 `watermark-native216-3463-result.json`에 실제
+소비와 전쪽 결과를 보존했다. 기존 `legacy_chart_physical_layout`의 Print RGB·원본 보존
+검사도 재사용하며, 새 fresh060와 직접 판독 전에는 기존 기대값을 바꾸지 않는다.
