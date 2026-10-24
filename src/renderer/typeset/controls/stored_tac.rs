@@ -891,8 +891,10 @@ pub(super) fn prepare(
                 // 상대 간격은 앞 내용이 요구하는 하한이다. 압축한 텍스트
                 // 흐름 끝이 더 위라는 이유로 독립된 저장 개체 원점을 지우지
                 // 않는다. 원본의 새 단 재시작은 앞에서 별도로 확정했다.
-                if !same_frame {
-                    saved_origin = saved_origin.max(inherited_origin?);
+                if let Some(inherited_origin) = inherited_origin {
+                    // 같은 축 판정은 좌표 재사용의 허용 조건이다. 앞 글줄이 실제로
+                    // 소유한 끝과 진입 간격의 하한까지 면제하지 않는다.
+                    saved_origin = saved_origin.max(inherited_origin);
                 }
             }
             let origin = flow_origin.max(saved_origin);

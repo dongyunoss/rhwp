@@ -27,6 +27,10 @@ impl LayoutEngine {
             || table.common.text_wrap != TextWrap::TopAndBottom
             || table.common.vert_rel_to != VertRelTo::Para
             || table.page_break != TablePageBreak::RowBreak
+            || self
+                .render_normalization
+                .borrow()
+                .nested_table_has_reflowed_host(table)
         {
             return None;
         }
@@ -74,11 +78,10 @@ impl LayoutEngine {
         row_cells: &[&Cell],
         driver_units: &[CellUnit],
     ) -> bool {
-        // CELL은 선언 높이가 있어도 셀 안 글줄에서 나눌 수 있다. 부모의 앞 내용이
-        // 늘어 남은 예산이 줄어드는 경우도 같으며, 자식 자신의 성장만 요구하지 않는다.
-        // 개체 혼재·rowspan 경로는 기존 분할 계약을 유지한다. 호출자가 rowspan과
-        // RowBreak를 확인하고, 여기서는 같은 CellUnit의 일반 글줄 경계만 승인한다.
+        // 현재 재조판한 글줄의 컷을 부모에 전달한다. 원본 저장 행을 단지 여러 줄이라는
+        // 이유로 다시 나누지 않는다. 원본의 명시적 재시작은 별도 source 경로가 소유한다.
         driver_units.len() > 1
+            && driver_units.iter().any(|unit| unit.reflowed_line_slot)
             && driver_units
                 .iter()
                 .all(|unit| unit.nested_row.is_none() && unit.vis_start < unit.vis_end)

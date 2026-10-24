@@ -533,6 +533,18 @@ impl RenderNormalizationOverlay {
         self.nested_tables_with_reflowed_hosts
             .contains(&(table as *const Table as usize))
     }
+
+    /// 부모 폭 변경 전의 개체 선언은 현재 첫 조각의 물리 프레임을 인증하지 않는다.
+    /// 측정·행 유닛·실제 배치는 같은 출처 판정을 거친 결과를 소비한다.
+    pub(crate) fn stored_opening_row_frame(
+        &self,
+        table: &Table,
+    ) -> Option<super::float_placement::StoredOpeningRowFrame> {
+        if self.table_text_reflowed(table) || self.nested_table_has_reflowed_host(table) {
+            return None;
+        }
+        super::float_placement::stored_plain_opening_row_frame(table)
+    }
 }
 
 /// [#7059] 표 **첫 칸의 저장 `LINE_SEG`** 가 축소된 폭을 말하는가.

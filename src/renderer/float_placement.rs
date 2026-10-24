@@ -11,7 +11,7 @@ mod stored_column_spacing;
 mod stored_opening_row_frame;
 mod stored_row_grid;
 pub(crate) use column_ole::column_ole_placement;
-pub(crate) use stored_opening_row_frame::stored_plain_opening_row_frame;
+pub(crate) use stored_opening_row_frame::{stored_plain_opening_row_frame, StoredOpeningRowFrame};
 mod overlay_outer_frame;
 pub(crate) use overlay_outer_frame::overlay_table_outer_margin_left_hu;
 pub(crate) use stored_column_spacing::stored_column_top_spacing_before;

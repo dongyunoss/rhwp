@@ -137,16 +137,16 @@ fn place(value: &mut LayoutBox, scale: f64) -> f64 {
     width
 }
 
-pub(super) fn project_linear(node: &EqNode, value: &mut LayoutBox, width: f64) {
+pub(super) fn project_linear(node: &EqNode, value: &mut LayoutBox, width: f64) -> bool {
     if !linear_source(node) || !width.is_finite() || width <= 0.0 {
-        return;
+        return false;
     }
     let mut count = 0;
     let Some(advance) = inspect(value, 0.0, &mut None, &mut count) else {
-        return;
+        return false;
     };
     if count == 0 || !advance.is_finite() || advance <= 0.0 {
-        return;
+        return false;
     }
     let scale = width / (1.0 + advance);
     let mut body = value.clone();
@@ -155,6 +155,7 @@ pub(super) fn project_linear(node: &EqNode, value: &mut LayoutBox, width: f64) {
     body.y = 0.0;
     value.width = width;
     value.kind = LayoutKind::Row(vec![body]);
+    true
 }
 
 /// 모든 잉크가 같은 글줄에 있는 문자·그룹을 하나의 가로 좌표계에 둔다.
@@ -207,17 +208,16 @@ fn displayed_characters(value: &LayoutBox, out: &mut Vec<char>) {
     }
 }
 
-pub(super) fn project(node: &EqNode, value: &mut LayoutBox, width: f64) {
+pub(super) fn project(node: &EqNode, value: &mut LayoutBox, width: f64) -> bool {
     let Some(plan) = plan::Plan::source(node) else {
-        project_linear(node, value, width);
-        return;
+        return project_linear(node, value, width);
     };
     if !width.is_finite() || width <= 0.0 || !plan.width.is_finite() || plan.width <= 0.0 {
-        return;
+        return false;
     }
     let mut count = 0;
     if inspect(value, 0.0, &mut None, &mut count).is_none() || count == 0 {
-        return;
+        return false;
     }
     let mut actual = Vec::with_capacity(count);
     displayed_characters(value, &mut actual);
@@ -226,9 +226,10 @@ pub(super) fn project(node: &EqNode, value: &mut LayoutBox, width: f64) {
         .copied()
         .eq(plan.glyphs.iter().map(|(ch, _)| *ch))
     {
-        return;
+        return false;
     }
     let scale = width / (1.0 + plan.width);
     place_plan(value, &mut plan.glyphs.into_iter(), scale);
     value.width = width;
+    true
 }

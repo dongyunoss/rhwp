@@ -227,6 +227,14 @@ impl EqLayout {
             ..*self
         };
         let result = root.layout_node(node, self.font_size);
+        if let Some(width) = self.legacy_declared_width {
+            // CHAR 평면은 글꼴 글줄 프레임까지 소유한다. 지원하는 문자·그룹만
+            // 먼저 수용하며, 분수 등 복합식은 아래 HFT 프레임을 유지한다.
+            let mut projected = root.matrix_row_box(result.clone(), self.font_size);
+            if super::legacy_coordinate_plane::project(node, &mut projected, width) {
+                return projected;
+            }
+        }
         if self.legacy_hft_metrics && result.width > 0.0 {
             // The same HFT line/fraction frame owns both root paint and edited
             // size. A display glyph's ink box is not the logical font line.
@@ -252,17 +260,13 @@ impl EqLayout {
         }
         // 독립 글꼴 프레임을 측정과 표시의 공통 루트에 보존한다.
         // 자식의 기준선 상대 원점은 유지하며 빈 수식을 글줄로 바꾸지 않는다.
-        let mut result = if root.legacy_equation && result.height > 0.0 {
+        if root.legacy_equation && result.height > 0.0 {
             legacy::root(result, self.font_size, self.dpi)
         } else if (self.hancom_math_face || self.hancom_eqn) && result.height > 0.0 {
             root.matrix_row_box(result, self.font_size)
         } else {
             result
-        };
-        if let Some(width) = self.legacy_declared_width {
-            super::legacy_coordinate_plane::project(node, &mut result, width);
         }
-        result
     }
 
     fn text_width(&self, text: &str, fs: f64, italic: bool) -> f64 {

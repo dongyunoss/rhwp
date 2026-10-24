@@ -2820,6 +2820,7 @@ impl LayoutEngine {
     /// 본다. 상자 없는 행(병합만 있는 행·높이 0 선언)이 있으면 경계를 셀 수 없고,
     /// 병합 칸이 가로지르는 경계도 증거로 쓰지 않는다. 한/글은 HWPUNIT 정수 합으로 저장하므로 근사 일치는 증거로 쓰지 않는다.
     pub(crate) fn stored_object_frame_row_count(
+        &self,
         table: &crate::model::table::Table,
     ) -> Option<usize> {
         let rows = usize::from(table.row_count);
@@ -2850,7 +2851,10 @@ impl LayoutEngine {
                 return (!crossed).then_some(boundary);
             }
             if prefix > declared {
-                return crate::renderer::float_placement::stored_plain_opening_row_frame(table)
+                return self
+                    .render_normalization
+                    .borrow()
+                    .stored_opening_row_frame(table)
                     .map(|frame| frame.end_row);
             }
         }
@@ -5451,7 +5455,9 @@ impl LayoutEngine {
                         )
                     })
                     .or_else(|| {
-                        crate::renderer::float_placement::stored_plain_opening_row_frame(table)
+                        self.render_normalization
+                            .borrow()
+                            .stored_opening_row_frame(table)
                             .map(|frame| frame.row_heights)
                     })
             {
@@ -16202,7 +16208,7 @@ impl LayoutEngine {
                     // 같이 보존한다. 첫 조각 뒤의 행만 이 경계를 연다.
                     let stored_object_frame_row = self
                         .native_stored_table_has_fragment_frames(nt)
-                        .then(|| Self::stored_object_frame_row_count(nt))
+                        .then(|| self.stored_object_frame_row_count(nt))
                         .flatten();
                     for (ri, rh) in rhs.iter().enumerate() {
                         // [#4069] CELL 분할 중첩 표는 큰 행을 단일 atom으로 바깥
@@ -27281,7 +27287,9 @@ impl LayoutEngine {
             if let Some(height) =
                 crate::renderer::float_placement::stored_plain_object_row_frame_heights(table)
                     .or_else(|| {
-                        crate::renderer::float_placement::stored_plain_opening_row_frame(table)
+                        self.render_normalization
+                            .borrow()
+                            .stored_opening_row_frame(table)
                             .map(|frame| frame.row_heights)
                     })
                     .and_then(|rows| rows.get(row).copied())
