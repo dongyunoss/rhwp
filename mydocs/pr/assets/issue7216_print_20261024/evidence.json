@@ -1,0 +1,61 @@
+{
+  "render_source": "4adb7faf48ec055d45e1db5a0bd2160ff6e6b995",
+  "policy_base": "9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a",
+  "compat": "2022",
+  "dpi": 96,
+  "print": {
+    "input": "samples/issue7216/tall_table_before.hwpx",
+    "input_sha256": "82386dde2f8bc8b47a212fda9c623cf7094a6a1fb385be426e334f6990aa9df4",
+    "pdf": "pdf/issue7216/tall_table_before-2020.pdf",
+    "pdf_sha256": "3b6f5dc51170b23c78e9991622612861c082f08e8ebfa5914711902217e08e8a",
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "input_preprocess": "none",
+    "job_id": "4fde79e8-c41c-41c3-8e46-a4f04e43ec45",
+    "pages": 2
+  },
+  "comparisons": [
+    {
+      "backend": "native",
+      "role": "base",
+      "minimum_raw": 1.11835,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "native-base_silhouette.tsv",
+      "sha256": "79d3079b72d7fcdd123e68922c505fa9c07d7ead5607373ee5c52addbaf26424",
+      "exit_code": 1
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "minimum_raw": 100.0,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "native-candidate_silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "exit_code": 0
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "minimum_raw": 1.08641,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "wasm-base_silhouette.tsv",
+      "sha256": "4500af97a90fce2a94659a2fa2ee7ae12b3daa14cc3c6cbf9724fbead197c8c9",
+      "exit_code": 1
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "minimum_raw": 100.0,
+      "pages": 2,
+      "reference_pages": 2,
+      "tsv": "wasm-candidate_silhouette.tsv",
+      "sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+      "exit_code": 0
+    }
+  ]
+}
