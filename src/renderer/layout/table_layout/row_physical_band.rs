@@ -288,8 +288,8 @@ impl LayoutEngine {
     }
 
     /// 수용 용량과 실제 마지막 줄 상자를 같은 유닛의 서로 다른 값으로 구분한다.
-    /// 다음 줄로 가는 전진은 마지막 줄 상자의 바깥에 있다.
-    /// 같은 내용 컷을 수용한 뒤 그 전진을 실제 끝 상자에 다시 포함하지 않는다.
+    /// 저장 슬롯이 없는 새 줄은 다음 줄 전진까지 들어가야 수용할 수 있다.
+    /// 수용한 뒤 다음 조각으로 넘어가는 전진은 실제 끝 상자에 다시 포함하지 않는다.
     fn cut_trailing_advances(
         &self,
         table: &Table,
@@ -307,6 +307,17 @@ impl LayoutEngine {
         if start >= end || end >= units.len() {
             return (stored, stored);
         }
+        let original_slot = !last.reflowed_line_slot
+            && cell.paragraphs.get(last.para_idx).is_some_and(|para| {
+                !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+                    && last.vis_end.checked_sub(1).is_some_and(|line| {
+                        para.line_segs.get(line).is_some_and(|seg| {
+                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                        })
+                    })
+            });
         let paragraph_end = last.para_idx != units[end].para_idx;
         let following = self.stored_span_line_tail_spacing(last);
         // 문단 끝 유닛에는 줄간격과 문단 뒤 간격이 함께 들어 있다.
@@ -322,20 +333,20 @@ impl LayoutEngine {
         } else {
             following
         };
-        // 조판이 발행한 일반 글줄의 뒤 간격만 분리한다. 원본 프레임의
-        // 별도 말미 계약과는 최댓값으로 합쳐 같은 간격을 두 번 빼지 않는다.
-        let trailing = stored.max(following);
-        // 자식 viewport의 전진은 부모 조각의 유닛 원장에 예약된다.
-        // 바깥 페이지에서 뒤 간격을 넘기는 계약으로 그 원장을 늘리지 않는다.
-        let capacity = if self.row_uses_outer_fragment_frame(table, usize::from(cell.row)) {
-            trailing
+        let capacity = if original_slot && paragraph_end {
+            following
         } else {
-            stored
+            0.0
         };
-        (capacity, trailing)
+        let occupied = if paragraph_end || !original_slot {
+            following
+        } else {
+            0.0
+        };
+        (stored.max(capacity), stored.max(occupied))
     }
 
-    /// 같은 물리 밴드에 마지막 글줄 상자가 들어가는지 확인한다.
+    /// 저장 줄이 증언한 컷의 수용량만 완화한다. 새 줄의 잉크 높이로 용량을 늘리지 않는다.
     pub(super) fn row_cut_capacity_trailing_trim(
         &self,
         table: &Table,

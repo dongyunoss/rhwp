@@ -5686,7 +5686,7 @@ impl LayoutEngine {
         ) || crate::renderer::float_placement::stored_repeated_header_rowbreak_outer_frame(
                 self.profile.get(), para, outer_table,
         ) || crate::renderer::float_placement::computed_rowbreak_owns_outer_frame(
-                para, outer_table,
+                para, outer_table, start_cut,
         ) || crate::renderer::float_placement::stored_rowbreak_owns_fragment_outer_frame(
                 para, outer_table,
         ) || matches!(
@@ -7888,6 +7888,10 @@ impl LayoutEngine {
             let content_bottom = table_node
                 .children
                 .iter()
+                // 표의 직계 Line은 격자 괘선이다. 반 획의 그리기 범위는 행이
+                // 점유하는 물리 높이가 아니며, 통배치/부분 배치의 같은 상자를
+                // 서로 다르게 키우지 않는다. 셀 안 실제 내용의 확장은 유지한다.
+                .filter(|child| !matches!(&child.node_type, RenderNodeType::Line(_)))
                 .map(|child| {
                     descendant_bottom(
                         child,

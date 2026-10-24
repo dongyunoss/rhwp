@@ -7617,9 +7617,16 @@ pub(crate) fn computed_empty_table_host(para: &Paragraph, table: &Table) -> bool
 }
 
 /// 재조판한 빈 호스트에는 표 바깥 상자를 대신 소유하는 저장 줄이 없다.
-/// 같은 물리 프레임은 행 경계에서 나뉜 각 조각에서도 위·아래 여백을 소유한다.
-pub(crate) fn computed_rowbreak_owns_outer_frame(para: &Paragraph, table: &Table) -> bool {
-    table.page_break == TablePageBreak::RowBreak && computed_empty_table_host(para, table)
+/// 새 행에서 시작한 조각은 바깥여백을 소유한다. 행 내부 컷은 그 행의 원래
+/// 상단이 아니므로 NO_LS만으로 같은 여백을 반복하지 않는다.
+pub(crate) fn computed_rowbreak_owns_outer_frame(
+    para: &Paragraph,
+    table: &Table,
+    start_cut: &[usize],
+) -> bool {
+    table.page_break == TablePageBreak::RowBreak
+        && start_cut.iter().all(|&cut| cut == 0)
+        && computed_empty_table_host(para, table)
 }
 
 /// 선언이 실제 저장 행 점유의 비끝 prefix를 소유하면, 전체 표 높이가 아니다.
