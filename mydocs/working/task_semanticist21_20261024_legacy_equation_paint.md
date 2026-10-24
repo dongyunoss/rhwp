@@ -386,3 +386,55 @@ HWP/HWPX 왕복·선택·커서·편집 계약을 그대로 검사했다. 이 �
 `cargo fmt --all -- --check`와 `git diff --check`도 성공했다(2978).
 fresh WASM의 새 빌드·동일 입력 대조 및 남은 필수 회귀는 아직 완료 전이며,
 새 렌더링 테스트·fixture·golden이나 기대값은 이 단계에서 추가·변경하지 않았다.
+
+## Fresh WASM051과 완료 범위의 정식 회귀 계획
+
+제품 source `f3143bf35e`의 standard release WASM051은 공용 target·빌드 잡 8개로
+833.31초에 성공했다(2981). release manifest·package verifier와 Studio JS/WASM
+바이트 일치를 확인했다. 같은 원본 HWP/HWPX 전 230쪽은 최저 97.25234%이고
+Native와 독립 Print의 전체 쪽수도 같다(2982). 이전 WASM050 대비 두 형식 모두
+26쪽 99.22483→99.29163%, 27쪽 99.98126→100%이며 다른 쪽은 같다(2999).
+#8182의 실제 WASM 네 입력·저장 재열기·표시 N+1·모델 선택/커서/삽입 계약도
+통과했다(2996). 새 base의 모든 기능 보존 검증이 끝났다는 뜻은 아니다.
+
+독립 영문·숫자 186개 입력 전 9쪽의 fresh WASM raw는 모두 100%다(2995).
+Native 최저는 99.98690%이며 양쪽 대표 1·5·9쪽의 review·standalone overlay를
+생성하고 글리프·반복 전진·정체/이탤릭·문단 간격을 직접 확인했다(2976·2998·3000).
+이 완료 입력의 관계와 독립 Print의 글리프 간격을 새 이름의 정식 검사로 보존한다.
+시험지 삭제 예정인 기존 함수는 바꾸지 않는다. HWPX·독립 PDF·전체 두 TSV와
+대표 PNG를 함께 보존하고, 페이지별 98% 조건을 충족한 같은 96dpi에서만 ±2px
+간격을 검사한다. 기준은 구현 표가 아니라 Print의 실제 원점이다. 외부 본문
+글꼴이 다른 CI에서도 안정적인 같은 수식 안의 상대 원점을 사용하며, 사설 글꼴의
+윤곽이 CI에 공급됐다고 주장하지 않는다. 이전 Native186에서 의도한 원인으로
+실패하는지도 별도로 실행한다.
+
+새 독립 대조 275개(2986·2987)는 정체·기호 반복 219개, 같은 식의 구형/Version 60
+글꼴 범위 48개, 각 한 페이지에 둔 CHAR/LINE·너비·보호 8개다. 모두 Windows
+한컴 2020 11.0.0.9136, PrintMethod 0, input_preprocess none이다. 구형
+`{rm a}b`의 b는 이탤릭이지만 Version 60은 정체다(2988). 원 이슈 #7873의
+해결 PR #7975와 실제 보정 9dcaba4d76을 대조했다(2993). 선행 근거의 Version 60
+전역 전환을 유지하고 구형의 그룹 범위를 구분할 근거다.
+
+Native188의 새 대조는 정체/기호 11쪽 최저 69.62944%, 범위 4쪽 최저 77.22436%다
+(2990). CHAR 4쪽은 100%이나 LINE 4쪽은 문단과 글리프의 기준선 차이로 0%다.
+혼합 float 대조는 Native 2쪽/Print 4쪽이며 Print에 빈 두 쪽이 있다(2984).
+새 대조를 통과 fixture로 추가하거나 기대값 완화로 숨기지 않는다. 원본·PDF와
+실패 결과는 output에 보존하고 다음 공통 보정의 경계로 사용한다. 복합 그룹·첨자·
+분수 및 76쪽의 수식 간격은 계속 미완료이며 PR 생성·승인 근거로 삼지 않는다.
+
+신규 정식 검사 두 함수는 불변 Native188 rlib로 모두 통과했다(3001). 이전
+Native186 rlib에서는 둘 다 의도한 원인으로 실패했다(3002). 독립 원점 검사는
+첫 반복 행에서 실제 6.66667px / Print 49.89296px의 전진 차이를 검출했고,
+관계 검사는 선언 너비와 공통 표시 프레임 불일치를 검출했다. 단순히 이전 코드에서도
+통과하는 보존 검사만 추가한 것이 아니다. HWPX·Print PDF는 기존 검증 바이트를
+그대로 복사했고 두 TSV도 원문과 바이트가 같다. 자동 수집 정책은 새 파일을
+regression_suite_018에 배정했으며 manifest 검사도 성공했다(3003). 공용 target의
+정식 nextest 경로·기본 feature 환경에서 재실행을 진행한다(3004).
+
+정식 기본 feature 경로도 공용 `target/pr-review`·빌드 잡 8개로 완료했다.
+`node scripts/run-rust-test.mjs verified_legacy_equation_character_plane --
+--cargo-profile release-test --target-dir target/pr-review --test-threads 12
+--no-fail-fast`는 빌드 5분 19초 뒤 **2 PASS / 0 FAIL**이다(3004). 같은 suite의
+다른 266개 검사는 focused filter 제외이며 실행 성공으로 세지 않는다. 신규
+설명 문서의 상대 링크 9개와 diff 공백도 확인했다. 이는 신규 두 함수의 등록·환경
+검증이며, 전체 Rust·lint·통합 검토 완료나 PR 제출 준비 완료는 아니다.
