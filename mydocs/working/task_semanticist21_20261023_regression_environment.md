@@ -1384,3 +1384,10 @@ Node 2463개와 실제 브라우저 검사가 통과했다. 런타임 번들 해
 확인한 뒤 24시간 이상 지난 debug/incremental의 정확한 하위 캐시 114개만 정리했다.
 약 4.36GiB를 확보했다. 공유 target, deps, fingerprint, 실행 파일은 보존했다.
 삭제 목록과 전후 여유 공간은 ignored output의 cleanup receipt에 남겼다.
+
+3209의 전체 검증은 suite 준비 단계에서 중단됐으며 Cargo는 실행되지 않았다.
+helper 분리로 생긴 path 속성을 수집기가 독립 target 예외로 분류해 49/48개가 됐다.
+동일한 기존 helper 모듈의 허용 방식에 따라 해당 case만 moduleIntegrationOverrides에
+등록한다. 예산은 늘리지 않고 기존 28개 suite 안에 통합한다. 3210 재준비는
+1805 sources / 7839 static test attrs / 28 suites + 20 exceptions = 48/48개로
+통과했다. 전체 검증은 이 정책 보정까지 커밋한 별도 Rust 검증 worktree에서 실행한다.
