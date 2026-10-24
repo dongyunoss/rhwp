@@ -2740,6 +2740,10 @@ impl Renderer for WebCanvasRenderer {
                     let glyph_text = source_glyph.as_deref().unwrap_or(cluster_str);
                     if source_glyph.is_none() && super::contains_old_hangul_jamo(glyph_text) {
                         self.ctx.set_font(old_hangul_font);
+                    } else if let Some(descriptor) =
+                        super::measured_glyph_supplier::canvas_descriptor(style, glyph_text)
+                    {
+                        self.ctx.set_font(&descriptor);
                     } else {
                         self.ctx.set_font(font);
                     }
@@ -3501,6 +3505,10 @@ impl WebCanvasRenderer {
                 let glyph_text = source_glyph.as_deref().unwrap_or(cs);
                 if source_glyph.is_none() && super::contains_old_hangul_jamo(glyph_text) {
                     ctx.set_font(old_hangul_font);
+                } else if let Some(descriptor) =
+                    super::measured_glyph_supplier::canvas_descriptor(style, glyph_text)
+                {
+                    ctx.set_font(&descriptor);
                 } else {
                     ctx.set_font(font);
                 }

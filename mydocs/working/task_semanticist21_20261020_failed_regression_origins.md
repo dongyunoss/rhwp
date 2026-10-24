@@ -1468,3 +1468,72 @@ Native215의 새 canonical review·standalone overlay를 함께 열어 원본 �
 끝나기 전에는 이 대상의 새 정식 회귀나 기존 기대값 변경을 추가하지 않는다. 현재 결과는
 이 경계의 Native 검증이며, 브랜치 전체 Rust·lint·Studio 및 승인된 원 PR 범위의 최종
 검증 완료나 PR 제출 가능 판정이 아니다.
+
+### fresh059·Studio·실패 80건 재검증의 실제 종료
+
+fresh059는 런타임 `9f79fb8e7c73a41eecb509e780526a7e45a79f93`의 고정 archive에서
+표준 release와 실제 `wasm-opt -O`를 거쳐 1,238.82초에 exit 0으로 끝났다. WASM
+SHA-256은 `2c1c9c6d4319f13ae0bb368568a21b175347a7f461ae6eaf6638a48eb835dcec`다.
+같은 18조건 29쪽 중 축약본과 합성 대조군 17조건 25쪽은 raw 100%다. 전체 원본은
+94.15286 / 89.78794 / 98.40588 / 99.99217%이며, 2쪽이 미달이므로 이 원본을 포함한
+새 회귀의 등록을 보류했다. Native의 통과를 fresh 통과로 대신하지 않는다.
+실행 근거는 ignored output의 `rebase-candidate-wasm059-build-3420-result.json`과
+`mixed-host-wasm059-3423-result.json`이다.
+
+전체 원본의 CFB/DocInfo를 모델과 독립적으로 읽으면 2쪽 해당 글자의 한글 face는
+휴먼명조, 영문 face는 HCI Poppy다. 반면 기존 Print와 같은 원본의 새 MCP 2020 Print는
+Gulim/Arial 계열을 사용한다. 두 PDF의 96dpi raster는 전 4쪽이 같았다. MCP의 font scope
+등록 개수만으로 서버에 설치된 구체적인 face를 추정하지 않는다. Windows의 휴먼명조
+등록은 확인했으며, 수동 Print용 동일 SHA 원본을 별도 `C:\temp\rhwp-review-6133-9f79fb8e-20261025`
+디렉터리에 복사해 두었다. 요청한 PDF는 아직 없으므로 새 기준이 확보됐다고 기록하지 않는다.
+`poster-original-page2-raw-font-contract-3436.json`, 새 MCP receipt 3437,
+`poster-old-new-print-raster-3443.json`, `manual-font-print-preparation-3440-result.json`에
+입력 SHA와 관측을 보존했다. 수동 결과를 회수한 뒤 이 검증 전용 Windows 디렉터리를 정리한다.
+
+Studio는 같은 런타임의 web/Node bindings로 Node 2,463 PASS·0 FAIL·0 SKIP,
+production build exit 0, command-error browser 검사 exit 0을 확인했다. Node 보조 bindings의
+`--no-opt` 결과와 최종 web package의 표준 최적화 검증을 구분한다.
+`studio-current-3432-result.json`과 그 안의 실제 로그를 따른다.
+
+정확한 head `7d6a3fd73a73730a2ef4e85163da9d13254a54dc`의 실패 중심 80건을 공식 nextest로
+재실행했다. 50 PASS·30 FAIL·11,745 unselected, 실제 exit 100이다. 이는 전체 Rust 성공이
+아니다. `failed-regression-batch-3441-result.json`, `remaining-rust-failures-3447.json`에
+실행·선택 범위·실패 위치를 연결했다. 새 기대값이나 golden으로 실패를 숨기지 않았다.
+
+### #8057: 원 글리프와 결측 공급자의 폭·paint 분리
+
+원 PR #8057의 `76271c14e4823a10a69747930f1c128f7bc7380a`는 가운데점과 한점 리더를
+무조건 원으로 그리며, 로컬 반영은 `ec6c9c8f5ba4b0183bdf06e6a924379e66af6883`이다.
+기존 테스트는 빈 DocInfo와 generic sans-serif를 쓰므로 실제 한컴 글꼴의 글리프·전진폭을
+입증하지 못한다. 작성자가 언급한 가계동향 문서의 정확한 입력은 확보하지 못했으며,
+이름이 비슷한 5쪽 HWPX에는 해당 문자가 없어 원 입력으로 대체하지 않았다.
+
+별도의 명시적 굴림·Arial HWPX를 생성하고, 각각 한컴 2020 Print로 독립 대조했다.
+Native215/fresh059에서 굴림은 98.37398/98.37925%, Arial은 49.89107/53.17797%다.
+`pr8057-explicit-font-controls-3444/manifest.json`, MCP Print 3445,
+`pr8057-font-controls-3446-result.json`에 출처와 결과를 보존했다. 이 대조군은 원 보고서나
+기존 메모리 helper와 구별한다.
+
+실제 Arial regular 프로그램의 SHA-256은
+`b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd`, unitsPerEm은
+2048이며 cmap에는 U+2024/U+2027가 없다. 독립 Arial Print는 두 기호를 Haansoft Batang으로
+출력한다. 굴림 Print는 Haansoft Dotum이다. Arial의 첫 점 다음 B는 Print에서 x=124.5725CSSpx,
+Native215에서는 x=135.6267CSSpx다. 확인된 결측을 전각 휴리스틱으로 처리해 뒤 내용까지
+밀리는 실제 폭 결함이다. 정상 글리프가 있는 face나 다른 weight/style를 같은 방식으로
+벡터화할 근거는 아니다. 원점 진단은 `pr8057-arial-glyph-observations-3448.json`에 있다.
+
+수정 후보는 확인된 regular Arial의 두 결측만 기존 공급자 표에 연결한다. 공통
+`measured_glyph_supplier`는 `char_width_decision`의 실제 최종 공급 결과를 소비하고,
+Native Skia·SVG의 일반/그림자 attrs·Canvas의 일반/효과 pass가 그 프로그램을 그린다.
+Arial의 다른 결측 문자까지 한컴바탕으로 보내는 face 전체 fallback은 추가하지 않는다.
+원 글꼴 hit, 명시적 환경 치환, HFT 전진 계약은 기존 측정 판정에 남긴다.
+Native216에서 동일 입력의 재출력을 먼저 확인하며, 새 fresh와 직접 판독 전에는 이 후보를
+완료나 회귀 등록 가능 상태로 판정하지 않는다. 지침·Visual Sweep·기존 기대값은 바꾸지 않았다.
+
+Native216은 263.99초에 exit 0으로 빌드됐고 실제 소스 해시가 유지됐다. 동일한 Arial·굴림 및
+원 글리프가 존재하는 함초롬바탕 3조건 3쪽이 모두 raw 100%다. 함초롬바탕의 수정 전
+Native215/fresh059도 100%여서 이 반례의 기존 정상 출력을 보존했다. 독립 Print의
+함초롬바탕 기호는 실제 HCRBatang이며 대체 face가 아니다. 실행 근거는
+`rebase-native216-build-3450-result.json`, `pr8057-native216-3451-result.json`,
+`pr8057-primary-hit-before-3454-result.json`이다. 새 런타임의 fresh 검증과 직접 판독은
+이어 진행하며, 아직 원래 실패 테스트를 바꾸거나 새 회귀를 활성 경로에 등록하지 않았다.

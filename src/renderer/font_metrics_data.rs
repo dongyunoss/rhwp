@@ -187,6 +187,10 @@ pub(crate) fn verified_missing_glyph_supplier(
     ch: char,
 ) -> Option<&'static str> {
     match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // arial.ttf b2374214…abfd의 cmap에는 두 점이 없다. 명시적 Arial
+        // 대조군의 독립 한컴2020 Print는 두 문자 모두 HBATANG으로 출력한다.
+        // Arial의 다른 문자나 다른 weight/style의 공급자는 변경하지 않는다.
+        ("Arial", 2048, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Batang"),
         // gulim.TTC의 DotumChe cmap에는 U+2024가 없다(SHA ed750275…776c).
         // 근린생활시설 표의 독립 Print는 HBATANG의 0.173em 글리프로 출력하며,
         // HBATANG.TTF의 hmtx 178/1024도 같은 자연 전진을 확인한다.

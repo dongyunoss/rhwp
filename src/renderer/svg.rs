@@ -3461,6 +3461,10 @@ impl Renderer for SvgRenderer {
         };
         let attrs_for_cluster = |cluster_str: &str, fill: &str| {
             let glyph = pua_glyph::display(&source_coverage, cluster_str, style);
+            let measured_family =
+                super::measured_glyph_supplier::family(style, cluster_str).map(|family| {
+                    super::render_font_family_chain_for_weight(family, style.is_visually_bold())
+                });
             let cluster_font_family = if source_coverage
                 .glyph(&style.font_family, cluster_str)
                 .is_none()
@@ -3468,7 +3472,7 @@ impl Renderer for SvgRenderer {
             {
                 &old_hangul_font_family
             } else {
-                &font_family
+                measured_family.as_ref().unwrap_or(&font_family)
             };
             let face = italic_face(cluster_str);
             let selected_family = face.as_ref().map(|face| format!("'{}'", face.family));

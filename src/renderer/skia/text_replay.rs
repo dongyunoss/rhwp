@@ -108,6 +108,19 @@ impl SkiaTextReplay<'_> {
                 })
                 .flatten();
                 let font_for_text = |sample: &str, size: f32| {
+                    if let Some(family) =
+                        crate::renderer::measured_glyph_supplier::family(style, sample)
+                    {
+                        let (_, chain) = text_typeface_candidates(
+                            self.font_mgr,
+                            self.system_families,
+                            self.custom_typefaces,
+                            self.bundled_typefaces,
+                            family,
+                            font_style,
+                        );
+                        return fonts::for_text(&chain, sample, size, style, self.font_mgr);
+                    }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
                         if let Some(primary) = typeface_chain.first() {
                             let font = Font::new(primary.typeface.clone(), size);
