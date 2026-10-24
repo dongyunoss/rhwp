@@ -23,6 +23,20 @@ impl ReflowHostCutOwnership {
 }
 
 impl LayoutEngine {
+    /// 셀 내부의 재귀 컷은 새 물리 viewport를 연다. 행 사이 컷과 블록 슬롯은
+    /// 이 계약이 아니므로 부모 호스트의 첫·끝 여백 소유를 그대로 사용한다.
+    pub(in crate::renderer::layout) fn reflow_cut_opens_outer_frame(
+        cut: &super::NestedTableCut,
+    ) -> bool {
+        !cut.is_block_split
+            && !cut.start_cut_is_block
+            && cut
+                .start_cut
+                .iter()
+                .chain(&cut.end_cut)
+                .any(|&unit| unit > 0)
+    }
+
     /// 실제 배치도 측정과 같은 문단 유닛 범위로 처음·끝 여백의 소유를 정한다.
     pub(in crate::renderer::layout) fn reflow_host_cut_ownership(
         units: &[CellUnit],
@@ -189,11 +203,14 @@ impl LayoutEngine {
                 owns_start,
                 owns_end,
             } = ReflowHostCutOwnership::new(first, last, start, end)?;
-            let body = if let Some(cut) = self
+            let recursive_cut = self
                 .nested_table_split_from_cut_units(cell, table, styles, start, end, pi)
-                .and_then(|s| s.recursive_cut)
-            {
-                self.nested_cut_height(child, &cut, styles, purpose)
+                .and_then(|s| s.recursive_cut);
+            let repeats_outer_frame = recursive_cut
+                .as_ref()
+                .is_some_and(Self::reflow_cut_opens_outer_frame);
+            let body = if let Some(cut) = recursive_cut.as_ref() {
+                self.nested_cut_height(child, cut, styles, purpose)
             } else if let Some((start_row, end_row)) =
                 self.nested_row_range_from_cut_units(cell, table, styles, start, end, pi)
             {
@@ -221,11 +238,11 @@ impl LayoutEngine {
             let object = offset
                 + body
                 + hwpunit_to_px(
-                    if owns_start {
+                    if owns_start || repeats_outer_frame {
                         i32::from(child.outer_margin_top)
                     } else {
                         0
-                    } + if owns_end {
+                    } + if owns_end || repeats_outer_frame {
                         i32::from(child.outer_margin_bottom)
                     } else {
                         0

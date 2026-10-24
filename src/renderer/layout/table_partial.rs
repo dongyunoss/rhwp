@@ -4738,6 +4738,11 @@ impl LayoutEngine {
                                     // 소유를 사용한다. fallback 원점에서 여백을 다시 열지 않는다.
                                     let owns_reflow_host_anchor = owns_nested_start
                                         && external_frame.is_none_or(|frame| frame.parent_owned);
+                                    let opens_reflow_outer_frame = owns_reflow_host_anchor
+                                        || split_info
+                                            .as_ref()
+                                            .and_then(|split| split.recursive_cut.as_ref())
+                                            .is_some_and(Self::reflow_cut_opens_outer_frame);
                                     let reflow_block_origin =
                                         reflow_block_flow.as_ref().and_then(|flow| {
                                             self.reflow_block_fragment_table_origin(
@@ -4748,6 +4753,7 @@ impl LayoutEngine {
                                                 ctrl_area.x,
                                                 nested_y,
                                                 owns_reflow_host_anchor,
+                                                opens_reflow_outer_frame,
                                             )
                                         });
                                     let unrestricted_reflow_block = reflow_block_origin.is_some()
@@ -4908,7 +4914,7 @@ impl LayoutEngine {
                                                                     &ctrl_area,
                                                                     nested_w,
                                                                     nested_y,
-                                                                owns_reflow_host_anchor,
+                                                                    opens_reflow_outer_frame,
                                                                 )
                                                                 .map(|(_, y)| y)
                                                             })
