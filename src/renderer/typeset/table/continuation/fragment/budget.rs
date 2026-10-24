@@ -146,7 +146,12 @@ impl TypesetEngine {
         };
         let recursive_overlay_frame = prepared
             .layout_engine
-            .reflow_recursive_overlay_frame(table, input.source.styles);
+            .reflow_recursive_overlay_opens_outer_frame(
+                table,
+                input.source.styles,
+                is_continuation,
+                start_cut,
+            );
         let (host_before_overhead, fragment_outer_bottom_overhead) = if recursive_overlay_frame {
             (
                 host_before_overhead + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),

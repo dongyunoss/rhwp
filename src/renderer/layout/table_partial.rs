@@ -5990,7 +5990,12 @@ impl LayoutEngine {
         } else {
             None
         };
-        let recursive_overlay_frame = self.reflow_recursive_overlay_frame(table, styles);
+        let recursive_overlay_frame = self.reflow_recursive_overlay_opens_outer_frame(
+            table,
+            styles,
+            is_continuation,
+            start_cut,
+        );
         // [#8105] 쪽 위에서 시작하는 첫 조각이 문단 기준 양수 오프셋을 그대로 쓰면, 표 위끝은 문단
         // 윗변 + 오프셋 + 바깥 위 여백이다. 예산은 첫 조각 host_before 로 그 여백을 이미 예약한다
         // (`host_spacing.rs` 자리차지 표 before = outer_top). 표 여럿을 담은 빈 앵커(1342000 48쪽
@@ -6013,6 +6018,7 @@ impl LayoutEngine {
             && paragraphs
                 .get(para_index)
                 .is_some_and(|host| !super::para_has_visible_text(host));
+
         // 아래 흐름 갈래가 이 조각의 바깥 위 여백을 이미 열었는가. 같은 여백을 다시 여는
         // 조각 형상 규칙(single_cell_page_fragment 등)이 한 번 더 더하지 않게 한다.
         let mut flow_branch_opened_outer_top = false;
@@ -7888,11 +7894,13 @@ impl LayoutEngine {
             let content_bottom = table_node
                 .children
                 .iter()
-                // 표의 직계 Line은 격자 괘선이다. 반 획의 그리기 범위는 행이
-                // 점유하는 물리 높이가 아니며, 통배치/부분 배치의 같은 상자를
-                // 서로 다르게 키우지 않는다. 셀 안 실제 내용의 확장은 유지한다.
-                .filter(|child| !matches!(&child.node_type, RenderNodeType::Line(_)))
                 .map(|child| {
+                    // 격자선 중심은 행 간격을 포함한 실제 그리드 끝을 소유한다.
+                    // 반 획의 잉크만으로 논리 상자를 늘리지 않으며 그리드 끝과
+                    // 셀 안 실제 내용의 확장은 함께 보존한다.
+                    if let RenderNodeType::Line(line) = &child.node_type {
+                        return line.y1.max(line.y2);
+                    }
                     descendant_bottom(
                         child,
                         physical_page_bottom,

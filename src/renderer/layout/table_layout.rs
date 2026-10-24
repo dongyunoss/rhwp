@@ -26489,12 +26489,17 @@ impl LayoutEngine {
     /// Recursive reflow projects source units, rather than a stored physical
     /// row frame. Its outer overlay frame must therefore be reserved explicitly.
     /// Atomic nested rows retain their existing physical-frame ledger.
-    pub(crate) fn reflow_recursive_overlay_frame(
+    pub(crate) fn reflow_recursive_overlay_opens_outer_frame(
         &self,
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
+        is_continuation: bool,
+        start_cut: &[usize],
     ) -> bool {
-        crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table)
+        // 재귀 자식의 존재는 이미 시작한 부모 행의 새 상단을 인증하지 않는다.
+        // 예산과 paint 모두 같은 내용 컷으로 바깥 프레임을 여는지 결정한다.
+        (!is_continuation || start_cut.iter().all(|&cut| cut == 0))
+            && crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table)
             && table.cells.iter().any(|cell| {
                 self.cell_units(cell, table, styles).iter().any(|unit| {
                     cell.paragraphs
