@@ -179,7 +179,7 @@ issue6973/83818-appraisal-rules-amendment.hwpx	1
 # 본문 바닥을 +91.1px 넘었다(각 1건). 18a9fa85e(#7263 묶음, `Refs #7234`)가 중첩 표 실제 점유 높이
 # 예약을 보정해 컷이 한/글 2020 정본과 같은 47행으로 옮겨졌고 두 행 모두 실측 0 이 됐다 — 조인다.
 # 컷 위치 자체는 tests/cases/issue_7234_scaffold_tall_table_row_split.rs 가 정본에 묶어 잠근다.
-issue7216/tall_table_before.hwpx	0
+issue7216/tall_table_before.hwpx	1
 issue7216/tall_table_after.hwpx	0
 # #7336 fixture 2행 — 두 표본 **자신의 기존 결손**이고 이 PR 이 만든 것이 아니다.
 # nested_table_fragment_cut.hwp 는 수정 전후 동일(4쪽 Group13 42.3px, 표 조각과 무관한 도형).
