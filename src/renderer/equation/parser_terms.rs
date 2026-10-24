@@ -73,5 +73,5 @@ impl EqParser {
 }
 
 fn is_font_switch(node: &EqNode) -> bool {
-    matches!(node, EqNode::FontStyle { body, .. } if matches!(body.as_ref(), EqNode::Empty))
+    matches!(node.ungrouped(), EqNode::FontStyle { body, .. } if matches!(body.as_ref(), EqNode::Empty))
 }

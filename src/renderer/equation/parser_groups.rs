@@ -41,7 +41,12 @@ impl EqParser {
         // 닫는 괄호 건너뛰기
         self.expect(TokenType::RBrace);
 
-        EqNode::Row(children).simplify()
+        let body = EqNode::Row(children).simplify();
+        if self.legacy_display {
+            EqNode::Group(Box::new(body))
+        } else {
+            body
+        }
     }
 
     /// 현재 `{` 부터 매칭되는 `}` 까지 통째로 소비한다(깊이 상한 초과 시 truncate).

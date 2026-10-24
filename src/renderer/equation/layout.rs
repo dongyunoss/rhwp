@@ -58,6 +58,7 @@ pub struct EqLayout {
     hancom_eqn: bool,
     legacy_equation: bool,
     legacy_math_face: bool,
+    legacy_declared_width: Option<f64>,
     math_digit_advance: Option<u16>,
     variable_italic: bool,
     variable_bold: bool,
@@ -145,6 +146,7 @@ impl EqLayout {
             hancom_eqn: false,
             legacy_equation: false,
             legacy_math_face: false,
+            legacy_declared_width: None,
             math_digit_advance: None,
             variable_italic: true,
             variable_bold: false,
@@ -169,6 +171,13 @@ impl EqLayout {
             hancom_eqn: equation.font_name.eq_ignore_ascii_case("HancomEQN"),
             legacy_equation: legacy::matches_version(equation),
             legacy_math_face: equation.uses_legacy_display(),
+            legacy_declared_width: (equation.uses_legacy_display()
+                && equation.attr & crate::model::control::EQUATION_LINE_MODE_BIT == 0
+                && equation.eqedit & crate::model::control::EQUATION_LINE_MODE_BIT == 0
+                && equation.common.width > 0
+                && equation.common.width <= i32::MAX as u32
+                && equation.common.width_criterion == crate::model::shape::SizeCriterion::Absolute)
+                .then(|| super::super::hwpunit_to_px(equation.common.width as i32, dpi)),
             // 두 face의 수학 PUA 숫자만 같은 512/1024 전진폭이다.
             // 영문·기호는 서로 다르므로 HancomEQN을 HYhwpEQ로 치환하지 않는다.
             math_digit_advance: (equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
@@ -243,13 +252,17 @@ impl EqLayout {
         }
         // 독립 글꼴 프레임을 측정과 표시의 공통 루트에 보존한다.
         // 자식의 기준선 상대 원점은 유지하며 빈 수식을 글줄로 바꾸지 않는다.
-        if root.legacy_equation && result.height > 0.0 {
+        let mut result = if root.legacy_equation && result.height > 0.0 {
             legacy::root(result, self.font_size, self.dpi)
         } else if (self.hancom_math_face || self.hancom_eqn) && result.height > 0.0 {
             root.matrix_row_box(result, self.font_size)
         } else {
             result
+        };
+        if let Some(width) = self.legacy_declared_width {
+            super::legacy_coordinate_plane::project_linear(node, &mut result, width);
         }
+        result
     }
 
     fn text_width(&self, text: &str, fs: f64, italic: bool) -> f64 {
@@ -311,6 +324,7 @@ impl EqLayout {
         }
         match node {
             EqNode::Row(children) => self.layout_row(children, fs),
+            EqNode::Group(body) => self.layout_node(body, fs),
             EqNode::Text(s) => self.layout_text(s, fs),
             EqNode::Number(s) => self.layout_number(s, fs),
             EqNode::Symbol(s) => self.layout_symbol(s, fs),

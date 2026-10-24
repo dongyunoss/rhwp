@@ -37,6 +37,7 @@ pub use integral_outline::Command as GlyphOutlineCommand;
 pub use negation_geometry::NegationGeometry;
 pub(crate) mod document_script;
 pub mod layout;
+mod legacy_coordinate_plane;
 mod legacy_glyphs;
 pub(crate) mod legacy_hwpeq;
 mod logical_font_frame;

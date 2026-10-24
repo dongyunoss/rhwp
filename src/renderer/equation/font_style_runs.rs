@@ -29,6 +29,7 @@ pub(super) fn resolve(children: Vec<EqNode>) -> Vec<EqNode> {
                     **base = EqNode::Empty;
                     run.push(child);
                 }
+                EqNode::Group(_) => run.push(child),
                 _ => {}
             }
             continue;
@@ -40,7 +41,7 @@ pub(super) fn resolve(children: Vec<EqNode>) -> Vec<EqNode> {
 }
 
 fn font_switch(node: &EqNode) -> Option<FontStyleKind> {
-    if let EqNode::FontStyle { style, body } = node {
+    if let EqNode::FontStyle { style, body } = node.ungrouped() {
         if matches!(style, FontStyleKind::Roman | FontStyleKind::Italic)
             && matches!(body.as_ref(), EqNode::Empty)
         {

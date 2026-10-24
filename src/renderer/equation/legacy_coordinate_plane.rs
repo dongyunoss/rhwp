@@ -1,0 +1,155 @@
+//! 구형 표시의 논리 전진과 선언 프레임에서 실제 글리프 원점을 함께 생산한다.
+//!
+//! 독립 영문·숫자 62자×1/2/3회 Print: 8d0992d1-ea91-4413-82ba-1f77d8e676ea.
+//! 전진은 root 여백을 1로 정규화한 무차원 비율이다. 글리프 d1 폭이나 화면 px가 아니다.
+//! 별도 너비·높이·크기·혼재 문자 44개 대조의 최대 x 오차는 96dpi에서 0.82987px다.
+//! 명시적 그룹과 복합 구조는 자체 프레임을 소유하므로 선형 문자로 합치지 않는다.
+
+use super::ast::EqNode;
+use super::layout::{LayoutBox, LayoutKind};
+use super::symbols::FontStyleKind;
+
+// 독립 Print에서 얻은 root 여백 대비 논리 전진. 생성 근거와 교차 대조는
+// task_semanticist21_20261024_legacy_equation_paint.md의 2931·2932·2959에 있다.
+const UPPER: [f64; 26] = [
+    3.92902788, 3.29155200, 3.29155200, 3.29155200, 3.29155200, 3.29155200, 3.29155200, 3.58579968,
+    1.64839447, 1.64839447, 3.58579968, 3.29154957, 3.92902109, 3.29154957, 3.29154957, 3.03858903,
+    3.29154957, 3.29154957, 2.78826602, 3.58579968, 3.58579968, 3.58579968, 3.58579968, 3.92902109,
+    3.58579968, 2.78826602,
+];
+const LOWER: [f64; 26] = [
+    2.49795890, 2.25592965, 2.25592965, 2.49795890, 2.25592965, 1.64839443, 2.49795890, 2.49795890,
+    1.39494582, 1.39494582, 2.25592965, 1.39494582, 3.92902788, 2.78826414, 2.25592965, 2.25592965,
+    2.25592965, 2.25592965, 1.64839443, 1.39494582, 2.78826414, 2.25592965, 3.29155200, 2.25592965,
+    2.25592965, 2.25592965,
+];
+const DIGITS: [f64; 10] = [
+    2.25593095, 2.25593095, 2.25593095, 2.25593095, 2.25593095, 2.25593095, 2.25593095, 2.25593095,
+    2.25593095, 2.25593095,
+];
+
+fn advance(character: char) -> Option<f64> {
+    match character {
+        'A'..='Z' => Some(UPPER[character as usize - 'A' as usize]),
+        'a'..='z' => Some(LOWER[character as usize - 'a' as usize]),
+        '0'..='9' => Some(DIGITS[character as usize - '0' as usize]),
+        _ => None,
+    }
+}
+
+/// 같은 glyph로 단순화돼도 명시적 Group·인용·함수는 별도의 계약이다.
+fn linear_source(node: &EqNode) -> bool {
+    match node {
+        EqNode::Text(text) => !text.is_empty() && text.bytes().all(|ch| ch.is_ascii_alphabetic()),
+        EqNode::Number(text) => !text.is_empty() && text.bytes().all(|ch| ch.is_ascii_digit()),
+        EqNode::Row(items) => items.iter().all(linear_source),
+        EqNode::FontStyle {
+            style: FontStyleKind::Italic,
+            body,
+        } => linear_source(body),
+        EqNode::Empty => true,
+        _ => false,
+    }
+}
+
+fn inspect(
+    value: &LayoutBox,
+    parent_y: f64,
+    frame: &mut Option<(f64, f64)>,
+    count: &mut usize,
+) -> Option<f64> {
+    let y = parent_y + value.y;
+    match &value.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let characters = run.glyphs.chars().count();
+            if run.font_family != super::legacy_glyphs::FONT_FAMILY
+                || run.positions.len() != characters
+                || run.shears.len() != characters
+                || !value.font_size.is_finite()
+                || value.font_size <= 0.0
+            {
+                return None;
+            }
+            let baseline = y + value.baseline + run.baseline_shift;
+            let expected = frame.get_or_insert((value.font_size, baseline));
+            if (value.font_size - expected.0).abs() > 1e-8 || (baseline - expected.1).abs() > 1e-8 {
+                return None;
+            }
+            let mut width = 0.0;
+            for (character, shear) in run.glyphs.chars().zip(&run.shears) {
+                // 이 표본의 영문은 기본 이탤릭이고 숫자는 정체다.
+                let expected_shear = if character.is_ascii_alphabetic() {
+                    0.333
+                } else {
+                    0.0
+                };
+                if (*shear - expected_shear).abs() > 1e-8 {
+                    return None;
+                }
+                width += advance(character)?;
+            }
+            *count += characters;
+            Some(width)
+        }
+        LayoutKind::Row(children) => children.iter().try_fold(0.0, |width, child| {
+            Some(width + inspect(child, y, frame, count)?)
+        }),
+        LayoutKind::FontStyle {
+            style: FontStyleKind::Italic,
+            body,
+        } => inspect(body, y, frame, count),
+        LayoutKind::Empty => Some(0.0),
+        _ => None,
+    }
+}
+
+/// 자식의 논리 폭·원점도 같은 평면에 옮긴다. 세로 정렬·실제 font_size·shear는 유지한다.
+fn place(value: &mut LayoutBox, scale: f64) -> f64 {
+    let width = match &mut value.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let mut cursor = 0.0;
+            for (character, position) in run.glyphs.chars().zip(&mut run.positions) {
+                *position = cursor;
+                cursor += advance(character).expect("검사한 논리 문자") * scale;
+            }
+            run.width = cursor;
+            cursor
+        }
+        LayoutKind::Row(children) => {
+            let mut cursor = 0.0;
+            for child in children {
+                child.x = cursor;
+                cursor += place(child, scale);
+            }
+            cursor
+        }
+        LayoutKind::FontStyle { body, .. } => {
+            body.x = 0.0;
+            place(body, scale)
+        }
+        LayoutKind::Empty => 0.0,
+        _ => unreachable!("검사한 선형 표시 트리"),
+    };
+    value.width = width;
+    width
+}
+
+pub(super) fn project_linear(node: &EqNode, value: &mut LayoutBox, width: f64) {
+    if !linear_source(node) || !width.is_finite() || width <= 0.0 {
+        return;
+    }
+    let mut count = 0;
+    let Some(advance) = inspect(value, 0.0, &mut None, &mut count) else {
+        return;
+    };
+    if count == 0 || !advance.is_finite() || advance <= 0.0 {
+        return;
+    }
+    let scale = width / (1.0 + advance);
+    let mut body = value.clone();
+    place(&mut body, scale);
+    body.x = scale;
+    body.y = 0.0;
+    value.width = width;
+    value.kind = LayoutKind::Row(vec![body]);
+}
