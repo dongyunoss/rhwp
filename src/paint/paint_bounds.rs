@@ -962,7 +962,8 @@ fn decoration_bounds(
                     if run.style.underline == UnderlineType::Top {
                         baseline - font_size + 1.0
                     } else {
-                        baseline + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
+                        baseline
+                            + font_size * crate::renderer::text_decoration::UNDERLINE_BASELINE_RATIO
                     },
                     1.0,
                 )

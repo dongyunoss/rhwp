@@ -305,11 +305,12 @@ impl SkiaTextReplay<'_> {
                     layout_positions,
                     &char_positions,
                 );
-                let visual_positions = crate::renderer::text_direction::VisualTextPositions::for_style(
-                    text,
-                    &char_positions,
-                    style,
-                );
+                let visual_positions =
+                    crate::renderer::text_direction::VisualTextPositions::for_style(
+                        text,
+                        &char_positions,
+                        style,
+                    );
                 let span_x = |start: usize, end: usize| {
                     visual_positions
                         .as_ref()

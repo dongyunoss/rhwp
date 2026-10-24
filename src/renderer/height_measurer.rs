@@ -1540,7 +1540,10 @@ pub fn fit_stored_declared_tail_row_heights(
 ) -> Option<Vec<f64>> {
     let last_row = row_heights.len().checked_sub(1)?;
     let target_tail = crate::renderer::table_row_frame::declared_tail_row_height(
-        table, row_heights, cell_spacing, dpi,
+        table,
+        row_heights,
+        cell_spacing,
+        dpi,
     )?;
 
     let mut fitted = row_heights.to_vec();

@@ -2917,12 +2917,7 @@ impl Renderer for WebCanvasRenderer {
                         self.apply_synthetic_italic(synthetic_italic);
                         if !self.draw_hft_outline(glyph_text, style, font_size) {
                             Self::fill_positioned_text(
-                                &self.ctx,
-                                glyph_text,
-                                0.0,
-                                0.0,
-                                style,
-                                font_size,
+                                &self.ctx, glyph_text, 0.0, 0.0, style, font_size,
                             );
                         }
                         self.ctx.restore();

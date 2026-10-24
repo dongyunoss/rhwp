@@ -424,7 +424,6 @@ pub(crate) fn collect_nested_header_footer_controls(
     table_control_index: usize,
     base_path: &[HeaderFooterTableStep],
     hf_entries: &mut Vec<(usize, HeaderFooterRef, bool, HeaderFooterApply)>,
-    page_number_pos: &mut Option<crate::model::control::PageNumberPos>,
 ) {
     for (cell_idx, cell) in table.cells.iter().enumerate() {
         for (cpi, cp) in cell.paragraphs.iter().enumerate() {
@@ -470,11 +469,8 @@ pub(crate) fn collect_nested_header_footer_controls(
                             cci,
                             &path,
                             hf_entries,
-                            page_number_pos,
                         );
                     }
-                    // 표 셀 안에 둔 쪽 번호 위치도 최상위 컨트롤처럼 쪽 번호를 켠다.
-                    Control::PageNumberPos(pos) => *page_number_pos = Some(pos.clone()),
                     _ => {}
                 }
             }

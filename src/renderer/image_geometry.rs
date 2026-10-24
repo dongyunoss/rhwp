@@ -112,7 +112,7 @@ pub(crate) fn source_geometry(
 /// 편집 중에는 아직 저장 행렬이 없으므로 편집 플래그를 사용한다.
 pub(crate) fn picture_transform(picture: &Picture) -> ShapeTransform {
     let shape = &picture.shape_attr;
-    let mut transform = crate::renderer::layout::utils::extract_picture_transform(picture);
+    let mut transform = crate::renderer::layout::extract_picture_transform(picture);
     if shape.raw_rendering.is_empty() || shape.group_level != 0 {
         return transform;
     }

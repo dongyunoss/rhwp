@@ -1,6 +1,9 @@
 //! 선언된 셀의 첫 프레임과 그 안에서 끝난 자식 source 프레임의 공통 점유.
 
-use super::{row_block_cut::CellCutFrame, unit_diagnostics::trace_mixed_opening, LayoutEngine, ResolvedStyleSet};
+use super::{
+    row_block_cut::CellCutFrame, unit_diagnostics::trace_mixed_opening, LayoutEngine,
+    ResolvedStyleSet,
+};
 use crate::model::{
     control::Control,
     paragraph::{LineSeg, Paragraph},

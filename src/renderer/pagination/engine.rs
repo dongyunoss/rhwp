@@ -1211,7 +1211,6 @@ impl Paginator {
                             ci,
                             &[],
                             &mut hf_entries,
-                            &mut page_number_pos,
                         );
                     }
                     _ => {}

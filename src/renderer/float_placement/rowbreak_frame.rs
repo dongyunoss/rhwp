@@ -39,7 +39,10 @@ pub(crate) fn rowbreak_fragment_bounds(
     RowbreakFragmentBounds {
         // 단독 셀과 출처가 인증된 분할 본문은 쪽 조각 자체가 이 프레임을 소유한다.
         // 일반 격자의 글줄에는 빈 종료 띠의 inset을 수용 예산으로 중복 적용하지 않는다.
-        content_bottom: if !has_original_page_frames || (table.row_count == 1 && table.col_count == 1) || reparsed_body_owner {
+        content_bottom: if !has_original_page_frames
+            || (table.row_count == 1 && table.col_count == 1)
+            || reparsed_body_owner
+        {
             blank_bottom
         } else {
             outer_bottom

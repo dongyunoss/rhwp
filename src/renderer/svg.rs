@@ -4891,8 +4891,12 @@ fn svg_outline_font_face_data<'a>(
     face_index: u32,
     extract_collection: bool,
 ) -> std::borrow::Cow<'a, [u8]> {
-    if let Some(program) = crate::renderer::text_font_presentation::ordinary_text_font_program(data, face_index) {
-        return std::borrow::Cow::Owned(svg_outline_font_face_data_impl(&program, chars, 0, false).into_owned());
+    if let Some(program) =
+        crate::renderer::text_font_presentation::ordinary_text_font_program(data, face_index)
+    {
+        return std::borrow::Cow::Owned(
+            svg_outline_font_face_data_impl(&program, chars, 0, false).into_owned(),
+        );
     }
     svg_outline_font_face_data_impl(data, chars, face_index, extract_collection)
 }

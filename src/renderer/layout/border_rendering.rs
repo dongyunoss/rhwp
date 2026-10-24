@@ -693,8 +693,8 @@ pub(crate) fn apply_cellzone_border_fill(
 /// 비분할 표와 쪽을 넘는 표 조각이 같은 규칙을 쓰도록 한곳에 둔다. `cells`·`zones`
 /// 의 행 주소는 그리드와 같은 행 공간(조각이면 조각-지역 행)이어야 한다.
 pub(crate) fn apply_table_border_overrides(
-    h_edges: &mut [Vec<Option<BorderLine>>],
-    v_edges: &mut [Vec<Option<BorderLine>>],
+    h_edges: &mut [Vec<Option<BorderEdge>>],
+    v_edges: &mut [Vec<Option<BorderEdge>>],
     table_border_fill_id: u16,
     zones: &[TableZone],
     cells: &[Cell],
