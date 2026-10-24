@@ -1450,3 +1450,42 @@ npm pack --dry-run과 실제 Chromium embed 검사는 모두 exit 0이다. 동�
 public/rhwp.js는 이미 fresh054와 같아 tracked 변경이 없었고, 이전 생성 파일은
 output에 백업했다. source 입력과 실행 로그는 보존했다. 3223 unit-tier 사전 검사도
 exit 0이며 최종 전체 lint·검증의 완료를 대신하지 않는다.
+
+### 전체 11773건의 실제 실패 수집과 보충 측정 공통 원인 — 2026-10-24
+
+3224는 실행기에 넣은 cargo test --keep-going이 지원되지 않아 Cargo 컴파일 전에
+종료됐다. cargo build --tests --keep-going으로 정정한 3226의 준비 컴파일은
+212.59초·exit 0이다. 같은 후보 422f718486의 정식 전체 nextest는 966.16초 동안
+11773개를 실제 실행해 11694 PASS / 79 FAIL / 45 SKIP, exit 100으로 종료됐다.
+최종 summary의 실패 목록이 반복되므로 중복을 제거한 3233의 원장은 정확히79건이다.
+lint·Native Skia 후속 gate는 실패 후 자동 실행하지 않았고 PR 준비 완료로 표시하지 않는다.
+
+3233은 Visual Sweep과 같은 시스템·사용자·assets 폰트 경로를 명시해 작은 실패25개를
+기존 실행 파일로 재실행했다. 25개 모두 같은 실패였으므로 글꼴 경로를 임의로 바꾸어
+해결됐다고 주장하지 않는다. 원본·Print·원 해결 PR과 현재 base/후보를 함께 대조한다.
+실패는 43개 Rust 파일에 걸쳐 있으며 보충 측정16건, 차트12건, 표시/원문 비교와
+실제 배치·corpus 증가를 구분해 일괄 분석한다. 한 기대값을 고칠 때마다 전체 빌드를
+반복하지 않고 같은 원인의 변경을 모아 재검증한다.
+
+보충 측정의 첫 공통 원인을 실제 소비 경로로 확인했다. 7924a87937은 선언 체인의
+다른 face에서 빌린 폭을 declaredGlyphFallbackMetric으로 구분하고 backend 측정을
+허용한다. 리베이스로 반영한 #8191의 accepts_prepared_glyph_advance는 기존
+heuristicHalfwidth·metricNarrowPunctuationOverlay만 수용해 이 경로를 누락했다.
+현재 collection과 실제 전진폭 소비가 모두 이 helper를 사용한다. 세 미확인 출처를
+하나의 조건에 통합하고 사용되지 않는 중복 requires_backend_measurement는 제거한다.
+실제 원 face의 DB 글리프 hit·명시적인 HWP 폭 규칙은 계속 제외한다. 테스트 assertion과
+공급자의 독립 입력값은 바꾸지 않는다. 이 운영 코드 변경은 아직 실제 재검증 전이며
+이전 4adb7faf48의 TSV를 새 source의 시각 완료 증거로 대신하지 않는다.
+
+3230에서 issue7216/tall_table_before.hwpx의 실제 한컴2020 Print가 성공했다.
+#5715의 축약 HWP는 DocInfo 구역 수2 / 실제 BodyText 스트림1개가 달라 MCP가
+preflight에서 거절했다. 원본을 보존한 채 3234에서 DocInfo 평문 offset4의
+구역 수만1로 정정한 별도 진단 대조군을 만들었다. 그 밖의 모든 CFB 스트림은
+바이트가 같고 원본 SHA도 보존했다. 3235에서 이 대조군의 실제 한컴2020 Print가
+성공했다. 대조군을 원본의 통과로 바꾸어 보고하지 않는다. 3236에서 원본 과학 시험지,
+각주1937, tall-table7216 및 이 별도 대조군을 같은 base/후보의 Native/fresh WASM으로
+비교하고 있다. 해당 결과를 확인하기 전에는 회귀 기대값이나 baseline을 갱신하지 않는다.
+
+3227은 현재 base·보정 전후 producer를 보존하고, 열린 파일 참조가 없으며 24시간
+이상 지난 이전 char-overlap producer 복사본155개만 정리했다. 약11.47GiB를
+확보했고 공유 target은 건드리지 않았다. 삭제 목록과 전후 공간은 output에 남겼다.

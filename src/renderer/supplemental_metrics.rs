@@ -13,14 +13,14 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use super::TextStyle;
 
-/// Unverified width guesses may use a prepared measurement from the active
-/// backend. Authentic glyph advances and explicit HWP width rules stay intact.
-/// The narrow overlay is a compatibility guess, not evidence of a selected
-/// program's advance. A Canvas measurement does not promote its format to TTF.
+/// 실제 backend의 전진이 확인되지 않은 추정 폭만 보충 측정으로 대체한다.
+/// 원 face의 실제 글리프 폭과 명시적인 HWP 규칙은 유지한다. 선언 체인의 다른
+/// face에서 빌린 폭과 좁은 문장부호 overlay는 선택된 프로그램의 전진을 입증하지
+/// 않는다. Canvas 측정으로 원 face의 형식을 TrueType으로 승격하지 않는다.
 pub(crate) fn accepts_prepared_glyph_advance(width_source: &str) -> bool {
     matches!(
         width_source,
-        "heuristicHalfwidth" | "metricNarrowPunctuationOverlay"
+        "heuristicHalfwidth" | "declaredGlyphFallbackMetric" | "metricNarrowPunctuationOverlay"
     )
 }
 
@@ -28,15 +28,6 @@ pub const MAX_SUPPLEMENTAL_ENTRIES: usize = 4096;
 pub const MAX_SUPPLEMENTAL_KEY_BYTES: usize = 4 * 1024 * 1024;
 const MAX_FONT_BYTES: usize = 32 * 1024 * 1024;
 const MAX_TOTAL_FONT_BYTES: usize = 64 * 1024 * 1024;
-
-/// 원 face의 메트릭 hit는 보존한다. 선언 체인의 다른 face에서 빌린 폭은
-/// 실제 backend 전진이 아니므로 단일 자소의 유효한 보충 측정을 요청할 수 있다.
-pub(crate) fn requires_backend_measurement(width_source: &str) -> bool {
-    matches!(
-        width_source,
-        "heuristicHalfwidth" | "declaredGlyphFallbackMetric"
-    )
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MetricBackend {
