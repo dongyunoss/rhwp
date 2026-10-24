@@ -4831,6 +4831,12 @@ impl HeightMeasurer {
         .then(|| {
             super::float_placement::stored_complete_row_frame_heights(table)
                 .or_else(|| super::float_placement::stored_plain_object_row_frame_heights(table))
+                .or_else(|| {
+                    (self.is_native_hwp5 || self.hwpx_stored_layout)
+                        .then(|| super::float_placement::stored_plain_opening_row_frame(table))
+                        .flatten()
+                        .map(|frame| frame.row_heights)
+                })
         })
         .flatten();
         if let Some(rows) = &stored_rows {

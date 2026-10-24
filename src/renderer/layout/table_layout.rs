@@ -2850,7 +2850,8 @@ impl LayoutEngine {
                 return (!crossed).then_some(boundary);
             }
             if prefix > declared {
-                return None;
+                return crate::renderer::float_placement::stored_plain_opening_row_frame(table)
+                    .map(|frame| frame.end_row);
             }
         }
         None
@@ -5442,12 +5443,18 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
         {
-            if let Some(rows) = crate::renderer::float_placement::stored_complete_row_frame_heights(
-                table,
-            )
-            .or_else(|| {
-                crate::renderer::float_placement::stored_plain_object_row_frame_heights(table)
-            }) {
+            if let Some(rows) =
+                crate::renderer::float_placement::stored_complete_row_frame_heights(table)
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_plain_object_row_frame_heights(
+                            table,
+                        )
+                    })
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_plain_opening_row_frame(table)
+                            .map(|frame| frame.row_heights)
+                    })
+            {
                 return rows
                     .iter()
                     .map(|height| hwpunit_to_px(*height, self.dpi))
@@ -27434,6 +27441,10 @@ impl LayoutEngine {
         {
             if let Some(height) =
                 crate::renderer::float_placement::stored_plain_object_row_frame_heights(table)
+                    .or_else(|| {
+                        crate::renderer::float_placement::stored_plain_opening_row_frame(table)
+                            .map(|frame| frame.row_heights)
+                    })
                     .and_then(|rows| rows.get(row).copied())
             {
                 return hwpunit_to_px(height, self.dpi);
