@@ -116,7 +116,9 @@ impl EqParser {
     }
 
     pub(super) fn parse_column(&mut self, align: PileAlign) -> EqNode {
-        if self.current_type() != TokenType::LBrace {
+        if self.current_type() != TokenType::LBrace
+            || (self.legacy_display && self.find_matching_brace(self.pos + 1) == self.tokens.len())
+        {
             self.reject_column_input();
             return EqNode::Empty;
         }
