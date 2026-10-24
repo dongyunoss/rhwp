@@ -1344,3 +1344,43 @@ TopAndBottom·RowBreak 자식만 해당하며 독립 무제한 float, 저장 줄
 걸침·블록 슬롯과 복수 활성 소유 칸은 기존 원장을 유지한다. 이 계약 정리는
 Native206 자체에 포함되지 않았으므로 다음 깨끗한 commit producer와 fresh WASM에서
 다시 대조한다. 시각 지침·Visual Sweep·기존 테스트 기대값은 변경하지 않았다.
+
+### 종료 경계의 양쪽 시각 검증과 새 회귀 — 2026-10-24
+
+4adb7faf48의 깨끗한 source를 Native207(3187)과 표준 release fresh WASM054(3191)로
+검증했다. Native는 255.50초, fresh WASM은 1084.98초에 exit 0으로 종료했다.
+실제 wasm-bindgen 0.2.127과 wasm-opt `-O` 실행 및 source 불변을 확인했다.
+3188/3193의 9조건 전52쪽은 양쪽 모두 90% 이상이고 독립 PDF와 쪽수가 같다.
+원본 p2는 Native 99.99896%, nested-split p4는 양쪽 100%, p5는
+Native 99.99880% / fresh WASM 100%다. 3196/3199의 review·standalone overlay를
+직접 판독해 마지막 빈 행과 이어받기 원점의 차이가 해소됐음을 확인했다.
+제출 자료는 `mydocs/pr/assets/issue_7500_reflow_closing_band_20261024/`에
+원문 TSV 18개, 대표 review·overlay 12개와 입력·PDF SHA를 보존했다.
+
+이 선행 조건을 충족한 뒤 기존 outer top=0·고정 행 높이 검사를 새 이름의
+소유·순서·보존·부모 포함 검사로 교체했다. 완료된 p4/p5의 독립 Print 96 DPI
+경계는 별도 새 이름 검사에서 ±2px로 보호한다. 기존 나머지 검사의 동작은 유지하고
+공용 render-tree helper를 분리해 case 998줄, helper 387줄로 정리했다.
+3203의 실제 집중 실행은 250 PASS / 0 FAIL / 1 ignore다. 3204는 같은 두 새 검사를
+수정 전 Native205와 수정 후 Native207에서 실행했다. 수정 전에는 자식 닫는 띠의
+부모 포함 위반과 p4 부모 종료 440.3px / 독립 437.5507px 차이로 각각 FAIL,
+수정 후에는 모두 PASS였다. 입력 누락이나 실행 환경 오류로 실패한 것이 아니다.
+
+3192의 광범위 Native 검증은 49조건 1772쪽 전체가 90% 이상이며 독립 PDF 쪽수와
+일치한다. 최저는 original-sample11-user-print p50의 92.42855%다. 3197은 고정한
+base 대비 2%p 초과 하락 0쪽과 0.1%p 초과 하락 44쪽을 구분해 기록한다.
+광범위 fresh WASM(3194)과 전체 Rust·최종 lint는 아직 완료로 판정하지 않는다.
+
+Studio 3195의 누락 font·sample과 3198의 npm/hwpctrl-ocx 누락은 검증용 source
+사본의 준비 오류였다. root의 사용자 변경은 되돌리지 않고 정확한 source blob과
+공용 입력·font 경로를 보완했다. 3198 재실행은 Node 2463 PASS / 0 FAIL / 0 SKIP,
+3201의 TypeScript·production build와 실제 Chromium 명령 복구 검사는 exit 0이다.
+브라우저 로그의 주입 오류는 #8104 테스트가 의도한 실패이며 결과 JSON에서 복구와
+기본 오류 처리 억제를 실제로 확인했다. 626d21cd33의 요청된 Vite 경고 설정은
+3205/3206에서 다시 검증했다. production build의 세 대상 경고는 없어졌고
+Node 2463개와 실제 브라우저 검사가 통과했다. 런타임 번들 해시도 기존과 같다.
+
+3207은 Cargo·rustc·wasm-pack·wasm-opt가 모두 종료됐고 lsof 열린 참조가 없음을
+확인한 뒤 24시간 이상 지난 debug/incremental의 정확한 하위 캐시 114개만 정리했다.
+약 4.36GiB를 확보했다. 공유 target, deps, fingerprint, 실행 파일은 보존했다.
+삭제 목록과 전후 여유 공간은 ignored output의 cleanup receipt에 남겼다.
