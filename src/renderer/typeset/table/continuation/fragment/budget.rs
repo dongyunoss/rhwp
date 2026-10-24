@@ -629,7 +629,17 @@ impl TypesetEngine {
                         // 첫 조각 전체가 이월된 경우에도 이전 frame의 거리를 재가산하지 않는다.
                         let unanchored_fragment =
                             crate::renderer::float_placement::ParagraphFloatPlacement {
-                                flow: original.flow,
+                                // 계산한 빈 호스트 글줄은 첫 조각이 이미 소비했다.
+                                // 이어받기 끝에 그 줄 높이를 다시 적용하면 짧은
+                                // 마지막 물리 띠 뒤의 본문이 불필요하게 내려간다.
+                                flow: match original.flow {
+                                    crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
+                                        if is_continuation =>
+                                    {
+                                        crate::renderer::float_placement::ParagraphFloatFlow::EmptyHost
+                                    }
+                                    flow => flow,
+                                },
                                 anchor_y: st.current_height,
                                 stored_host_origin: None,
                                 stored_successor_line_origin: None,

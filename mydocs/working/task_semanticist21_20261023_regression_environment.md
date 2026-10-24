@@ -1178,3 +1178,26 @@ base보다 100HU 작아, page 3의 빈 꼬리가 그만큼 늘어난 차이다. 
 재구성 경로는 현재 예산을 유지하고 NO_LS 일반 격자는 기존 content/blank 하단을
 구분한다. 첫·끝 빈 띠의 높이와 뒤 문단을 다시 대조한다. 확대 판독에서 원본 2쪽의
 89.14%와 행·본문 위치 차이도 확인했으므로 별도 미달로 보존하며 보정을 계속한다.
+
+
+### 빈 호스트 글줄의 첫 조각 소유와 후속 문단 — 2026-10-24
+
+Native201의 실제 빌드는 3138이며 269.86초·종료 코드 0이다. 첫 3135는 실행기 사본의
+feature 이름을 잘못 바꿔 Cargo가 컴파일 전에 거절한 오류다. 실패 로그와 수정 실행을
+분리해 보존했다. Studio 전체 Node 3139는 2,461 PASS·0 FAIL·2 기존 skip이며 두 건은
+pkg-node 미준비로 실행하지 못한 실제 WASM 왕복 검사다. 후보 WASM 준비 뒤 별도 수행한다.
+
+3137에서 9개 원본/PDF 쌍을 양쪽 고정 Native로 전쪽 대조했다. 자동 행·1×1 재귀 입력의
+후보 최저는 98.86792%, 재생성 주변 프레임은 98.18859% 이상이고, nested-split은
+96.66160%다. terminal-tail의 빈 꼬리도 98.46727%로 회복했다. 원본 그림 띠는 여전히
+89.14359%로 미달이며 base도 89.14610%다. 준비 완료로 판정하지 않고 원인 보정을 계속한다.
+
+3133/3141에서 follower p3의 Table/Cell bbox는 새 base와 동일해졌지만, 뒤 본문은
+81.1→86.6px로 내려갔다. 같은 FLOW_END의 확정 전진 24.413…px 뒤에
+`finish_paragraph_float_flow → ParagraphFloatPlacement::paragraph_end`가 첫 호스트의
+계산 글줄 29.88…px를 다시 적용했다. 생산은 `computed_host_frame::resolve`, 소비는
+`prepare_table_fragment_budget`의 다른 frame 복제 → `commit_fragment`의 최종 상자
+등록 → 문단 종료이며, clone이 첫 글줄 소유를 그대로 반복한 것이 원인이다.
+이어받은 ComputedEmptyHost는 원래 글줄을 다시 소비하지 않고 EmptyHost의 확정
+물리 끝을 사용한다. 아직 첫 조각을 소비하지 않고 이월한 경우에는 계산 글줄을 유지한다.
+정확한 기존 검사·독립 PDF·실제 후속 본문 위치를 다시 확인한다.
