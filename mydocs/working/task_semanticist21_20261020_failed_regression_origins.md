@@ -1443,3 +1443,28 @@ layout_shape_item → layout_column_items의 마지막 문단 닫기`다. 기존
 있으면 기존 소유자에게 반환한다. Native215에서 후속 본문을 포함한 18조건 29쪽을 다시
 대조한다. 새 회귀의 추가·기존 #6133 기대값 수정과 fresh WASM·확대 판독은 아직 대기다.
 
+### Native215의 실제 검증과 현재 한계
+
+런타임은 `9f79fb8e7c73a41eecb509e780526a7e45a79f93`이다. Native215는 260.09초,
+exit 0이며, 컴파일 시점의 새 파일을 포함한 실제 소스 SHA-256을 이 커밋과 대조했다.
+바이너리 SHA-256은 `e77dafd26d147e09a45634f4699a326367182d87774d8a2e1c116950e3127c03`이다.
+`target/pr-review`를 재사용했고 컴파일 잡은 8개다.
+
+18조건 29쪽의 실제 Print 대조가 완료됐다. 원본 4쪽은 최저 90.37211%, 포스터가
+있는 4쪽은 99.99217%다. 축약본 2쪽과 크기·순서·오프셋 및 후속 본문 대조군
+16조건 23쪽은 모두 raw 100%다. Native214에서 98.60394%였던 후속 본문도 100%로
+개선됐다. 쪽수 누락이나 불일치는 없다. 실행 로그와 TSV 원문은 ignored
+`output/pr-review/semanticist21-20261019/coherent-shape-table-native215-3417-result.json`에 연결했다.
+
+Native215의 새 canonical review·standalone overlay를 함께 열어 원본 포스터 4쪽,
+축약본 제목 1쪽, 오프셋 0 대조군의 표 뒤 본문을 직접 판독했다. 제목·그림의 페이지
+소속, 내어쓰기, 괘선, 뒤 본문의 간격이 Print와 맞는다. RGB 엄격 일치율은 raw 실루엣과
+다르므로 완전한 픽셀 동일성을 주장하지 않는다. 대표 PNG 실행 기록은 같은 output의
+`mixed-host-native215-panels-3421-result.json`과 `mixed-host-native215-panels-3422-result.json`이다.
+
+같은 런타임의 immutable Git archive로 fresh059 표준 release·실제 wasm-opt 경로를
+빌드 중이다(`rebase-candidate-wasm059-build-3420-result.json`). 최종 exit·산출물 해시를
+확인한 뒤 동일 18조건 29쪽을 검증하도록 후속 실행을 연결했다. fresh 결과·직접 판독이
+끝나기 전에는 이 대상의 새 정식 회귀나 기존 기대값 변경을 추가하지 않는다. 현재 결과는
+이 경계의 Native 검증이며, 브랜치 전체 Rust·lint·Studio 및 승인된 원 PR 범위의 최종
+검증 완료나 PR 제출 가능 판정이 아니다.
