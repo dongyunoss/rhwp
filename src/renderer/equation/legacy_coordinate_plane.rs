@@ -31,11 +31,19 @@ const DIGITS: [f64; 10] = [
     2.25593095, 2.25593095,
 ];
 
+fn cjk_letter(character: char) -> bool {
+    character.is_alphabetic() && super::text_has_cjk(&character.to_string())
+}
+
 fn advance(character: char) -> Option<f64> {
     match character {
         'A'..='Z' => Some(UPPER[character as usize - 'A' as usize]),
         'a'..='z' => Some(LOWER[character as usize - 'a' as usize]),
         '0'..='9' => Some(DIGITS[character as usize - '0' as usize]),
+        // 독립 literal108조건과 CJK/연산자72조건의 root 단위 대비 전진이다.
+        '%' | '△' | '․' | '=' | '+' | '-' => Some(9.0 / 2.0),
+        '/' => Some(9.0 / 4.0),
+        c if cjk_letter(c) => Some(9.0 / 2.0),
         _ => None,
     }
 }
@@ -55,6 +63,14 @@ fn linear_source(node: &EqNode) -> bool {
     }
 }
 
+fn observe_line(font_size: f64, baseline: f64, frame: &mut Option<(f64, f64)>) -> Option<()> {
+    if !font_size.is_finite() || font_size <= 0.0 || !baseline.is_finite() {
+        return None;
+    }
+    let expected = frame.get_or_insert((font_size, baseline));
+    ((font_size - expected.0).abs() <= 1e-8 && (baseline - expected.1).abs() <= 1e-8).then_some(())
+}
+
 fn inspect(
     value: &LayoutBox,
     parent_y: f64,
@@ -68,16 +84,11 @@ fn inspect(
             if run.font_family != super::legacy_glyphs::FONT_FAMILY
                 || run.positions.len() != characters
                 || run.shears.len() != characters
-                || !value.font_size.is_finite()
-                || value.font_size <= 0.0
             {
                 return None;
             }
             let baseline = y + value.baseline + run.baseline_shift;
-            let expected = frame.get_or_insert((value.font_size, baseline));
-            if (value.font_size - expected.0).abs() > 1e-8 || (baseline - expected.1).abs() > 1e-8 {
-                return None;
-            }
+            observe_line(value.font_size, baseline, frame)?;
             let mut width = 0.0;
             for (character, shear) in run.glyphs.chars().zip(&run.shears) {
                 // 이 표본의 영문은 기본 이탤릭이고 숫자는 정체다.
@@ -93,6 +104,12 @@ fn inspect(
             }
             *count += characters;
             Some(width)
+        }
+        LayoutKind::Text(text) if !text.is_empty() && text.chars().all(cjk_letter) => {
+            observe_line(value.font_size, y + value.baseline, frame)?;
+            *count += text.chars().count();
+            text.chars()
+                .try_fold(0.0, |width, ch| Some(width + advance(ch)?))
         }
         LayoutKind::Row(children) => children.iter().try_fold(0.0, |width, child| {
             Some(width + inspect(child, y, frame, count)?)
@@ -178,6 +195,30 @@ fn place_plan(
             run.width = end;
             end
         }
+        LayoutKind::Text(text) => {
+            let mut offsets = Vec::with_capacity(text.chars().count());
+            let mut end = 0.0;
+            for character in text.chars() {
+                let (expected, x) = positions.next().expect("대조한 CJK 문자 소유");
+                debug_assert_eq!(character, expected);
+                let origin = (1.0 + x) * scale;
+                offsets.push(origin);
+                end = origin + advance(character).expect("대조한 CJK 전진") * scale;
+            }
+            let glyphs = text.clone();
+            let shears = vec![0.0; offsets.len()];
+            // 측정의 자연 Text는 그대로 두고, 수용한 같은 CHAR 평면에서만
+            // 독립 Print의 face·원점·물리 baseline을 모든 painter에 발행한다.
+            value.kind = LayoutKind::HancomGlyphs(super::hancom_glyphs::GlyphRun {
+                font_family: "Haansoft Batang",
+                glyphs,
+                positions: offsets,
+                shears,
+                width: end,
+                baseline_shift: value.font_size * 0.06,
+            });
+            end
+        }
         LayoutKind::Row(children) => {
             let mut end: f64 = 0.0;
             for child in children {
@@ -198,6 +239,7 @@ fn place_plan(
 fn displayed_characters(value: &LayoutBox, out: &mut Vec<char>) {
     match &value.kind {
         LayoutKind::HancomGlyphs(run) => out.extend(run.glyphs.chars()),
+        LayoutKind::Text(text) => out.extend(text.chars()),
         LayoutKind::Row(children) => {
             for child in children {
                 displayed_characters(child, out);

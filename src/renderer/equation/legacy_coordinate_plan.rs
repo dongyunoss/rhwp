@@ -10,6 +10,29 @@ use super::{advance, EqNode};
 enum Edge {
     Character,
     Group,
+    Operator(Operator),
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Operator {
+    Relation,
+    Binary,
+}
+
+impl Operator {
+    fn before(self) -> f64 {
+        match self {
+            Self::Relation => 5.0 / 8.0,
+            Self::Binary => 1.0 / 2.0,
+        }
+    }
+
+    fn after(self) -> f64 {
+        match self {
+            Self::Relation => 3.0 / 4.0,
+            Self::Binary => 1.0 / 2.0,
+        }
+    }
 }
 
 pub(super) struct Plan {
@@ -37,6 +60,25 @@ impl Plan {
                     last: edge,
                 })
             }
+            EqNode::Symbol(text) | EqNode::MathSymbol(text) => {
+                let mut chars = text.chars();
+                let character = chars.next()?;
+                if chars.next().is_some() {
+                    return None;
+                }
+                let width = advance(character)?;
+                let edge = match character {
+                    '=' => Edge::Operator(Operator::Relation),
+                    '+' | '-' => Edge::Operator(Operator::Binary),
+                    _ => Edge::Character,
+                };
+                Some(Self {
+                    width,
+                    glyphs: vec![(character, 0.0)],
+                    first: Some(edge),
+                    last: Some(edge),
+                })
+            }
             EqNode::Group(body) => {
                 let mut inner = Self::source(body)?;
                 // 빈 그룹도 논리 공간을 소유한다. 잉크가 없는지를 전진 없음으로
@@ -60,7 +102,11 @@ impl Plan {
                     let child = Self::source(item)?;
                     let gap = match (row.last, child.first) {
                         (Some(Edge::Group), Some(_)) => 0.5,
-                        (Some(Edge::Character), Some(Edge::Group)) => -0.25,
+                        // 독립 그룹/연산자 반례9개: 그룹 경계가 자동 여백보다
+                        // 우선한다. 두 여백을 합산하면 같은 원점이 이중 이동한다.
+                        (Some(_), Some(Edge::Group)) => -0.25,
+                        (Some(Edge::Operator(operator)), Some(_)) => operator.after(),
+                        (Some(_), Some(Edge::Operator(operator))) => operator.before(),
                         _ => 0.0,
                     };
                     row.width += gap;

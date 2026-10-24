@@ -95,9 +95,10 @@ fn boundary_element(node: &EqNode, first: bool) -> &EqNode {
             };
             edge.map_or(node, |item| boundary_element(item, first))
         }
-        EqNode::FontStyle { body, .. } | EqNode::Color { body, .. } => {
-            boundary_element(body, first)
-        }
+        EqNode::FontStyle { body, .. } => boundary_element(body, first),
+        // 현대 한컴 COLOR는 내부 행의 여백을 유지하지만, 그 끝 연산자를
+        // 바깥 행의 연산자로 전파하지 않는다. 일반 Group은 위에서 계속 보존한다.
+        EqNode::Color { .. } => node,
         EqNode::Superscript { base, .. }
         | EqNode::Subscript { base, .. }
         | EqNode::SubSup { base, .. }
