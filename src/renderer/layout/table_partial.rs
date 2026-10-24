@@ -5993,8 +5993,9 @@ impl LayoutEngine {
         let recursive_overlay_frame = self.reflow_recursive_overlay_opens_outer_frame(
             table,
             styles,
-            is_continuation,
+            start_row,
             start_cut,
+            start_cut_is_block,
         );
         // [#8105] 쪽 위에서 시작하는 첫 조각이 문단 기준 양수 오프셋을 그대로 쓰면, 표 위끝은 문단
         // 윗변 + 오프셋 + 바깥 위 여백이다. 예산은 첫 조각 host_before 로 그 여백을 이미 예약한다

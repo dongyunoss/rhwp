@@ -149,8 +149,9 @@ impl TypesetEngine {
             .reflow_recursive_overlay_opens_outer_frame(
                 table,
                 input.source.styles,
-                is_continuation,
+                cursor_row,
                 start_cut,
+                input.start.start_cut_is_block,
             );
         let (host_before_overhead, fragment_outer_bottom_overhead) = if recursive_overlay_frame {
             (

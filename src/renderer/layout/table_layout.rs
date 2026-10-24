@@ -26493,20 +26493,33 @@ impl LayoutEngine {
         &self,
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
-        is_continuation: bool,
+        row: usize,
         start_cut: &[usize],
+        start_cut_is_block: bool,
     ) -> bool {
-        // 재귀 자식의 존재는 이미 시작한 부모 행의 새 상단을 인증하지 않는다.
-        // 예산과 paint 모두 같은 내용 컷으로 바깥 프레임을 여는지 결정한다.
-        (!is_continuation || start_cut.iter().all(|&cut| cut == 0))
-            && crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table)
-            && table.cells.iter().any(|cell| {
-                self.cell_units(cell, table, styles).iter().any(|unit| {
-                    cell.paragraphs
-                        .get(unit.para_idx)
-                        .is_some_and(crate::renderer::para_has_no_stored_line_segs)
-                        && (unit.nested_table_fragment.is_some() || unit.mixed_nested_recursive)
-                })
+        // 미래 자식의 존재로 앞선 일반 글줄의 상단을 바꾸지 않는다. 현재 첫 미소비
+        // 유닛이 실제 재귀 viewport의 컷을 소유할 때만 그 프레임을 연다.
+        if start_cut_is_block
+            || !crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table)
+        {
+            return false;
+        }
+        self.indexed_row_cut_cell_order(table, row)
+            .iter()
+            .enumerate()
+            .any(|(slot, &index)| {
+                let cell = &table.cells[index];
+                let units = self.cell_units(cell, table, styles);
+                let Some(unit) = units.get(start_cut.get(slot).copied().unwrap_or(0)) else {
+                    return false;
+                };
+                cell.paragraphs
+                    .get(unit.para_idx)
+                    .is_some_and(crate::renderer::para_has_no_stored_line_segs)
+                    && (unit.mixed_nested_recursive
+                        || unit.nested_table_fragment.as_ref().is_some_and(|cut| {
+                            !cut.terminal || cut.start_cut.iter().any(|&consumed| consumed > 0)
+                        }))
             })
     }
 
