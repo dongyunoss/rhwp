@@ -3098,10 +3098,9 @@ impl LayoutEngine {
                         .take(end_line.saturating_sub(start_line))
                         .all(|line| line.runs.iter().all(|run| run.text.trim().is_empty()));
                 let owns_paragraph_entry = cut_units.is_none_or(|(start, end)| {
-                    self.cell_units(cell, table, styles)
-                        .iter()
-                        .position(|unit| unit.para_idx == cp_idx)
-                        .is_some_and(|first| start <= first && first < end)
+                    let units = self.cell_units(cell, table, styles);
+                    Self::reflow_host_cut_ownership(&units, cp_idx, start, end)
+                        .is_some_and(|ownership| ownership.owns_start)
                 });
                 if table_host_line_only_fragment
                     && start_line == 0
@@ -4735,20 +4734,12 @@ impl LayoutEngine {
                                     let derived_table_meta = nested_ctx
                                         .as_ref()
                                         .and_then(CellContext::nested_table_meta);
+                                    // 전체 셀 흐름을 만들 수 없는 혼합 호스트도 같은 컷
+                                    // 소유를 사용한다. fallback 원점에서 여백을 다시 열지 않는다.
+                                    let owns_reflow_host_anchor = owns_nested_start
+                                        && external_frame.is_none_or(|frame| frame.parent_owned);
                                     let reflow_block_origin =
                                         reflow_block_flow.as_ref().and_then(|flow| {
-                                            // 부모 프레임의 소유와 자식 호스트의 첫 컷 소유는
-                                            // 다르다. 이어받은 자식에는 위 여백을 반복하지 않는다.
-                                            let owns_anchor =
-                                                cut_units.is_none_or(|(start, end)| {
-                                                    let units =
-                                                        self.cell_units(cell, table, styles);
-                                                    Self::reflow_host_cut_ownership(
-                                                        &units, cp_idx, start, end,
-                                                    )
-                                                    .is_some_and(|ownership| ownership.owns_start)
-                                                }) && external_frame
-                                                    .is_none_or(|frame| frame.parent_owned);
                                             self.reflow_block_fragment_table_origin(
                                                 flow,
                                                 cp_idx,
@@ -4756,7 +4747,7 @@ impl LayoutEngine {
                                                 nested_table,
                                                 ctrl_area.x,
                                                 nested_y,
-                                                owns_anchor,
+                                                owns_reflow_host_anchor,
                                             )
                                         });
                                     let unrestricted_reflow_block = reflow_block_origin.is_some()
@@ -4917,7 +4908,7 @@ impl LayoutEngine {
                                                                     &ctrl_area,
                                                                     nested_w,
                                                                     nested_y,
-                                                                    true,
+                                                                owns_reflow_host_anchor,
                                                                 )
                                                                 .map(|(_, y)| y)
                                                             })

@@ -26421,16 +26421,8 @@ impl LayoutEngine {
                 .filter_map(|unit| unit.nested_row_flow_edges)
                 .map(|edges| edges.before + edges.after)
                 .sum::<f64>();
-            // 재조판한 자리차지 상자는 이어받은 viewport마다 바깥 여백을 연다.
-            // 첫·끝 유닛이 이미 계상한 여백과 중간 조각의 반복 여백을 구분한다.
-            if reflow_nested_table_has_outer_frame(para, child) {
-                if start > run_start {
-                    physical += hwpunit_to_px(child.outer_margin_top as i32, self.dpi);
-                }
-                if end < run_end {
-                    physical += hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi);
-                }
-            }
+            // 첫·끝 소유 유닛의 edges가 바깥여백도 이미 예약했다.
+            // 중간 조각에 끝 여백을 반복하면 실제로 들어가는 다음 행을 밀어낸다.
             // 반복 머리행은 상위 컷과 viewport가 이미 한 번 더한다.
             physical -= self.nested_continuation_header_height(cell, units, start, styles);
             // 내용 커서가 끝나도 생산자가 예약한 물리 띠는 남을 수 있다.
@@ -26441,11 +26433,12 @@ impl LayoutEngine {
             );
         }
         let style = styles.para_styles.get(para.para_shape_id as usize);
-        let reopens_outer_frame = reflow_nested_table_has_outer_frame(para, child);
-        if start == run_start || reopens_outer_frame {
+        let ownership =
+            reflow_fragment_content::ReflowHostCutOwnership::new(run_start, run_end, start, end)?;
+        if ownership.owns_start {
             physical += hwpunit_to_px(child.outer_margin_top as i32, self.dpi);
         }
-        if end == run_end || reopens_outer_frame {
+        if ownership.owns_end {
             physical += hwpunit_to_px(child.outer_margin_bottom as i32, self.dpi);
         }
         if start == run_start {

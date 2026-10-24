@@ -14,7 +14,7 @@ pub(in crate::renderer::layout) struct ReflowHostCutOwnership {
 }
 
 impl ReflowHostCutOwnership {
-    fn new(first: usize, last: usize, start: usize, end: usize) -> Option<Self> {
+    pub(super) fn new(first: usize, last: usize, start: usize, end: usize) -> Option<Self> {
         (start < last && end > first).then_some(Self {
             owns_start: start <= first,
             owns_end: end >= last,
