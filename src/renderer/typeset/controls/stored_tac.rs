@@ -42,7 +42,7 @@ pub(in crate::renderer::typeset) struct StoredTacPage {
     pub vpos_page_base: Option<i32>,
     pub vpos_lazy_base: Option<i32>,
     /// 실제 수용한 직전 문단의 소유·끝 줄과 뒤 간격을 제외한 내용 하단.
-    pub previous_content_bottom: Option<(usize, usize, f64)>,
+    pub previous_content_bottom: Option<(usize, usize, f64, Option<f64>)>,
     /// 바로 이전 실제 쪽의 마지막 원문 소유 문단과 소비한 끝 줄.
     pub previous_page_tail: Option<(usize, usize)>,
     pub side_wrap_empty: bool,
@@ -862,7 +862,8 @@ pub(super) fn prepare(
                                 ))
                             })
                             == Some(next.vertical_pos);
-                    let (owner, end_line, content_end) = page.previous_content_bottom?;
+                    let (owner, end_line, content_end, last_line_spacing) =
+                        page.previous_content_bottom?;
                     // 실제 수용한 완전한 글줄 조각이 소유를 인증한다. 같은 문단의
                     // 독립 표가 있다는 사실로 그 본문 소유까지 거절하지 않는다.
                     if owner.checked_add(1) != Some(para_idx)
@@ -874,7 +875,15 @@ pub(super) fn prepare(
                     // 상대 간격을 한 번 연결한다. 스타일 뒤 간격의 소비량을 추측하지 않는다.
                     let source_end = last.vertical_pos.checked_add(last.line_height)?;
                     let gap = next.vertical_pos.checked_sub(source_end)?;
-                    (valid && gap >= 0).then(|| content_end + hwpunit_to_px(gap, dpi))
+                    // 기준선 보정은 높이를 늘리고 줄간격을 같은 만큼 줄일 수 있다.
+                    // 내용 하단에는 이미 보정된 높이가 있으므로 원본 간격을 다시
+                    // 더하면 그 차이만큼 다음 저장 축을 밀어낸다. 같은 구성 결과의
+                    // 끝 간격을 소비하고, 원본은 상대 사다리의 소유 확인에만 쓴다.
+                    let spacing_delta = last_line_spacing
+                        .map(|spacing| spacing - hwpunit_to_px(last.line_spacing, dpi))
+                        .unwrap_or(0.0);
+                    (valid && gap >= 0)
+                        .then(|| content_end + hwpunit_to_px(gap, dpi) + spacing_delta)
                 });
                 // 저장 축과 실제 내용 하단이 갈리는 경계를 같은 진단에서 추적한다.
                 if std::env::var("RHWP_DIAG_FLOW").is_ok() {

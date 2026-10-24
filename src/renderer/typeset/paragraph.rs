@@ -489,6 +489,7 @@ pub(super) fn place_fitted_paragraph(
                 |flow| flow.content_bottom - st.current_height,
             ),
             advance,
+            fmt.line_tail_spacing(fmt.line_count()),
         );
     }
     st.apply_full_paragraph_flow(

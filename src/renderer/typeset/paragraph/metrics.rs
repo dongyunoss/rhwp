@@ -103,6 +103,14 @@ impl FormattedParagraph {
         self.line_heights.len().min(self.line_spacings.len())
     }
 
+    /// 수용 범위의 끝 줄이 발행한 간격이다. 원본 높이에서 다시 계산하지 않는다.
+    pub(in crate::renderer::typeset) fn line_tail_spacing(&self, end_line: usize) -> Option<f64> {
+        end_line
+            .checked_sub(1)
+            .and_then(|index| self.line_spacings.get(index))
+            .copied()
+    }
+
     /// 줄 범위의 advance 합계 (Issue #3780 — 범위를 실제 줄 수로 클램프)
     pub(in crate::renderer::typeset) fn line_advances_sum(
         &self,

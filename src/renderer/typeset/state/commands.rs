@@ -580,12 +580,14 @@ impl TypesetState {
         key: (usize, usize),
         content_height: f64,
         flow_advance: f64,
+        last_line_spacing: Option<f64>,
     ) {
         self.data.paragraph_fragment_content_bottoms.insert(
             key,
             super::paragraph_fragment::ParagraphFragmentBounds {
                 content_bottom: self.data.current_height + content_height,
                 flow_end: self.data.current_height + flow_advance,
+                last_line_spacing,
                 stored_frame: None,
             },
         );

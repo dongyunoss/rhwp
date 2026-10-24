@@ -280,7 +280,7 @@ impl TypesetState {
     fn previous_text_content_bottom(
         &self,
         paragraphs: &[crate::model::paragraph::Paragraph],
-    ) -> Option<(usize, usize, f64)> {
+    ) -> Option<(usize, usize, f64, Option<f64>)> {
         let mut following_owner = None;
         for item in self.data.current_items.iter().rev() {
             let (owner, end_line) = match item {
@@ -335,7 +335,14 @@ impl TypesetState {
                 .data
                 .paragraph_fragment_content_bottoms
                 .get(&(owner, end_line))
-                .map(|bounds| (owner, end_line, bounds.content_bottom));
+                .map(|bounds| {
+                    (
+                        owner,
+                        end_line,
+                        bounds.content_bottom,
+                        bounds.last_line_spacing,
+                    )
+                });
         }
         None
     }
