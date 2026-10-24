@@ -91,8 +91,19 @@ impl TypesetEngine {
             layout_engine.reflow_row_physical_minimum(table, r, mt.row_heights[r], None, styles);
         let continuing_reflow_minimum =
             layout_engine.row_has_continuing_reflow_minimum(table, r, styles);
+        let row_start = if r == cursor_row { start_cut } else { &[] };
+        // 미래 문단의 자식 표가 현재 글줄 컷의 물리 최소 소유를 지우지 않는다.
+        // 같은 물리 예산으로 실제 선택한 유닛만 분류하며 개체 viewport는 제외한다.
         let plain_reflow_line_units =
-            layout_engine.row_has_plain_reflow_line_units(table, r, styles);
+            layout_engine.row_has_plain_reflow_line_units(table, r, styles)
+                || ((reflow_minimum.is_some() || continuing_reflow_minimum)
+                    && layout_engine.row_cut_has_plain_reflow_units(
+                        table,
+                        r,
+                        row_start,
+                        (v.blank_row_available_height() - consumed - cs_before).max(0.0),
+                        styles,
+                    ));
         let physical_minimum_splittable =
             mt.allows_row_break_split() && reflow_minimum.is_some() && plain_reflow_line_units;
         let row_units_splittable = mt.is_row_splittable(r) || physical_minimum_splittable;
@@ -103,7 +114,6 @@ impl TypesetEngine {
             && plain_reflow_line_units;
         // 현재 컷이 소유한 일반 글줄에 같은 물리 하단을 적용한다.
         // 개체 viewport의 독립 예약과 먼 다음 조각의 개체를 혼동하지 않는다.
-        let row_start = if r == cursor_row { start_cut } else { &[] };
         let plain_body_band = matches!(
             table.common.text_wrap,
             crate::model::shape::TextWrap::TopAndBottom

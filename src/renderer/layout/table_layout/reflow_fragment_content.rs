@@ -37,6 +37,24 @@ impl LayoutEngine {
                 .any(|&unit| unit > 0)
     }
 
+    /// 행 범위로 접힌 컷도 원본 유닛의 셀 내부 viewport 소유를 보존한다.
+    /// 중간 행을 온전히 소유한다는 사실만으로 이어받기 여백을 잃지 않는다.
+    pub(in crate::renderer::layout) fn reflow_units_open_outer_frame(
+        units: &[CellUnit],
+        cut: Option<&super::NestedTableCut>,
+    ) -> bool {
+        cut.is_some_and(Self::reflow_cut_opens_outer_frame)
+            || units.first().into_iter().chain(units.last()).any(|unit| {
+                unit.nested_table_fragment.as_ref().is_some_and(|fragment| {
+                    fragment
+                        .start_cut
+                        .iter()
+                        .chain(&fragment.end_cut)
+                        .any(|&consumed| consumed > 0)
+                })
+            })
+    }
+
     /// 실제 배치도 측정과 같은 문단 유닛 범위로 처음·끝 여백의 소유를 정한다.
     pub(in crate::renderer::layout) fn reflow_host_cut_ownership(
         units: &[CellUnit],
@@ -206,9 +224,8 @@ impl LayoutEngine {
             let recursive_cut = self
                 .nested_table_split_from_cut_units(cell, table, styles, start, end, pi)
                 .and_then(|s| s.recursive_cut);
-            let repeats_outer_frame = recursive_cut
-                .as_ref()
-                .is_some_and(Self::reflow_cut_opens_outer_frame);
+            let repeats_outer_frame =
+                Self::reflow_units_open_outer_frame(own, recursive_cut.as_ref());
             let body = if let Some(cut) = recursive_cut.as_ref() {
                 self.nested_cut_height(child, cut, styles, purpose)
             } else if let Some((start_row, end_row)) =

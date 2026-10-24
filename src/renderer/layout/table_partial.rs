@@ -4739,10 +4739,17 @@ impl LayoutEngine {
                                     let owns_reflow_host_anchor = owns_nested_start
                                         && external_frame.is_none_or(|frame| frame.parent_owned);
                                     let opens_reflow_outer_frame = owns_reflow_host_anchor
-                                        || split_info
-                                            .as_ref()
-                                            .and_then(|split| split.recursive_cut.as_ref())
-                                            .is_some_and(Self::reflow_cut_opens_outer_frame);
+                                        || cut_units.is_some_and(|(start, end)| {
+                                            let units = self.cell_units(cell, table, styles);
+                                            let start = start.min(units.len());
+                                            let end = end.clamp(start, units.len());
+                                            Self::reflow_units_open_outer_frame(
+                                                &units[start..end],
+                                                split_info.as_ref().and_then(|split| {
+                                                    split.recursive_cut.as_ref()
+                                                }),
+                                            )
+                                        });
                                     let reflow_block_origin =
                                         reflow_block_flow.as_ref().and_then(|flow| {
                                             self.reflow_block_fragment_table_origin(

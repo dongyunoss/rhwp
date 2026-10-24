@@ -26413,7 +26413,7 @@ impl LayoutEngine {
         };
         let mut physical = self.nested_cut_height(child, &cut, styles, purpose);
         let repeats_outer_frame = reflow_nested_table_has_outer_frame(para, child)
-            && Self::reflow_cut_opens_outer_frame(&cut);
+            && Self::reflow_units_open_outer_frame(selected, Some(&cut));
         if selected
             .iter()
             .all(|unit| unit.nested_row_flow_edges.is_some())
@@ -26501,12 +26501,27 @@ impl LayoutEngine {
         start_cut: &[usize],
         start_cut_is_block: bool,
     ) -> bool {
-        // 미래 자식의 존재로 앞선 일반 글줄의 상단을 바꾸지 않는다. 현재 첫 미소비
-        // 유닛이 실제 재귀 viewport의 컷을 소유할 때만 그 프레임을 연다.
+        // 문단을 따라가는 overlay의 실제 미소비 글줄과 재귀 viewport는 같은
+        // 물리 조각을 연다. 뒤 자식의 존재나 소비가 끝난 빈 꼬리로 추정하지 않는다.
         if start_cut_is_block
             || !crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table)
         {
             return false;
+        }
+        // 내용 컷을 모두 소비해도 선언 최소의 빈 물리 띠가 이어질 수 있다.
+        // 그 조각도 같은 overlay 프레임의 위 여백을 소유한다. 글자가 없다는
+        // 사실로 공간을 소유하지 않는다고 판정하지 않는다.
+        if !start_cut.is_empty() && self.row_uses_reflow_physical_frame(table, row) {
+            let cells = self.indexed_row_cut_cell_order(table, row);
+            if !cells.is_empty()
+                && cells.iter().enumerate().all(|(slot, &index)| {
+                    start_cut.get(slot).is_some_and(|&start| {
+                        start >= self.cell_units(&table.cells[index], table, styles).len()
+                    })
+                })
+            {
+                return true;
+            }
         }
         self.indexed_row_cut_cell_order(table, row)
             .iter()
@@ -26520,7 +26535,12 @@ impl LayoutEngine {
                 cell.paragraphs
                     .get(unit.para_idx)
                     .is_some_and(crate::renderer::para_has_no_stored_line_segs)
-                    && (unit.mixed_nested_recursive
+                    && ((unit.nested_row.is_none()
+                        && unit.nested_table_fragment.is_none()
+                        && !unit.mixed_nested_fragment
+                        && !unit.top_and_bottom_flow
+                        && unit.non_inline_control_range.is_none())
+                        || unit.mixed_nested_recursive
                         || unit.nested_table_fragment.as_ref().is_some_and(|cut| {
                             !cut.terminal || cut.start_cut.iter().any(|&consumed| consumed > 0)
                         }))

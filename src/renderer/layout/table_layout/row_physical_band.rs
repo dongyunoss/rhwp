@@ -91,6 +91,50 @@ impl LayoutEngine {
         .then_some(complete)
     }
 
+    /// 실제 선택한 컷에 일반 글줄만 남는 재조판 행인지 확인한다.
+    /// 바깥 프레임을 쓰는 개체 viewport를 일반 글줄과 혼동하지 않는다.
+    pub(crate) fn row_cut_has_plain_reflow_units(
+        &self,
+        table: &Table,
+        row: usize,
+        start_cut: &[usize],
+        available: f64,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        if !self.row_uses_outer_fragment_frame(table, row) {
+            return false;
+        }
+        let (cut, _) =
+            self.advance_row_cut_for_physical_band(table, row, start_cut, available, styles);
+        let mut has_reflow_line = false;
+        for (slot, index) in Self::row_cut_cell_order(table, row).into_iter().enumerate() {
+            let cell = &table.cells[index];
+            let units = self.cell_units(cell, table, styles);
+            let start = start_cut.get(slot).copied().unwrap_or(0).min(units.len());
+            let end = cut
+                .end_cut
+                .get(slot)
+                .copied()
+                .unwrap_or(start)
+                .clamp(start, units.len());
+            for unit in &units[start..end] {
+                if unit.nested_row.is_some()
+                    || unit.nested_table_fragment.is_some()
+                    || unit.mixed_nested_fragment
+                    || unit.top_and_bottom_flow
+                    || unit.non_inline_control_range.is_some()
+                {
+                    return false;
+                }
+                has_reflow_line |= cell
+                    .paragraphs
+                    .get(unit.para_idx)
+                    .is_some_and(crate::renderer::para_has_no_stored_line_segs);
+            }
+        }
+        has_reflow_line
+    }
+
     /// 앞 쪽 꼬리의 무료 spacer는 바로 뒤 저장 프레임이 재시작함을 확인한다.
     /// 새 조각의 빈 줄은 양의 높이를 가진 상태로 같은 컷의 예약과 paint에 남긴다.
     pub(super) fn physical_start_after_leading_spacers(
