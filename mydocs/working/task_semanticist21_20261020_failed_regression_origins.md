@@ -1614,3 +1614,46 @@ Native216에서 동일 원본 HWP/HWPX와 기존 독립 Print는 raw 99.28794/99
 `watermark-svg-consumer-diagnostic-3462/`와 `watermark-native216-3463-result.json`에 실제
 소비와 전쪽 결과를 보존했다. 기존 `legacy_chart_physical_layout`의 Print RGB·원본 보존
 검사도 재사용하며, 새 fresh060와 직접 판독 전에는 기존 기대값을 바꾸지 않는다.
+
+### #8054 보정 후보: 앞 글줄 0개의 기존 SplitHost 소유 경로
+
+새 배치 계층이나 저장 줄 조건을 추가하지 않고 기존 `SplitHost` 계획을 재사용한다.
+`from_split_computed_host`는 글 끝/글 앞의 원본 컨트롤 소속 줄을 현재 구성 결과에서 찾는다.
+오프셋 안에 소속 줄이 들어가지 않으면 앞 글줄 수가 0이어도 같은 계획을 반환한다.
+앞줄 0개를 이미 방출한 문단으로 표시하지 않아 뒤의 실제 호스트가 누락되지 않게 한다.
+
+소비는 `block::entry → place_computed_split_host → place_table_with_text`이며,
+전체 표와 suffix가 들어가지 않으면 기존 `SplitHostHandoff::Fragment`가 같은 앞·뒤 줄
+범위와 표 상자를 행 스캐너에 전달한다. 뒤 배치는 기존 `split_host_prefix()` 소유를
+읽으므로 양수 오프셋의 과거 제목 보정으로 되돌아가지 않는다. 새 enum 값이나 별도의
+문서별 좌표 분기는 추가하지 않는다. 앞줄 일부가 있는 기존 경로와 빈 앵커는 보존한다.
+Native217에서 실제 #8054 2형식·7경계 및 #1549·#6929, 쪽 예산 경계를 함께 대조한다.
+현재 fresh060은 앞선 `b12357d79a`의 고정 archive를 빌드 중이므로 이 후보의 검증으로
+재사용하지 않으며, 같은 공용 Cargo target에서 컴파일을 겹치지 않는다.
+
+### #8054 공통 소유·예산 보정과 Native219 확인
+
+`flow_with_text`는 HWP bit 13의 본문 영역 제한이며 TopAndBottom 글줄 흐름 참여와
+같은 의미가 아니다. 실제 정상 API 저장본의 제한 해제 상태에서도 독립 Print는 표 뒤에
+호스트를 잇는다. 같은 `SplitHost` 계획을 사용하고 `unrestricted_float::owns_whole_object`의
+기존 통째 표 소유를 재사용한다. NONE의 본체와 TABLE/CELL의 기존 행 분할을 혼동하지 않는다.
+
+공동 앵커는 단일 표 소비자가 수용하지 않으므로 단일 표 후보를 발행하기 전에 소유 범위를
+확인한다. #1549의 표 세 개 → 제목 계약은 유지했다. 최종 소비 지점인 `layout.rs`의
+양수 오프셋 분기가 공유 계획의 흐름 하단을 과거 제목 앵커로 덮어쓰던 원인도 제거했다.
+생산한 `occupied_bottom`을 실제 뒤 글줄의 원점으로 소비한다.
+
+Native219의 원본 2형식·오프셋/원문 순서 7조건·예산/줄바꿈 7조건·기존 원본 대조군 2개·
+TABLE/CELL 예산 4조건은 총 22조건 47쪽이며 전쪽 raw 최저 97.30241%다. #1549와
+#6929의 최저값 97.30241/99.95647%를 보존했다. 원래 결함과 999HU 경계, 앞 문단 간격,
+자동 줄바꿈 조건은 모두 100%다. 기준 PDF의 쪽수와 일치하며 원본 기대값은 변경하지 않았다.
+`pr8054-native219-3492-result.json`에 입력/PDF SHA·전쪽 TSV·명령을 기록했다.
+대표 1쪽은 `current-panels-3495/pr8054-edited-native219/`의 compare·review·overlay를
+직접 판독했다. 날짜와 학교장이 표 뒤에서 이어지며 선의 AA 농도는 별도 차이로 남는다.
+
+동일한 기존 정식 검사 22개를 frozen library로 실행한 진단은 수정 전 Native216의
+21 PASS / 1 FAIL에서 Native219의 22 PASS / 0 FAIL로 바뀌었다. 원 #8054 검사의
+기대값을 완화하지 않았다. `pr8054-focused-after-3491-result.json`은 전체 nextest의
+대체가 아니다. Native219 빌드·rustfmt 검사는 종료 코드 0이며 소스 불변을 확인했다.
+새 보정의 fresh WASM과 최종 공식 전체 게이트는 아직 남아 있으므로 PR 준비 완료로
+판정하지 않는다. fresh060은 앞선 b12357d79a 런타임의 증거로만 사용한다.

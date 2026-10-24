@@ -13675,7 +13675,15 @@ impl LayoutEngine {
                 };
                 y_offset = if is_current_visible_para_float {
                     // 오프셋 안에 글줄이 들어가지 않는 host 는 표 아래에서 글을 잇는다.
-                    let mut flow_y = if signed_hwpunit(t.common.vertical_offset) > 0
+                    let mut flow_y = if let Some(placement) = ctx
+                        .paragraph_float_placements
+                        .get(&(para_index, control_index))
+                        .filter(|placement| placement.split_host_prefix().is_some())
+                    {
+                        // 앞줄·표·뒤줄을 수용한 계획의 하단을 그대로 사용한다.
+                        // 양수 오프셋의 과거 제목 앵커로 다시 되돌리지 않는다.
+                        col_area.y + placement.occupied_bottom
+                    } else if signed_hwpunit(t.common.vertical_offset) > 0
                         && !crate::renderer::float_placement::visible_host_text_flows_below_offset_float(
                             para,
                             t,

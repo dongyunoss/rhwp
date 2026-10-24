@@ -2417,6 +2417,11 @@ impl TypesetEngine {
         // 혼합 호스트의 현재 줄 컷과 물리 상자는 통째 수용 경로에서 함께 발행한다.
         // 미수용 표의 분할 경로에는 통째 상자의 컷을 넘기지 않는다.
         let resolved_host_placement = resolved_host_placement.or_else(|| {
+            // 이 후보는 단일 표의 앞·뒤 글줄 계획이다. 배치 함수가 거부한
+            // 공동 앵커 후보를 아래 whole-fit 경로로 다시 전달하지 않는다.
+            if !input.is_first_placed || !input.is_last_placed {
+                return None;
+            }
             fmt.host_composition.as_ref()?;
             let lines = fmt.computed_host_lines.as_deref()?;
             crate::renderer::float_placement::ParagraphFloatPlacement::from_split_computed_host(

@@ -35,7 +35,9 @@ impl TypesetEngine {
         }
         let table_distance = placement.table_top - placement.anchor_y;
         let table_extent = placement.occupied_bottom - placement.anchor_y;
-        if !st.pre_emitted_host_paras.contains(&input.para_idx) {
+        // 앞줄 0개는 아무 글줄도 방출하지 않았다. 이 문단을 pre-emitted로
+        // 표시하면 표 뒤의 같은 호스트까지 이미 그렸다고 오인해 누락한다.
+        if prefix > 0 && !st.pre_emitted_host_paras.contains(&input.para_idx) {
             let mut column_prefix_height = 0.0;
             let mut column_prefix_content: f64 = 0.0;
             st.finish_deferred_host_line();
@@ -81,8 +83,16 @@ impl TypesetEngine {
         placement.stored_successor_line_origin = None;
         let suffix_fit = fmt.line_content_height(prefix..fmt.line_count(), 0.0);
         let group_height = table_extent + suffix_fit;
+        // 쪽 제한을 끈 NONE 표 등은 본체의 통째 배치 소유자가 우선한다.
+        // TopAndBottom의 뒤 글줄 흐름과 쪽 영역 제한을 같은 조건으로 취급하지 않는다.
+        let owns_whole_object = super::unrestricted_float::owns_whole_object(
+            input,
+            available - placement.anchor_y,
+            st.base_available_height(),
+        );
         let mut current_available = available.min(st.available_height());
-        if placement.occupied_bottom + suffix_fit > current_available
+        if !owns_whole_object
+            && placement.occupied_bottom + suffix_fit > current_available
             && group_height <= st.base_available_height()
             && !st.current_items.is_empty()
         {
@@ -106,7 +116,7 @@ impl TypesetEngine {
             placement.occupied_bottom = st.current_height + table_extent;
         }
         st.record_paragraph_float_placement((input.para_idx, input.ctrl_idx), placement);
-        if placement.occupied_bottom + suffix_fit <= current_available {
+        if owns_whole_object || placement.occupied_bottom + suffix_fit <= current_available {
             self.place_table_with_text(
                 st,
                 input.para_idx,

@@ -19,7 +19,8 @@ impl ParagraphFloatPlacement {
         )
     }
 
-    /// 글 끝 개체의 소속 줄이 표와 충돌하면 앞선 글줄을 보존하고 그 줄부터 표 뒤에 잇는다.
+    /// 개체 소속 줄이 표와 충돌하면 앞선 글줄을 보존하고 그 줄부터 표 뒤에 잇는다.
+    /// 앞 글줄이 없으면 같은 계획이 표와 호스트 전체의 소유·예산을 처리한다.
     /// 원본 저장 좌표가 아니라 현재 문자 경계·줄 상자만 소비한다.
     pub(crate) fn from_split_computed_host(
         para: &Paragraph,
@@ -30,7 +31,9 @@ impl ParagraphFloatPlacement {
         table_height: f64,
         dpi: f64,
     ) -> Option<Self> {
-        let position = Self::text_tail_control_position(para, control_index)?;
+        let position = Self::text_tail_control_position(para, control_index)
+            .or_else(|| Self::text_head_control_position(para, control_index))?;
+        let text_len = para.text.chars().count();
         if !dpi.is_finite()
             || dpi <= 0.0
             || !text_origin.is_finite()
@@ -39,7 +42,6 @@ impl ParagraphFloatPlacement {
             || !is_para_topbottom_float(&table.common)
             || table.common.vert_align != VertAlign::Top
             || table.common.allow_overlap
-            || !table.common.flow_with_text
             || lines
                 .first()
                 .is_none_or(|line| line.char_start != 0 || line.top != 0.0)
@@ -47,7 +49,7 @@ impl ParagraphFloatPlacement {
                 !line.top.is_finite()
                     || !line.height.is_finite()
                     || line.height <= 0.0
-                    || line.char_start > position
+                    || line.char_start > text_len
             })
             || lines.windows(2).any(|pair| {
                 pair[1].char_start <= pair[0].char_start
@@ -56,12 +58,14 @@ impl ParagraphFloatPlacement {
         {
             return None;
         }
-        let prefix_lines = lines.len().checked_sub(1)?;
-        if prefix_lines == 0 {
+        let prefix_lines = lines.iter().rposition(|line| line.char_start <= position)?;
+        let anchor = lines.get(prefix_lines)?;
+        let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+        // 첫 줄 앞의 0/음수 앵커에는 보호할 prefix가 없다. 그 표의 기존
+        // 흐름·되감김 소유자를 유지하고, 양수 오프셋의 빈 공간만 여기서 판정한다.
+        if prefix_lines == 0 && offset <= 0.0 {
             return None;
         }
-        let anchor = lines.last()?;
-        let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
         // 모든 글줄이 표 앞에 들어가면 기존 소유 경로가 처리한다.
         if offset >= anchor.height {
             return None;
