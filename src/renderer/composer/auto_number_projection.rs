@@ -1,4 +1,4 @@
-//! note 본문 밖·캡션의 자동 번호를 해당 control의 원문 위치에 표시한다.
+//! 자동 번호를 해당 control의 원문 자리표와 같은 표시 런에 투영한다.
 
 use super::{insert_control_text_run, ComposedParagraph, ComposedTextRun, SpaceMetric};
 use crate::model::{
@@ -70,11 +70,13 @@ fn project_placeholder(
 
 pub(super) fn project(composed: &mut ComposedParagraph, para: &Paragraph) {
     project_where(composed, para, |kind| {
-        matches!(kind, AutoNumberType::Footnote | AutoNumberType::Endnote)
+        // 본문 개체 번호도 모델에서 할당한 현재 번호를 자기 자리표에 표시한다.
+        // 쪽·총쪽수는 페이지 계획이 완성된 후 실제 쪽을 아는 소비자가 결정한다.
+        !matches!(kind, AutoNumberType::Page | AutoNumberType::TotalPage)
     });
 }
 
-/// 공통 문단 구성에서 처리한 주석 번호와 나머지 캡션 번호의 소유를 나눈다.
+/// 캡션은 일반 본문 구성의 project를 거치지 않으므로 자체 구성 직후 투영한다.
 pub(crate) fn project_caption(composed: &mut ComposedParagraph, para: &Paragraph) {
     project_where(composed, para, |kind| {
         !matches!(kind, AutoNumberType::Footnote | AutoNumberType::Endnote)
