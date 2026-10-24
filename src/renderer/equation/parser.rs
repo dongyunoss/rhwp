@@ -77,13 +77,9 @@ pub struct EqParser {
     invalid_document_script: bool,
     /// 잘못된 구조 인자 뒤 입력만 중단한다. 이미 읽은 앞 항은 유지한다.
     stopped_document_input: bool,
-    /// [#7873] `rm`/`it` 가 켠 라틴 글꼴 상태. Version 60의 한/글 2020·2024 Print 실측: 두 명령은 다음
-    /// 원소 하나가 아니라 그 지점부터 수식 끝까지의 상태 전환이며 `{}`·분수·첨자·
-    /// `LEFT…RIGHT`·`sqrt` 경계를 넘어 지속된다(`{rm a} b`·`{rm a} over {b} c`·
-    /// `a rm b^{c} d`·`rm a LEFT ( b RIGHT ) c` 가 모두 로만체, `rm a it b c` 는 `b c`
-    /// 이탤릭). 글자 식별자가 만들어질 때 이 상태로 감싼다(`styled_literal`). `bold` 는
-    /// 다음 원소 하나에만 적용되고 그리스 문자는 영향받지 않는다. 빈 버전의 구형 표시는
-    /// 독립 세대 대조 Print에 따라 명시적 중괄호에서 들어오기 전 상태를 복원한다.
+    /// [#7873/#7975] Version 60의 `rm`/`it`는 그룹·분수·첨자·근호를 넘어 지속된다.
+    /// `styled_literal`이 상태를 적용한다. 구형은 중괄호 종료 시 이전 상태를 복원한다.
+    /// `bold`는 다음 원소 하나에 적용되며 그리스 문자는 이 전환의 대상이 아니다.
     font_state: Option<FontStyleKind>,
     /// [#7873] `parse_element` 가 마지막으로 완성한 원소의 (시작 토큰 위치, 그 직전의
     /// `font_state`). 분수 결합이 분모를 먼저 평가하는 한/글 순서를 재현할 때 분자를

@@ -260,7 +260,7 @@ impl EqLayout {
             result
         };
         if let Some(width) = self.legacy_declared_width {
-            super::legacy_coordinate_plane::project_linear(node, &mut result, width);
+            super::legacy_coordinate_plane::project(node, &mut result, width);
         }
         result
     }

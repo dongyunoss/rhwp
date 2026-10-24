@@ -3,11 +3,14 @@
 //! 독립 영문·숫자 62자×1/2/3회 Print: 8d0992d1-ea91-4413-82ba-1f77d8e676ea.
 //! 전진은 root 여백을 1로 정규화한 무차원 비율이다. 글리프 d1 폭이나 화면 px가 아니다.
 //! 별도 너비·높이·크기·혼재 문자 44개 대조의 최대 x 오차는 96dpi에서 0.82987px다.
-//! 명시적 그룹과 복합 구조는 자체 프레임을 소유하므로 선형 문자로 합치지 않는다.
+//! 명시적 그룹의 전진은 AST 소유를 읽어 계산하며, 글리프 크기와 세로 정렬은 보존한다.
 
 use super::ast::EqNode;
 use super::layout::{LayoutBox, LayoutKind};
 use super::symbols::FontStyleKind;
+
+#[path = "legacy_coordinate_plan.rs"]
+mod plan;
 
 // 독립 Print에서 얻은 root 여백 대비 논리 전진. 생성 근거와 교차 대조는
 // task_semanticist21_20261024_legacy_equation_paint.md의 2931·2932·2959에 있다.
@@ -152,4 +155,80 @@ pub(super) fn project_linear(node: &EqNode, value: &mut LayoutBox, width: f64) {
     body.y = 0.0;
     value.width = width;
     value.kind = LayoutKind::Row(vec![body]);
+}
+
+/// 모든 잉크가 같은 글줄에 있는 문자·그룹을 하나의 가로 좌표계에 둔다.
+/// 자식의 원점과 폭도 그 좌표계를 사용한다. font_size·baseline·y는 바꾸지 않는다.
+fn place_plan(
+    value: &mut LayoutBox,
+    positions: &mut impl Iterator<Item = (char, f64)>,
+    scale: f64,
+) {
+    value.x = 0.0;
+    value.width = match &mut value.kind {
+        LayoutKind::HancomGlyphs(run) => {
+            let mut end = 0.0;
+            for (character, position) in run.glyphs.chars().zip(&mut run.positions) {
+                let (expected, x) = positions.next().expect("대조한 문자 소유");
+                debug_assert_eq!(character, expected);
+                *position = (1.0 + x) * scale;
+                end = *position + advance(character).expect("대조한 논리 전진") * scale;
+            }
+            run.width = end;
+            end
+        }
+        LayoutKind::Row(children) => {
+            let mut end: f64 = 0.0;
+            for child in children {
+                place_plan(child, positions, scale);
+                end = end.max(child.width);
+            }
+            end
+        }
+        LayoutKind::FontStyle { body, .. } => {
+            place_plan(body, positions, scale);
+            body.width
+        }
+        LayoutKind::Empty => 0.0,
+        _ => unreachable!("대조한 단일 글줄의 표시 트리"),
+    };
+}
+
+fn displayed_characters(value: &LayoutBox, out: &mut Vec<char>) {
+    match &value.kind {
+        LayoutKind::HancomGlyphs(run) => out.extend(run.glyphs.chars()),
+        LayoutKind::Row(children) => {
+            for child in children {
+                displayed_characters(child, out);
+            }
+        }
+        LayoutKind::FontStyle { body, .. } => displayed_characters(body, out),
+        _ => {}
+    }
+}
+
+pub(super) fn project(node: &EqNode, value: &mut LayoutBox, width: f64) {
+    let Some(plan) = plan::Plan::source(node) else {
+        project_linear(node, value, width);
+        return;
+    };
+    if !width.is_finite() || width <= 0.0 || !plan.width.is_finite() || plan.width <= 0.0 {
+        return;
+    }
+    let mut count = 0;
+    if inspect(value, 0.0, &mut None, &mut count).is_none() || count == 0 {
+        return;
+    }
+    let mut actual = Vec::with_capacity(count);
+    displayed_characters(value, &mut actual);
+    if !actual
+        .iter()
+        .copied()
+        .eq(plan.glyphs.iter().map(|(ch, _)| *ch))
+    {
+        return;
+    }
+    let scale = width / (1.0 + plan.width);
+    place_plan(value, &mut plan.glyphs.into_iter(), scale);
+    value.width = width;
 }
