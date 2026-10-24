@@ -4737,6 +4737,18 @@ impl LayoutEngine {
                                         .and_then(CellContext::nested_table_meta);
                                     let reflow_block_origin =
                                         reflow_block_flow.as_ref().and_then(|flow| {
+                                            // 부모 프레임의 소유와 자식 호스트의 첫 컷 소유는
+                                            // 다르다. 이어받은 자식에는 위 여백을 반복하지 않는다.
+                                            let owns_anchor =
+                                                cut_units.is_none_or(|(start, end)| {
+                                                    let units =
+                                                        self.cell_units(cell, table, styles);
+                                                    Self::reflow_host_cut_ownership(
+                                                        &units, cp_idx, start, end,
+                                                    )
+                                                    .is_some_and(|ownership| ownership.owns_start)
+                                                }) && external_frame
+                                                    .is_none_or(|frame| frame.parent_owned);
                                             self.reflow_block_fragment_table_origin(
                                                 flow,
                                                 cp_idx,
@@ -4744,8 +4756,7 @@ impl LayoutEngine {
                                                 nested_table,
                                                 ctrl_area.x,
                                                 nested_y,
-                                                external_frame
-                                                    .is_none_or(|frame| frame.parent_owned),
+                                                owns_anchor,
                                             )
                                         });
                                     let unrestricted_reflow_block = reflow_block_origin.is_some()
@@ -7892,15 +7903,23 @@ impl LayoutEngine {
                 }
                 b
             }
+            // 완결된 중첩 표는 전체 배치와 같은 논리 프레임을 사용한다.
+            // 실제 분할 조각과 루트 표의 paint 상자는 바깥 반 획도 보존한다.
+            let complete_nested_frame = enclosing_cell_ctx.is_some()
+                && start_row == 0
+                && end_row == usize::from(table.row_count)
+                && start_cut.iter().all(|&unit| unit == 0)
+                && end_cut.is_empty()
+                && !is_block_split
+                && !start_cut_is_block;
             let content_bottom = table_node
                 .children
                 .iter()
                 .map(|child| {
-                    // 격자선 중심은 행 간격을 포함한 실제 그리드 끝을 소유한다.
-                    // 반 획의 잉크만으로 논리 상자를 늘리지 않으며 그리드 끝과
-                    // 셀 안 실제 내용의 확장은 함께 보존한다.
-                    if let RenderNodeType::Line(line) = &child.node_type {
-                        return line.y1.max(line.y2);
+                    if complete_nested_frame {
+                        if let RenderNodeType::Line(line) = &child.node_type {
+                            return line.y1.max(line.y2);
+                        }
                     }
                     descendant_bottom(
                         child,

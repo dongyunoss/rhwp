@@ -7,7 +7,39 @@ use crate::model::{
 };
 use crate::renderer::hwpunit_to_px;
 
+/// 문단의 실제 소스 유닛 범위와 선택한 컷이 함께 결정하는 여백 소유.
+pub(in crate::renderer::layout) struct ReflowHostCutOwnership {
+    pub(in crate::renderer::layout) owns_start: bool,
+    pub(in crate::renderer::layout) owns_end: bool,
+}
+
+impl ReflowHostCutOwnership {
+    fn new(first: usize, last: usize, start: usize, end: usize) -> Option<Self> {
+        (start < last && end > first).then_some(Self {
+            owns_start: start <= first,
+            owns_end: end >= last,
+        })
+    }
+}
+
 impl LayoutEngine {
+    /// 실제 배치도 측정과 같은 문단 유닛 범위로 처음·끝 여백의 소유를 정한다.
+    pub(in crate::renderer::layout) fn reflow_host_cut_ownership(
+        units: &[CellUnit],
+        paragraph_index: usize,
+        start: usize,
+        end: usize,
+    ) -> Option<ReflowHostCutOwnership> {
+        let first = units
+            .iter()
+            .position(|unit| unit.para_idx == paragraph_index)?;
+        let last = units
+            .iter()
+            .rposition(|unit| unit.para_idx == paragraph_index)?
+            + 1;
+        ReflowHostCutOwnership::new(first, last, start, end)
+    }
+
     /// 실제 배치와 정렬은 수용한 같은 컷의 내용 프레임을 소비한다.
     pub(in crate::renderer::layout) fn reflow_partial_cell_content_height(
         &self,
@@ -153,8 +185,10 @@ impl LayoutEngine {
                 return None;
             };
             let (first, last) = source?;
-            let owns_start = start <= first;
-            let owns_end = end >= last;
+            let ReflowHostCutOwnership {
+                owns_start,
+                owns_end,
+            } = ReflowHostCutOwnership::new(first, last, start, end)?;
             let body = if let Some(cut) = self
                 .nested_table_split_from_cut_units(cell, table, styles, start, end, pi)
                 .and_then(|s| s.recursive_cut)
