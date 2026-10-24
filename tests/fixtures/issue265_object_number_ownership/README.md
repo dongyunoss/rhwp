@@ -31,7 +31,9 @@ PDF는 engine2020/Hancom11.0.0.9136, Print method0, one-up, preprocess none이�
 
 ## 시각 선행 증거
 
-[12입력 ×16쪽 ×Native/fresh WASM 전체 결과](/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair611-owned-number-slot-whole/results.json).
+과거 Mac 검증은 12입력 × 16쪽 × Native/fresh WASM 전체 결과다. 당시 로컬 원장은
+`/Users/tsjang/rhwp/output/pr-review/7445-completed-20261009/rebase-4a07d3ae-20261019/repair611-owned-number-slot-whole/results.json`에
+보존했으며, 현재 호스트에서 접근 가능한 증적으로 제시하지 않는다. 현재 재검증은 아래 별도 절을 따른다.
 원본 최저95.34478/95.33483%, 다른11입력 최저99.02719/98.92066%,90% 미달0쪽이다.
 canonical PDFium smooth_rgb_v1/192DPI/compat2022/raw2px. 입력·PDF·전체 글꼴 SHA와
 producer의 실제 소스는 같은 폴더 producer.json/source ledger로 추적한다.
