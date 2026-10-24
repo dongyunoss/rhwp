@@ -1041,3 +1041,43 @@ review/overlay를 확인했다. 원본 NONE 속성 때문에 Print도 54~60행�
 유지해 4 PASS다. 독립 근거는 issue7216_print_20261024 자산에 있다.
 이 입력의 세 원장 행만 21/1/1로 갱신했으며 검출 조건·공차는 바꾸지 않았다.
 전체 corpus의 최종 통과는 후속 실행에서 확인한다.
+
+
+## 2026-10-25 진단 계약 3건 재검토와 다음 공통 보정
+
+동결 `c3d8c9542b`의 실제 nextest 3271은 80 RUN / 40 PASS / 40 FAIL, exit100으로
+종료했다. 11,739개 필터 제외는 통과 수가 아니다. 이 결과를 전체 Rust 성공으로 기록하지 않는다.
+Native208/fresh055 전쪽 49조건·각 1,772쪽은 모두 90% 이상이며, 새 십진수 대조3280에서
+fresh의 최대 하락은 0.49098%p, 2%p 초과 0쪽이다. 0.1%p 초과 29쪽도 진단 목록으로 보존했다.
+지침·Visual Sweep이나 허용치를 바꾸지 않았다.
+
+3279의 실제 공개 소비 진단으로 다음 세 기대값 오류를 분리했다. 현재 c3d의 default library를
+사용했으며 오래된 Native208 rlib의 의존 crate가 공유 target에서 바뀐 뒤에는 그것으로 실행한
+것처럼 기록하지 않았다. 동결 library의 SHA·fingerprint와 실제 컴파일 명령을 receipt에 남겼다.
+
+| 검사 | 독립 계약과 실제 관측 | 변경·유지한 범위 |
+| --- | --- | --- |
+| #4962 coverage | 원 PR #5857, merge 4bd9c5d60e의 실제 폭 출처 집계.😀는 현재 공급 글꼴에서 `declaredGlyphFallbackMetric`으로 정확히 측정됨. 미할당 U+0378은 실제 `char-miss/heuristicHalfwidth`임 | 양성 결측 fixture만 U+0378로 바꿈. 7분류·비식별·합계·W2/W3 일치와 자원 상한은 유지.실물 배치나 glyph 모양의 정상 기준 추가가 아님 |
+| #5874 PDF 합성 기울임 | 원 PR #6775 → 1f861362ab.원본과 같은 바이트의 독립 Print 텍스트 행렬은 `.333`임.3281의 원본·단 정의 대조군 양쪽 모두 전쪽 100% | `.25`만 `.333`으로 정정. 기준선·전진·실제 italic/oblique face의 비합성과 복잡한 입력의 경고 계약 유지 |
+| Task229 누름틀 안내문 | 도입은 initial f0f7f1a4b464773bf81642655d641c43a154a98c.현재 Screen SVG의 같은 빨간 안내문은 `font-style="oblique 18.418deg"`로 `여기에입력`을 표시함 | 떨어진 문자열 검색을 같은 SVG text 요소의 색·기울임·내용 대조로 교체.원본 글상자 필드 5개 이상 검사는 유지. 안내문을 숨기는 Print와 화면을 혼동하지 않음 |
+
+3282는 실제 변경한 두 integration 모듈과 같은 함수에서 추출한 public API 안내문 검사를
+strict 컴파일하여 16 PASS/0 FAIL/0 ignore였다. 추출 함수의 일치·검사 파일 hash를 보존했다.
+이 추출 실행은 root cfg(test) 전체의 최신 재컴파일·전체 nextest를 대신하지 않는다.
+세 파일 rustfmt와 diff check, unit-tier 4,101개/296모듈 정책도 통과했다.
+
+#5874의 현재 대표 review·standalone overlay를 양쪽 모두 판독했다. 기울기·본문 위치를
+확인했으며 작은 글자의 raster 농도 차이는 남는다. raw 100%와 엄격 RGB 일치를 구분한다.
+원본·독립 Print·TSV·PNG·행렬 근거는
+[공식 증적](../pr/assets/issue5874_synthetic_italic_20261025/README.md)에 보존했다.
+3281의 강조점 italic/bold-italic은 별도 대조군이며 Native 92.44669/94.05999%, fresh 100%다.
+이를 원본 #5874의 100%와 합치거나 확대 판독 완료로 바꾸어 보고하지 않는다.
+
+다음 보정은 #265의 본문 개체 번호다. #8191의 정식 `inline-unbound`는 독립 Print에서
+`Before:1/1`·`After:5/5`이며 현재 모델 할당·캡션은 유지되나 본문 paint에서만 번호가 없다.
+#8049 원 commit cf62911cb24009aca4b7c6e2857b1c0a2f4e8a21 → 누적 cherry a497b926bde,
+보정 c923e7cf342와 #8191 merge 60972534680을 대조했다.
+`composition.inc.rs`의 본문/편집 후 구성은 `auto_number_projection::project`를 소비하지만
+이 helper가 note 두 종류만 허용한다. 캡션은 별도 `project_caption`으로 개체 번호를 소비한다.
+같은 자리표·원문 주소·문자 폭 투영을 본문 개체 번호에도 적용하고,쪽/총쪽수는 실제 쪽을
+아는 후단 경로에 남겨야 한다. 번호 캐시·허용치·테스트의 독립 기대값은 바꾸지 않는다.

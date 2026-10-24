@@ -397,7 +397,15 @@ fn public_blank_derived_documents_reach_every_current_positive_category() {
             false,
         ),
         ("본한글", "가", "metric-surrogate", "embeddedMetric", false),
-        ("함초롬바탕", "😀", "char-miss", "heuristicHalfwidth", false),
+        // 이모지는 설치된 대체 글꼴에서 정상 측정될 수 있다. 미할당 U+0378로
+        // 실제 cmap 결측을 만들고, 출력 모양이 아닌 coverage 집계 계약을 검사한다.
+        (
+            "함초롬바탕",
+            "\u{0378}",
+            "char-miss",
+            "heuristicHalfwidth",
+            false,
+        ),
         (
             "W3 Missing Face",
             "A",
