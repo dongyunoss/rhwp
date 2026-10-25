@@ -2,6 +2,7 @@
 
 mod column_frame;
 mod column_ole;
+mod computed_host_origin;
 mod first_line;
 mod split_host;
 pub use column_frame::StoredColumnFrame;
@@ -6103,9 +6104,11 @@ impl ParagraphFloatPlacement {
             .then_some(Self {
                 flow: ParagraphFloatFlow::Exclusion,
                 anchor_y,
-                // 재조판 글줄도 표 예약에 쓴 원점에서 생성한다. 출력 단계가
-                // 저장 vpos로 다시 원점을 추측하면 호스트와 표가 서로 갈라진다.
-                stored_host_origin: Some(text_origin),
+                // 단독 앵커는 표 예약에 쓴 글줄 원점도 소유한다. 같은 위치의
+                // 형제 표가 있으면 모든 표를 소비한 흐름이 글줄 원점을 정한다.
+                // 표 하나의 빈 공간만 보고 전체 호스트를 되감지 않는다.
+                stored_host_origin: (!computed_host_origin::shares_float_anchor(para, char_pos))
+                    .then_some(text_origin),
                 stored_successor_line_origin: None,
                 table_left: None,
                 table_top,
