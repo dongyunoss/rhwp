@@ -342,6 +342,11 @@ pub(crate) fn plan(
         // 범위 밖 anchor를 누락시킨 부분 결과를 확정하지 않는다.
         return None;
     }
+    if picture_rows {
+        if let Some(anchor) = picture_rows::empty_host_text_box(para, styles, style, frame.dpi) {
+            atoms.push(Atom::Box(anchor));
+        }
+    }
     // Reuse the composer's language/style word boundaries. A word that fits
     // a whole line moves together; an overlong word retains character fallback.
     let word_ranges = super::composer::text_word_ranges(para, styles);

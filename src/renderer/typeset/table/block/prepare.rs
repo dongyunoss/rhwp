@@ -667,7 +667,10 @@ impl TypesetEngine {
         };
         // 닫힌 폭0 개체 앵커는 표 공간을 소유하며 별도 빈 글줄을 전진시키지 않는다.
         // 실제 호스트 텍스트가 있는 내부 개체는 그 글줄의 기존 소유를 유지한다.
-        let host_owns_text_lines = host_owns_opening_line
+        // 계산한 앞·뒤 줄 계획은 entry와 continuation이 각 범위를 방출한다.
+        // 같은 호스트 전체를 여기서 다시 pre-emit하면 첫 조각과 끝 조각에 중복된다.
+        let host_owns_text_lines = computed_host_tail.is_none()
+            && host_owns_opening_line
             && !crate::renderer::float_placement::empty_table_host_uses_shared_formatted_box(
                 para,
                 table,

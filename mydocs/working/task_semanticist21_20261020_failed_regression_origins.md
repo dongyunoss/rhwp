@@ -1695,3 +1695,93 @@ Windows의 직접 복사 전용 폴더는 Hwp.exe PID 125764가 여전히 참조
 종료와 artifact/source SHA 확인을 통과한 뒤 같은 45조건 81쪽을 대조하도록
 `verify_current_runtime_scope_3499.py wasm`을 연결했다. 최종 확대 판독·정식 회귀 변경·전체
 필수 검증은 아직 남아 있으며 제출 완료로 표시하지 않는다.
+
+### #8054 분할 경계의 추가 반례: 점수 통과와 원문 소유의 분리
+
+독립 Print에서 만든 20조건 28쪽의 실제 글자/괘선 원점으로 새 이름의 관계·좌표 회귀
+초안을 준비했다(`pr8054-regression-draft-3510/`). Native219의 90% 이상 점수에도
+50행의 첫 쪽에 날짜가 중복 배치되고, TABLE/CELL 60행의 마지막 쪽은 날짜·학교장이
+약 4.1px 밀린다. `host-regression-draft-3513-result.json`과
+`host-budget-content-origins-3514.json`에 실제 출력과 독립 원점을 남겼다.
+처음 진단 3511은 Layer JSON의 자식 배열을 완전히 순회하지 못해 텍스트 0개로
+보고했으므로 기각했다. 전체 JSON 순회로 수정한 3513에서 두 증상을 다시 확인했다.
+
+행 분할이 이미 `computed_host_tail`에 뒤 글줄의 소유를 전달해도 layout의 통째 표·첫
+조각 fallback은 다른 쪽의 PartialParagraph를 모른 채 원문을 다시 그린다. 기존
+`SplitHost` 계획의 명시적 줄 소유를 이 fallback에서도 소비해야 한다. 또한 끝 조각은
+확정 `occupied_bottom`에 이미 바깥 아래 여백을 포함하지만, 뒤의
+`repeat_fragment_outer_margin` 분기가 같은 283HU를 다시 더한다. 진단 3515에서 실제
+타입셋 종료 원점과 단 한 번 예약한 3.773px를 확인했다. 확정 흐름 끝을 소비한 경로에서
+같은 여백을 다시 소비하지 않는 보정이 필요하며, 새 좌표 보정값을 추가하지 않는다.
+
+NONE 60행은 전체 물리 표가 용지를 넘는 것이 정상이다. Print drawing 목록의 마지막
+관측 선은 프린터 clip 밖의 전체 물리 하단을 증명하지 않는다. 새 회귀 초안의 용지 밖
+하단 px 가정은 제거하고, 원본 행 소유와 관측 가능한 괘선/후속 내용만 검사한다.
+그 밖의 활성 검사의 기대값은 아직 바꾸지 않았다. 최종 Native/fresh와 직접 판독 후에만
+새 정식 회귀를 활성화한다.
+
+Native220에서 NONE 50/51/60행의 중복과 TABLE/CELL 끝 조각의 이중 아래 여백은
+해소됐다. 독립 Print 기반 진단 회귀는 수정 전 13 PASS / 7 FAIL에서, 기존 22개까지
+포함한 수정 후 38 PASS / 4 FAIL이다. 남은 4개는 TABLE/CELL 첫 조각의 날짜 중복이다.
+`prepare.rs`는 이미 `computed_host_tail`로 소유한 호스트까지 `host_owns_text_lines`로
+pre-emit하고 있었다. `TABLE_FRAGMENT_HOST` 실행 추적 3521에서 SplitHost(앞줄0개)와
+`owns_lines=true`를 확인했다. 새 계획이 앞·뒤 줄을 각각 방출하는 경우에는 이 중복
+pre-emit을 하지 않는다. 같은 결과를 layout fallback에서도 소비하는 앞선 보정은 유지한다.
+
+진단 회귀의 첫 컴파일은 sha2 0.11 digest의 LowerHex 미지원 때문에 실패했다. 바이트별
+16진수 표기로 고쳐 실제 재실행했으며, 그 컴파일 실패를 제품 결함이나 테스트 통과로
+계산하지 않았다. 원문 검사·독립 px 기대값을 완화하지 않았다.
+
+### #7833 짧은 그림 줄의 HWPX 캐럿·그림 원점
+
+원 해결 PR은 #7833, 캐럿 커밋 `c03d1f98ed5b19c091c7028e370089dc6a3dfbc3`이며
+통합 커밋은 `938dc147aaf6a089c222fc38d430a69004a74d8e`다. 원 API 호출을 그대로
+실행한 10/18/36pt 한 그림과 10pt 두 그림의 HWP/HWPX 8조건을 만들었다.
+HWP는 저장 전후 13.3/24/48px를 유지하지만 HWPX는 모두 12px로 돌아간다.
+HWPX 원시 header/section에는 1800/3600HU 글자모양과 해당 run 참조가 보존된다.
+기대값을 바꿀 문제가 아니다(`styled-inline-caret-3526/manifest.json`, 원시 3520).
+
+같은 원본을 MCP 2020의 실제 11.x Print 경로로 출력한 8조건은 형식별 그림 원점이 같다.
+예를 들어 18pt는 약147.997CSSpx, 36pt는168.455CSSpx다. 현재 HWPX 그림은132.3에
+그려져 있다. `mcp-styled-inline-caret-3527/results.json`과 독립 그림 프레임 3530을
+보존했다. HWP의 빈 run과 달리 새 HWPX `InlineFlowPlan`은 그림 상자만 만들고
+폭0 텍스트 앵커를 만들지 않는다. 따라서 측정은 글자 크기를 잃고 paint/query도
+같은 줄의 실제 캐럿을 찾지 못해 임의 12px로 폴백한다.
+
+원인 계층은 `inline_flow::plan`의 제어문자 전용 atom 구성이다. 실제 원문 마지막
+글자모양의 폭0 텍스트 메트릭을 같은 줄 계획에 포함하고, 기존 row 측정·paint가 이를
+함께 소비하도록 보정한다. source의 그림·문자 순서와 논리 끝 주소는 기존
+`text_logical_starts`를 재사용한다. 저장 줄·캡션은 기존 소유자에 남기며, 그림보다
+큰 빈 글자 상자와 반대의 큰 그림·짧은 문자 및 두 그림을 대조한다. 테스트의
+정확한 원본 계약과 캐럿 높이 기대값은 유지한다.
+
+Native221의 독립 진단은 41 PASS / 1 FAIL이다. 남은 CELL 60행은 끝 조각 뒤 날짜가
+두 번 배정됐다. 기존 `post_emit_visible_rowbreak_host_text`와 이미 소유한
+`computed_host_tail` 방출이 함께 실행되는 실제 호출 경로를 확인했다. 계산한 뒤 줄
+범위가 있으면 저장 줄 기반의 기존 post-emit을 실행하지 않아 같은 소유를 보존한다.
+별도 높이·좌표 보정은 추가하지 않는다. 기존 22검사는 이 단계에서도 모두 통과했다.
+
+### Native222 경계 재검증과 남은 일반 캐럿 조회 불일치
+
+Native222 빌드 3533은 종료 코드 0이며 소스 해시가 유지됐다. 새 표 20조건·28쪽은
+독립 Print 대비 raw 100%다. 기존 대조군까지 포함한 22조건·47쪽은 최저97.30241%다
+(`pr8054-native222-3539-result.json`). 50행 첫 쪽의 날짜 중복이 사라졌고, 독립
+Print와 표 행 소유·다음 쪽의 날짜/학교 순서가 맞는다. 대표 review/overlay는
+`host-budget-panels-3540`에 보존했다. raw100%는 굵기·색까지 같은 뜻이 아니며
+이 쪽의 엄격 내용 픽셀은19.42%다. Native/fresh 최종 자격은 아직 분리한다.
+
+짧은 그림·두 그림·뒤 본문·큰 그림의 11조건도 Native222에서 모두 raw100%다.
+같은 입력의 Native221에서는 HWPX 10/18/36pt 그림 원점이 달랐다
+(`inline-caret-native221-3537-result.json`, `inline-caret-native222-3537-result.json`).
+기존22검사·새 표20진단·캐럿9검사·점 문자3진단을 합한 실행3538은
+54개 중53 PASS / 1 FAIL이다. 진단 초안은 활성 회귀로 등록하지 않았다.
+
+남은 실패는 #7833 원 캐럿 검사의 혼합 글자모양 두 그림 뒤 `나` 클릭이다.
+논리주소4와 x·높이는 맞지만 hit_test의 y132.3이 get_cursor_rect의 y134.7과 다르다.
+`RunInfo` 생산은 이미 같은 baseline/글자 크기에서 caret_y/caret_h를 계산한다.
+그러나 `cursor_rect.rs::hit_test_native::format_hit`는 그 뒤 bbox_y/bbox_h로
+다시 덮어쓴다. 클릭 대상 선택에는 기존 bbox를 유지하고 반환할 캐럿에는 이미
+계산한 caret 메트릭을 소비하도록 보정해야 한다. 2.4px 상수를 추가하지 않는다.
+같은 원 API의 HWP/HWPX를 MCP2020 11.0.0.9136 PrintMethod0으로 출력했으며
+`mcp-mixed-font-caret-3542/results.json`의 두 작업은 모두 성공했다. 기대값과
+원 테스트는 유지하며 수정 전 FAIL/수정 후 실제 실행 및 같은 Print 대조를 확인한다.

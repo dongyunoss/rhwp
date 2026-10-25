@@ -14617,7 +14617,11 @@ impl LayoutEngine {
             // (156489124 pi=324: 12쪽 1030.3 과 13쪽 75.6). pre-emit 기록은 쪽을
             // 넘어 남으므로 함께 본다 — 분할 표 경로의 `host_pre_emitted` 가드와
             // 같은 계약을 통짜 표 경로에도 둔다.
-            let host_text_has_own_item = self
+            let computed_host_owns_fragments = ctx
+                .paragraph_float_placements
+                .get(&(para_index, control_index))
+                .is_some_and(|placement| placement.split_host_prefix().is_some());
+            let host_text_has_own_item = computed_host_owns_fragments || self
                 .pre_emitted_host_paras
                 .borrow()
                 .contains(&para_index)
@@ -15767,18 +15771,20 @@ impl LayoutEngine {
                 matches!(item, PageItem::PartialParagraph { para_index: pi, .. } if *pi == para_index)
             })
         });
-        let render_deferred_rowbreak_host_text_after = !host_pre_emitted
+        let render_deferred_rowbreak_host_text_after = !computed_fragment_frame
+            && !host_pre_emitted
             && !host_item_emitted
             && defer_visible_rowbreak_host_text.is_some_and(|row_count| {
                 is_continuation && end_cut.is_empty() && end_row >= row_count
             });
         // ── 분할 표 첫 부분: 호스트 문단 텍스트 렌더링 ──
-        let opening_host_owns_lead = paragraphs.get(para_index).is_some_and(|para| {
-            matches!(para.controls.get(control_index), Some(Control::Table(table))
-            if crate::renderer::float_placement::partial_table_opening_host_owns_lead(
-                para, table, control_index, host_pre_emitted,
-            ))
-        });
+        let opening_host_owns_lead = !computed_fragment_frame
+            && paragraphs.get(para_index).is_some_and(|para| {
+                matches!(para.controls.get(control_index), Some(Control::Table(table))
+                if crate::renderer::float_placement::partial_table_opening_host_owns_lead(
+                    para, table, control_index, host_pre_emitted,
+                ))
+            });
         if !is_continuation && opening_host_owns_lead {
             if let Some(para) = paragraphs.get(para_index) {
                 let is_tac = para
@@ -16043,6 +16049,7 @@ impl LayoutEngine {
         // spacing_after/outer_margin_bottom(표 뒤 trailing 간격) 제외. overflow 검출이
         // 페이지 바닥의 후행 간격을 콘텐츠 초과로 오판하지 않도록 한다.
         self.last_item_content_bottom.set(y_offset);
+        let mut computed_fragment_flow_end_consumed = false;
         if let Some(para) = paragraphs.get(para_index) {
             if let Some(Control::Table(table)) = para.controls.get(control_index) {
                 let opens =
@@ -16076,6 +16083,7 @@ impl LayoutEngine {
                         // 결정된 캡션 프레임의 원점과 흐름 끝을 함께 사용한다.
                         // 종료 여백은 표 내용이 아닌 뒤 흐름에 속한다.
                         y_offset = col_area.y + placement.occupied_bottom;
+                        computed_fragment_flow_end_consumed = computed_fragment_frame;
                     }
                 }
             }
@@ -16107,7 +16115,9 @@ impl LayoutEngine {
                                         ))) =>
                         {
                             let next = paragraphs.get(para_index + 1)?;
-                            let outer_bottom = if repeat_fragment_outer_margin {
+                            let outer_bottom = if repeat_fragment_outer_margin
+                                && !computed_fragment_flow_end_consumed
+                            {
                                 hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
                             } else {
                                 0.0
@@ -16151,7 +16161,7 @@ impl LayoutEngine {
             // #2439: typeset reserves this margin for every proven native-HWP RowBreak
             // fragment.  Keep it outside `last_item_content_bottom`: it is trailing flow, not
             // painted content, and therefore must not trigger an overflow report.
-            if !is_tac && repeat_fragment_outer_margin {
+            if !is_tac && repeat_fragment_outer_margin && !computed_fragment_flow_end_consumed {
                 if let Some(Control::Table(table)) = para.controls.get(control_index) {
                     y_offset += hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
                 }

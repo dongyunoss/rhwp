@@ -1213,7 +1213,7 @@ impl TypesetEngine {
             );
             // [#7677] 쪽을 넘겨 온 표의 마지막 조각 뒤 host 글줄은 여기서 흐름에 예약한다 —
             // 흐름은 방금 조각 하단 + 바깥 아래 여백에 섰다(한/글이 그 줄을 두는 자리).
-            if is_continuation {
+            if is_continuation && input.prepared.computed_host_tail.is_none() {
                 if flow_after_terminal_advance.is_finite() {
                     terminal_host_push +=
                         (st.current_height - flow_after_terminal_advance).max(0.0);
