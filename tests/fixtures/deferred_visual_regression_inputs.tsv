@@ -133,3 +133,8 @@ tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame.hwp	body,off_
 tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7771
 tests/fixtures/issue_7047/housing-lease-standard-form.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7955
 tests/fixtures/pr7518_review_page_budget/valid_generated/nested-split.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7786,7787,7788
+samples/issue4090/156492236_규제샌드박스_min.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8236
+mydocs/pr/assets/issue_8236/regulatory_sandbox/156492236-regulatory-sandbox-full.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8236
+mydocs/pr/assets/issue_8236/regulatory_sandbox/margin750.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8236
+mydocs/pr/assets/issue_8236/regulatory_sandbox/margin1500.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8236
+mydocs/pr/assets/issue_8230/clickhere_split_wrapper/clickhere-split-wrapper.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8230
