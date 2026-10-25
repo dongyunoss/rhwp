@@ -275,3 +275,28 @@ Native248은 291.07초·exit 0으로 빌드됐으며, 기존 경계와 새 #7687
 stage하지 않았다. sample16·편람의 기존 삭제와 자동 수집 제외를 유지하며, 해당 문서의 검사나
 별도 보관본을 복원하지 않는다. #7158의 이미지 디코딩 실패와 ClickHere 축약 입력의 미달은
 위 12조건의 통과와 구분하고 새 base 근거를 확인한 뒤 기존 처리 절차를 이어간다.
+
+### 새 base 대조와 WASM 원문 주소 검사 보정
+
+base fresh WASM070은 표준 release·실제 wasm-opt를 거쳐 1,051.54초, exit 0으로 종료했고
+빌드 중 소스 불변을 확인했다. Native247/248과 fresh WASM070/071의 기존 12조건을 각각
+대조했다. 후보의 전 26쪽은 양쪽 모두 90% 이상이며, 직접 대응 가능한 페이지 중 작업지시자의
+0.1%p 기준을 넘는 하락은 0쪽이다. #6133은 base의 1쪽과 독립 Print의 2쪽이 달라 baseline
+TSV를 만들지 못했다. 후보는 두 backend 모두 독립 Print와 같은 2쪽·raw 100%로 개선됐다.
+미산출 baseline을 임의 수치로 채우지 않는다. `rebase-page-preservation-3974.json`에 원본·
+PDF SHA와 페이지별 전후 값을 연결했다. #7158의 세 조건은 양쪽 WASM에서 같은 이미지
+디코딩 실패가 재현됐고, ClickHere는 base 쪽수 불일치와 후보 시각 미달을 별도로 기록했다.
+
+기존 WASM 글꼴 trace E2E는 공개 런의 `charStart + local`을 무조건 확정 원문 주소로 보아
+실패했다. 같은 범위의 Native 검사는 이미 실제 원문 문단과 글자 겹침 이후 경계로 소유권을
+판정한다. 원본 CFB의 `BodyText/Section0`를 독립적으로 해제·레코드 해석한 결과 문단 5의
+선두 `0x0017`과 `tcps` 개체를 확인했다. 추정 주소를 확정하지 않는 현재 trace의 null 반환이
+의도된 계약이며, 원문 경계를 무시한 WASM 기대값을 보정했다. 새 HWP나 renderer 변경은 없다.
+
+새 원본 경계 fixture는 입력 SHA·문단 텍스트 및 개체 헤더의 실제 바이트를 고정한다.
+WASM 검사는 해당 경계에서만 `unavailable`·null을 요구하고, 나머지 일반 본문은 `complete`와
+정확한 원문 위치·구역·문단·중첩 소유 관계를 모두 검사한다. 선언한 경계의 실제 실행도 확인해
+전부 null인 출력으로 통과할 수 없다. 같은 새 검사에서 base는 추정 주소 0을 게시해 FAIL,
+현재 후보는 2 PASS / 0 FAIL이다. `font-trace-source-contract-3975-result.json`에 원본 바이트,
+수정 전후 및 base의 실제 로그·검사 SHA를 연결했다. 검증된 code와 별개인 전체 Rust·lint·
+개별 PR 최종 판정은 해당 실행을 마친 뒤 확정한다.
