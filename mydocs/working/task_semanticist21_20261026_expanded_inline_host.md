@@ -41,3 +41,29 @@ overlay에 원본·투영 포인터 모두로 보존한다. 문자 재줄바꿈 
 대조군과 같은 입력의 전쪽 Native/fresh WASM·직접 판독을 확인한다. 새 입력이나 골든을
 추가하지 않으며, 그 뒤 변경 범위의 필수 lint·전체 회귀를 완료한다. sample16·편람의
 삭제된 원본·검사·파생 참조는 재생성하지 않는다. 아직 보정 성공이나 PR 준비 완료를 선언하지 않는다.
+
+## 공유 target의 차트 의존 산출물 불일치
+
+같은 전체 실행에서 OOXML 차트 4검사가 추가로 실패했다. 소스의 제목은
+`dominant-baseline="text-before-edge"`이고 기본 frame은 RGB134·1px인데, 실제 실행은
+이 속성이 없고 RGB140·0.75px를 출력했다. 현재 worktree와 제출 checkout의
+`crates/rhwp-ooxml-chart/src/renderer.rs` SHA-256은 모두
+`757959ae78ca2a9d7dd8b7ebae6e2c2dd9f6bf40be845f887adf8d86574f8fb6`이다.
+
+실제 공유 target의 `librhwp_ooxml_chart-8de1c9d4ed8a0220.rlib`에는
+`text-before-edge`가 없고 옛 테두리 문자열이 있으며 dep-info에도 현재의
+`cartesian_layout.rs`가 없다. 원본 파일 mtime은 10월 25일 00:55, 해당 artifact는
+16:53이다. 다른 base worktree에서 만든 의존 산출물이 과거 mtime을 보존한 후보
+source보다 새로워 재사용된 정황과 실제 binary 불일치를 확인했다. 네 실패를
+현재 차트 기대값의 오류로 단정하거나 assertion을 완화하지 않는다.
+
+실행 중인 전체 검증이 끝난 뒤 실제 후보 workspace의 source anchor mtime을 갱신해
+같은 `target/pr-review`에서 해당 로컬 crate와 소비자를 다시 빌드한다. 파일 내용과
+Git diff는 바꾸지 않고 target·deps를 삭제하지 않는다. 재빌드 로그의 실제 crate와
+새 artifact의 문자열·dep-info, 같은 4검사의 실행 결과를 확인한다. Native/fresh WASM
+최종 제품도 같은 source 출처를 확인하며 이전 제품을 새 head 제품으로 바꾸어 쓰지 않는다.
+`ooxml-stale-dependency-3997.json`에 source/artifact SHA와 관측을 보존했다.
+
+#6448의 같은 문서는 `body_overflow_baseline` partition 9에서도 신규 1건을 만들었다.
+이것은 별도 원본 실패가 아니라 위 2쪽 합침의 뒤 본문 넘침이다. 원장에 1을 더하지 않고
+구현 보정 뒤 이 입력의 overflow 0과 전쪽 Print 대조를 함께 확인한다.
