@@ -1785,3 +1785,19 @@ Print와 표 행 소유·다음 쪽의 날짜/학교 순서가 맞는다. 대표
 같은 원 API의 HWP/HWPX를 MCP2020 11.0.0.9136 PrintMethod0으로 출력했으며
 `mcp-mixed-font-caret-3542/results.json`의 두 작업은 모두 성공했다. 기대값과
 원 테스트는 유지하며 수정 전 FAIL/수정 후 실제 실행 및 같은 Print 대조를 확인한다.
+
+### 일반 클릭 반환의 공통 캐럿 메트릭 재사용
+
+`hit_test_native::format_hit`의 반환 좌표를 이미 계산한 `caret_y`와 `caret_h`로
+연결했다. 클릭 대상을 찾는 bbox와 원문 논리 주소 계산은 그대로 사용한다. 원 검사
+`short_inline_picture_hits_follow_styled_empty_carets_in_both_formats`는 Native222에서
+실패했지만 Native223에서 기대값 변경 없이 통과했다. 빌드 3543은 종료 코드 0,
+소스 해시 유지, 251.464초였다. 확장 실행 3544는 기존 표·캐럿·셀 번호·글머리표·
+글상자·분할 주소와 ignored 회귀 초안을 합해 84 PASS / 0 FAIL / 0 ignored다.
+이 결과는 동결 라이브러리 진단이며 공식 전체 nextest 성공을 뜻하지 않는다.
+
+같은 API로 생성한 혼합 글자모양 HWP/HWPX 두 입력의 MCP Print 3542를 포함한
+13조건은 수정 전 Native222에서 모두 raw 100%였다. 이는 반환 캐럿 오류와 실제
+paint 차이를 구분하는 대조군이다. Native223의 같은 입력 전쪽 대조 3545와
+이전 선택 80개 중 통합 모듈 70개 진단 3546을 이어서 수행한다. 최종 fresh WASM,
+전체 Rust·lint·Studio 및 원 #8064 범위 검증은 완료로 보고하지 않는다.
