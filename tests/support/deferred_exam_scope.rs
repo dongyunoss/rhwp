@@ -1,5 +1,9 @@
-#[path = "deferred_documents.rs"]
-mod legacy_deferred_document_scope;
+mod legacy_deferred_document_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/deferred_documents.rs"
+    ));
+}
 
 // hwp3-sample16 계열은 사용자 지시에 따라 다른 PR에서 처리한다.
 // 시험지 회귀는 별도 작업에서 다시 추가한다. 원본과 기존 기준값은 보존하고,

@@ -67,7 +67,7 @@ fn check_complete_frame(extension: &str, compatibility_2024: bool) {
         154.797_333,
         969.658_691,
         669.079_997,
-        1071.308_024,
+        1_071.308_024,
     ]) {
         assert!(
             (actual - expected).abs() <= 2.0,

@@ -307,3 +307,24 @@ table_host_line_only_fragment` 분기가 두 번 있음을 검출했다. 앞 분
 앞 분기의 저장 줄 소유·원점 소비를 유지하고 뒤 중복만 제거했다. 기대값·허용치·입력은
 바꾸지 않았다. 재실행한 형식 검사와 Native Clippy는 모두 exit 0이며, 원 실패와 재검증 로그는
 각각 `logs/final-rust-native-clippy-3973.log`와 `logs/final-rust-native-clippy-3976.log`다.
+
+### 공통 제외 helper와 최종 suite 준비
+
+WASM Clippy와 workspace build는 exit 0이다. all-target Clippy가 발견한 공통 제외 helper의
+중복 모듈 로딩은 자동 suite 안에 여러 기존 검사 모듈이 함께 묶이는 경로의 문제였다.
+같은 helper 파일을 외부 `mod`로 거듭 로딩하던 세 소비자를 private inline 모듈의 `include!`로
+바꿨다. helper 함수 본문과 제외 목록의 바이트는 그대로이며, sample16·편람의 제외 범위도
+유지한다. #1949의 숫자 구분자 한 곳은 값 변경 없이 표기만 바로잡았다.
+
+보정 후 형식 검사와 workspace all-target Clippy가 모두 exit 0이다. helper 길이 변경으로
+달라진 파생 harness 배정은 검증 worktree에서만 `--prepare`로 갱신했다. 이후 고정 base의
+suite policy와 unit tier policy도 각각 exit 0이다. 원본 함수 본문 동일성·제외 목록 SHA와
+파생 참조 1,771개 중 삭제된 검사·sample16·편람 참조 0건은
+`rust-test-preparation-3984-result.json`에 연결했다. 주 작업 트리의 파생 파일은 생성하거나
+커밋하지 않았다. 정책 실패를 이유로 삭제된 소스나 예전 참조를 복원하지 않는다.
+
+workspace 검증 뒤 공간 부족은 종료된 중간 라이브러리 복사본·과거 WASM package와
+24시간 이상 지난 미사용 WASM 증분 캐시 한 곳만 정리해 4.09GiB를 확보했다.
+열린 파일·메모리 매핑·worktree symlink 참조를 먼저 확인했으며, 현재/기준/보정 전 생산자와
+입력·PDF·TSV·PNG·로그 및 target의 deps·실행 파일은 보존했다. 정확한 삭제 목록·해시는
+ignored `disk-cleanup-3985.json`에 기록했다.

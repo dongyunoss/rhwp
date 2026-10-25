@@ -1,5 +1,9 @@
-#[path = "../support/deferred_documents.rs"]
-mod corpus_deferred_document_scope;
+mod corpus_deferred_document_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/deferred_documents.rs"
+    ));
+}
 
 // 사용자가 별도 작업으로 이관한 문서는 공통 회귀 코퍼스에서도 검사하지 않는다.
 

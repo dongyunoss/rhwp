@@ -1,4 +1,4 @@
-//! 사용자가 다른 PR에서 회귀 검사를 다시 추가할 문서의 공통 수집 경계.
+// 사용자가 다른 PR에서 회귀 검사를 다시 추가할 문서의 공통 수집 경계.
 
 pub fn is_deferred_document(path: &std::path::Path) -> bool {
     let normalized = path.to_string_lossy().replace('\\', "/");

@@ -1,5 +1,9 @@
-#[path = "deferred_documents.rs"]
-mod exam_deferred_document_scope;
+mod exam_deferred_document_scope {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/support/deferred_documents.rs"
+    ));
+}
 
 // 사용자가 다른 작업에서 재추가할 시험지 입력을 공용 회귀 corpus에서도 제외한다.
 // 원본 문서와 기준 PDF는 보존하며 의료 검진 문서는 시험지로 분류하지 않는다.
