@@ -122,3 +122,21 @@
   필터 미선택 11,481건은 전체 테스트의 실행·통과로 세지 않는다.
 - [전쪽 TSV·입력/producer/명령·직접 판독·비시각 증거](../pr/assets/issue_8160/rebase-8231/preservation/README.md)를 고정한다.
   보정 producer의 표준 최적화 WASM 빌드를 시작했으며, 최종 WASM·전체 Rust·Studio 검증은 계속한다.
+
+## Native·최적화 WASM 전쪽 raw100과 경계 검사 등록
+
+- 보정 producer의 표준 release WASM 빌드는 `wasm-opt -O`까지 exit 0으로 완료했다.
+  source dirty=false, 패키지·Studio public 해시 일치와 `WebAssembly.compile`을 확인했다.
+  WASM SHA-256은 `c767cd8a3d1550d1310130bf5a5abcc2cefe8714e257896a7b94b8053b12b45c`다.
+- 세 목표 문서를 fresh WASM으로 각각 전 64쪽 다시 출력했다. Native와 합친 여섯 실행의
+  총 384개 PNG를 정식 검증기가 다시 읽었고, 384/384의 양방향 정수 미대응이 0/0이다.
+- [문서별 전체 TSV·빌드·정수 증거](../pr/assets/issue_8160/rebase-8231/README.md)를 고정한다.
+  다른 문서의 평균이나 반올림으로 100%를 판정하지 않았다.
+- 이 결과를 확보한 뒤 `tests/cases/issue_8160_wmf_clipped_print.rs`를 정식 등록했다.
+  기존 #8160 40개 모듈의 내용은 유지하고, 중복되지 않는 상위 장치 클립 경계 1건을 추가했다.
+  합계 41개 모듈·87개 검사(기본 86개, Native Skia 전용 1개)다.
+- 정식 본문은 최종 검사에서 같은 내용으로 수정 전/후 frozen 라이브러리에 연결해
+  결함 단언의 실제 FAIL/PASS를 재확인한다. 최종 fmt·세 Clippy·workspace·전체 nextest·
+  Native Skia 3종과 관련 Native 전용 검사도 실행한다.
+- 새 devel의 WASM 전쪽 대조와 실제 Studio/CanvasKit 소비 검증은 계속 진행 중이다.
+  임시 스크립트·진단 파일은 ignored output에 두며 새 테스트 원본만 정식 경로에 등록한다.
