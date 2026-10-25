@@ -28,6 +28,19 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
 ) {
     let stored_geometry_policy = stored_geometry_policy.into();
     let original = source;
+    // 표의 물리 폭이 바뀌면 이전 폭으로 저장한 host 줄도 재사용할 수 없다.
+    // 모델은 보존하고 같은 셀 폭에서 글자·개체 슬롯을 함께 다시 구성한다.
+    let width_projection = (!stored_geometry_policy.preserve_hwp3_origins
+        && source.controls.iter().any(|control| {
+            matches!(control, Control::Table(table)
+                if super::inline_table_width_cache_is_stale(table))
+        }))
+    .then(|| {
+        let mut paragraph = source.clone();
+        paragraph.line_segs.clear();
+        paragraph
+    });
+    let source = width_projection.as_ref().unwrap_or(source);
     let stored_projection = (!stored_geometry_policy.preserve_hwp3_origins
         && !crate::renderer::para_has_no_stored_line_segs(source)
         && source
@@ -50,12 +63,12 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
     }
     let mut projected = None;
     let mut heights = Vec::new();
-    let reflowed_table_host = !native_hwp5
+    let reflowed_table_host = (!native_hwp5 || width_projection.is_some())
         && !stored_geometry_policy.preserve_hwp3_origins
         && crate::renderer::para_has_no_stored_line_segs(source)
         && source.controls.iter().any(|control| {
             matches!(control, Control::Table(table)
-                if table.common.treat_as_char && table_cells_have_no_stored_lines(table))
+                if super::inline_table_needs_reflow_measurement(table))
         });
     if reflowed_table_host {
         for (index, control) in source.controls.iter().enumerate() {
@@ -72,7 +85,11 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
             let Ok(height) = u32::try_from(crate::renderer::px_to_hwpunit(measured, dpi)) else {
                 continue;
             };
-            let height = height.max(table.common.height);
+            let height = if super::inline_table_needs_reflow_measurement(table) {
+                height
+            } else {
+                height.max(table.common.height)
+            };
             heights.push((index, height));
         }
         if !heights.is_empty() {

@@ -4946,7 +4946,12 @@ impl LayoutEngine {
     ) -> Vec<f64> {
         let width_scale = self.render_table_width_scale(table);
         // 1단계: col_span==1인 셀에서 개별 열 폭 추출
-        let invalid_rows = table.invalid_declared_width_rows();
+        let inline_grid_width = table.closed_inline_grid_width_hu();
+        let invalid_rows = if inline_grid_width.is_some() {
+            std::collections::BTreeSet::new()
+        } else {
+            table.invalid_declared_width_rows()
+        };
         let mut col_widths = vec![0.0f64; col_count];
         for cell in &table.cells {
             if invalid_rows.contains(&cell.row) {
@@ -5053,8 +5058,9 @@ impl LayoutEngine {
                 }
             }
         }
-        let target_width = if table.common.width > 0 {
-            (hwpunit_to_px(table.common.width as i32, self.dpi) * width_scale
+        let declared_width = inline_grid_width.unwrap_or(table.common.width);
+        let target_width = if declared_width > 0 {
+            (hwpunit_to_px(declared_width as i32, self.dpi) * width_scale
                 - hwpunit_to_px(i32::from(table.cell_spacing), self.dpi) * (col_count + 1) as f64)
                 .max(0.0)
         } else {
@@ -5440,6 +5446,15 @@ impl LayoutEngine {
         relaxed_pad: bool,
         suppress_unused_padding: bool,
     ) -> Vec<f64> {
+        // 줄 구성, 중첩 본체 높이 조회와 실제 배치가 같은 재조판 측정을 소비한다.
+        // layout_table 진입점에서만 공급하면 중간 높이 조회가 옛 선언으로 되돌린다.
+        let inline_measured = measured_table
+            .is_none()
+            .then(|| {
+                crate::renderer::composer::measured_reflow_inline_table(table, styles, self.dpi)
+            })
+            .flatten();
+        let measured_table = measured_table.or(inline_measured.as_ref());
         if !self.profile.get().session_edited()
             && (self.profile.get().hwpx_stored_layout()
                 || self.profile.get().hwp5_stored_pagination_layout())
@@ -11157,6 +11172,13 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        if let Some(measured) =
+            crate::renderer::composer::measured_reflow_inline_table(table, styles, self.dpi)
+        {
+            return measured.total_height
+                + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+        }
         self.nested_table_body_height(table, styles)
             + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)

@@ -39,6 +39,7 @@ pub(crate) enum ParagraphLineRange {
     Partial { start: usize, end: usize },
 }
 
+mod inline_table_context;
 mod justification_spacing;
 mod leading_justification;
 mod leading_spaces;
@@ -10083,17 +10084,8 @@ impl LayoutEngine {
                                 // (get_table_cell_bboxes_by_path 등)가 내부 셀을 찾는다.
                                 // table_layout 중첩 분기(:3475)와 동일한 확장 규칙 —
                                 // 내부 entry 의 cell/cp 는 layout_table 셀 루프가 채운다.
-                                let nested_ctx = cell_ctx.as_ref().map(|ctx| {
-                                    let mut c = ctx.clone();
-                                    c.path.push(crate::renderer::layout::CellPathEntry {
-                                        control_index: tac_ci,
-                                        cell_index: 0,
-                                        cell_para_index: 0,
-                                        text_direction: 0,
-                                    });
-                                    c
-                                });
-                                let nested_depth = usize::from(cell_ctx.is_some());
+                                let (nested_depth, nested_ctx) =
+                                    inline_table_context::child_context(cell_ctx.as_ref(), tac_ci);
                                 self.layout_table(
                                     tree,
                                     col_node,
@@ -11181,6 +11173,8 @@ impl LayoutEngine {
                         // 줄 소속만 공유하고, 다른 개체를 여기서 중복 출력하지 않는다.
                         if !empty_line_tac_allowed {
                             img_x += tac_w;
+                            empty_line_mark_x = img_x;
+                            empty_line_logical_end += 1;
                             continue;
                         }
                         // [#6754] 빈 문단의 인라인 TAC **표** — 종전에는 이 루프가
@@ -11203,6 +11197,11 @@ impl LayoutEngine {
                                 let table_x = img_x + om_l;
                                 let table_y = vars.y + om_top;
                                 if let Some(bdc) = bin_data_content {
+                                    let (nested_depth, nested_ctx) =
+                                        inline_table_context::child_context(
+                                            cell_ctx.as_ref(),
+                                            tac_ci,
+                                        );
                                     self.layout_table(
                                         tree,
                                         line_node,
@@ -11214,10 +11213,10 @@ impl LayoutEngine {
                                         table_y,
                                         bdc,
                                         None,
-                                        0,
+                                        nested_depth,
                                         Some((vars.para_index, tac_ci)),
                                         vars.alignment,
-                                        cell_ctx.clone(),
+                                        nested_ctx,
                                         0.0,
                                         0.0,
                                         Some(table_x),
@@ -11239,10 +11238,10 @@ impl LayoutEngine {
                                     table_x,
                                     table_y,
                                 );
-                                img_x += tac_w;
-                                empty_line_mark_x = img_x;
-                                empty_line_logical_end += 1;
                             }
+                            img_x += tac_w;
+                            empty_line_mark_x = img_x;
+                            empty_line_logical_end += 1;
                             continue;
                         }
                         if let Control::Picture(pic) = ctrl {

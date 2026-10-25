@@ -3066,6 +3066,18 @@ fn inline_control_occupied_size_hwp(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(i32, i32)> {
+    if let Control::Table(table) = control {
+        if let Some(measured) = super::measured_reflow_inline_table(table, styles, dpi) {
+            let width = i32::try_from(table.flow_width_hu())
+                .ok()?
+                .saturating_add(i32::from(table.outer_margin_left))
+                .saturating_add(i32::from(table.outer_margin_right));
+            let height = px_to_hwpunit(measured.total_height, dpi)
+                .saturating_add(i32::from(table.outer_margin_top))
+                .saturating_add(i32::from(table.outer_margin_bottom));
+            return (width > 0 && height > 0).then_some((width, height));
+        }
+    }
     let (mut width, mut height) = inline_control_size_hwp(control)?;
     if let Control::Table(table) = control {
         // 편집으로 셀 내용이 선언 높이를 넘으면 실제 표 배치도 행 높이를 키운다.

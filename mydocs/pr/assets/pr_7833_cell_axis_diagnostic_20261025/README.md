@@ -53,7 +53,23 @@ Print 프로필·96 DPI·렌더러 compat 2022를 사용했다. 이 compat 값�
 Native194의 source `60972534680a0c5e51e54ec189b92e252e81a867`과 base의
 `src`·Cargo 입력이 같고 보존 source 1507개가 Git blob과 일치함을 확인했다.
 같은 Native에서 하락은 각각 0.00624/1.94427%p지만 모두 90% 미만이다.
-**fresh base 비교는 아직 실행하지 않았으므로 이 자료만으로 회귀 이관·제거를 판정하지 않는다.**
+이 최초 기록 뒤 같은 고정 base의 fresh WASM 비교도 완료했다. 아래 후속 확인을 따른다.
+
+### 고정 base의 fresh WASM 후속 확인
+
+최적화 fresh WASM052로 같은 원본·같은 Print PDF의 전체 페이지를 실제 비교했다.
+flat은 [16.07167%](tsv/base-wasm/flat.tsv), nested는
+[19.17680%](tsv/base-wasm/nested.tsv)다. 각 파일은 생성된 TSV 원문과 바이트가 같다.
+Native에서 확인한 기존 미달이 fresh WASM에서도 재현됐다. 이것은 현재 출력의 통과나
+검사 제거·이관을 자동 승인하는 근거가 아니며 활성 검사는 유지한다.
+
+빌드 source `60972534680a0c5e51e54ec189b92e252e81a867`과 고정 base의
+`src`·`crates`·`vendor`·`build.rs`·Cargo 입력이 같음을 대조했다.
+실행 증거는 ignored output의 `cell-axis-base-wasm052-3670-result.json`,
+빌드 증거는 `rebase-base-wasm052-build-3060-result.json`이다.
+JS/WASM SHA-256은 각각
+`f90e8e9655657ea0f23b467ccb89b37b6af24f8f1b387dab9055dae747aea5b9` /
+`bf9debaa8e1300924846fa3182d38755457929d29c84935fbbc34f5f6d244789`다.
 
 ### 대표 현재 fresh WASM 출력
 

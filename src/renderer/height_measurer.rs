@@ -3026,13 +3026,14 @@ impl HeightMeasurer {
                             };
                             // 셀 배치의 calc_nested_controls_bottom_height와 같은
                             // 개체 바깥 상자와 마지막 문단 앵커 오프셋을 소비한다.
-                            crate::renderer::float_placement::table_body_height_with_declared_floor(
-                                nested,
-                                body_height,
-                                self.dpi,
-                            )
-                                + outer_margin
-                                + lead
+                            let body_height = if crate::renderer::composer::inline_table_needs_reflow_measurement(nested) {
+                                body_height
+                            } else {
+                                crate::renderer::float_placement::table_body_height_with_declared_floor(
+                                    nested, body_height, self.dpi,
+                                )
+                            };
+                            body_height + outer_margin + lead
                         } else {
                             0.0
                         }
