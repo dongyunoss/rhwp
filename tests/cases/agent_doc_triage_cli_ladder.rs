@@ -68,6 +68,8 @@ const SMALL: &str = "samples/para-001.hwp";
 const FIELDS: &str = "samples/field-01.hwp";
 const TABLE: &str = "samples/table-001.hwp";
 const DIGEST_SAMPLE: &str = "samples/hwp3-sample.hwp";
+const STRUCT_SAMPLE: &str = "samples/hwp3-sample.hwp";
+
 fn required_keys(command: &str) -> Vec<String> {
     let env = read_json("envelope_keys.json");
     env["commands"][command]["keys"]

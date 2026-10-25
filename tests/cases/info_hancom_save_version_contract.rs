@@ -123,7 +123,3 @@ fn hwpx_version_xml_requires_a_parseable_app_version() {
     assert_eq!(parsed.version, "99.1.2.3");
     assert_eq!(parsed.product, None);
 }
-
-fn rhwp_bin() -> String {
-    std::env::var("CARGO_BIN_EXE_rhwp").unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_string())
-}

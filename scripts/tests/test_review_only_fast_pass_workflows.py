@@ -488,19 +488,19 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
     def test_worker_preflights_skip_modified_review_pdf(self) -> None:
         files = [
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+                "filename": "pdf/policy-control-hwp-2020.pdf",
                 "status": "modified",
             },
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
+                "filename": "pdf/policy-control-hwp-2024.pdf",
                 "status": "modified",
             },
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwpx-2020.pdf",
+                "filename": "pdf/policy-control-hwpx-2020.pdf",
                 "status": "modified",
             },
             {
-                "filename": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+                "filename": "pdf/policy-control-hwpx-2024.pdf",
                 "status": "modified",
             },
         ]

@@ -1,3 +1,4 @@
+//! #8160: sample16 회귀 검사 통합. 이전 등록: tests/cases/verified_sample16_all_pages.rs
 //! #8160: 새 Hancom Print와 Native/fresh 표준 WASM 전 384쪽 raw 100% 뒤 등록.
 //! 세 원본 각각 64쪽의 내용·기준선·가로 원점과 중요 표·그림·산식·꼬리말의
 //! 독립 px 좌표, 원본 본문/셀/글상자 주소를 함께 보호한다.
@@ -513,17 +514,17 @@ fn fraction_rules(layout: &LayoutBox, x: f64, y: f64, out: &mut Vec<[f64; 3]>) {
 }
 
 #[test]
-fn hwpx_all_64_pages_preserve_independent_print_content_and_owners() {
+fn issue_8160_hwpx_all_64_pages_preserve_independent_print_content_and_owners() {
     verify(include_str!("../fixtures/issue8160/hwpx.json"));
 }
 
 #[test]
-fn hwp2024_all_64_pages_preserve_independent_print_content_and_owners() {
+fn issue_8160_hwp2024_all_64_pages_preserve_independent_print_content_and_owners() {
     verify(include_str!("../fixtures/issue8160/hwp2024.json"));
 }
 
 #[test]
-fn hwp2022_all_64_pages_preserve_independent_print_content_and_owners() {
+fn issue_8160_hwp2022_all_64_pages_preserve_independent_print_content_and_owners() {
     verify(include_str!("../fixtures/issue8160/hwp2022.json"));
 }
 

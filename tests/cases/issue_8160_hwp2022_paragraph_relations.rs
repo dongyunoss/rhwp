@@ -1,3 +1,4 @@
+//! #8160: sample16 회귀 검사 통합. 이전 등록: tests/cases/issue_7642_sample16_2022_paragraph_relations.rs
 //! #8160: 2022 저장본 전 64쪽 Native/fresh 표준 WASM raw 100%, 정수 미대응 0.
 //! 고정 화면 위치 대신 원본 문단·표 소유, 꼬리 내용과 포함·겹침을 검사한다.
 //! 표 경계 검사는 source5ac의 실제 출력에서 앞 문단과의 겹침을 검출한다.
@@ -62,7 +63,7 @@ fn owned_lines<'a>(lines: &[&'a RenderNode], owner: (usize, usize)) -> Vec<&'a R
 }
 
 #[test]
-fn sample16_2022_bcp_keeps_both_authored_rows_and_owned_successor() {
+fn issue_8160_sample16_2022_bcp_keeps_both_authored_rows_and_owned_successor() {
     let core = load();
     let sources: Vec<_> = core
         .document()
@@ -181,7 +182,7 @@ fn lines_in<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
 }
 
 #[test]
-fn sample16_2022_continuation_table_clears_predecessor_and_preserves_owned_rows() {
+fn issue_8160_sample16_2022_continuation_table_clears_predecessor_and_preserves_owned_rows() {
     let core = load();
     let mut sources = Vec::new();
     for (section, data) in core.document().sections.iter().enumerate() {
@@ -263,7 +264,7 @@ fn sample16_2022_continuation_table_clears_predecessor_and_preserves_owned_rows(
 
 #[cfg(feature = "native-skia")]
 #[test]
-fn sample16_2022_compound_page_border_keeps_both_print_coverage_bands() {
+fn issue_8160_sample16_2022_compound_page_border_keeps_both_print_coverage_bands() {
     let core = load();
     // #8191에서 추가한 기존 검사를 BCP 파일 병합 중 누락해 복원한다.
     // source5df·원본 SHAfec3671c·새 Print SHAc4e05635 전64쪽 양쪽 raw100.

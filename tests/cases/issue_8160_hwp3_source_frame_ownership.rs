@@ -1,3 +1,4 @@
+//! #8160: sample16 회귀 검사 통합. 이전 등록: tests/cases/issue_7445_hwp3_source_frame_ownership.rs
 //! 원본 sample16의 독립 한컴2020 Print64쪽과 C94 Native/fresh WASM64쪽
 //! (최저91.52306/91.77199%)을 확인한 뒤 추가한 원본 프레임 계약.
 //! 33쪽 raw99.25546/98.53604%: 중요한 표 시작만 ±2CSSpx로 보호한다.
@@ -32,7 +33,7 @@ fn owned<'a>(node: &'a RenderNode, paragraph: usize, tables: bool, out: &mut Vec
 }
 
 #[test]
-fn empty_opening_line_and_following_tables_keep_the_same_physical_page() {
+fn issue_8160_empty_opening_line_and_following_tables_keep_the_same_physical_page() {
     let doc = original();
     assert_eq!(doc.page_count(), 64, "독립 Print64쪽");
     let paragraphs = &doc.document().sections[0].paragraphs;
@@ -78,7 +79,7 @@ fn empty_opening_line_and_following_tables_keep_the_same_physical_page() {
 }
 
 #[test]
-fn completed_san_table_marker_and_following_text_keep_independent_print_origins() {
+fn issue_8160_completed_san_table_marker_and_following_text_keep_independent_print_origins() {
     let doc = original();
     let page = doc.build_page_render_tree(32).expect("완료33쪽");
     let mut bodies = Vec::new();
@@ -156,7 +157,7 @@ fn completed_san_table_marker_and_following_text_keep_independent_print_origins(
 }
 
 #[test]
-fn inline_equations_keep_source_size_baseline_and_single_line_ownership() {
+fn issue_8160_inline_equations_keep_source_size_baseline_and_single_line_ownership() {
     let doc = original();
     let paragraphs = &doc.document().sections[0].paragraphs;
     let equations: Vec<_> = paragraphs

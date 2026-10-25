@@ -1,3 +1,4 @@
+//! #8160: sample16 회귀 검사 통합. 이전 등록: tests/cases/verified_hwp3_original_print_boundaries.rs
 //! HWP3 원본의 제목·확장 제어·점선·목차를 독립 Print의 소유와 중요 경계로 보호한다.
 //! 전 64쪽 Native 최저 92.25853%, fresh WASM 최저 95.76171%, 쪽수 일치.
 //! 3쪽은 각각 99.94303%, 99.92693%이며 같은 배율의 확대 판독을 완료했다.
@@ -113,7 +114,7 @@ fn token_x(core: &DocumentCore, source: Owner, token: &str) -> f64 {
 }
 
 #[test]
-fn original_hwp3_heading_keeps_authored_space_and_extended_control_axis() {
+fn issue_8160_original_hwp3_heading_keeps_authored_space_and_extended_control_axis() {
     let core = load();
     let (section, paragraph) = owner(&core, "1.추진목적");
     let source = &core.document().sections[section].paragraphs[paragraph];
@@ -172,7 +173,7 @@ fn original_hwp3_heading_keeps_authored_space_and_extended_control_axis() {
 }
 
 #[test]
-fn original_hwp3_completed_page_keeps_print_headings_and_owned_reading_order() {
+fn issue_8160_original_hwp3_completed_page_keeps_print_headings_and_owned_reading_order() {
     let core = load();
     let sources = [
         owner(&core, "1.추진목적"),
@@ -240,7 +241,7 @@ fn rectangles<'a>(
 }
 
 #[test]
-fn original_hwp3_completed_page_keeps_dotted_business_frame_and_its_text() {
+fn issue_8160_original_hwp3_completed_page_keeps_dotted_business_frame_and_its_text() {
     let core = load();
     let heading = owner(&core, "1.추진목적");
     let next = owner(&core, "2.추진방향");
@@ -346,7 +347,7 @@ fn original_hwp3_completed_page_keeps_dotted_business_frame_and_its_text() {
 }
 
 #[test]
-fn original_hwp3_toc_preserves_owned_page_numbers_and_relative_right_alignment() {
+fn issue_8160_original_hwp3_toc_preserves_owned_page_numbers_and_relative_right_alignment() {
     let core = load();
     let start = owner(&core, "목차");
     let end = owner(&core, "1.추진목적");
@@ -427,7 +428,7 @@ fn original_hwp3_toc_preserves_owned_page_numbers_and_relative_right_alignment()
 // 독립 2020 Print 40쪽의 U+119E는 다음 박과 같은 원점을 쓰고 전문인까지 같은 줄이다.
 // 원본 저장 컷·문자 IR을 고치지 않고 선택 프로그램의 줄 소속을 함께 갱신해야 한다.
 #[test]
-fn selected_jamo_program_keeps_print_word_partition_and_source_ownership() {
+fn issue_8160_selected_jamo_program_keeps_print_word_partition_and_source_ownership() {
     let mut core = load();
     core.set_hangul2024_compat(false);
     // None은 portable default다. 실제 Print와 같이 2020 프로그램 선택 세션을 연다.

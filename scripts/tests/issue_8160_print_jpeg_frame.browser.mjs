@@ -13,7 +13,7 @@ const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const require = createRequire(join(root, 'rhwp-studio/package.json'));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 
-test('JPEG 인쇄 프레임은 실제 Canvas의 독립 Print 경계 픽셀을 보존한다', async t => {
+test('issue_8160: JPEG 인쇄 프레임은 실제 Canvas의 독립 Print 경계 픽셀을 보존한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const contract = JSON.parse(readFileSync(join(root, 'tests/fixtures/issue8160/hwp2022.json'), 'utf8'));
   const [region] = contract.browser_raster_regions;

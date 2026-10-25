@@ -1,3 +1,4 @@
+//! #8160: sample16 회귀 검사 통합. 이전 등록: tests/issue_1116.rs
 //! Issue #1116: HWP3→HWP5 sample16 목차 leader 및 p3 문단 vpos 정합 가드.
 
 use std::fs;
@@ -107,7 +108,7 @@ fn attr_f64(attrs: &str, name: &str) -> Option<f64> {
 }
 
 #[test]
-fn sample16_hwp5_toc_leaders_stop_before_page_numbers() {
+fn issue_8160_sample16_hwp5_toc_leaders_stop_before_page_numbers() {
     let doc = load_doc("samples/hwp3-sample16-hwp5.hwp");
     let svg = doc.render_page_svg_native(1).expect("render p2");
     let leaders = extract_dotted_horizontal_lines(&svg);
@@ -147,7 +148,7 @@ fn sample16_hwp5_toc_leaders_stop_before_page_numbers() {
 }
 
 #[test]
-fn sample16_hwp5_toc_page_numbers_share_right_edge() {
+fn issue_8160_sample16_hwp5_toc_page_numbers_share_right_edge() {
     let svg = render_svg("samples/hwp3-sample16-hwp5.hwp", 1);
     let edges = toc_page_number_right_edges(&svg);
     assert!(
@@ -166,7 +167,7 @@ fn sample16_hwp5_toc_page_numbers_share_right_edge() {
 // verified_hwp3_original_print_boundaries의 새 관계 검사에서 보호한다.
 
 #[test]
-fn sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width() {
+fn issue_8160_sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width() {
     let svg = render_svg("samples/hwp3-sample16-hwp5.hwp", 2);
     let latin_c_attrs = extract_text_attrs(&svg, "C");
     assert!(
@@ -218,12 +219,12 @@ fn assert_page3_latin_poppy_resolves_to_palatino(rel_path: &str) {
 }
 
 #[test]
-fn sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping() {
+fn issue_8160_sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping() {
     assert_page3_latin_poppy_resolves_to_palatino("samples/hwp3-sample16-hwp5-2022.hwp");
 }
 
 #[test]
-fn sample16_hwp3_page3_latin_font_matches_legacy_hancom_mapping() {
+fn issue_8160_sample16_hwp3_page3_latin_font_matches_legacy_hancom_mapping() {
     assert_page3_latin_poppy_resolves_to_palatino("samples/hwp3-sample16.hwp");
 }
 
@@ -231,7 +232,7 @@ fn sample16_hwp3_page3_latin_font_matches_legacy_hancom_mapping() {
 // verified_hwp3_original_print_boundaries에서 검증한다.
 
 #[test]
-fn sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height() {
+fn issue_8160_sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height() {
     let doc = load_doc("samples/hwp3-sample16-hwp5.hwp");
     let dump = doc.dump_page_items(Some(2));
     let p74 = dump
@@ -253,6 +254,6 @@ fn sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height() {
 
 // 2024 저장본의 제목·BCP 꼬리·후행 빈 문단은 전쪽 검증과 독립 Print 좌표를
 // 확인한 새 이름의 검사로 보호한다. 다른 원본의 검증 근거로 대신하지 않는다.
-// tests/cases/verified_sample16_2024_print_boundaries.rs
+// tests/cases/issue_8160_hwp2024_print_boundaries.rs
 // 2022 저장본의 꼬리·이어받기 배치는 새 이름의 관계 검사로 보호한다.
-// tests/cases/issue_7642_sample16_2022_paragraph_relations.rs
+// tests/cases/issue_8160_hwp2022_paragraph_relations.rs
