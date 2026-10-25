@@ -43,3 +43,39 @@ Native92.66367%, fresh92.65487%다. 94쪽 raw는Native98.64499%, fresh98.64029%�
 111/242쪽의 기존 독립 좌표·내용 관계 검사와 crop·회전·그룹 해제·활성 셀·편람 경계
 24검사는 Native082에서도 통과했다. 이 폴더의 완료를 전체45개 PR 통합 검증·CI·승인으로
 표현하지 않는다. 전체 통합의 다른 실패와 차트·원 PR별 검토는 계속 진행한다.
+
+
+## 2026-10-25: 원본 등록 환경 재검증과 선 중심 경로 검사 보정
+
+기존 검사 등록에 사용한 같은 원본·독립 PDF의 SHA를 유지하고, runtime
+`8dc75860cec88ddf7c3f8aeee230b2ca7e2e5537`의 Native224와 최적화 fresh WASM063으로
+전 383쪽을 다시 대조했다. 쪽수는 모두 같고 누락·90% 미만 쪽이 없다. 이 작업에서는
+행정업무운영 편람의 renderer를 새로 수정하지 않았다.
+
+| 경로 | 전체 raw 최저 | 94쪽 raw | 242쪽 raw | 전체 TSV / 대표 PNG |
+| --- | ---: | ---: | ---: | --- |
+| Native224 | 95.28875% | 99.08163% | 99.55922% | [TSV](current-20261025/tsv/native.tsv) / [review](current-20261025/png/native/review_094.png) / [overlay](current-20261025/png/native/overlay_094.png) |
+| fresh WASM063 | 95.96573% | 99.08481% | 99.56120% | [TSV](current-20261025/tsv/wasm.tsv) / [review](current-20261025/png/wasm/review_094.png) / [overlay](current-20261025/png/wasm/overlay_094.png) |
+
+94쪽의 Native/fresh review·overlay를 직접 열어 두 그림의 닫힌 외곽과 원문 주석·
+본문 순서를 확인했다. 얇은 선의 농도와 bitmap raster 차이는 남으며, 이 검사가
+PDF와 선 굵기·RGB까지 완전히 같음을 입증한다고 쓰지 않는다.
+
+기존 `outline.bbox == image.bbox`는 stroke의 중심 경로와 bitmap의 바깥 경계를
+혼동했다. 공통 경로 `append_picture_image_node → make_picture_border_frame →
+pre_rotation_bbox → source_geometry.viewport → Rectangle`은
+`b7dbcbb594e07bec917ce2b23102a79744883e69`부터 최종 이미지 틀을 소비하고, 기본 얇은
+선의 중심 경로는 선이 그림 안쪽에 놓이도록 반 굵기만큼 안에 있다. 이전 같은 모양의
+bbox만 비교한 검사는 이 계약에서 실패한다.
+
+원본 두 그림의 기본 실선 속성을 확인한 뒤, 중심 경로에서 실제 stroke 반 굵기를
+확장한 네 잉크 경계가 그림 틀과 같은지 관계로 검사한다. 선 굵기나 관측된 차이
+0.188976…px를 상수로 고정하지 않는다. 부동소수점 연산 오차만 크기에 비례해 허용하며,
+독립 PDF 좌표의 ±2px, 원본 소유·그림/선의 유일성·쌓기 순서·주석 보존은 유지한다.
+이 관계를 두꺼운 선이나 모든 그림의 보편 계약으로 확대하지 않는다.
+
+같은 원본의 두 정식 검사를 실제 실행해 **2 PASS / 0 FAIL**, ignore·실행 누락 0건이다.
+focused native Clippy와 rustfmt도 통과했다. 제품 수정이나 baseline 완화로 실패를
+없앤 것이 아니며 이전 3589의 두 실패와 이번 3627 결과는 검사 보정의 전후 기록이다.
+[현재 명령·해시·검사 소스](current-20261025/provenance.json)를 연결한다. 전체 PR,
+전체 Rust 또는 새 base 대비 기능 보존 검증이 완료됐다는 뜻은 아니다.

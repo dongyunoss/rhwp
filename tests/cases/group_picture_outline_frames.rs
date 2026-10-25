@@ -35,6 +35,10 @@ fn check(paragraph: usize) {
         panic!("원문 순서의 첫 자식은 스크린샷이다");
     };
     assert_eq!(picture.border_attr.attr & 0x3f, 1, "원본에 저장된 실선");
+    assert_eq!(
+        picture.border_width, 0,
+        "이 두 원본 그림은 기본 얇은 선을 쓴다"
+    );
     let tree = core.build_page_render_tree(93).unwrap();
     let groups: Vec<_> = descendants(&tree.root)
         .into_iter()
@@ -85,21 +89,34 @@ fn check(paragraph: usize) {
             .all(|node| matches!(node.node_type, RenderNodeType::Rectangle(_))),
         "원문 주석 상자는 그림·외곽선 뒤의 쌓기 순서를 보존한다"
     );
-    assert_eq!(
+    let RenderNodeType::Rectangle(rectangle) = &outline.node_type else {
+        unreachable!("앞에서 선 사각형만 선택했다");
+    };
+    // 사각형 bbox는 선의 중심 경로다. 이 입력의 얇은 선은 그림 안쪽에
+    // 놓이므로 선 두께의 절반을 더한 실제 잉크 경계가 그림 틀과 같아야 한다.
+    // 중심 경로를 그림 bbox와 같게 강제하면 선을 바깥으로 밀어내게 된다.
+    let half_stroke = rectangle.style.stroke_width / 2.0;
+    assert!(half_stroke.is_finite() && half_stroke > 0.0);
+    for (edge, ink, frame) in [
+        ("왼쪽", outline.bbox.x - half_stroke, image.bbox.x),
+        ("위쪽", outline.bbox.y - half_stroke, image.bbox.y),
         (
-            outline.bbox.x,
-            outline.bbox.y,
-            outline.bbox.width,
-            outline.bbox.height
+            "오른쪽",
+            outline.bbox.x + outline.bbox.width + half_stroke,
+            image.bbox.x + image.bbox.width,
         ),
         (
-            image.bbox.x,
-            image.bbox.y,
-            image.bbox.width,
-            image.bbox.height
+            "아래쪽",
+            outline.bbox.y + outline.bbox.height + half_stroke,
+            image.bbox.y + image.bbox.height,
         ),
-        "그림과 선이 같은 최종 개체 틀을 쓴다"
-    );
+    ] {
+        let rounding = f64::EPSILON * ink.abs().max(frame.abs()).max(1.0) * 16.0;
+        assert!(
+            (ink - frame).abs() <= rounding,
+            "얇은 외곽선의 {edge} 잉크 경계와 원본 그림 틀: ink={ink}, frame={frame}"
+        );
+    }
 
     let evidence: Value = serde_json::from_str(include_str!(
         "../../mydocs/pr/assets/group_picture_outline_frames_20261021/independent_coordinates.json"
