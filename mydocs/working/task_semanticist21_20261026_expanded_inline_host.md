@@ -67,3 +67,22 @@ Git diff는 바꾸지 않고 target·deps를 삭제하지 않는다. 재빌드 �
 #6448의 같은 문서는 `body_overflow_baseline` partition 9에서도 신규 1건을 만들었다.
 이것은 별도 원본 실패가 아니라 위 2쪽 합침의 뒤 본문 넘침이다. 원장에 1을 더하지 않고
 구현 보정 뒤 이 입력의 overflow 0과 전쪽 Print 대조를 함께 확인한다.
+
+## 첫 재빌드 결과와 빠른 소비 경로 보정
+
+`7bb8b13271`의 실제 workspace source anchor mtime만 갱신한 뒤 Native249를
+같은 공용 target·잡 8개로 빌드했다. 276.21초·exit 0이며 네 로컬 crate의 실제 재컴파일을
+확인했다. 차트 artifact에는 현재 `text-before-edge`가 있고 dep-info에도 현재
+`cartesian_layout.rs`가 있다. 같은 focused harness에서 차트의 기존 10실패를 포함해
+69 PASS·1 FAIL이다. 기대값은 변경하지 않았다.
+
+남은 #6448은 여전히 2쪽이었다. 추가한 overlay 출처는 일반 `place_table_with_text`의
+strict fit에 전달했지만 그 앞의 `physical_tac::prepare → commit_stored_tac_control → return`
+단축을 놓쳤다. 새로 커진 줄이 이 단축에서 원본 저장 프레임으로 승인되어 strict fit을
+우회했다. 이 소비 누락을 보정하여 같은 출처를 physical TAC의 승인 조건에도 전달한다.
+원본 저장 줄과 투영 줄의 소유를 구분하며 정상 저장 프레임의 단축은 유지한다.
+
+전체 `3991` 결과는 11,690 PASS·17 FAIL·45 SKIP, exit 100이다. 첫 재빌드의 focused
+성공을 전체 회귀 성공으로 확대하지 않는다. 로그·source/artifact SHA와 실패 가족별 분류는
+`expanded-inline-host-4004-result.json`, `full-rust-failure-families-4003.json`에 있다.
+새 단축 보정의 검증은 아직 남아 있다.

@@ -4590,6 +4590,7 @@ impl TypesetEngine {
             fmt,
             ft.effective_height,
             st.profile,
+            self.render_normalization.inline_host_frame_expanded(table),
             st.current_height,
             leading_spacing,
             st.available_height(),
