@@ -1,3 +1,6 @@
+#[path = "deferred_documents.rs"]
+mod exam_deferred_document_scope;
+
 // 사용자가 다른 작업에서 재추가할 시험지 입력을 공용 회귀 corpus에서도 제외한다.
 // 원본 문서와 기준 PDF는 보존하며 의료 검진 문서는 시험지로 분류하지 않는다.
 
@@ -20,7 +23,10 @@ pub fn is_exam_fixture(path: &std::path::Path) -> bool {
 
 /// 별도 PR에서 처리하는 문서 계열까지 포함한 공통 회귀 제외 범위.
 pub fn is_deferred_fixture(path: &std::path::Path) -> bool {
-    is_exam_fixture(path)
-        || path.file_name().and_then(|name| name.to_str())
+    exam_deferred_document_scope::is_deferred_document(path)
+        || is_exam_fixture(path)
+        || path
+            .file_name()
+            .and_then(|name| name.to_str())
             .is_some_and(|name| name.starts_with("hwp3-sample16"))
 }
