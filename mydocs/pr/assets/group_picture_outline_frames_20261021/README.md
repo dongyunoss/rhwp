@@ -4,8 +4,8 @@
 같은 원본·독립 PDF를 검증했다. 입력·PDF·TSV·PNG SHA와 실제 명령은
 [provenance.json](provenance.json)에 있다. 원본과 PDF는 이미 추적하는 아래 파일을 재사용했다.
 
-- [원본 HWP](../../../../samples/2025%20행정업무운영%20편람(최종).hwp)
-- [한컴2024+KoPub Print PDF](../../../../pdf/2025%20행정업무운영%20편람(최종)-hwp-kopub-2024.pdf)
+- [원본 HWP](../../../../samples/2025%20행정업무운영%20편람%28최종%29.hwp)
+- [한컴2024+KoPub Print PDF](../../../../pdf/2025%20행정업무운영%20편람%28최종%29-hwp-kopub-2024.pdf)
 - [Native 전체383쪽 TSV](native_silhouette.tsv) / [fresh 전체383쪽 TSV](wasm_silhouette.tsv)
 
 양쪽 전체383쪽의 PDF 쪽수가 같고 누락·90% 미만 쪽은 없다. 전쪽 raw 최저는
