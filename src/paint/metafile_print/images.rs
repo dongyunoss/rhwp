@@ -48,11 +48,14 @@ pub(super) fn placement(
     node: roxmltree::Node<'_, '_>,
     image: roxmltree::Node<'_, '_>,
 ) -> Option<([f64; 4], bool, bool)> {
-    // 변환기의 직접 image/use만 다룬다. 상위 그룹 변환과 clip은 기존 SVG에 맡긴다.
+    // 상위 클립은 원본 SVG 그룹이 계속 소유한다. 클립은 비트맵의 배치와
+    // 최초 JPEG 전달 격자를 바꾸지 않으며, 재생도 image/use만 교체하므로
+    // 같은 그룹의 클립이 최종 장치 그림에 적용된다. 상위 변환이나 그림
+    // 자체의 클립은 아직 이 좌표 계약에서 해소하지 않는다.
     if node
         .ancestors()
         .skip(1)
-        .any(|parent| parent.has_attribute("transform") || parent.has_attribute("clip-path"))
+        .any(|parent| parent.has_attribute("transform"))
         || node.has_attribute("clip-path")
         || image.has_attribute("clip-path")
         || (node != image && image.has_attribute("transform"))
