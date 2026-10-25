@@ -4761,6 +4761,7 @@ impl LayoutEngine {
             wrap_anchor,
             None,
             measured,
+            measured.is_some(),
         )
     }
 

@@ -35,10 +35,10 @@ mod cjk_punctuation;
 #[path = "font_metric_supplementary_pictographs.rs"]
 mod supplementary_pictographs;
 
-#[path = "font_metric_math_symbol_blocks.rs"]
-mod math_symbol_blocks;
 #[path = "font_metric_contextual_scripts.rs"]
 mod contextual_scripts;
+#[path = "font_metric_math_symbol_blocks.rs"]
+mod math_symbol_blocks;
 
 #[path = "font_metric_hangul_jamo.rs"]
 mod hangul_jamo;

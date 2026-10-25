@@ -11164,6 +11164,25 @@ impl LayoutEngine {
             stored_column_top_spacings,
             float_pushed_line_spacings,
         };
+        // 배제가 확정한 첫 글줄의 원점은 빈 개체 호스트도 소비한다.
+        // 일반 텍스트 분기 안에서만 적용하면 장식 개체를 가진 빈 문단이
+        // 이전 커서에서 전진하고, 뒤 문단까지 표의 점유 안으로 되돌아간다.
+        // 이어지는 조각·개체는 같은 문단의 첫 줄 원점을 다시 적용하지 않는다.
+        let first_line_owner = match item {
+            PageItem::FullParagraph { para_index }
+            | PageItem::PartialParagraph {
+                para_index,
+                start_line: 0,
+                ..
+            } => Some(para_index),
+            _ => None,
+        };
+        if let Some(origin) = first_line_owner
+            .and_then(|owner| float_pushed_line_spacings.get(owner))
+            .and_then(|line| line.origin)
+        {
+            y_offset = col_area.y + origin;
+        }
         let mut applied_tac_segment = false;
         match item {
             PageItem::FullParagraph { para_index } => {
@@ -11667,15 +11686,6 @@ impl LayoutEngine {
                         );
                         let final_comp = numbered_comp.as_ref().or(comp);
 
-                        if let Some(origin) = ctx
-                            .float_pushed_line_spacings
-                            .get(para_index)
-                            .and_then(|line| line.origin)
-                        {
-                            // fit이 수용한 문단 원점을 사용한다. 저장 앵커나 float
-                            // 배제 영역에서 앞 간격을 다시 계상하지 않는다.
-                            y_offset = col_area.y + origin;
-                        }
                         para_start_y.insert(*para_index, y_offset);
                         // [#4610 · #4599 ④] 공백-전용 TAC 캐리어 문단은 렌더 y 만 저장 vpos 로
                         // 되돌리고(paint 변위) 흐름 전진량은 변위 전과 동일하게 보존한다
@@ -12037,14 +12047,6 @@ impl LayoutEngine {
                         }
                     } else {
                         y_offset
-                    };
-                    let pp_y_in = if *start_line == 0 {
-                        ctx.float_pushed_line_spacings
-                            .get(para_index)
-                            .and_then(|line| line.origin)
-                            .map_or(pp_y_in, |origin| col_area.y + origin)
-                    } else {
-                        pp_y_in
                     };
                     // 문단 첫 부분을 먼저 그린 경우 뒤 개체의 문단 기준점은
                     // 그 글줄의 원점이다. 소비한 줄 끝으로 앵커를 새로 만들지 않는다.

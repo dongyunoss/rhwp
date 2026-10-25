@@ -109,7 +109,12 @@ impl LayoutEngine {
             return false;
         };
         self.profile.get().hwp5_stored_pagination_layout()
-            && self.original_stored_table_frame_is_usable(table)
+            && self.original_stored_table_frame_is_usable(
+                table,
+                self.render_normalization
+                    .borrow()
+                    .cell_frame_reflowed(table, cell),
+            )
             && cell.row_span == 1
             && !cell.dirty_flag
             && source_paragraph(para)
@@ -128,7 +133,12 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> bool {
         self.profile.get().hwp5_stored_pagination_layout()
-            && self.original_stored_table_frame_is_usable(table)
+            && self.original_stored_table_frame_is_usable(
+                table,
+                self.render_normalization
+                    .borrow()
+                    .table_text_reflowed(table),
+            )
             && table.cells.iter().any(|cell| {
                 if cell.row_span != 1 || cell.dirty_flag {
                     return false;

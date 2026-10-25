@@ -15472,6 +15472,7 @@ impl LayoutEngine {
             let closing_empty_line_advance = is_empty_spacer_para
                 .then(|| {
                     self.stored_closing_empty_line_advance_hu(
+                        table,
                         cell,
                         pi,
                         cell.paragraphs[pi]
@@ -17518,38 +17519,39 @@ impl LayoutEngine {
                         }
                     }
                 }
-                let following_line_advance = if let Some(geometry) = &stored_empty_successor_geometry {
-                    geometry.trailing
-                } else if closing_empty_line_advance.is_some() {
-                    p.line_segs
-                        .last()
-                        .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, self.dpi))
-                } else if line_count == 0
-                    && source_controls.is_empty()
-                    && p.text.is_empty()
-                    && crate::renderer::para_has_no_stored_line_segs(p)
-                    && !collapse_empty_rowbreak_spacer
-                {
-                    self.reflow_empty_cell_line_metrics(p, styles, para_style, is_last_para)
-                        .1
-                } else if source_controls.is_empty()
-                    && para_has_visible_text
-                    && stored_empty_successor_advance.is_none()
-                    && stored_frame_empty_advance.is_none()
-                    && stored_overlap_spacer_advance_px.is_none()
-                    && !collapse_empty_rowbreak_spacer
-                    && (!is_last_para || (para_count > 1 && table.common.treat_as_char))
-                {
-                    comp.lines.last().map_or(0.0, |line| {
-                        if line.runs.iter().any(|run| !run.text.trim().is_empty()) {
-                            hwpunit_to_px(line.line_spacing, self.dpi).max(0.0)
-                        } else {
-                            0.0
-                        }
-                    })
-                } else {
-                    0.0
-                };
+                let following_line_advance =
+                    if let Some(geometry) = &stored_empty_successor_geometry {
+                        geometry.trailing
+                    } else if closing_empty_line_advance.is_some() {
+                        p.line_segs
+                            .last()
+                            .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, self.dpi))
+                    } else if line_count == 0
+                        && source_controls.is_empty()
+                        && p.text.is_empty()
+                        && crate::renderer::para_has_no_stored_line_segs(p)
+                        && !collapse_empty_rowbreak_spacer
+                    {
+                        self.reflow_empty_cell_line_metrics(p, styles, para_style, is_last_para)
+                            .1
+                    } else if source_controls.is_empty()
+                        && para_has_visible_text
+                        && stored_empty_successor_advance.is_none()
+                        && stored_frame_empty_advance.is_none()
+                        && stored_overlap_spacer_advance_px.is_none()
+                        && !collapse_empty_rowbreak_spacer
+                        && (!is_last_para || (para_count > 1 && table.common.treat_as_char))
+                    {
+                        comp.lines.last().map_or(0.0, |line| {
+                            if line.runs.iter().any(|run| !run.text.trim().is_empty()) {
+                                hwpunit_to_px(line.line_spacing, self.dpi).max(0.0)
+                            } else {
+                                0.0
+                            }
+                        })
+                    } else {
+                        0.0
+                    };
                 units.push(CellUnit {
                     height: para_h,
                     following_line_advance,

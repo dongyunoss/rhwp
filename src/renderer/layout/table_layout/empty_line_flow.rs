@@ -3,7 +3,7 @@
 use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
 use crate::model::{
     paragraph::{LineSeg, Paragraph},
-    table::Cell,
+    table::{Cell, Table},
 };
 
 /// 연속된 저장 사다리의 원점으로 빈 줄 자체의 점유를 확인한다.
@@ -136,6 +136,7 @@ impl LayoutEngine {
     /// 프레임 경계는 호출자가 실제 컷과 같은 판별자로 확인해 전달한다.
     pub(super) fn stored_closing_empty_line_advance_hu(
         &self,
+        table: &Table,
         cell: &Cell,
         index: usize,
         next_starts_frame: bool,

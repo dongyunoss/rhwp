@@ -1838,8 +1838,16 @@ fn char_width_decision_with_hft_tracking<'a>(
                 .literal_figure_space_em
                 .map(|em| font_size * em)
                 .unwrap_or_else(|| {
-                    char_width_decision_with_hft_tracking(&['0'], &[1], 0, style, false, false)
-                        .base_width_px
+                    char_width_decision_with_hft_tracking(
+                        &['0'],
+                        &[1],
+                        0,
+                        style,
+                        false,
+                        false,
+                        None,
+                    )
+                    .base_width_px
                 })
         } else {
             font_size * 0.25
