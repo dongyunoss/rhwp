@@ -6069,6 +6069,43 @@ impl DocumentCore {
                 math_tables.as_deref().unwrap_or(&section.paragraphs),
                 &self.styles,
             );
+            let text_metrics = (!profile.hwp3_layout())
+                .then(|| {
+                    crate::renderer::render_normalization::stored_text_metrics::normalize(
+                        math_textboxes
+                            .as_deref()
+                            .or(math_tables.as_deref())
+                            .unwrap_or(&section.paragraphs),
+                        &self.styles,
+                        self.dpi,
+                        profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
+                    )
+                })
+                .flatten();
+            let text_metric_changes: Vec<usize> = text_metrics
+                .as_deref()
+                .map(|paragraphs| {
+                    let source = math_textboxes
+                        .as_deref()
+                        .or(math_tables.as_deref())
+                        .unwrap_or(&section.paragraphs);
+                    paragraphs
+                        .iter()
+                        .zip(source)
+                        .enumerate()
+                        .filter(|(_, (projected, original))| {
+                            projected.line_segs.iter().zip(&original.line_segs).any(
+                                |(projected, original)| {
+                                    projected.line_height != original.line_height
+                                        || projected.text_height != original.text_height
+                                        || projected.baseline_distance != original.baseline_distance
+                                },
+                            )
+                        })
+                        .map(|(index, _)| index)
+                        .collect()
+                })
+                .unwrap_or_default();
             // 프로그램 교체는 어느 형식에서도 현재 줄 메트릭을 바꿀 수 있다.
             // 기존 목록 캐시 갱신의 형식·저장 프레임 경계는 별도로 보존한다.
             let refresh_markers = (profile.hwp5_stored_pagination_layout()
@@ -6091,9 +6128,9 @@ impl DocumentCore {
                 })
                 .flatten();
                 crate::renderer::render_normalization::stored_word_tail::normalize(
-                    math_textboxes
+                    text_metrics
                         .as_deref()
-                        .or(math_tables.as_deref())
+                        .or(math_textboxes.as_deref().or(math_tables.as_deref()))
                         .unwrap_or(&section.paragraphs),
                     &self.styles,
                     pd,
@@ -6147,11 +6184,13 @@ impl DocumentCore {
                 && widthless.is_empty()
                 && inline_frames.is_empty()
                 && !paragraph_geometry_changed
+                && text_metrics.is_none()
             {
                 out.push(None);
                 continue;
             }
             let mut np = stored_word_tails
+                .or(text_metrics)
                 .or(math_textboxes)
                 .or(math_tables)
                 .unwrap_or_else(|| section.paragraphs.clone());
@@ -6225,6 +6264,7 @@ impl DocumentCore {
                     if matches.binary_search(&i).is_ok()
                         || widthless.binary_search(&i).is_ok()
                         || frame_changes.binary_search(&i).is_ok()
+                        || text_metric_changes.binary_search(&i).is_ok()
                         || paragraph_geometry_changed
                     {
                         let mut c = crate::renderer::composer::compose_paragraph_in_context(

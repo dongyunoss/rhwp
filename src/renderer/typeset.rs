@@ -5241,7 +5241,7 @@ impl TypesetEngine {
                 if table_bottom > table_top + 0.5 {
                     st.add_visible_float_exclusion(VisibleFloatExclusion {
                         para_index: para_idx,
-                        top: table_top,
+                        top: resolved.map_or(table_top, |p| p.exclusion_top(table, self.dpi)),
                         bottom: table_bottom,
                     });
                 }
@@ -5254,9 +5254,16 @@ impl TypesetEngine {
                     st.advance_flow_by(pre_height);
                 }
             } else {
+                let resolved_frame_consumes_flow = resolved.is_some_and(|placement| {
+                    placement.flow
+                        == crate::renderer::float_placement::ParagraphFloatFlow::CoanchoredTable
+                });
                 let following_non_positive =
                     has_following_non_positive_visible_float(para, ctrl_idx);
-                let inter_float_gap = if st.profile.hwpx_stored_layout() && following_non_positive {
+                let inter_float_gap = if !resolved_frame_consumes_flow
+                    && st.profile.hwpx_stored_layout()
+                    && following_non_positive
+                {
                     para_line_spacing_px(para, self.dpi)
                 } else {
                     0.0

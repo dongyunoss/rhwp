@@ -10326,6 +10326,7 @@ impl LayoutEngine {
                         && matches!(
                             placement.flow,
                             super::float_placement::ParagraphFloatFlow::NextLine
+                                | super::float_placement::ParagraphFloatFlow::CoanchoredTable
                                 | super::float_placement::ParagraphFloatFlow::SplitHost { .. }
                                 | super::float_placement::ParagraphFloatFlow::EmptyHost
                         )
@@ -13678,9 +13679,13 @@ impl LayoutEngine {
                     let mut flow_y = if let Some(placement) = ctx
                         .paragraph_float_placements
                         .get(&(para_index, control_index))
-                        .filter(|placement| placement.split_host_prefix().is_some())
+                        .filter(|placement| {
+                            placement.split_host_prefix().is_some()
+                                || placement.flow
+                                    == super::float_placement::ParagraphFloatFlow::CoanchoredTable
+                        })
                     {
-                        // 앞줄·표·뒤줄을 수용한 계획의 하단을 그대로 사용한다.
+                        // 앞줄·표·뒤줄 또는 같은 앵커의 흐름 표를 수용한 하단을 쓴다.
                         // 양수 오프셋의 과거 제목 앵커로 다시 되돌리지 않는다.
                         col_area.y + placement.occupied_bottom
                     } else if signed_hwpunit(t.common.vertical_offset) > 0
@@ -13852,7 +13857,9 @@ impl LayoutEngine {
                             .get(&(para_index, control_index));
                         visible_float_exclusions.push(VisibleFloatExclusion {
                             fixed_textbox: false,
-                            top: placement.map_or(table_visual_top, |p| col_area.y + p.table_top),
+                            top: placement.map_or(table_visual_top, |p| {
+                                col_area.y + p.exclusion_top(t, self.dpi)
+                            }),
                             bottom: placement.map_or(
                                 table_visual_end + margin_bottom_px + host_line_spacing_px,
                                 |p| col_area.y + p.occupied_bottom,

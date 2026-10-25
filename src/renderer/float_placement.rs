@@ -3617,6 +3617,9 @@ pub enum ParagraphFloatFlow {
     },
     /// The trailing object cannot fit in the host line's remaining inline space.
     NextLine,
+    /// 같은 계산 줄의 형제 표 본체가 호스트 글줄보다 먼저 흐름을 차지한다.
+    /// 글 뒤 개체의 폭 부족으로 생긴 NextLine과 글줄 소유를 혼동하지 않는다.
+    CoanchoredTable,
     /// The saved successor line starts at the picture's occupied bottom. Its
     /// spacing-before is already inside that reservation, not an extra gap.
     StoredPicture {
@@ -5606,7 +5609,9 @@ impl ParagraphFloatPlacement {
             ParagraphFloatFlow::ComputedEmptyHost { line_advance, .. } => {
                 self.anchor_y + line_advance
             }
-            ParagraphFloatFlow::NextLine | ParagraphFloatFlow::SplitHost { .. } => {
+            ParagraphFloatFlow::NextLine
+            | ParagraphFloatFlow::CoanchoredTable
+            | ParagraphFloatFlow::SplitHost { .. } => {
                 // A certified successor line at or below the accepted frame
                 // bottom already closes this paragraph. Adding the host's
                 // trailing space again would move that same successor beyond
@@ -5627,14 +5632,17 @@ impl ParagraphFloatPlacement {
         }
     }
 
-    /// Only a measured inline-space miss may turn a geometric reservation into
-    /// paragraph flow. Unknown host widths keep the existing exclusion behavior.
+    /// 남은 폭이 부족하면 배제 프레임을 흐름으로 전환한다. 이미 다른 소유
+    /// 규칙이 확정한 흐름은 폭이 남는다는 이유로 배제 프레임으로 되돌리지 않는다.
     pub fn with_tail_line_space(
         mut self,
         remaining_width: Option<f64>,
         table: &Table,
         dpi: f64,
     ) -> Self {
+        if self.flow != ParagraphFloatFlow::Exclusion {
+            return self;
+        }
         let width = hwpunit_to_px(table.common.width as i32, dpi)
             + hwpunit_to_px(i32::from(table.outer_margin_left), dpi)
             + hwpunit_to_px(i32::from(table.outer_margin_right), dpi);
@@ -6065,7 +6073,6 @@ impl ParagraphFloatPlacement {
             || table_height < 0.0
             || !is_para_topbottom_float(&table.common)
             || !matches!(table.common.vert_align, VertAlign::Top)
-            || signed_hwpunit(table.common.vertical_offset) <= 0
             || lines
                 .first()
                 .is_none_or(|line| line.char_start != 0 || line.top != 0.0)
@@ -6088,6 +6095,17 @@ impl ParagraphFloatPlacement {
             .iter()
             .rev()
             .find(|line| line.char_start <= char_pos)?;
+        if signed_hwpunit(table.common.vertical_offset) <= 0 {
+            return computed_host_origin::stacked_frame(
+                para,
+                table,
+                char_pos,
+                text_origin,
+                lines,
+                table_height,
+                dpi,
+            );
+        }
         let offset_top =
             anchor.top + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
         if lines.iter().any(|line| line.top + line.height > offset_top) {
