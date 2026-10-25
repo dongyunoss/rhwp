@@ -58,10 +58,10 @@ paint는 표 뒤 커서를 호스트 줄 끝 203.9px로 잇고, 앞서 수용한
 
 `wrap_match::classify → wrap_flow의 prefix format → suffix_metrics →
 commit_wrap_absorption/commit_wrap_tail → layout_wrap_around_paras/부분 문단`을
-대조했다. 실제 활성 Square 띠와 저장 폭을 매칭한 뒤에도 prefix를 일반 format으로
-구성해 그 근거를 누락했다. 일반 본문이 이미 쓰는 known-square-band format 경로를
-prefix 측정에서도 사용한다. 올바른 기존 관계 검사는 유지하고 실제 보정 결과를
-다시 확인한다. 독립 Print·현재 전쪽 TSV와 확대 판독을 완료하기 전 새 픽스처나
+대조했다. 실제 활성 Square 띠를 prefix format에 전달하지 않는 것이 원인이라는
+가설로 known-square-band 경로를 실험했으나, Native244에서도 같은 실패가 남아
+이 가설을 기각하고 해당 실험 변경을 제거했다. 올바른 기존 관계 검사는 유지한다.
+독립 Print·현재 전쪽 TSV와 확대 판독을 완료하기 전 새 픽스처나
 회귀를 등록하지 않는다. 임시 편집본·Print·로그는 `margin-7158-3880/`와
 `mcp-7158-margin{750,1500}-3881/`에 있다.
 
@@ -145,3 +145,46 @@ Native244의16번 문단은696.7px다. 기존 검사는17번·29번의 **두 번
 `remaining-visual-3911/`, 대표 그림은 `rebase-8228-3899/titled-host-after/`에 있다.
 `rebase-host-flow-3910-result.json`은 정식 소스 재실행,
 `rebase-host-flow-3912-result.json`은 임시 문단 소속 교정 진단이다.
+
+## 원점 이동과 문자 경계의 출처 분리
+
+2026-10-26 확인 범위를 현재 보정 대상과 #8228 리베이스의 기능 보존으로 고정했다.
+다른 HWP 파일로 확대하지 않는다. 삭제된 sample16·편람 검사와 자동 수집 참조도
+다시 생성하지 않는다. 검증 worktree의 실제 파생 참조1,770개에서 삭제·누락 경로의
+참조는0건이며, 새 base에서 이미 삭제된 경로도 복원하지 않았다.
+
+#7158의 실제 원인은 `compute_render_normalized`의 인라인 상자 높이 투영 뒤에 있었다.
+앞 표의 바깥 여백이 커지면 후속 문단은 세로 원점만 이동하지만, 이 경로가 모든 줄에
+`TAG_IMPLEMENTATION_PROPERTY`를 붙이고 `publish_object_projection`을 호출했다.
+그 결과 문자 경계가 그대로인4줄을 `para_has_no_stored_line_segs`가 NO_LS로 판단해
+일반 전폭3줄로 다시 채웠다. 원점만 바뀐 문단의 공백 메트릭·문자 축도 재발행됐다.
+
+소비 경로는 `compute_render_normalized` → `recompose_stored_lines_in_frame`의
+`fresh_body` → `wrap_tail::suffix_metrics` → `wrap_absorption::prefix` →
+`commit_wrap_tail` → 부분 문단 paint다. 지역 재조판만 막은 Native245 진단은4줄을
+복원했지만, 합성 태그를 제외하는 prefix 끝점 계산에서 원점을 잃어 첫 줄 간격이
+5.47px로 줄었다. 이 지역 우회는 제거했다.
+
+최종 보정은 생산 지점에서 세로 위치만 이동하고 기존 줄 태그·문자 경계·가로 폭·공백
+메트릭을 유지한다. 세로 위치 snapshot만 무효화한다. 문자 편집의 무효화 계약,
+실제 새 줄 생성의 구현 태그, 셀의 개체 투영 계약은 그대로 소비한다. 문서별 수치나
+출력 좌표를 추가하지 않았다.
+
+Native246 빌드는251.50초·exit0이고, 원래 #7158 검사3개는 모두 PASS다.
+이동 앵커의4줄 소유·저장 줄 간격·후속 문단 이동과 기존13개 이어받기 문단을
+같은 소스로 검사했다. 테스트 함수·기대값·허용치는 바꾸지 않았다. Native245의
+2 PASS·1 FAIL과 구분한다. 로그는 ignored 경로의
+`logs/rebase-native246-build-3921.log`, `logs/object-projection-wrap-after-3922.log`다.
+전쪽 Native/fresh WASM·새 base 비교와 필수 최종 검증은 이어서 완료한다.
+
+동일 Native246의 현재 대상·리베이스 대조군12조건·26쪽은 전쪽90% 이상이며
+최저98.22185%를 유지했다. #7158의 기존 원본17쪽과 이미 만든 두 편집 대조군도
+별도로 측정했으나, 원본 최저56.45846%, +750 최저58.30695%, +1500
+최저58.13220%로 미달했다. 관계형3 PASS를 시각 통과로 해석하지 않는다.
+새 base의 같은 입력·Print 대조로 기존 문제와 이번 수정의 후퇴를 구분한다.
+사용자 지시에 따라 다른 HWP로 범위를 확대하지 않는다. 전쪽 원문은
+`remaining-visual-3925-result.json`과 해당 폴더의 Native TSV에 보존했다.
+
+동결한 원 PR45개도 재조회했으며 head 변경은0건이다. 기존 개별 리뷰8건 외37건은
+원문 주장·적용 커밋·현재 검사 소스를 연결한 임시 초안을 output에 준비했다.
+실제 최종 검증과 직접 판독 전에는 승인이나 개별 리뷰 완료로 판정하지 않는다.

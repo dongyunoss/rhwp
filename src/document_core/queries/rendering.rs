@@ -6225,22 +6225,19 @@ impl DocumentCore {
                         if shift_hu != 0 {
                             for line in &mut paragraph.line_segs {
                                 line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
-                                line.tag |=
-                                    crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
                             }
                         }
                         frame_changes.push(index);
                         shift_hu = shift_hu.saturating_add(old_height - new_height);
                     } else if shift_hu != 0 && !paragraph.line_segs.is_empty() {
-                        // Derived page-frame coordinates stay with the projected
-                        // geometry. Original document/save caches are untouched.
-                        let mut lines = paragraph.line_segs.clone();
-                        for line in &mut lines {
+                        // 원점 이동은 문자 경계·가로 폭·공백 메트릭을 다시 만든
+                        // 것이 아니다. 원본 태그와 문자 축을 보존해야 조판·흡수·
+                        // paint가 같은 외부 어울림 줄을 소비한다. 구현 태그를
+                        // 붙이면 NO_LS 재조판과 접두 줄 끝점 누락이 함께 발생한다.
+                        for line in &mut paragraph.line_segs {
                             line.vertical_pos = line.vertical_pos.saturating_sub(shift_hu);
-                            line.tag |=
-                                crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
                         }
-                        paragraph.publish_object_projection(lines);
+                        paragraph.source_line_seg_vertical_pos = None;
                         frame_changes.push(index);
                     }
                 }
