@@ -39,5 +39,6 @@ wrapper를 바로잡은 뒤 실제 2쪽 multiprocessing 실행의 exit 0을 확�
 [base 빌드](wasm/base-build.json)와 [후보 빌드](wasm/head-build.json)는 서로 다른 실제 producer를 기록한다.
 
 실제 Studio·Canvas·CanvasKit 소비는 [별도 기록](../consumer/README.md)에 있다.
-최종 전체 Rust는 11,573 PASS·45 skip이며, Native Skia 필수 검증은 진행 중이다.
+[최종 로컬 검증](../validation.json)은 전체 Rust 11,573 PASS·45 skip, Native Skia 라이브러리
+4,040 PASS·12 ignore 및 공식 누락 그림·직접 PDF·#8160 Native 검사 19 PASS다.
 CI·원격 제출·머지 완료로 표시하지 않는다.

@@ -29,6 +29,14 @@ Native 신원은 [별도 기록](native/proof.json)에 있다. 후속 커밋의 
 
 새 devel의 [Native·WASM 각각 35조건·2,041쪽 보존 및 관련 비시각 검사](preservation/README.md)는 통과했다.
 실제 Studio·Canvas·CanvasKit 소비와 최종 WMF 검사 본문의 수정 전/후 재현은
-[별도 증거](consumer/README.md)로 확인했다. 최종 전체 Rust는 11,573 PASS·45 skip이며 Native Skia 필수 검증은 진행 중이다.
+[별도 증거](consumer/README.md)로 확인했다.
+
+[최종 로컬 검증](validation.json)은 검사 원본 `949195dba653cdef8d8fa1506131f5db2f669e78`의
+14개 필수 단계 모두 exit 0을 기록한다. 전체 nextest는 11,573 PASS·45 skip이고 #8160 기본 86건도
+모두 포함한다. Native Skia 라이브러리는 4,040 PASS·12 ignore, 공식 누락 그림 2건·직접 PDF 출력
+14건·#8160 문단/이중 테두리 3건도 모두 통과했다. 마지막 3건 중 1건이 #8160 Native 전용 검사다.
+선택 실행에서 제외된 검사를 통과 수에 합산하지 않는다.
+
+후속 커밋은 검증 증거·문서만 추가했으며 producer의 런타임과 최종 검사 원본을 바꾸지 않았다.
 이 자료를 CI·원격 제출·머지 완료로 표시하지 않는다. 편람 HWP/HWPX 두 파일과 문서 정오표는
 이번 검토 범위에서 제외한다.

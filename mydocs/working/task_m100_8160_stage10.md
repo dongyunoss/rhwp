@@ -175,3 +175,22 @@
 - [전쪽 TSV·신원·실제 페이지 대조·직접 판독](../pr/assets/issue_8160/rebase-8231/preservation/README.md)을 고정한다.
   최종 전체 nextest는 exit 0·11,573 PASS·45 skip이며 #8160 기본 86건도 모두 포함한다.
   Native Skia Clippy는 통과했고 나머지 Native Skia 필수 검증을 계속한다.
+
+## 최종 로컬 필수 검증 완료
+
+- 최종 검사 원본은 `949195dba653cdef8d8fa1506131f5db2f669e78`이다. 보정 producer
+  `e01e7540fd4c8a67ce5d1d1e5802170973acb998`와의 런타임 동일성 및 이후 커밋이 검증 증거·문서만
+  추가했음을 확인했다. fmt·Native/WASM/workspace Clippy·workspace build·두 정책 검사와
+  전체 nextest·Native Skia 필수 검증, 총 14개 단계가 모두 exit 0이다.
+- 전체 nextest는 11,573 PASS·45 skip이며 #8160 기본 86건을 모두 실제 실행했다.
+  Native Skia 라이브러리 4개 target은 합계 4,040 PASS·12 ignore다.
+- Native Skia 공식 누락 그림 2건, 직접 PDF 출력 14건, #8160 문단·이중 테두리 3건을 각각
+  정식 suite wrapper로 실행해 모두 통과했다. #8160은 기본 86개와 Native 전용 1개, 총 87개다.
+  해당 Native suite의 3건을 모두 새로운 고유 검사로 합산하지 않는다.
+- [실제 명령·종료 코드·로그 해시·범위·전체 결과](../pr/assets/issue_8160/rebase-8231/validation.json)를 고정한다.
+  후속 문서 커밋 때문에 완료한 검증을 다시 실행하거나 producer 이름을 바꾸지 않았다.
+- 원격 `devel`은 검증 base `238de6de41a208648f4ade6b494fe433a81c1fce`와 같음을 다시 확인했다.
+  기존 PR #8188의 원격 head는 `021c486d1eaee17920a2b3e82ae896115b847669`이며 아직 갱신하지 않았다.
+  승인받은 뒤 같은 원격 작업 브랜치에 lease를 지정해 갱신하고 정확한 새 head CI를 확인한다.
+  본인 PR 검토 기록·오늘할일의 확정은 새 code head CI 성공 뒤에 진행하며 머지·이슈 종료는
+  기존 승인 대기를 유지한다.
