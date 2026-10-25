@@ -171,7 +171,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
         !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str())
             && !DEFERRED_BODY_OVERFLOW_FIXTURES.contains(&rel.as_str())
     });
-    acc.retain(|(path, _)| !is_exam_fixture(path));
+    acc.retain(|(path, _)| !is_deferred_fixture(path));
     acc.retain(|(path, _)| !retired_exam_baseline_scope::is_retired(path));
     acc.retain(|(path, _)| !deferred_visual_regression_scope::is_deferred(path, "body"));
     acc.sort_by(|a, b| a.1.cmp(&b.1));

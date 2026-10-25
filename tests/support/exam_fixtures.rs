@@ -17,3 +17,10 @@ pub fn is_exam_fixture(path: &std::path::Path) -> bool {
         || (name.starts_with("3-")
             && (name.contains("월_교육_통합_") || name.contains("월_실전_통합_")))
 }
+
+/// 별도 PR에서 처리하는 문서 계열까지 포함한 공통 회귀 제외 범위.
+pub fn is_deferred_fixture(path: &std::path::Path) -> bool {
+    is_exam_fixture(path)
+        || path.file_name().and_then(|name| name.to_str())
+            .is_some_and(|name| name.starts_with("hwp3-sample16"))
+}

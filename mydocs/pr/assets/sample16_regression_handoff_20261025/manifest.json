@@ -1,0 +1,1969 @@
+{
+  "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+  "reason": "2026-10-25 사용자가 hwp3-sample16 계열 회귀 검사를 모두 제거하고 별도 PR에서 처리하도록 지시함. devel 실패나 기대값 오류로 판정한 제거가 아님.",
+  "files": [
+    {
+      "path": "tests/explain_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/explain_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "a4cb210da16d83bc283e62cbd79816a8918c8376",
+      "sha256": "19e7b5ca22c31000e0e272b4508bcada8e64a12e4b058426491c7aef5261d28a",
+      "removedTests": [
+        "explain_encrypted_document_without_password_is_usage_error",
+        "explain_encrypted_document_wrong_password_exit_runtime",
+        "explain_encrypted_document_with_password_reports_encrypted_true"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "explain_json_envelope_contract",
+        "explain_reports_field_names",
+        "explain_reports_table_shape_and_merge",
+        "explain_document_without_tables_or_fields_is_empty_not_error",
+        "explain_reports_footnote_count",
+        "explain_reports_endnote_count",
+        "explain_default_output_is_human_summary",
+        "explain_missing_file_exit_runtime_silent_stdout",
+        "explain_usage_error_exit_two",
+        "explain_multiple_files_exit_usage",
+        "explain_encrypted_document_without_password_is_usage_error",
+        "explain_encrypted_document_wrong_password_exit_runtime",
+        "explain_encrypted_document_with_password_reports_encrypted_true"
+      ],
+      "retainedTests": [
+        "explain_json_envelope_contract",
+        "explain_reports_field_names",
+        "explain_reports_table_shape_and_merge",
+        "explain_document_without_tables_or_fields_is_empty_not_error",
+        "explain_reports_footnote_count",
+        "explain_reports_endnote_count",
+        "explain_default_output_is_human_summary",
+        "explain_missing_file_exit_runtime_silent_stdout",
+        "explain_usage_error_exit_two",
+        "explain_multiple_files_exit_usage"
+      ],
+      "currentSha256": "22bdcd3e30bd209eb08d0512bcaa155213d76da24a9332fdee73cbc7c0d2c18a"
+    },
+    {
+      "path": "tests/mcp_password_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/mcp_password_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "93935cd7093b35e5c92afdae8856febe4d45d361",
+      "sha256": "9fad1602ae0ff98f83591728a2f8b67a9f932efb126c40c66dd9e3b507fd9b3c",
+      "removedTests": [],
+      "removedArrayCases": 1,
+      "deleteFile": false,
+      "previousTests": [
+        "session_open_declares_a_write_only_password",
+        "protected_documents_open_in_a_password_session_without_echoing_password",
+        "stateless_document_tool_uses_password_stdin_without_cli_argument_echo",
+        "batch_tools_reject_password_to_keep_stdin_unambiguous"
+      ],
+      "retainedTests": [
+        "session_open_declares_a_write_only_password",
+        "protected_documents_open_in_a_password_session_without_echoing_password",
+        "stateless_document_tool_uses_password_stdin_without_cli_argument_echo",
+        "batch_tools_reject_password_to_keep_stdin_unambiguous"
+      ],
+      "currentSha256": "c0411c0421ae32d2b2143cf00a0663ae24eb1e76af3ed69d5d9b252fa723e6c5"
+    },
+    {
+      "path": "tests/hwp5_password_fixture.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/hwp5_password_fixture.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "f952d7f04aa0907c1d67366e7069fc0cbf3d57cd",
+      "sha256": "0cea6904e0a7409af846f04f21c78a657be8b3103f2817b5993236b5d5e3ebd6",
+      "removedTests": [
+        "actual_encryptversion4_fixture_requires_the_password_and_preserves_structure",
+        "cli_password_exit_contract_uses_the_actual_fixture"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "actual_encryptversion4_fixture_requires_the_password_and_preserves_structure",
+        "cli_password_exit_contract_uses_the_actual_fixture"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_cfb_check.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_cfb_check.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "bff13afde5040441a04c4bde5fa966b034e11ac7",
+      "sha256": "9f5b0b5be0119ffb6019356e23a91970ddff1f086bf4bae206f5544237140d3d",
+      "removedTests": [
+        "check_cfb_metadata"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "check_cfb_metadata"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/issue_1116.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_1116.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "d99594d4044fce8d5c688c76984902cb054b867c",
+      "sha256": "fcafc89746b6830e9ac68857323d171d852b11b436669e13d68ed7ba343fb481",
+      "removedTests": [
+        "sample16_hwp5_toc_leaders_stop_before_page_numbers",
+        "sample16_hwp5_toc_page_numbers_share_right_edge",
+        "sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width",
+        "sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping",
+        "sample16_hwp3_page3_latin_font_matches_legacy_hancom_mapping",
+        "sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "sample16_hwp5_toc_leaders_stop_before_page_numbers",
+        "sample16_hwp5_toc_page_numbers_share_right_edge",
+        "sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width",
+        "sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping",
+        "sample16_hwp3_page3_latin_font_matches_legacy_hancom_mapping",
+        "sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/issue_3693_structure_clause_context.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_3693_structure_clause_context.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "8064d3083e4e3fc68fc0462973f13158b758d719",
+      "sha256": "ed109e0ba45c427b096e92095e7dd2e6876b1b572f0aa153138f91793a755494",
+      "removedTests": [
+        "real_agreement_keeps_items_under_article"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "real_agreement_keeps_items_under_article",
+        "real_work_plan_date_is_not_a_clause_item",
+        "real_handbook_toc_numbers_are_not_clause_items"
+      ],
+      "retainedTests": [
+        "real_work_plan_date_is_not_a_clause_item",
+        "real_handbook_toc_numbers_are_not_clause_items"
+      ],
+      "currentSha256": "18a3129d3b3913d3fc14a138c59e6602b3c6d57233d8a5e7cdcbd4ff01ad0f32"
+    },
+    {
+      "path": "tests/issue_1008_gradient.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_1008_gradient.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "bb0b2255d2a7fb91fe96017c959801fa48ed321a",
+      "sha256": "93b3bcbf9b990c1378b5fb26bd3d0bde627a4e6d0b0a3fa38da3cad8881a89b6",
+      "removedTests": [
+        "hwp3_sample16_business_box_has_gradient",
+        "hwpx_sample16_business_box_gradient_colors_materialized",
+        "hwp3_sample16_font_name_mapped_to_hwp5_convention"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "hwp3_sample16_business_box_has_gradient",
+        "hwpx_sample16_business_box_gradient_colors_materialized",
+        "hwp3_sample16_font_name_mapped_to_hwp5_convention"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_normal_vs_abnormal.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_normal_vs_abnormal.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "9d293de914f2f7c39f5d15e7657a02497ed4eb53",
+      "sha256": "53a3949f1a73cc3fa7dea30270969d9ca6f78cf21b6ef0987b280a8682384b46",
+      "removedTests": [
+        "diag_2010_vs_2018_paragraph_diff",
+        "diag_2024_vs_2022_paragraph_diff"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_2010_vs_2018_paragraph_diff",
+        "diag_2024_vs_2022_paragraph_diff"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_2022.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_2022.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "d63e1c8fa85af195c28aae7bddea4b92b6a48a7d",
+      "sha256": "d717d1f46b5380a35e7c566953d8c1dd4677cafb10e2f0297135422e46e87495",
+      "removedTests": [
+        "diag_2022_vs_others_metadata",
+        "diag_2022_vs_2010_paragraph_diff"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_2022_vs_others_metadata",
+        "diag_2022_vs_2010_paragraph_diff"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_2024_reverse.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_2024_reverse.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "6516aaa07309f4952646f377513c1633a0effa33",
+      "sha256": "dfb30920465c23341c9502f2d2a8c355bf01e2356e66086b403e4878f929c2cc",
+      "removedTests": [
+        "diag_2024_vs_variant_line_segs"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_2024_vs_variant_line_segs"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/issue_1105.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_1105.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "3e4ea0d8da3625a1dcc81720a1a1cc21d480bd77",
+      "sha256": "18e9854849e328fcd5f27c68d26189d0770ca3d37ef0926fea26ac95c57f5c08",
+      "removedTests": [
+        "task1105_hwp3_sample16_page23_square_bullet_matches_hancom",
+        "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+        "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+        "task1105_sample16_hwp5_2018_business_selection_break_matches_hancom",
+        "task1105_sample16_hwp5_2018_server_requirements_page_matches_hancom",
+        "task1105_sample16_hwp5_2024_business_selection_break_matches_hancom",
+        "task1105_sample16_hwp5_2024_server_requirements_page_matches_hancom",
+        "task1105_sample16_hwp5_2024_clean_linesegs_reflow_is_noop",
+        "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "task1105_hwp3_sample16_page23_square_bullet_matches_hancom",
+        "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+        "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+        "task1105_sample16_hwp5_2018_business_selection_break_matches_hancom",
+        "task1105_sample16_hwp5_2018_server_requirements_page_matches_hancom",
+        "task1105_sample16_hwp5_2024_business_selection_break_matches_hancom",
+        "task1105_sample16_hwp5_2024_server_requirements_page_matches_hancom",
+        "task1105_sample16_hwp5_2024_clean_linesegs_reflow_is_noop",
+        "task1105_k_water_rfp_2024_page_count_matches_hancom_pdf",
+        "task1105_k_water_rfp_2024_first_rowspan_table_keeps_line_reset_split",
+        "task1105_k_water_rfp_2024_cover_hides_first_page_footer",
+        "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom"
+      ],
+      "retainedTests": [
+        "task1105_k_water_rfp_2024_page_count_matches_hancom_pdf",
+        "task1105_k_water_rfp_2024_first_rowspan_table_keeps_line_reset_split",
+        "task1105_k_water_rfp_2024_cover_hides_first_page_footer"
+      ],
+      "currentSha256": "20109d7fc963d006fa689900b3e7482405367510235c5371c2426556790d6d49"
+    },
+    {
+      "path": "tests/issue_3915_verify_axes_both_reported.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_3915_verify_axes_both_reported.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "d9a565f25a8de99c43c408a9a6750931a6e2cf60",
+      "sha256": "495a46e62d6b95cc3fe16681243fe5d2058faafd9f0bcca55e06d9a8fa536891",
+      "removedTests": [
+        "page_and_ir_axes_report_their_actual_results"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "page_and_ir_axes_report_their_actual_results",
+        "single_axis_and_clean_document_are_unchanged"
+      ],
+      "retainedTests": [
+        "single_axis_and_clean_document_are_unchanged"
+      ],
+      "currentSha256": "892012fe8e7e75056a776d5a3e6ed35a88e4a8f291f7a13d27ff32e3ad3ad8a7"
+    },
+    {
+      "path": "tests/issue_3744_structure_clause_confidence.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_3744_structure_clause_confidence.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "2eab74e8c222e902f4c1cf694c79b89ba54e9076",
+      "sha256": "4c1ca2b6e5d46a721b772486f797914757b509077a7dd3532ef17bae02b5ba3b",
+      "removedTests": [
+        "agreement_keeps_normal_ho_under_article"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "stale_anchor_does_not_promote_oracle_sql_steps",
+        "compound_number_boundary_expires_only_the_current_weak_anchor",
+        "compound_number_boundary_recovers_a_continuing_ho_sequence",
+        "revision_date_inside_article_remains_body_text",
+        "direct_mok_under_section_is_a_heading",
+        "real_handbook_keeps_representative_direct_mok_headings",
+        "real_market_report_keeps_matching_direct_mok_heading",
+        "toc_mok_with_page_tail_remains_body_text",
+        "toc_mok_with_dotted_leader_remains_body_text",
+        "direct_mok_shape_gate_rejects_indented_or_nested_paragraphs",
+        "agreement_keeps_normal_ho_under_article"
+      ],
+      "retainedTests": [
+        "stale_anchor_does_not_promote_oracle_sql_steps",
+        "compound_number_boundary_expires_only_the_current_weak_anchor",
+        "compound_number_boundary_recovers_a_continuing_ho_sequence",
+        "revision_date_inside_article_remains_body_text",
+        "direct_mok_under_section_is_a_heading",
+        "real_handbook_keeps_representative_direct_mok_headings",
+        "real_market_report_keeps_matching_direct_mok_heading",
+        "toc_mok_with_page_tail_remains_body_text",
+        "toc_mok_with_dotted_leader_remains_body_text",
+        "direct_mok_shape_gate_rejects_indented_or_nested_paragraphs"
+      ],
+      "currentSha256": "0d9ab23a13ac7986fff302d742339a6e4a5528fd92f03d47cc1a1da3701a85f6"
+    },
+    {
+      "path": "tests/diag_1042_used_breakdown.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_used_breakdown.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "80c75d01434f01c525384fa988c62f3a88c411eb",
+      "sha256": "5923de579647a6719610ae4f3c0620fed5eafd96017fd647f11a730d4129e424",
+      "removedTests": [
+        "diag_p6_used_breakdown"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_p6_used_breakdown"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_raw_binary.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_raw_binary.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "b0c780bc07bda0a7df2e662e41ef21071e3368d7",
+      "sha256": "566ce7799d32e0817939bce9299d16d203d47f2ccb2ff7b920aa619d8c67e3b0",
+      "removedTests": [
+        "diag_5files_raw_record_distribution"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_5files_raw_record_distribution"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_vpos_distribution.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_vpos_distribution.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "2557e7255f6dbc01760b04bab4b5f989f351a2aa",
+      "sha256": "77b06daef77e9dd80f786205eb6353383862dac1ee51af48d3422277c4d235c3",
+      "removedTests": [
+        "paragraph_vpos_distribution"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "paragraph_vpos_distribution"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cli_exit_codes_diagnostic_commands.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cli_exit_codes_diagnostic_commands.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "ad1d27231790c26a4381d8e9909d582073ba0f0d",
+      "sha256": "080de6708c4cf79c9d2c2f9aa5f22feaf6f9394b89175624cdea0fbd128e68a7",
+      "removedTests": [
+        "dump_records_preserves_hwp5_password_exit_and_output_contract"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "missing_arguments_report_usage_error",
+        "unreadable_input_reports_runtime_failure",
+        "dump_page_diagnostics_out_of_range_report_usage_error",
+        "dump_extents_rejects_invalid_numeric_options",
+        "build_from_ingest_missing_output_reports_usage_error",
+        "successful_diagnostic_commands_return_zero",
+        "dump_records_move_baseline_keeps_ignored_trailing_arguments",
+        "dump_records_rejects_non_cfb_hwp3_without_stdout",
+        "dump_records_preserves_hwp5_password_exit_and_output_contract",
+        "render_diff_separates_runtime_failure_from_usage_error",
+        "test_field_reports_contract_codes_instead_of_panicking",
+        "gen_pua_refuses_to_overwrite_an_existing_file",
+        "hwp5_probes_report_contract_exit_codes",
+        "remaining_diagnostics_report_usage_error_without_arguments",
+        "hwp5_probes_report_runtime_failure_after_arity_is_satisfied",
+        "remaining_diagnostics_report_runtime_failure_on_unreadable_input",
+        "bench_batch_unreadable_directory_reports_runtime_failure"
+      ],
+      "retainedTests": [
+        "missing_arguments_report_usage_error",
+        "unreadable_input_reports_runtime_failure",
+        "dump_page_diagnostics_out_of_range_report_usage_error",
+        "dump_extents_rejects_invalid_numeric_options",
+        "build_from_ingest_missing_output_reports_usage_error",
+        "successful_diagnostic_commands_return_zero",
+        "dump_records_move_baseline_keeps_ignored_trailing_arguments",
+        "dump_records_rejects_non_cfb_hwp3_without_stdout",
+        "render_diff_separates_runtime_failure_from_usage_error",
+        "test_field_reports_contract_codes_instead_of_panicking",
+        "gen_pua_refuses_to_overwrite_an_existing_file",
+        "hwp5_probes_report_contract_exit_codes",
+        "remaining_diagnostics_report_usage_error_without_arguments",
+        "hwp5_probes_report_runtime_failure_after_arity_is_satisfied",
+        "remaining_diagnostics_report_runtime_failure_on_unreadable_input",
+        "bench_batch_unreadable_directory_reports_runtime_failure"
+      ],
+      "currentSha256": "b0f3cd65f17951b2d6d897ca7bd5ee3fb7db6e3071f3465307659688f12a64fa"
+    },
+    {
+      "path": "tests/diag_1042_version_check.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_version_check.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "f914c29601a75fd392dbc9f5f8809d33ba4ac752",
+      "sha256": "b851c405cefee011124725d7d5904930280b03e13ac0e973df3bd49dcd3325cb",
+      "removedTests": [],
+      "removedArrayCases": 5,
+      "deleteFile": false,
+      "previousTests": [
+        "check_sample16_versions"
+      ],
+      "retainedTests": [
+        "check_remaining_sample_versions"
+      ],
+      "currentSha256": "b28b1d5b65bab96fc125d4e90be6c8acde88eb46002ae6e0d7fef98dd4683e8d"
+    },
+    {
+      "path": "tests/diag_1042_hwp3_vs_hwp5_paragraph.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_hwp3_vs_hwp5_paragraph.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "f8a54a7dbd6c99cf63a911165c2aa2e17ee5fcb5",
+      "sha256": "bc79405ded8bdf5703b73bcd41d9c538baebf8d7651cde91f7b2fef308ff3e8f",
+      "removedTests": [
+        "diag_paragraph_metrics_compare"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_paragraph_metrics_compare"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/issue_929.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_929.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "ec14f9468fe576f3e26a176f34aaf14e8acc085c",
+      "sha256": "50c9e1be6aa27745bdab8c4afbf03262b5de1bd4773619632c7210fa6449c314",
+      "removedTests": [],
+      "removedArrayCases": 1,
+      "deleteFile": false,
+      "previousTests": [
+        "issue_929_hwp3_sample19_parses_ok",
+        "issue_929_existing_hwp3_samples_no_regression"
+      ],
+      "retainedTests": [
+        "issue_929_hwp3_sample19_parses_ok",
+        "issue_929_existing_hwp3_samples_no_regression"
+      ],
+      "currentSha256": "b3b7b23bca905fa0ce6c8fe978b23178b87dac1394ef47eb0327d7377eff8c9e"
+    },
+    {
+      "path": "tests/issue_3739_hwpx_same_char_shape_boundary.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_3739_hwpx_same_char_shape_boundary.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "37bbe0614148afdfc0ea0d932fea0ab7707bfa46",
+      "sha256": "1e218d5df3649f87e12be89271df8ed6ef0d9b48437c07ee930f40d17345cb2b",
+      "removedTests": [],
+      "removedArrayCases": 1,
+      "deleteFile": false,
+      "previousTests": [
+        "export_hwpx_verify_preserves_same_char_shape_id_boundary",
+        "issue_3739_export_hwpx_verify_accepts_generated_field_command_parameters",
+        "issue_3739_export_hwpx_accepts_password_stdin_for_hwp3_hwp5_and_hwpx",
+        "issue_3739_hwp3_password_export_hwpx_preserves_ir_and_pages"
+      ],
+      "retainedTests": [
+        "export_hwpx_verify_preserves_same_char_shape_id_boundary",
+        "issue_3739_export_hwpx_verify_accepts_generated_field_command_parameters",
+        "issue_3739_export_hwpx_accepts_password_stdin_for_hwp3_hwp5_and_hwpx",
+        "issue_3739_hwp3_password_export_hwpx_preserves_ir_and_pages"
+      ],
+      "currentSha256": "33eaaaff514261abd47a9fa0acdfe79ead19656f38ba074f43e1f050289def2d"
+    },
+    {
+      "path": "tests/diag_1042_hwp_summary.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_hwp_summary.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "58d4dc93707e86d951bf5d022ff60f110caa8ba0",
+      "sha256": "85ae930311c508b38b2f3fa868a9b98ac4173edaf7fb4e4b917f378036beb927",
+      "removedTests": [
+        "extract_sample16_summary_strings"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "extract_sample16_summary_strings"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "src/document_core/queries/rendering.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/src/document_core/queries/rendering.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "7b619951ff624d28e9cd8f7fdefed6c5b4869630",
+      "sha256": "f491a1580c7cfde776931aab210305afbf14ec51e75a775a98f09492610107d9",
+      "removedTests": [],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "issue3137_focused_partial_repaint_rejects_unsafe_justify_and_extra_spacing",
+        "issue3137_focused_partial_repaint_rejects_extended_ink_styles",
+        "markdown_table_paragraph_preserves_equation_script",
+        "issue_2308_document_core_remains_send",
+        "issue_2308_stable_compat_projection_reuses_arc_identity",
+        "issue_2308_edit_paths_use_explicit_revision_keys",
+        "print_profile_suppresses_interactive_output_options_without_mutating_state",
+        "embedded_font_loading_enforces_per_page_cumulative_limit",
+        "embedded_font_loading_rejects_oversized_lazy_data_without_unbounded_load",
+        "task1612_hwp_used_height_is_per_page_not_cumulative",
+        "build_page_render_tree_exposes_public_page_tree",
+        "normal_page_layer_export_selects_verified_embedded_bitmap_glyph_sidecar",
+        "hwpx_font_native_fixture_reaches_public_layer_export",
+        "task1280_v2_control_layout_exposes_plane_z_order_stable_index",
+        "render_page_png_native_uses_document_core_skia_layer_path",
+        "get_bin_data_returns_zero_based_content_slice",
+        "master_page_selection_uses_final_carried_page_number_parity",
+        "missing_even_master_page_inherits_previous_even_master",
+        "single_base_master_page_applies_when_matching_parity_is_absent",
+        "page_border_fill_api_updates_basis_spacing_and_border",
+        "page_border_fill_reference_sources_keep_paper_and_page_basis",
+        "inject_png_phys_inserts_after_ihdr",
+        "png_crc32_known_value",
+        "vlm_target_from_str_all_variants",
+        "vlm_target_constraints_are_sane"
+      ],
+      "retainedTests": [
+        "issue3137_focused_partial_repaint_rejects_unsafe_justify_and_extra_spacing",
+        "issue3137_focused_partial_repaint_rejects_extended_ink_styles",
+        "markdown_table_paragraph_preserves_equation_script",
+        "issue_2308_document_core_remains_send",
+        "issue_2308_stable_compat_projection_reuses_arc_identity",
+        "issue_2308_edit_paths_use_explicit_revision_keys",
+        "print_profile_suppresses_interactive_output_options_without_mutating_state",
+        "embedded_font_loading_enforces_per_page_cumulative_limit",
+        "embedded_font_loading_rejects_oversized_lazy_data_without_unbounded_load",
+        "task1612_hwp_used_height_is_per_page_not_cumulative",
+        "build_page_render_tree_exposes_public_page_tree",
+        "normal_page_layer_export_selects_verified_embedded_bitmap_glyph_sidecar",
+        "hwpx_font_native_fixture_reaches_public_layer_export",
+        "task1280_v2_control_layout_exposes_plane_z_order_stable_index",
+        "render_page_png_native_uses_document_core_skia_layer_path",
+        "get_bin_data_returns_zero_based_content_slice",
+        "master_page_selection_uses_final_carried_page_number_parity",
+        "missing_even_master_page_inherits_previous_even_master",
+        "single_base_master_page_applies_when_matching_parity_is_absent",
+        "page_border_fill_api_updates_basis_spacing_and_border",
+        "page_border_fill_reference_sources_keep_paper_and_page_basis",
+        "inject_png_phys_inserts_after_ihdr",
+        "png_crc32_known_value",
+        "vlm_target_from_str_all_variants",
+        "vlm_target_constraints_are_sane"
+      ],
+      "currentSha256": "a560781438b5d972fc4b9840de7d0f809c4f2a69621444c6365df8ba884815e6"
+    },
+    {
+      "path": "tests/issue_hwp3_bookmark_native.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_hwp3_bookmark_native.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "228f7c6ab4d74e7ddc043ca3df38da3e30967f22",
+      "sha256": "69fe57470590f21b36de32e27820f9d80d322c2cd1238ffa8c7b51901a0d7b3f",
+      "removedTests": [
+        "hwp3_bookmarks_use_the_common_control",
+        "bookmarks_survive_saving_to_hwp5"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "hwp3_bookmarks_use_the_common_control",
+        "bookmarks_survive_saving_to_hwp5"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "src/parser/hwp3/mod.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/src/parser/hwp3/mod.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "d3ac54f590c68b00342c920912985926f59bccba",
+      "sha256": "a8141b723054e56fd5d04fbf1645c722b543bfcfeca8d0831ba852c7ef0ef6f0",
+      "removedTests": [
+        "test_hwp3_sample16_load_alignment"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "open_decompression_hwp3_body_rejects_output_past_limit",
+        "corrupt_hwp3_line_spacing_does_not_overflow_panic",
+        "percent_line_spacing_saturates_corrupt_extremes",
+        "issue_3676_no_endnote_section_gets_one_initial_column_def",
+        "read_hwp3_padding_scaled_preserves_negative_values_without_overflow",
+        "read_hwp3_margin_scaled_preserves_large_negative_values_without_overflow_panic",
+        "read_hwp3_padding_scaled_preserves_large_negative_values_without_overflow_panic",
+        "test_convert_para_shape_wires_border_connection_into_attr1_bit28",
+        "hwp3_para_spacing_uses_password_contract_only_when_requested",
+        "hwp3_square_wrap_line_box_keeps_paragraph_insets_and_default_gap",
+        "hwp3_negative_indent_normalizes_to_the_first_line_margin",
+        "issue_hwp3_endnote_suffix_char_wires_footnote_bracket_flag",
+        "hwp3_maps_footnote_separator_length",
+        "test_hwp3_para_shape_border_fill_maps_border_flag_to_no_lines",
+        "test_hwp3_para_shape_border_fill_shade_has_fill_without_lines",
+        "test_hwp3_para_shape_border_fill_absent_returns_none",
+        "hwp3_maps_compressed_flag",
+        "task3054_hwp3_endnote_separator_below_is_the_hancom_default",
+        "test_alloc_record_buf_overflow_returns_err",
+        "test_alloc_record_buf_within_cap_ok",
+        "test_check_record_count_overflow_returns_err",
+        "test_hwp3_field_code_ch5_produces_field_control",
+        "test_hwp3_field_code_ch5_pushes_exactly_one_control",
+        "test_hwp3_bookmark_ch6_pushes_exactly_one_control",
+        "test_hwp3_ch15_hidden_comment_pushes_control",
+        "test_hwp3_page_border_fill_is_always_page_basis",
+        "issue_hwp3_hide_empty_line_wires_doc_info_flag",
+        "task2772_hwp3_endnote_separator_above_is_the_hancom_default",
+        "task1692_hwp3_color_index_maps_to_color_ref",
+        "hwp3_table_cell_shade_uses_the_declared_palette_color",
+        "hwp3_char_shade_composes_palette_with_ratio",
+        "convert_char_shape_maps_zero_ratio_to_no_shade_sentinel",
+        "char_shape_default_shade_is_the_no_color_sentinel",
+        "task2984_hwp3_picture_image_effect_reads_brightness_contrast_effect",
+        "task1692_convert_char_shape_preserves_text_color",
+        "convert_char_shape_maps_superscript_and_subscript",
+        "hwp3_maps_encrypted_flag",
+        "hwp3_maps_page_and_footnote_start_numbers",
+        "convert_char_shape_maps_font_blank",
+        "task2958_convert_char_shape_preserves_shade_color",
+        "test_hwp3_sample16_load_alignment",
+        "task2765_hwp3_toc_mark_does_not_emit_hyphen",
+        "test_parse_sample_dump",
+        "test_hwp3_save_as_hwp5_roundtrip",
+        "task2844_hwp3_date_format_ctrl_does_not_swallow_following_text",
+        "hwp3_mail_merge_field_name_starts_at_offset_zero",
+        "hwp3_char_overlap_extracts_overlap_chars",
+        "hwp3_floating_paragraph_reference_uses_password_contract_only_when_requested"
+      ],
+      "retainedTests": [
+        "open_decompression_hwp3_body_rejects_output_past_limit",
+        "corrupt_hwp3_line_spacing_does_not_overflow_panic",
+        "percent_line_spacing_saturates_corrupt_extremes",
+        "issue_3676_no_endnote_section_gets_one_initial_column_def",
+        "read_hwp3_padding_scaled_preserves_negative_values_without_overflow",
+        "read_hwp3_margin_scaled_preserves_large_negative_values_without_overflow_panic",
+        "read_hwp3_padding_scaled_preserves_large_negative_values_without_overflow_panic",
+        "test_convert_para_shape_wires_border_connection_into_attr1_bit28",
+        "hwp3_para_spacing_uses_password_contract_only_when_requested",
+        "hwp3_square_wrap_line_box_keeps_paragraph_insets_and_default_gap",
+        "hwp3_negative_indent_normalizes_to_the_first_line_margin",
+        "issue_hwp3_endnote_suffix_char_wires_footnote_bracket_flag",
+        "hwp3_maps_footnote_separator_length",
+        "test_hwp3_para_shape_border_fill_maps_border_flag_to_no_lines",
+        "test_hwp3_para_shape_border_fill_shade_has_fill_without_lines",
+        "test_hwp3_para_shape_border_fill_absent_returns_none",
+        "hwp3_maps_compressed_flag",
+        "task3054_hwp3_endnote_separator_below_is_the_hancom_default",
+        "test_alloc_record_buf_overflow_returns_err",
+        "test_alloc_record_buf_within_cap_ok",
+        "test_check_record_count_overflow_returns_err",
+        "test_hwp3_field_code_ch5_produces_field_control",
+        "test_hwp3_field_code_ch5_pushes_exactly_one_control",
+        "test_hwp3_bookmark_ch6_pushes_exactly_one_control",
+        "test_hwp3_ch15_hidden_comment_pushes_control",
+        "test_hwp3_page_border_fill_is_always_page_basis",
+        "issue_hwp3_hide_empty_line_wires_doc_info_flag",
+        "task2772_hwp3_endnote_separator_above_is_the_hancom_default",
+        "task1692_hwp3_color_index_maps_to_color_ref",
+        "hwp3_table_cell_shade_uses_the_declared_palette_color",
+        "hwp3_char_shade_composes_palette_with_ratio",
+        "convert_char_shape_maps_zero_ratio_to_no_shade_sentinel",
+        "char_shape_default_shade_is_the_no_color_sentinel",
+        "task2984_hwp3_picture_image_effect_reads_brightness_contrast_effect",
+        "task1692_convert_char_shape_preserves_text_color",
+        "convert_char_shape_maps_superscript_and_subscript",
+        "hwp3_maps_encrypted_flag",
+        "hwp3_maps_page_and_footnote_start_numbers",
+        "convert_char_shape_maps_font_blank",
+        "task2958_convert_char_shape_preserves_shade_color",
+        "task2765_hwp3_toc_mark_does_not_emit_hyphen",
+        "test_parse_sample_dump",
+        "test_hwp3_save_as_hwp5_roundtrip",
+        "task2844_hwp3_date_format_ctrl_does_not_swallow_following_text",
+        "hwp3_mail_merge_field_name_starts_at_offset_zero",
+        "hwp3_char_overlap_extracts_overlap_chars",
+        "hwp3_floating_paragraph_reference_uses_password_contract_only_when_requested"
+      ],
+      "currentSha256": "be063e03e92e9e800dcc91d498e4da013d4ba316c3bfe5e64b7ecd9a92b5388f"
+    },
+    {
+      "path": "tests/issue_3695_structure_auto_policy.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_3695_structure_auto_policy.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "6ea2d094c8abae2a94a06d1220b63415c0d5cff5",
+      "sha256": "b6e000e9701e70e1c11d67cad41e23119682a75a509e17a4da5954663bb501d2",
+      "removedTests": [
+        "real_clause_document_with_ambiguous_number_evidence_remains_clause"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "auto_primary_clause_marker_outweighs_ambiguous_number",
+        "auto_article_title_starting_with_particle_syllable_remains_clause",
+        "explicit_modes_remain_available_for_mixed_evidence",
+        "auto_explicit_outline_is_authoritative",
+        "auto_single_number_only_document_remains_outline",
+        "auto_outline_cross_reference_does_not_become_clause_evidence",
+        "auto_toc_article_page_tail_does_not_become_clause_evidence",
+        "auto_pure_clause_document_remains_clause",
+        "real_explicit_outline_document_remains_outline",
+        "real_number_only_document_remains_outline",
+        "real_single_number_document_remains_outline",
+        "real_market_report_with_section_markers_remains_outline",
+        "real_clause_document_with_ambiguous_number_evidence_remains_clause"
+      ],
+      "retainedTests": [
+        "auto_primary_clause_marker_outweighs_ambiguous_number",
+        "auto_article_title_starting_with_particle_syllable_remains_clause",
+        "explicit_modes_remain_available_for_mixed_evidence",
+        "auto_explicit_outline_is_authoritative",
+        "auto_single_number_only_document_remains_outline",
+        "auto_outline_cross_reference_does_not_become_clause_evidence",
+        "auto_toc_article_page_tail_does_not_become_clause_evidence",
+        "auto_pure_clause_document_remains_clause",
+        "real_explicit_outline_document_remains_outline",
+        "real_number_only_document_remains_outline",
+        "real_single_number_document_remains_outline",
+        "real_market_report_with_section_markers_remains_outline"
+      ],
+      "currentSha256": "a7ace6e327b17a25c8df946a820647c1924787db82d90cf5f2dfdd903ab56060"
+    },
+    {
+      "path": "tests/issue_2158_hwpx_vpos_reset_preserve.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_2158_hwpx_vpos_reset_preserve.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "904215268e5e1a41b62171308cb198f90ad0fd51",
+      "sha256": "1a7bfb77c1991b5b146534d9c7691c7bdca4a44df87e08886a823999e91813bd",
+      "removedTests": [
+        "hwp3_sample16_hwpx_matches_hwp5_and_hangul"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+        "onsaemiro_hwpx_page_count_matches_hangul"
+      ],
+      "retainedTests": [
+        "onsaemiro_hwpx_page_count_matches_hangul"
+      ],
+      "currentSha256": "fa942838b3b983a57163f2dfb4f53e3cacec3211858b5e8151b7f664a74d5f7a"
+    },
+    {
+      "path": "tests/diag_1042_variant_check.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_variant_check.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "72c4aaed2bf2db99184d4acdcc0b8375016262d3",
+      "sha256": "a8e3a54f0fac9b0c5713452b17ec7e31a97aefdc97062f13a487f8d939219c9b",
+      "removedTests": [],
+      "removedArrayCases": 2,
+      "deleteFile": false,
+      "previousTests": [
+        "check_variant_flags"
+      ],
+      "retainedTests": [
+        "check_variant_flags"
+      ],
+      "currentSha256": "0cc0c325619702b7b1c40a68260c17f3a96907b988dcda25f1daa19aabfa6746"
+    },
+    {
+      "path": "tests/cases/issue_6060_fullwidth_cjk_quote.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_6060_fullwidth_cjk_quote.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "a6cd74d47b2414083152c152aa9036c870c6615b",
+      "sha256": "0bee3a96108984fbc59fefbb30b7f74c8c17170d0efc857474e17f7596b15425",
+      "removedTests": [
+        "issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/suites/issue_regression_pilot/issue_1035_alignment.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "c0d3f819d495f76a27b06e8ed18aa578b980a334",
+      "sha256": "e222552a5f987ef27fca6458ec6a1d0387154bfb59c236a2244bdca57d177a0a",
+      "removedTests": [
+        "hwp3_sample16_hwp5_2018_page_count_64",
+        "hwp3_sample16_hwp5_2024_page_count_64",
+        "hwp3_sample16_hwp5_2022_page_count_64"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "hwp3_sample16_hwp5_2018_page_count_64",
+        "hwp3_sample16_hwp5_2024_page_count_64",
+        "hwp3_sample16_hwp5_2022_page_count_64"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/stored_shape_host_physical_frame.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/stored_shape_host_physical_frame.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "102eb1a8be4da89a942a3e3118123f7d044a65a7",
+      "sha256": "55ba2f823048073c60d794a39b1b5de6fca6ffa03de2c0e2d105ee49cb71987b",
+      "removedTests": [
+        "hwp_stored_shape_keeps_following_table_on_its_heading_page",
+        "hwpx_stored_shape_keeps_following_table_on_its_heading_page",
+        "hwp_completed_page_protects_print_heading_and_table_boundaries",
+        "hwpx_completed_page_protects_print_heading_and_table_boundaries"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "hwp_stored_shape_keeps_following_table_on_its_heading_page",
+        "hwpx_stored_shape_keeps_following_table_on_its_heading_page",
+        "hwp_completed_page_protects_print_heading_and_table_boundaries",
+        "hwpx_completed_page_protects_print_heading_and_table_boundaries"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_trailing.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_trailing.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "a5be32ccb17e5717b060a162d9732b91ab042d24",
+      "sha256": "c7dbb866e70d3e03a06ade30b7666fe3967eda9ddf685697bd988bc39954df48",
+      "removedTests": [
+        "diag_trailing_line_segs"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_trailing_line_segs"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/diag_1042_pi162_attr1.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/diag_1042_pi162_attr1.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "2cab67d4378ba08f5416ec659897e04defe347fd",
+      "sha256": "1028c14daae97f6f3313d97d4685e16c3a35d0f6a0f9f5460a486118a8cfce89",
+      "removedTests": [
+        "diag_pi162_attr1"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "diag_pi162_attr1"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/issue_4680_hwp3_style_pool_dedup.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_4680_hwp3_style_pool_dedup.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "3abc4188e263188de29abfeb3a83bc8d80b53627",
+      "sha256": "24c0c596f84d14155c7c3e084cedca20d0aa7c02b9e2285a74a642c175f744f1",
+      "removedTests": [],
+      "removedArrayCases": 2,
+      "deleteFile": false,
+      "previousTests": [
+        "hwp3_char_shape_ids_map_one_to_one_onto_values",
+        "hwp3_para_shape_ids_map_one_to_one_onto_values",
+        "hwp3_cell_border_fill_ids_map_one_to_one_onto_values",
+        "distinct_styles_are_not_merged_away",
+        "equality_used_for_pooling_is_total_on_hwp3_styles"
+      ],
+      "retainedTests": [
+        "hwp3_char_shape_ids_map_one_to_one_onto_values",
+        "hwp3_para_shape_ids_map_one_to_one_onto_values",
+        "hwp3_cell_border_fill_ids_map_one_to_one_onto_values",
+        "distinct_styles_are_not_merged_away",
+        "equality_used_for_pooling_is_total_on_hwp3_styles"
+      ],
+      "currentSha256": "04e0b55e36c1793231050613e01191362e5fee0db63e4445e967429339bb2a90"
+    },
+    {
+      "path": "tests/cases/issue_6865_wmf_monochrome_mask_rop.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_6865_wmf_monochrome_mask_rop.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "54052379088dfa4d9beadca6c325b82b823802b5",
+      "sha256": "55fec03d0afc550b1e767fa7d197dd4aede7796cf254ff6bb0731387924a739c",
+      "removedTests": [
+        "sample16_pink_panels_preserve_their_original_brush_and_contained_mask"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "issue_6865_complete_mask_selects_brush_or_original_destination",
+        "issue_6865_multibit_pattern_blit_is_still_painted",
+        "issue_6865_lone_monochrome_pattern_blit_is_unaffected",
+        "issue_6865_halftone_padding_keeps_each_operation_region",
+        "issue_6865_halftone_two_unit_edge_difference_is_preserved",
+        "issue_6865_non_halftone_one_unit_difference_is_preserved",
+        "issue_6865_one_unit_final_xor_difference_is_preserved",
+        "issue_6865_incomplete_idiom_keeps_middle_draw",
+        "issue_6865_different_middle_region_is_not_a_mask_idiom",
+        "issue_6865_different_final_region_keeps_middle_draw",
+        "issue_6865_different_final_brush_keeps_middle_draw",
+        "issue_6865_intervening_draw_keeps_middle_draw",
+        "issue_6865_clip_change_keeps_middle_draw",
+        "issue_6865_colored_one_bit_pattern_is_preserved",
+        "issue_6865_reversed_palette_reverses_brush_and_destination_selection",
+        "contained_non_checker_mask_keeps_the_original_brush_as_its_only_paint",
+        "sample16_pink_panels_preserve_their_original_brush_and_contained_mask",
+        "print_device_mask_reduction_preserves_source_bit_coverage"
+      ],
+      "retainedTests": [
+        "issue_6865_complete_mask_selects_brush_or_original_destination",
+        "issue_6865_multibit_pattern_blit_is_still_painted",
+        "issue_6865_lone_monochrome_pattern_blit_is_unaffected",
+        "issue_6865_halftone_padding_keeps_each_operation_region",
+        "issue_6865_halftone_two_unit_edge_difference_is_preserved",
+        "issue_6865_non_halftone_one_unit_difference_is_preserved",
+        "issue_6865_one_unit_final_xor_difference_is_preserved",
+        "issue_6865_incomplete_idiom_keeps_middle_draw",
+        "issue_6865_different_middle_region_is_not_a_mask_idiom",
+        "issue_6865_different_final_region_keeps_middle_draw",
+        "issue_6865_different_final_brush_keeps_middle_draw",
+        "issue_6865_intervening_draw_keeps_middle_draw",
+        "issue_6865_clip_change_keeps_middle_draw",
+        "issue_6865_colored_one_bit_pattern_is_preserved",
+        "issue_6865_reversed_palette_reverses_brush_and_destination_selection",
+        "contained_non_checker_mask_keeps_the_original_brush_as_its_only_paint",
+        "print_device_mask_reduction_preserves_source_bit_coverage"
+      ],
+      "currentSha256": "bf13b71efcb7846f098508c378e441c5ee0413f591f3067c74eabc79d0b2399c"
+    },
+    {
+      "path": "tests/cases/verified_sample16_equation_reading_order.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/verified_sample16_equation_reading_order.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "2f4df77a7b7c5fff4002840d0df65659c3159063",
+      "sha256": "5f707257c31c1c7f3b6350221d7ad63407795b593b60718e51f5f3ca7d46f114",
+      "removedTests": [
+        "hwp3_price_equations_preserve_source_flow_and_reading_order",
+        "hwpx_price_equations_preserve_source_flow_and_reading_order"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "hwp3_price_equations_preserve_source_flow_and_reading_order",
+        "hwpx_price_equations_preserve_source_flow_and_reading_order"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/verified_sample16_2024_print_boundaries.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/verified_sample16_2024_print_boundaries.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "7c593c4579c3bcacdb14715b2460ff05176ad094",
+      "sha256": "476d26dda3540ba8e66c6992c040dfb5fb556edcc8ff5af92ea0b5501379d2b1",
+      "removedTests": [
+        "sample16_2024_completed_page_keeps_print_headings_and_owned_content_order",
+        "sample16_2024_completed_page_keeps_bcp_tail_and_successor_at_print_origins",
+        "sample16_2024_page_tail_preserves_owned_paragraphs_and_empty_line_without_overlap",
+        "sample16_2024_empty_tail_keeps_its_editor_caret_owner",
+        "completed_page_six_keeps_the_evaluation_table_and_its_source_neighbors_in_the_print_frame"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "sample16_2024_completed_page_keeps_print_headings_and_owned_content_order",
+        "sample16_2024_completed_page_keeps_bcp_tail_and_successor_at_print_origins",
+        "sample16_2024_page_tail_preserves_owned_paragraphs_and_empty_line_without_overlap",
+        "sample16_2024_empty_tail_keeps_its_editor_caret_owner",
+        "completed_page_six_keeps_the_evaluation_table_and_its_source_neighbors_in_the_print_frame"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/issue_7642_page_border_center_relations.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_7642_page_border_center_relations.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "bba67dbaeebc12913f77712e0aa715d874ecfd1b",
+      "sha256": "b0bc19a02d6cd81ef16cb5c48186a84609fbc5eee74fa8192a6a0fec4011e103",
+      "removedTests": [
+        "page_border_centers_preserve_source_gaps_and_match_the_public_page_information"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "page_border_centers_preserve_source_gaps_and_match_the_public_page_information"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/issue_3518_hwp3_sample16_page_roundtrip.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_3518_hwp3_sample16_page_roundtrip.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "df878461682a85b6851155f54066c92aed7e6e46",
+      "sha256": "455e4701b6000f6abd8207b267ae43dcb43eea33ca25e8ce7da3d30b839ac66c",
+      "removedTests": [
+        "hwp3_sample16_export_hwpx_preserves_page_count",
+        "hwp3_sample16_heading_keeps_stored_lineseg_on_hwpx_roundtrip"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "hwp3_sample16_export_hwpx_preserves_page_count",
+        "hwp3_sample16_heading_keeps_stored_lineseg_on_hwpx_roundtrip"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/issue_1086.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_1086.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "5fa7e4e47a497cadb7c60dd2e2b25ba382f394dd",
+      "sha256": "ec950aaf61ce1411da84548eddf32784424e64924389b2d93eed31dd1e3a111a",
+      "removedTests": [
+        "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "task1086_k_water_rfp_page_count_matches_hancom_pdf",
+        "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office"
+      ],
+      "retainedTests": [
+        "task1086_k_water_rfp_page_count_matches_hancom_pdf"
+      ],
+      "currentSha256": "33d241f63836557a59c1f7ecf7d6905190aa2d6b54f249f751527db1f464308c"
+    },
+    {
+      "path": "tests/cases/issue_7445_hwp3_source_frame_ownership.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_7445_hwp3_source_frame_ownership.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "aad3c4051cde1b830e91772e6b75e107750374a7",
+      "sha256": "e096068f2410c400671673ddd9734a47f0e86790768d7b2ce46d67572decffe9",
+      "removedTests": [
+        "empty_opening_line_and_following_tables_keep_the_same_physical_page",
+        "completed_san_table_marker_and_following_text_keep_independent_print_origins",
+        "inline_equations_keep_source_size_baseline_and_single_line_ownership"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "empty_opening_line_and_following_tables_keep_the_same_physical_page",
+        "completed_san_table_marker_and_following_text_keep_independent_print_origins",
+        "inline_equations_keep_source_size_baseline_and_single_line_ownership"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/digest_v2_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/digest_v2_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "999ff94511092bad3e2d5d5d6e0b47dc05145bce",
+      "sha256": "ce2c016da9a12c45ca3f66d382248c20b557176ba5fa77b6cde7212e35e14e9c",
+      "removedTests": [
+        "digest_sections_envelope_and_addresses",
+        "digest_sections_max_chars_caps_each_excerpt"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "digest_sections_envelope_and_addresses",
+        "digest_sections_max_chars_caps_each_excerpt",
+        "digest_sections_page_fallback_when_no_structure",
+        "digest_pages_range_and_continuation",
+        "digest_pages_tail_clamps_and_finishes",
+        "digest_pages_invalid_syntax_exit_usage",
+        "digest_pages_out_of_range_exit_runtime",
+        "digest_sections_and_pages_are_mutually_exclusive",
+        "digest_default_mode_unchanged_v1",
+        "digest_v2_options_registered_in_capabilities",
+        "digest_v2_options_registered_in_mcp_schema"
+      ],
+      "retainedTests": [
+        "digest_sections_page_fallback_when_no_structure",
+        "digest_pages_range_and_continuation",
+        "digest_pages_tail_clamps_and_finishes",
+        "digest_pages_invalid_syntax_exit_usage",
+        "digest_pages_out_of_range_exit_runtime",
+        "digest_sections_and_pages_are_mutually_exclusive",
+        "digest_default_mode_unchanged_v1",
+        "digest_v2_options_registered_in_capabilities",
+        "digest_v2_options_registered_in_mcp_schema"
+      ],
+      "currentSha256": "e6f53c1ee4415a39535c327edc2386609f5196a0cfcebaa16b0475217040db57"
+    },
+    {
+      "path": "tests/issue_4155_hwp3_char_shade_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_4155_hwp3_char_shade_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "294b5a2abae0e244293380dfb5a23ae2bab64e36",
+      "sha256": "db2497cded3ee8e39f2c0e018ed81f26402960c3736ea83d57b37f2e98a2efe8",
+      "removedTests": [],
+      "removedArrayCases": 2,
+      "deleteFile": false,
+      "previousTests": [
+        "hwp3_convert_never_emits_black_char_shade",
+        "hwp3_shaded_samples_match_hancom_gray",
+        "shade_values_are_a_subset_of_hancom_own_conversion",
+        "public_document_core_export_also_avoids_black_char_shade"
+      ],
+      "retainedTests": [
+        "hwp3_convert_never_emits_black_char_shade",
+        "hwp3_shaded_samples_match_hancom_gray",
+        "shade_values_are_a_subset_of_hancom_own_conversion",
+        "public_document_core_export_also_avoids_black_char_shade"
+      ],
+      "currentSha256": "465914505791c5baa76e618f5a668f73e44bd8e238abce49192a8f1501889c96"
+    },
+    {
+      "path": "tests/cases/issue_7642_sample16_2022_paragraph_relations.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_7642_sample16_2022_paragraph_relations.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "5538aafc8669fde8773230f5a0899d2360c1b62d",
+      "sha256": "af6c127f3d7505743ba91f4c545e997af804b8cc772e76b0476d9031e30e0b0d",
+      "removedTests": [
+        "sample16_2022_bcp_tail_keeps_print_line_ownership_and_source_successor",
+        "sample16_2022_continuation_table_clears_predecessor_and_preserves_owned_rows",
+        "sample16_2022_compound_page_border_keeps_both_print_coverage_bands"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "sample16_2022_bcp_tail_keeps_print_line_ownership_and_source_successor",
+        "sample16_2022_continuation_table_clears_predecessor_and_preserves_owned_rows",
+        "sample16_2022_compound_page_border_keeps_both_print_coverage_bands"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/armor_cli_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/armor_cli_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "bc649c589538acbe2912ae1683c487c184fc81a3",
+      "sha256": "aefa3c7b18c26a7109068d66835f87426074271423ea2464020051b0816b3d9f",
+      "removedTests": [],
+      "removedArrayCases": 1,
+      "deleteFile": false,
+      "previousTests": [
+        "real_hwp5_and_hwpx_emit_complete_read_only_envelopes",
+        "encrypted_hwp3_hwp5_and_hwpx_open_through_password_stdin",
+        "encrypted_hwpx_preserves_missing_and_wrong_password_failures",
+        "human_fence_warns_and_renders_document_controls_safely"
+      ],
+      "retainedTests": [
+        "real_hwp5_and_hwpx_emit_complete_read_only_envelopes",
+        "encrypted_hwp3_hwp5_and_hwpx_open_through_password_stdin",
+        "encrypted_hwpx_preserves_missing_and_wrong_password_failures",
+        "human_fence_warns_and_renders_document_controls_safely"
+      ],
+      "currentSha256": "b6b7864c46fa67a25a6693ad4d423c58d4d0e9aabb02ef1a28636a7af55e4a0f"
+    },
+    {
+      "path": "tests/cases/issue_4367_hwp3_convert_fourth_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_4367_hwp3_convert_fourth_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "41ca03f7513feb36abf790a955e8d2e41b6699be",
+      "sha256": "36e5179119d38790ccd3629a74271db102867227773d704dbefa9a3d01f368d2",
+      "removedTests": [
+        "textbox_rect_storage_fields_are_materialized",
+        "equation_eqedit_contract_is_normalized"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "textbox_rect_storage_fields_are_materialized",
+        "equation_eqedit_contract_is_normalized",
+        "hwp3_polygon_points_are_loaded",
+        "hwp3_empty_textbox_shapes_are_not_emitted",
+        "hwp3_table_cells_have_at_least_one_paragraph",
+        "hwp3_table_cells_cover_full_grid",
+        "hwp3_table_cells_do_not_overlap",
+        "plain_rect_flip_gate_excludes_textbox_bit",
+        "hwp3_table_cells_are_row_major_ordered",
+        "hwp3_curve_points_are_loaded"
+      ],
+      "retainedTests": [
+        "hwp3_polygon_points_are_loaded",
+        "hwp3_empty_textbox_shapes_are_not_emitted",
+        "hwp3_table_cells_have_at_least_one_paragraph",
+        "hwp3_table_cells_cover_full_grid",
+        "hwp3_table_cells_do_not_overlap",
+        "plain_rect_flip_gate_excludes_textbox_bit",
+        "hwp3_table_cells_are_row_major_ordered",
+        "hwp3_curve_points_are_loaded"
+      ],
+      "currentSha256": "694d7f2c620a4dfeef733d036b5450101fdcf0b3e06887e57ad590806f1a6486"
+    },
+    {
+      "path": "tests/cases/info_hancom_save_version_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/info_hancom_save_version_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "2e05a579ddcd3dc10800a023daae9cf2c38e84c3",
+      "sha256": "08321341b026f0042769dbe5498f1188db255a8aaa6268f31dc14d341d85d3ce",
+      "removedTests": [
+        "info_does_not_guess_a_saving_product_without_supported_metadata"
+      ],
+      "removedArrayCases": 3,
+      "deleteFile": false,
+      "previousTests": [
+        "info_distinguishes_hancom_office_save_editions_for_hwp5_and_hwpx",
+        "info_does_not_guess_a_saving_product_without_supported_metadata",
+        "hwpx_version_xml_requires_a_parseable_app_version"
+      ],
+      "retainedTests": [
+        "info_distinguishes_hancom_office_save_editions_for_hwp5_and_hwpx",
+        "hwpx_version_xml_requires_a_parseable_app_version"
+      ],
+      "currentSha256": "fb5acb33c76750701ca47107047d976a09f59625592729d2147097ae1372d398"
+    },
+    {
+      "path": "tests/issue_1139_inline_picture_duplicate.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_1139_inline_picture_duplicate.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "8b174cdc8c96aecad39c0cd4de6a938902233837",
+      "sha256": "ee1868357978b0494f0b8b58f52f6bfd7f096103025aa7d811a805c99e4fe904",
+      "removedTests": [
+        "issue_1139_sample16_page3_page_number_stays_below_bottom_border"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "issue_1209_test_image_topandbottom_picture_reserves_text_flow",
+        "issue_1293_equation_control_is_not_always_treat_as_char",
+        "issue_1139_sample16_page3_page_number_stays_below_bottom_border",
+        "issue_1139_stage31_insert_endnote_on_blank_document_renders_marker",
+        "issue_1139_stage31_insert_endnote_enters_editable_note_body",
+        "issue_1139_stage31_endnote_shape_prefix_renders_in_existing_endnote",
+        "issue_1139_stage31_endnote_shape_api_updates_section_shape"
+      ],
+      "retainedTests": [
+        "issue_1209_test_image_topandbottom_picture_reserves_text_flow",
+        "issue_1293_equation_control_is_not_always_treat_as_char",
+        "issue_1139_stage31_insert_endnote_on_blank_document_renders_marker",
+        "issue_1139_stage31_insert_endnote_enters_editable_note_body",
+        "issue_1139_stage31_endnote_shape_prefix_renders_in_existing_endnote",
+        "issue_1139_stage31_endnote_shape_api_updates_section_shape"
+      ],
+      "currentSha256": "c53e487168c2486de310eff3dfbcb81885d96576eafefb53bbb316803202a2a4"
+    },
+    {
+      "path": "tests/cases/issue_7642_stored_column_margin_owner_relations.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_7642_stored_column_margin_owner_relations.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "b907d862dd026a9561863437237c7b994a65dadd",
+      "sha256": "74667066d5fff0c3ae9b7330f130054b4e8e09d103632ecce2870432163a681f",
+      "removedTests": [
+        "stored_plain_column_margin_preserves_successor_table_axis",
+        "stored_bookmark_column_margin_preserves_table_and_following_body_axis"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "stored_plain_column_margin_preserves_successor_table_axis",
+        "stored_bookmark_column_margin_preserves_table_and_following_body_axis"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/issue_4680_hwp3_paragraph_style_reference.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_4680_hwp3_paragraph_style_reference.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "ef3b0f346c323080023e7b9ef8b86559a6679a5d",
+      "sha256": "8a4e447b654c24abfca4ef720f3b06f29eac0dc62e321619e891953b4559d803",
+      "removedTests": [
+        "hwp3_paragraphs_reference_more_than_the_default_style"
+      ],
+      "removedArrayCases": 1,
+      "deleteFile": false,
+      "previousTests": [
+        "hwp3_paragraph_style_ids_match_the_hangul_hwp5_conversion",
+        "hwp3_paragraphs_reference_more_than_the_default_style",
+        "hwp3_paragraph_style_ids_are_within_the_style_pool"
+      ],
+      "retainedTests": [
+        "hwp3_paragraph_style_ids_match_the_hangul_hwp5_conversion",
+        "hwp3_paragraph_style_ids_are_within_the_style_pool"
+      ],
+      "currentSha256": "650569b4454ce6b11713229469c1394e081d361f15e12ac641a6c77de421cf53"
+    },
+    {
+      "path": "tests/cases/body_overflow_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/body_overflow_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "a71c5bc35c2fc782a2e2de849a13c845af0c8e41",
+      "sha256": "f28179e27262c5009829993eec22f0bec360bc28e9c812e2c80c6f00c5e0c111",
+      "removedTests": [],
+      "removedArrayCases": 3,
+      "deleteFile": false,
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "2ea0abd6a125b755910b0697717d35c6e5b2cac861212be4a90985ab92ad6c07"
+    },
+    {
+      "path": "tests/cases/agent_doc_triage_cli_ladder.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/agent_doc_triage_cli_ladder.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "e46465b724bd6d32fa01ec6937d7099f58320fe2",
+      "sha256": "0400258c172f5b145b8bc6000cb5f817f792d3e87e0ab31681fc40faec98b36b",
+      "removedTests": [
+        "export_structure_envelope_matches_fixture_keys"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "info_envelope_matches_fixture_keys",
+        "explain_envelope_matches_fixture_keys_on_fields_and_tables",
+        "export_structure_envelope_matches_fixture_keys",
+        "digest_envelope_matches_fixture_keys_and_is_one_line",
+        "search_zero_matches_is_success_not_error",
+        "extract_data_envelope_matches_fixture_keys",
+        "tiny_document_allows_export_text_json",
+        "usage_errors_stay_silent_on_stdout"
+      ],
+      "retainedTests": [
+        "info_envelope_matches_fixture_keys",
+        "explain_envelope_matches_fixture_keys_on_fields_and_tables",
+        "digest_envelope_matches_fixture_keys_and_is_one_line",
+        "search_zero_matches_is_success_not_error",
+        "extract_data_envelope_matches_fixture_keys",
+        "tiny_document_allows_export_text_json",
+        "usage_errors_stay_silent_on_stdout"
+      ],
+      "currentSha256": "5a6c1aab645594547e2d7f77dda3e2591201196b997cce85bc03bbbfe199c4a4"
+    },
+    {
+      "path": "tests/cases/verified_hwp3_original_print_boundaries.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/verified_hwp3_original_print_boundaries.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "71e7069062d439f0857da9bc9f3d3951cf2542f6",
+      "sha256": "82ab195662fe450569aa395545bfd0637eae68f44d2d9f100d010bcc4c92c8ef",
+      "removedTests": [
+        "original_hwp3_heading_keeps_authored_space_and_extended_control_axis",
+        "original_hwp3_completed_page_keeps_print_headings_and_owned_reading_order",
+        "original_hwp3_completed_page_keeps_dotted_business_frame_and_its_text",
+        "original_hwp3_toc_preserves_owned_page_numbers_and_relative_right_alignment"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": true,
+      "previousTests": [
+        "original_hwp3_heading_keeps_authored_space_and_extended_control_axis",
+        "original_hwp3_completed_page_keeps_print_headings_and_owned_reading_order",
+        "original_hwp3_completed_page_keeps_dotted_business_frame_and_its_text",
+        "original_hwp3_toc_preserves_owned_page_numbers_and_relative_right_alignment"
+      ],
+      "retainedTests": [],
+      "currentSha256": null
+    },
+    {
+      "path": "tests/cases/security_hwp3_paragraph_depth.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/security_hwp3_paragraph_depth.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "45af7a393bb54e47b0183dfa2156781627d04db9",
+      "sha256": "6cc4f12754179b746a8f538759dcfb29aacc6eb6105e027d6c63d719dba73d69",
+      "removedTests": [],
+      "removedArrayCases": 1,
+      "deleteFile": false,
+      "previousTests": [
+        "depth_policy_rejects_hidden_header_and_note_recursion",
+        "hostile_depth_is_an_error_on_the_default_stack",
+        "depth_budget_counts_active_lists_and_restores_after_failure",
+        "normal_saved_hwp3_documents_still_open"
+      ],
+      "retainedTests": [
+        "depth_policy_rejects_hidden_header_and_note_recursion",
+        "hostile_depth_is_an_error_on_the_default_stack",
+        "depth_budget_counts_active_lists_and_restores_after_failure",
+        "normal_saved_hwp3_documents_still_open"
+      ],
+      "currentSha256": "41a635dc49487b9f112e451f32235bfc97809cebb5104fff30c30be414366a89"
+    },
+    {
+      "path": "tests/cases/issue_7445_original_font_program_ownership.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_7445_original_font_program_ownership.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "ddef18e1e0c4007db6ced06c5daf6c6d470ba8cb",
+      "sha256": "4a9751d62820d894d40df163082b52fad67427b6aef20c90ba3f08ac8c96f286",
+      "removedTests": [
+        "sample16_inline_object_fragments_keep_each_leader_with_its_source_tab",
+        "sample16_ordinary_tab_keeps_its_single_source_owner",
+        "sample16_hft_bold_heading_preserves_content_and_independent_completed_page_origin"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "gulim_missing_point_publishes_the_measured_supplier_to_paint",
+        "measured_original_glyph_survives_legacy_type1_display_fallback",
+        "explicit_true_type_program_keeps_its_own_slash_advance",
+        "onepoint_uses_its_symbol_program_before_glyph_resolution",
+        "explicit_onepoint_provider_uses_its_own_advance",
+        "hyphenation_point_selects_the_symbol_slot_before_glyph_fallback",
+        "worklife_symbol_point_preserves_source_and_independent_completed_page_position",
+        "original_hci_plus_keeps_its_independent_type3_advance",
+        "regular_hci_comparison_signs_keep_the_independent_program_and_ttf_boundary",
+        "asset_caption_comparison_program_reaches_the_following_source_text",
+        "worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin",
+        "worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print",
+        "declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries",
+        "sample16_inline_object_fragments_keep_each_leader_with_its_source_tab",
+        "sample16_ordinary_tab_keeps_its_single_source_owner",
+        "sample16_hft_bold_heading_preserves_content_and_independent_completed_page_origin",
+        "hft_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership",
+        "original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries",
+        "declared_hft_gothic_keeps_its_monospace_ascii_punctuation",
+        "pii_declared_ttf_angles_keep_the_document_program_advance",
+        "pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends"
+      ],
+      "retainedTests": [
+        "gulim_missing_point_publishes_the_measured_supplier_to_paint",
+        "measured_original_glyph_survives_legacy_type1_display_fallback",
+        "explicit_true_type_program_keeps_its_own_slash_advance",
+        "onepoint_uses_its_symbol_program_before_glyph_resolution",
+        "explicit_onepoint_provider_uses_its_own_advance",
+        "hyphenation_point_selects_the_symbol_slot_before_glyph_fallback",
+        "worklife_symbol_point_preserves_source_and_independent_completed_page_position",
+        "original_hci_plus_keeps_its_independent_type3_advance",
+        "regular_hci_comparison_signs_keep_the_independent_program_and_ttf_boundary",
+        "asset_caption_comparison_program_reaches_the_following_source_text",
+        "worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin",
+        "worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print",
+        "declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries",
+        "hft_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership",
+        "original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries",
+        "declared_hft_gothic_keeps_its_monospace_ascii_punctuation",
+        "pii_declared_ttf_angles_keep_the_document_program_advance",
+        "pii_declared_ttf_closing_angles_keep_source_order_and_independent_ends"
+      ],
+      "currentSha256": "340997c9f5e90a5ffdb91c3782092e7dfaa0c967d2927eb0de7d5961d749abd4"
+    },
+    {
+      "path": "tests/cases/issue_5696_hwp3_lineseg_subtracts_binding_margin.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_5696_hwp3_lineseg_subtracts_binding_margin.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "71548b4fe708ee334fe6654da429bc0485bba0b5",
+      "sha256": "29704fc3340ddf9ea67c64988b8e20befac86255438b94f8c2d86716041479bb",
+      "removedTests": [
+        "sample16_dominant_width_is_untouched_by_the_gutter_subtraction"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "sample19_synthesized_width_matches_hancom_conversion",
+        "sample16_dominant_width_is_untouched_by_the_gutter_subtraction"
+      ],
+      "retainedTests": [
+        "sample19_synthesized_width_matches_hancom_conversion"
+      ],
+      "currentSha256": "53d5dcb6fa35ff0f87c946e2c08edbc2333923b6a7e001c6a98a611230af7439"
+    },
+    {
+      "path": "tests/cases/issue_4961_font_decision_trace.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_4961_font_decision_trace.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "42d83b2b654e8064127bf06f483ca538f7e15ae1",
+      "sha256": "09105918bc27d904f01fcdd5694dc33f139eceeb90b4e9e53c64efe2cddae408",
+      "removedTests": [
+        "issue4967_combined_evidence_keeps_unowned_legacy_geometry_unmodelled"
+      ],
+      "removedArrayCases": 0,
+      "deleteFile": false,
+      "previousTests": [
+        "font_trace_profiles_follow_source_ownership_and_preserve_font_decisions",
+        "stage4_public_trace_limit_and_unsupported_backends_fail_closed",
+        "public_fixture_trace_is_bounded_and_deterministic",
+        "issue4967_combined_evidence_uses_one_tree_and_preserves_trace",
+        "issue4967_combined_evidence_keeps_unowned_legacy_geometry_unmodelled",
+        "issue4967_combined_evidence_reports_actual_cache_key_rejection",
+        "standalone_native_trace_requires_a_prepared_renderer_snapshot",
+        "prepared_native_renderer_snapshot_preserves_custom_font_inventory",
+        "trace_options_fail_closed",
+        "logical_tac_runs_join_exact_scalar_source_in_body_and_nested_cells",
+        "synthetic_overlap_cannot_claim_repeated_source_and_real_pua_keeps_source",
+        "note_markers_are_transparent_to_body_and_nested_source_glyph_addresses",
+        "coanchored_logical_copy_preserves_endpoint_inclusion_and_source_in_both_formats"
+      ],
+      "retainedTests": [
+        "font_trace_profiles_follow_source_ownership_and_preserve_font_decisions",
+        "stage4_public_trace_limit_and_unsupported_backends_fail_closed",
+        "public_fixture_trace_is_bounded_and_deterministic",
+        "issue4967_combined_evidence_uses_one_tree_and_preserves_trace",
+        "issue4967_combined_evidence_reports_actual_cache_key_rejection",
+        "standalone_native_trace_requires_a_prepared_renderer_snapshot",
+        "prepared_native_renderer_snapshot_preserves_custom_font_inventory",
+        "trace_options_fail_closed",
+        "logical_tac_runs_join_exact_scalar_source_in_body_and_nested_cells",
+        "synthetic_overlap_cannot_claim_repeated_source_and_real_pua_keeps_source",
+        "note_markers_are_transparent_to_body_and_nested_source_glyph_addresses",
+        "coanchored_logical_copy_preserves_endpoint_inclusion_and_source_in_both_formats"
+      ],
+      "currentSha256": "289815610b16ab6b0e99bd71f158f5383de79772c20111587581e91d378fa17f"
+    },
+    {
+      "path": "src/serializer/hwpx/char_shape_tables/same_id_corpus.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/src/serializer/hwpx/char_shape_tables/same_id_corpus.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "28fea6e9eaa13b2aa4ac5de8b44d6055f9cba47a",
+      "sha256": "6d546ff7fe746dfd2e5967c0c9e7dbd8bbd9b9d5166241d1687b74d4d886ced9",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "b33ea68003fc4af7d15e07fe6e4d633ed15773932cc0ab19316d7abaa58ea745"
+    },
+    {
+      "path": "tests/fixtures/render_page_samples.tsv",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/render_page_samples.tsv.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "de628af6d392255b9421e244fa277509b0d9b006",
+      "sha256": "581d4016d987f23a22cc0439add5efb1178ebcba2b05c006adbd247824079edd",
+      "removedRows": 2,
+      "currentSha256": "e51bf23425e08696d4672efa892305ec77f23c038fb152fd0ded1e4873c71c9b"
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/off_canvas_baseline.tsv.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "eb8767f4dcc7e895ad7630c3f4f692273dbe0ee6",
+      "sha256": "718a94c9c1eafe118ec841578bf854441950bc2767360b7913f2dc4bb0b08b74",
+      "removedRows": 2,
+      "currentSha256": "16779bd93922558c3786f5e9ae9f90cb87b4df5e903cf2d7adc8542784ddf0ff"
+    },
+    {
+      "path": "tests/fixtures/ir_field_sweep_baseline.tsv",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/ir_field_sweep_baseline.tsv.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "615aded15f62dd6747875417760f2edb175a5ce0",
+      "sha256": "5228f9d7b30ec9c7e57ccdf89eefb053ef426523973ed3a323a399ab3c0ecef9",
+      "removedRows": 15,
+      "currentSha256": "d81616eecbc5e8ab0e1d5ce2d7d21f37e10b7b230dc4dda9172ba35f984f0e9e"
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/oracle_page_count_baseline.tsv.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "ad8bfad37f601a2ecaa8843bf2b119903b5ce3e2",
+      "sha256": "126d6a3e8cc65ddf6973a7c3dcc012b4a94888c378ee8b74238472b738ed7377",
+      "removedRows": 7,
+      "currentSha256": "ef4fdd64e843af9233b3e94342f08dc761afcff2eb58f90d09a629a669f96705"
+    },
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/body_overflow_baseline.tsv.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "fcae459b23720038712cbd3a89d9d348b1c1df15",
+      "sha256": "021df36bd4c2fd88f93af481c491a6a236ac60d8a9207118dd274cd58680ccce",
+      "removedRows": 5,
+      "currentSha256": "eab070d5436904bc882afe0b703c1ede2bbbd5f83ae393971147e9b63344cdd9"
+    },
+    {
+      "path": "tests/fixtures/text_overlap_baseline.tsv",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/text_overlap_baseline.tsv.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "1401b5fe5f963db6d3b63906f5981789beec0089",
+      "sha256": "8db5cb318968116503c539c72e9fe3e90e108de12bf0d9cdde7213676565e5de",
+      "removedRows": 1,
+      "currentSha256": "804629e0b069f894abedff061fb224c316bb934bad41ce26caf6fc2afb0c259c"
+    },
+    {
+      "path": "tests/fixtures/char_shapes/corpus_same_id_para_char_shapes.jsonl",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/char_shapes/corpus_same_id_para_char_shapes.jsonl.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "de81e089bdec69d82227a1b649cb893318f2b8bf",
+      "sha256": "81b933298591ba1cfe14f933c3d6fab93b58eb7b09b088dea80d02209b32853c",
+      "currentSha256": "eac70306907460419ecd25e99ad662978f4ae4e86d476ea44b4877fcc7e56372"
+    },
+    {
+      "path": "tests/support/exam_fixtures.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/support/exam_fixtures.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "19bbb1aad018e8b3e5e4a40210ff3c5edc983f3c",
+      "sha256": "07fef28dc5b303b963d783832d25b65c32b5e7fe92fbf65a2f0786d5bc9c61c6",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "79253d907913f7cac0de4ecaa93dc0a9c773e3e499ffb0e69653aa051c46952f"
+    },
+    {
+      "path": "tests/ir_field_sweep_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/ir_field_sweep_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "737f78fc19a7fb7536eda95ad6ec63e24cb0f367",
+      "sha256": "021891cde97ef27f8953418b908ad9b30c29b0471104e7aa54cc8652a4872aee",
+      "previousTests": [
+        "ir_field_sweep_does_not_regress",
+        "baseline_samples_exist",
+        "legacy_capped_baseline_schema_is_rejected",
+        "later_path_regression_is_not_offset_by_earlier_improvement"
+      ],
+      "retainedTests": [
+        "ir_field_sweep_does_not_regress",
+        "baseline_samples_exist",
+        "legacy_capped_baseline_schema_is_rejected",
+        "later_path_regression_is_not_offset_by_earlier_improvement"
+      ],
+      "currentSha256": "8079948cf6bf1d48243710d8430bca6cbb32fc042138839f2ddf90f7c28d3209"
+    },
+    {
+      "path": "tests/convert_verify_corpus_ratchet.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/convert_verify_corpus_ratchet.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "9b6ced2f41af42c2e3d933a1487d6837075dea74",
+      "sha256": "043be5c4dd2d83d91dc1924eea2214724a57297a66fca7c762b699794e0c15ba",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "b2886a3604674055a1bcfb738e9fb132bdfaf85c864b8a0a2a59e8a4a79939de"
+    },
+    {
+      "path": "tests/visual_roundtrip_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/visual_roundtrip_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "6ffb7188d5f1b899b9f6a7b5789c8a7032ef3363",
+      "sha256": "77afc72482ec56f4a2556aec3a3f671418ffab6a9b3093f270abf378f47190c8",
+      "previousTests": [
+        "visual_baseline_all_samples",
+        "visual_xfail_entries_still_fail",
+        "visual_grade_lists_are_consistent"
+      ],
+      "retainedTests": [
+        "visual_baseline_all_samples",
+        "visual_xfail_entries_still_fail",
+        "visual_grade_lists_are_consistent"
+      ],
+      "currentSha256": "3794de42108eb88776897b4acbf5dd5f5971b3c4a26be8687ca5aec5f0e0aef3"
+    },
+    {
+      "path": "tests/issue_1402_enum_token_whitelist.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_1402_enum_token_whitelist.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "6793ae53c00e4f368649d80ef10c661cceae9685",
+      "sha256": "c69bc432177c6076b26f5dd7ddc0b46584fe1c00c1347acd962686f3349b9cd4",
+      "previousTests": [
+        "serializer_enum_tokens_within_whitelist",
+        "numtype_figure_regression_guard"
+      ],
+      "retainedTests": [
+        "serializer_enum_tokens_within_whitelist",
+        "numtype_figure_regression_guard"
+      ],
+      "currentSha256": "bcda884742d70bdd8e5b911791464284af915fe1b70b59a2dade4699b77636c7"
+    },
+    {
+      "path": "tests/hwpx_roundtrip_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/hwpx_roundtrip_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "283e52cfec196383e21c39206c1cd0d794b59685",
+      "sha256": "fc630b3be1e195d4f952ab9201eecd404b489cff61a38d840c85a6fd1cade275",
+      "previousTests": [
+        "baseline_all_samples_roundtrip",
+        "baseline_large_samples_roundtrip",
+        "xfail_entries_still_fail",
+        "grade_lists_are_consistent"
+      ],
+      "retainedTests": [
+        "baseline_all_samples_roundtrip",
+        "baseline_large_samples_roundtrip",
+        "xfail_entries_still_fail",
+        "grade_lists_are_consistent"
+      ],
+      "currentSha256": "8da79be75d4f712c010423c84a740ec0ccc3996b292c013c53e3d2c772feebe4"
+    },
+    {
+      "path": "tests/issue_4141_hwp3_relative_size_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/issue_4141_hwp3_relative_size_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "427e3382429cfb4c8b610673c29a0cbdfce01fed",
+      "sha256": "dcf098d30d0856e660babaedbcac6e46f381e2e5ce556ddd8ee2ba009f250e89",
+      "previousTests": [
+        "hwp3_convert_emits_valid_relative_sizes_for_every_sample",
+        "public_document_core_export_also_emits_valid_relative_sizes"
+      ],
+      "retainedTests": [
+        "hwp3_convert_emits_valid_relative_sizes_for_every_sample",
+        "public_document_core_export_also_emits_valid_relative_sizes"
+      ],
+      "currentSha256": "7377e338572ca255e333429374760fb01588227bbd1b8877507ccb949e396a31"
+    },
+    {
+      "path": "tests/overflow_cell_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/overflow_cell_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "363a0cbc54467221109911f1f74b01991a68f10c",
+      "sha256": "9e1bbed1d71dcb3ef061232e38996d0ce67207542bdc3e5f186f565acd4ff839",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "25042661a0cf6a3696e72ab3c9f6e96227a29e3d46837341513c796d325af0bb"
+    },
+    {
+      "path": "tests/hwp5_roundtrip_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/hwp5_roundtrip_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "e471eb74810b4aceeaf606484051c94046a15ec4",
+      "sha256": "9c0b2ecce222bdf0607cc252e4b7c31a7d636504b5a6e2e329506575adbe7335",
+      "previousTests": [
+        "xfail_entries_still_fail"
+      ],
+      "retainedTests": [
+        "xfail_entries_still_fail"
+      ],
+      "currentSha256": "625242e3782992ed95a8e97543ee2d9b153b4835df4c782fd4d1f91800be64c2"
+    },
+    {
+      "path": "tests/security_corpus_regression.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/security_corpus_regression.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "bd60ef333b975eac09e87636373487812e92c797",
+      "sha256": "fc4f2c1e11d502bb7ad6c2e1ca55e3707c757aa71b8213e9d967a8ce828fdc1e",
+      "previousTests": [
+        "positive_corpus_hidden_text_vector_is_caught",
+        "positive_corpus_injection_vector_is_caught",
+        "positive_corpus_unicode_vector_is_caught",
+        "new_sample_documents_are_clean_across_all_three_detectors",
+        "all_three_envelopes_share_a_consistent_clean_and_array_contract",
+        "allowlisted_documents_still_actually_trigger_detection"
+      ],
+      "retainedTests": [
+        "positive_corpus_hidden_text_vector_is_caught",
+        "positive_corpus_injection_vector_is_caught",
+        "positive_corpus_unicode_vector_is_caught",
+        "new_sample_documents_are_clean_across_all_three_detectors",
+        "all_three_envelopes_share_a_consistent_clean_and_array_contract",
+        "allowlisted_documents_still_actually_trigger_detection"
+      ],
+      "currentSha256": "4f7a52a603042185a60428de6646ca4dbc6a7833bbe6f9456d58d2476d1db1af"
+    },
+    {
+      "path": "tests/envelope_integrity_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/envelope_integrity_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "e8099cc2e3163b3f8f870215d7f3f36f9b091021",
+      "sha256": "6d2b7a35a8ea0a0bce6671171ecdab66071f2e7d402922d3b82e87af3b0f44ef",
+      "previousTests": [
+        "info_envelope_always_declares_warnings",
+        "info_envelope_carries_actual_parser_warnings",
+        "info_warnings_is_declared_in_capabilities",
+        "export_structure_envelope_has_no_snake_case_keys",
+        "query_envelopes_share_the_camel_case_rule"
+      ],
+      "retainedTests": [
+        "info_envelope_always_declares_warnings",
+        "info_envelope_carries_actual_parser_warnings",
+        "info_warnings_is_declared_in_capabilities",
+        "export_structure_envelope_has_no_snake_case_keys",
+        "query_envelopes_share_the_camel_case_rule"
+      ],
+      "currentSha256": "0cfe72dbf5f8d75dc5017b7aa34fcc2fc4537058ff3e697392dad3fd07000233"
+    },
+    {
+      "path": "tests/cases/issue_3500_char_shapes_roundtrip.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_3500_char_shapes_roundtrip.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "ba3785483300a81ff2495726ae93c945ac133f86",
+      "sha256": "493cc9e29fe07ea360cd4d8fe60db73b3dd9aca7869f04405f5d5c3ce33ffca8",
+      "previousTests": [
+        "issue_3500_sample_matches_extracted_ir",
+        "issue_3500_hwpx_roundtrip_keeps_same_id_boundaries",
+        "issue_3500_export_hwpx_native_matches_serialize",
+        "same_id_jsonl_matches_catalog",
+        "planner_keeps_every_same_id_corpus_row",
+        "shape_catalog_includes_issue_3500_table",
+        "collapsed_xml_is_rejected_for_issue_3500",
+        "lang_slots_match_attr_array",
+        "mapping_tables_roundtrip",
+        "attr_and_layout_offsets",
+        "write_char_pr_uses_lang_attr_names",
+        "encoding_matrix_tokens_appear_in_char_pr"
+      ],
+      "retainedTests": [
+        "issue_3500_sample_matches_extracted_ir",
+        "issue_3500_hwpx_roundtrip_keeps_same_id_boundaries",
+        "issue_3500_export_hwpx_native_matches_serialize",
+        "same_id_jsonl_matches_catalog",
+        "planner_keeps_every_same_id_corpus_row",
+        "shape_catalog_includes_issue_3500_table",
+        "collapsed_xml_is_rejected_for_issue_3500",
+        "lang_slots_match_attr_array",
+        "mapping_tables_roundtrip",
+        "attr_and_layout_offsets",
+        "write_char_pr_uses_lang_attr_names",
+        "encoding_matrix_tokens_appear_in_char_pr"
+      ],
+      "currentSha256": "342561bee198324d1ef20532c6578b079d66cd088dece00115c9861dd7449503"
+    },
+    {
+      "path": "tests/cases/oracle_page_count_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/oracle_page_count_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "719f376a9bee7f849545ef052ab960079a99553c",
+      "sha256": "ee9f19da7dd16230b554351ca70bfcc22620dde616e8883d18fed3122428bf4f",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "0be09842937d376254476db4d6783cd36bc2aaf9c8a6971a649b3bf032d29ac6"
+    },
+    {
+      "path": "tests/cases/issue_4161_ratio_default_contract.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/issue_4161_ratio_default_contract.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "ddf9d032c13054685ab34ed3eccb5913762d8d58",
+      "sha256": "713f6f947aae7720278e9123ceb44619b03f7413524fe6d454e60f822c863e2f",
+      "previousTests": [
+        "hwp3_convert_emits_valid_ratios_for_every_sample",
+        "public_document_core_export_also_emits_valid_ratios"
+      ],
+      "retainedTests": [
+        "hwp3_convert_emits_valid_ratios_for_every_sample",
+        "public_document_core_export_also_emits_valid_ratios"
+      ],
+      "currentSha256": "0f3658c990ad64c35557e43e32870fe8dba5eec91cf40687062fd891be868469"
+    },
+    {
+      "path": "tests/cases/off_canvas_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/off_canvas_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "7981078e4bd5a2ba28a24dcd1b51f7adf137fa90",
+      "sha256": "f8ba2a082c126ffb5f18c5f29028285f855adfceacdf75ec30ad886c8bb1c70e",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "21093f6c9fc124df5d8bdfa60ab79f8fdb6da6246a86d8fd113d1476244bd6a4"
+    },
+    {
+      "path": "tests/cases/text_overlap_baseline.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/cases/text_overlap_baseline.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "f1f82b12a282bed2017a34879e52187e2966990d",
+      "sha256": "0a98334db7813d2345d8b090a47d97722c82042c2a38b51ba13ee5f884b17fc2",
+      "previousTests": [
+        "photo_stamp_ownership_preserves_print_annotations",
+        "photo_stamp_contract_keeps_detecting_ordinary_text_collisions"
+      ],
+      "retainedTests": [
+        "photo_stamp_ownership_preserves_print_annotations",
+        "photo_stamp_contract_keeps_detecting_ordinary_text_collisions"
+      ],
+      "currentSha256": "52eccf07791773b6761b5d3ddce81885fa16067ab6aa809d8b4b674b1d60d162"
+    },
+    {
+      "path": "tests/support/deferred_exam_scope.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/support/deferred_exam_scope.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "de26a98ef314e6563a676e23aa75837788816daf",
+      "sha256": "129846aa8085eaaaab14cdcd65290afc07edb39788b43b94acb9e21763d3040c",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "71ea1388a41b4265dee7947e26a1f945ae9f1dbf75b093cd839463ec7937e61d"
+    },
+    {
+      "path": "tests/common/corpus_scope.rs",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/common/corpus_scope.rs.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "458087564659a90b22cfc63c467a9b484291564b",
+      "sha256": "52664bb2ac0f8574b84e5a94c881a2975bf546e78802b35bb220edf341749576",
+      "previousTests": [],
+      "retainedTests": [],
+      "currentSha256": "3091336a9d82698cca04a737ea91ad7b43b2d9204ef2babccf7acffb615dc42f"
+    },
+    {
+      "path": "tests/fixtures/agent_doc_triage/journeys.json",
+      "preservedPath": "mydocs/pr/assets/sample16_regression_handoff_20261025/sources/tests/fixtures/agent_doc_triage/journeys.json.txt",
+      "sourceCommit": "3859d1948444deadc6a5bc6e5343911f870f97f1",
+      "gitBlob": "5cf57c5ee0e388ebba75a62a6ca2fc4cbd7cd75a",
+      "sha256": "80e25ac2c76383e6003a807ebf13647551948341fbf81a760664464614ab52c6",
+      "currentSha256": "9e6f04c9b1afd751b193bb92b688194a6a60075a566d52491953f3e177d05620"
+    }
+  ],
+  "removedTestFunctions": 90,
+  "removedMixedInputCases": 23,
+  "preservedInputs": [
+    {
+      "path": "samples/hwp3-sample16-hwp5-2010.hwp",
+      "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2018.hwp",
+      "sha256": "9c3e00a1948a76f524603b3f7d5aba90a524b6e21583d199e40c2539845ae116"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024-password-123456.hwp",
+      "sha256": "59d4bed335b9552fe78fa68d2a56f7cfa3d586bcdeaaba839af80df13f3e08dc"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwp",
+      "sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+    },
+    {
+      "path": "samples/hwp3-sample16.hwp",
+      "sha256": "559fd94860cf836d5800436d56055c23a73e59eedef3da273a5ba365e6ed9e16"
+    }
+  ],
+  "restoration": "별도 PR에서 같은 입력과 유효한 독립 Print의 Native/fresh WASM 전체 페이지 검증 및 직접 판독 후 복원한다. 이 변경은 렌더러 개선 완료를 주장하지 않는다.",
+  "staticAudit": {
+    "receipt": "output/pr-review/semanticist21-20261019/sample16-test-inventory-3754.json",
+    "activeSourceReadingTestFunctions": 0,
+    "removedByUserScopeRatherThanInvalidBaselineFinding": true
+  },
+  "validation": {
+    "fullRustBuildAndCollection": {
+      "count": 11968,
+      "exitCode": 0,
+      "receipt": "output/pr-review/semanticist21-20261019/sample16-nextest-list-3758-result.json",
+      "sample16NamedTestCount": 0
+    },
+    "remainingNormalTests": {
+      "count": 74,
+      "passed": 74,
+      "failed": 0,
+      "receipt": "output/pr-review/semanticist21-20261019/sample16-remaining-normal-3763-result.json"
+    },
+    "sharedScopeProbe": {
+      "preservedInputCount": 8,
+      "relativeAndAbsolutePathsExcluded": true,
+      "normalInputRetained": true,
+      "log": "output/pr-review/semanticist21-20261019/logs/sample16-scope-probe-3762.log"
+    },
+    "formatCheckExitCode": 0,
+    "fullRustExecutionCompleted": false
+  }
+}
