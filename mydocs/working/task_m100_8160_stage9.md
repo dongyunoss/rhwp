@@ -115,7 +115,10 @@ ubuntu-ted는 관찰 중 미커밋 변경을 커밋했고, 이어 `43e2697fe76e4
 이 실행은 assertion 실패나 최종 후보의 통과 결과로 세지 않는다. 완료한 빌드 캐시는 보존했다.
 
 복원 후 86개 후보는 포맷·Native Clippy·WASM lib Clippy·workspace build·workspace 전체 target Clippy·
-suite 정책·unit tier 정책을 통과했다. 전체 nextest와 Native Skia의 최종 결과는 실행 완료 후 기록한다.
+suite 정책·unit tier 정책을 통과했다. 보정 후 전체 nextest는 **11,516/11,516 PASS**,
+기본 제외 45개이며 #8160 기본 85개의 실제 실행도 누락·예상 외 0건으로 통과했다.
+이 실행 시간은 1,587.417초다. Native Skia 집중 **3/3 PASS**도 실제 이름 대조까지 통과했다.
+기본 85개와 Native 전용 1개를 합쳐 #8160 고유 함수 86개다. Skia 실행 3개 중 2개는 기본과 중복된다.
 현재 작업 브랜치와 검증 checkout의 소스·fixture 5,022개는 바이트 단위로 일치한다.
 수정 문서의 로컬 링크 116개는 누락이 없다.
 
@@ -423,10 +426,49 @@ sample16 HWP5의 새 #8160 검사는 64쪽을 그대로 보호한다.
 보정 후 일반 MCP 4개·#8160 HWP5 MCP 2개·#4764 합성 PDF builder 1개, 총 7개를 실제로
 집중 실행해 7/7 PASS했다. PDF builder는 남은 185개 입력을 모두 생성·파싱했다.
 포맷·Native/WASM/workspace Clippy·workspace build·suite/unit 정책도 다시 PASS했다.
-이 결과와 복원·보정 코드를 먼저 로컬 일반 커밋으로 고정한다. 전체 nextest와 Native Skia의
-최종 결과는 아직 완료로 판정하지 않으며 이어서 실행한다. 원격 PR은 갱신하지 않는다.
+이 결과와 복원·보정 코드를 먼저 로컬 일반 커밋으로 고정했다. 코드 커밋 당시에는 전체 nextest와
+Native Skia가 진행 중이었으며, 아래 최종 결과에서 모두 PASS로 완료했다. 원격 PR은 갱신하지 않았다.
 
 빌드 잡 2개에서는 자동 재배정된 suite의 재컴파일이 길어져, 16 CPU·가용 메모리 13GiB와
 rustc RSS 1GiB 미만을 확인한 뒤 완료 캐시를 보존하고 빌드 잡을 8개로 바꿨다.
 집중 검사 빌드 중의 의도적 중단이며 assertion 실패가 아니다. 소스와 테스트 스레드 12개는 유지했다.
 재개한 집중 검사 빌드는 2분 39초에 완료했다.
+
+
+### 코드 커밋 고정과 보정 후 전체 결과
+
+복원·통합·편람 등록 제거·두 검증 보정을
+`404c0de4be62f14542497ddf94f7f2b6af4eaa44`에 로컬 커밋했다. 원격 push는 하지 않았다.
+보정 후 전체 nextest는 11,516개 전부 PASS, 기본 제외 45개로 완료했다.
+실제 #8160 이름 집합 85개도 기대 집합과 일치한다.
+
+선행 PR 반영 후에는 이 코드 커밋을 기준으로 #8160의 40개 모듈·86개 함수뿐 아니라
+변경한 기존 파일에 남긴 일반 `#[test]` 함수 261개 인벤토리도 대조한다.
+상위 PR의 의도적 정정·이름 변경은 독립 근거로 분류하고, 자동 적용 과정에서 일반 대조 문서의
+보호까지 사라지지 않도록 확인한다. 인벤토리·로그·중간 JSON은 ignored 경로에만 보존한다.
+
+
+### 최종 검증 완료와 제출 순서
+
+| 검증 | 결과 | 실제 범위 |
+| --- | --- | --- |
+| fmt | PASS | workspace 전체 |
+| Clippy | PASS | Native·WASM lib·workspace all-targets 각 `-D warnings` |
+| workspace build | PASS | locked |
+| suite/unit 정책 | PASS | base `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a` |
+| 보정 집중 nextest | 7/7 PASS | 일반 MCP 4개·#8160 MCP 2개·185행 PDF builder 1개 |
+| 전체 nextest | 11,516/11,516 PASS | 기본 제외 45개, 1,587.417초 |
+| #8160 기본 실행 집합 | 85/85 PASS | 누락·예상 외 0개 |
+| Native Skia 집중 | 3/3 PASS | 실제 PNG 이중선 coverage 포함, 함수 실행 51.49초 |
+
+최종 실행 로그와 시작·종료 source SHA-256은 `parallel-final-gates.json`,
+`parallel-final-*.log`에 보존한다. 검증 checkout은
+`/home/tsjang/rhwp-8160-wasm-candidate6`이며, 코드 커밋의 소스·fixture 5022개를
+다시 바이트 대조해 차이 0개를 확인했다. 임시 로그·생성 suite·인벤토리 JSON은 커밋하지 않는다.
+
+원격 `upstream/devel`은 재확인 시 `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`,
+PR #8188의 원격 head는 `021c486d1eaee17920a2b3e82ae896115b847669`다.
+로컬 복원·보정과 검증은 완료했으며, 사용자 지시에 따라 ubuntu-ted PR을 먼저 처리한다.
+그 반영 후 최신 devel에서 공용 제외 목록·helper를 통합하고, 선행 기능과 현재의 정상 대조 검사,
+sample16 세 문서 각각 64쪽의 Native/fresh WASM raw100을 다시 검증한 뒤 기존 PR에 후속 제출한다.
+그 전까지 원격 push·PR 갱신·머지·이슈 종료는 하지 않는다. CI 이후 후속 처리의 승인 대기도 유지한다.
