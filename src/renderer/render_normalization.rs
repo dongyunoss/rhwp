@@ -84,6 +84,7 @@ pub struct RenderNormalizationOverlay {
     text_reflowed_tables_by_pointer: HashSet<usize>,
     rendered_cell_frame_changes: HashMap<usize, HashSet<(u16, u16)>>,
     rebased_table_frames_by_pointer: HashSet<usize>,
+    expanded_inline_host_tables_by_pointer: HashSet<usize>,
     nested_tables_with_reflowed_hosts: HashSet<usize>,
     stored_nested_text_frames_by_pointer: HashMap<usize, Arc<StoredNestedTextFrames>>,
 }
@@ -360,6 +361,24 @@ impl RenderNormalizationOverlay {
                 };
                 let old_pointer = old.as_ref() as *const Table as usize;
                 let new_pointer = new.as_ref() as *const Table as usize;
+                // 짧은 저장 줄을 실제 인라인 상자로 확장한 출처를 보존한다.
+                // 투영 뒤에는 줄 높이가 표를 덮으므로 숫자만 다시 비교하면
+                // 원본의 누락 밴드를 정상 저장 프레임으로 오인한다.
+                if old.common.treat_as_char && new.common.treat_as_char {
+                    if let ([before], [after]) =
+                        (original.line_segs.as_slice(), current.line_segs.as_slice())
+                    {
+                        let source_box_height = i64::from(old.common.height)
+                            + i64::from(old.outer_margin_top)
+                            + i64::from(old.outer_margin_bottom);
+                        if i64::from(before.line_height) < source_box_height
+                            && after.line_height > before.line_height
+                        {
+                            self.expanded_inline_host_tables_by_pointer
+                                .extend([old_pointer, new_pointer]);
+                        }
+                    }
+                }
                 self.rendered_cell_frame_changes
                     .entry(old_pointer)
                     .or_default();
@@ -452,6 +471,12 @@ impl RenderNormalizationOverlay {
     #[inline]
     pub(crate) fn table_text_reflowed(&self, table: &Table) -> bool {
         self.text_reflowed_tables_by_pointer
+            .contains(&(table as *const Table as usize))
+    }
+
+    /// 실제 표 상자로 확장한 줄 뒤에서는 옛 저장 줄의 spill 허용을 재사용하지 않는다.
+    pub(crate) fn inline_host_frame_expanded(&self, table: &Table) -> bool {
+        self.expanded_inline_host_tables_by_pointer
             .contains(&(table as *const Table as usize))
     }
 

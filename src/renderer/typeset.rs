@@ -4624,7 +4624,8 @@ impl TypesetEngine {
             // 한 번 엄격하게 적합성을 판정해야 다음 쪽으로 올바르게 이월된다.
             ft.strict_following_plain_text_fit
                 || hwpx_rowbreak_tac_missing_owned_line
-                || unstored_cell_band,
+                || unstored_cell_band
+                || self.render_normalization.inline_host_frame_expanded(table),
             styles,
         );
         if let Some(end) = side_wrap_placement.and_then(|placement| placement.advance_end) {
