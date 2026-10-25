@@ -244,3 +244,34 @@ Native248은 291.07초·exit 0으로 빌드됐으며, 기존 경계와 새 #7687
 
 실제 검사 로그는 `logs/rebase-boundaries-native248-after-3945.log`이며, 전쪽 Native
 원문은 `remaining-visual-3946/`의 TSV와 `remaining-visual-3946-result.json`에 있다.
+
+### 최신 fresh WASM과 삭제 범위 확인
+
+#8231의 문서·증적 변경을 반영한 base `238de6de41a208648f4ade6b494fe433a81c1fce`로
+리베이스했다. 후보 `9504cf250a211077a2f6c7f9137a890f8f5db8eb`는 기존 324개 커밋을
+보존하며, 리베이스 전 후보와 Rust·Studio 실행 소스의 차이는 없다. Native248의 실제
+소스 일치와 별도로, 같은 후보에서 표준 release·wasm-opt를 실행한 fresh WASM071을 만들었다.
+절대 `--out-dir` 때문에 wrapper의 Studio 자동 복사가 생략된 뒤 검증 driver가 실패한 것은
+빌드 실패와 구분한다. 실제 빌드 exit 0 이후 동일 바이트를 Studio에 복사하고 pkg·public·
+고정 package의 SHA-256 일치를 재확인했다. 최초 driver의 exit 1은 기록에서 지우지 않았다.
+
+기존 대조군 12조건·26쪽의 fresh WASM071 전쪽 TSV는 모두 raw 90% 이상이다.
+#6970의 각 쪽은 100.00000%·95.39371%·91.53306%이며, 잘못된 배제 경계로 3행이 되던
+2쪽은 fresh WASM069의 63.13384%에서 개선됐다. 1·3쪽의 실제 PNG는 보정 전과 SHA-256이
+같다. 2·3쪽의 review와 standalone overlay를 함께 직접 확인했고, 3쪽의 기존 글자 폭 잔차를
+새 보정의 개선으로 보고하지 않는다. 새 base fresh WASM070과의 페이지별 하락 대조는
+별도 실행 중이며, 아직 기능 보존 검증 전체가 완료됐다고 판정하지 않는다.
+
+같은 package를 사용하는 Studio `npm run build`와 실제 브라우저의 command-error 계약
+검사는 각각 exit 0이다. 브라우저 로그의 주입된 명령·커서 오류는 오류 복구 검사의 입력이며,
+성공한 종료 결과와 분리해 해석한다. 실행 명령·결과는 `studio-current-3960-result.json`,
+전쪽 TSV는 `remaining-visual-3955-result.json`, 이미지 비교는
+`6970-fixed-boundary-wasm-review-3961/`, 전후 PNG 해시는 `6970-before-after-png-3963.json`에 있다.
+모두 앞서 지정한 ignored 검증 경로 아래에 보존하며 실행 로그는 커밋하지 않는다.
+
+검증 worktree의 Rust 소스 1,601개가 후보와 같은 것을 확인하고, 최종 형식의 새 #7687 검사만
+동기화한 뒤 그 worktree에서만 `--prepare`를 실행했다. suite의 파생 참조 1,771개에서 삭제된
+검사·누락 소스·sample16·편람 모듈 참조는 0건이다. 주 작업 트리의 파생 파일은 재생성하거나
+stage하지 않았다. sample16·편람의 기존 삭제와 자동 수집 제외를 유지하며, 해당 문서의 검사나
+별도 보관본을 복원하지 않는다. #7158의 이미지 디코딩 실패와 ClickHere 축약 입력의 미달은
+위 12조건의 통과와 구분하고 새 base 근거를 확인한 뒤 기존 처리 절차를 이어간다.
