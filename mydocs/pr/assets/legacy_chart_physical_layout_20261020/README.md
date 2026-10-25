@@ -1,5 +1,52 @@
 # 구형 OLE 차트 배치와 쪽 배경 색조 증거
 
+## 2026-10-25: 원본의 워터마크 검사 재검토
+
+같은 원본 HWP/HWPX와 아래에 보존한 독립 Print를 현재 runtime
+`8dc75860cec88ddf7c3f8aeee230b2ca7e2e5537`에서 다시 전쪽 비교했다.
+`current-20261025/tsv/{native,wasm}/`는 현재 TSV 원문이고, 대표 HWP의 review·overlay는
+`current-20261025/png/{native,wasm}/`에 있다. 제품 코드·입력·PDF·색조 기대 RGB는 바꾸지 않았다.
+
+| 원본 | 전체 쪽수 | Native224 raw | fresh WASM063 raw |
+| --- | ---: | ---: | ---: |
+| `samples/143E433F503322BD33.hwp` | 1 | 99.28794% | 99.30167% |
+| `samples/hwpx/143E433F503322BD33.hwpx` | 1 | 99.27978% | 99.29360% |
+
+원 PR [#1019](https://github.com/edwardkim/rhwp/pull/1019)의 실제 merge는
+`e26f159b609bcfb9b5106d246811b51c67dd064d`다. 원래 opacity 0.26/0.15는 화면의
+근사 계약이었다. 이슈 #1156의 원 해결 `9ede2c589525f374661c8d200d2abdb1a3ce14c0`도
+SVG에 opacity 그룹이 있어야 한다고 검사했다. 이슈 timeline은 이 커밋의 참조 뒤
+2026-05-29에 닫힌 것을 기록한다. 해당 커밋과 연결된 #1294는 이후의 release PR이므로
+이를 별도의 초기 해결 PR로 오인하지 않는다.
+
+이 브랜치의 Print 보정 `4bdec5890848c063020cfeb14a3a0efd55a91714`는 원본 모델을
+보존하면서 공통 `resolve_page_background_tone`에서 실제 RGB를 한 번 보정한다.
+이후 render node의 밝기·대비를 소비 완료인 0/0으로 정규화해 backend의 이중 보정을 막는다.
+이미 보정된 그림에 과거의 opacity를 다시 곱하는 것이 독립 Print와 다른 동작이다.
+
+같은 Print PDF(SHA-256 `5bb1416b4850e9e1d4b9abaec3c68dd8322a7480a1c0f98d1b892a71ff44f18b`)의
+이미지 객체를 다시 직접 디코딩했다. 예를 들어 xref 12와 14에 RGB197/255/255 표본이
+있다. 원본 그림의 대응 RGB0/118/191 표본이 그 색으로 바뀌는 기존 독립 기대값을 유지한다.
+RGB 채널의 ±2 바이트 오차는 JPEG에 대한 허용치이며 문서 위치의 px 오차가 아니다.
+
+`issue_1019`의 쪽 배경 검사는 새 이름으로 실제 SVG의 배경 PNG를 디코딩하고,
+대응 RGB·원래 bitmap 크기·불투명한 색 표본을 확인한다. 그림과 조상 노드에 추가
+opacity/filter가 없는지도 검사한다. `issue_1156_chart_column_flow`의 새 이름 검사는
+배경 소유 하나, 공통 보정의 소비 완료와 원본 채움 속성 보존을 확인한다.
+고정 화면 영역이나 배치 좌표는 추가하지 않았다.
+
+같은 `issue_1019` 모듈의 별도 `253E164F57A1BC6934-empty.hwp`는 기존 채움 그림의
+0.26/0.15 opacity 조건을 그대로 유지하고, 실제 1·2쪽 검사를 다시 실행했다.
+색조·차트·범례·배치의 기존 9개 검사를 포함한 세 모듈은 **13 PASS / 0 FAIL**이다.
+정식 소스의 동결 라이브러리 실행이며 전체 nextest 완료가 아니다.
+
+현재 Native/fresh 대표 review·overlay를 직접 판독했다. 배경 색·크기·중앙 배치는
+Print와 맞으며, 차트와 뒤 본문의 순서도 유지한다. 아래 기존 기록처럼 본문 일부의
+글자 가장자리·미세 간격 차이는 남는다. 이를 RGB나 페이지 점수로 면제하지 않는다.
+전체 PR의 원 #8064 corpus·Rust·lint·Studio·고정 devel 대비 검증은 계속 진행한다.
+
+---
+
 Native019와 최적화 fresh WASM010의 33개 조건 전쪽 TSV 원문이다. 기준은 독립 한컴 Print PDF다.
 각 조건은 1쪽이며 양쪽 33/33쪽이 90% 이상, 고정 devel 대비 0.1%p 이상 하락 0쪽이다.
 이 단계는 차트 제목·축·범례·프레임과 쪽 배경 RealPic 색조의 검증이다. 통합 PR 전체의 완료 보고가 아니다.
