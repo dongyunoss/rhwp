@@ -200,3 +200,12 @@ fn usage_errors_stay_silent_on_stdout() {
         assert!(output.stdout.is_empty(), "{}", describe(args, &output));
     }
 }
+
+#[test]
+fn export_structure_envelope_matches_fixture_keys() {
+    let p = sample(STRUCT_SAMPLE);
+    let v = run_ok_json(&["export-structure", p.to_str().unwrap(), "--json"]);
+    assert_keys("export-structure", &v);
+    assert!(v["nodeCount"].as_u64().is_some());
+    assert!(v["structure"].is_object());
+}

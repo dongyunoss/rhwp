@@ -261,7 +261,11 @@ fn stateless_document_tool_uses_password_stdin_without_cli_argument_echo() {
         "hwp_info",
         serde_json::json!({"path": path, "password": PASSWORD}),
     );
-    assert_eq!(info["pageCount"].as_u64(), FIXTURES[0].1, "{info}");
+    assert_eq!(
+        info["pageCount"].as_u64(),
+        expected_pages,
+        "{fixture_name}: {info}"
+    );
 
     let wrong = server.tool_response(
         "hwp_info",

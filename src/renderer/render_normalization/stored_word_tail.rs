@@ -109,6 +109,12 @@ fn stored_closed_table_row_frames(
     (total.checked_add(spacing)? == u64::from(table.common.height)).then_some(rows)
 }
 
+#[derive(Clone, Copy)]
+struct NormalizationPolicy<'a> {
+    refresh_markers: bool,
+    previous_margin_styles: Option<&'a ResolvedStyleSet>,
+}
+
 pub(crate) fn normalize(
     original: &[Paragraph],
     styles: &ResolvedStyleSet,
@@ -124,9 +130,11 @@ pub(crate) fn normalize(
         uniform_column_width(page, initial_columns, dpi),
         Some(page),
         true,
-        refresh_markers,
+        NormalizationPolicy {
+            refresh_markers,
+            previous_margin_styles,
+        },
         dpi,
-        previous_margin_styles,
     )
 }
 
@@ -138,10 +146,13 @@ fn normalize_flow(
     mut width: Option<f64>,
     body_page: Option<&PageDef>,
     refresh_text: bool,
-    refresh_markers: bool,
+    policy: NormalizationPolicy<'_>,
     dpi: f64,
-    previous_margin_styles: Option<&ResolvedStyleSet>,
 ) -> Option<Vec<Paragraph>> {
+    let NormalizationPolicy {
+        refresh_markers,
+        previous_margin_styles,
+    } = policy;
     // 본문 상자의 모순과 실제 문자 경계 이동이 함께 확인된 흐름만 현재
     // 문단 간격 축을 발행한다. 유효한 저장 상자는 더 적게 채워져도 유지한다.
     let mut probe_width = width;
@@ -287,9 +298,8 @@ fn normalize_flow(
                     Some(inner),
                     None,
                     stale,
-                    refresh_markers,
+                    policy,
                     dpi,
-                    previous_margin_styles,
                 ) {
                     cell.paragraphs = projected;
                     changed = true;
@@ -359,7 +369,9 @@ fn normalize_flow(
                 let frame = box_.frame(first);
                 project_stored_soft_wraps(&paragraph, &frame, styles, dpi, false)
             };
-            if let Some((lines, spaces)) = selected_program_rows.or(current_rows).or_else(marker_rows) {
+            if let Some((lines, spaces)) =
+                selected_program_rows.or(current_rows).or_else(marker_rows)
+            {
                 let old_advance = frame_advance(&paragraph.line_segs)?;
                 let new_advance = frame_advance(&lines)?;
                 shift = shift.checked_add(new_advance.checked_sub(old_advance)?)?;

@@ -6016,11 +6016,12 @@ impl DocumentCore {
                 || profile.hwpx_stored_layout())
                 && !profile.legacy_hwp3_stored_geometry();
             let stored_word_tails = (!profile.session_edited()).then_some(()).and_then(|_| {
-                        // 구판 자체 변환본은 원 HWP의 줄을 보존했지만 XML 1.2의
-                        // 여백 단위는 달라졌다. marker 2 이후와 한컴 원본은 제외한다.
-                        let previous_margins = (self.document.hwpx_aux_entry(
-                    crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH,
-                ) == Some(b"1")
+                // 구판 자체 변환본은 원 HWP의 줄을 보존했지만 XML 1.2의
+                // 여백 단위는 달라졌다. marker 2 이후와 한컴 원본은 제외한다.
+                let previous_margins = (self
+                    .document
+                    .hwpx_aux_entry(crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH)
+                    == Some(b"1")
                     && self.document.doc_info.hwpml_version.as_deref() == Some("1.2"))
                 .then(|| {
                     crate::renderer::composer::stored_margin_context::previous_margin_styles(

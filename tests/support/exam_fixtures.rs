@@ -6,7 +6,7 @@ pub fn is_exam_fixture(path: &std::path::Path) -> bool {
     let name = normalized.rsplit('/').next().unwrap_or("");
     // sample16 전용 검사와 별도 PR로 이관한 문서는 공용 corpus에서 수집하지 않는다.
     name.starts_with("hwp3-sample16")
-        || include_str!("../fixtures/transferred_document_regressions.txt")
+        || include_str!("../fixtures/deferred_document_regressions.txt")
             .lines()
             .any(|retired| retired == name)
         || name.starts_with("exam_")

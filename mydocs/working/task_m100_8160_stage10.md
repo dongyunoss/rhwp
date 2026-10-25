@@ -26,3 +26,23 @@
 
 임시 로그·스크립트·렌더 중간 산출물은 `output/pr-review/issue8160-20261022/rebase8231/`에 보존한다.
 리베이스 전 실행은 새 후보의 검증 결과로 표시하지 않는다.
+
+## 리베이스와 1차 보정
+
+- 리베이스 전 계획 포함 head는 `a2b8ee4a2`이며 `refs/backup/issue8160-before-8231`에 보존했다.
+- 새 base `238de6de41a208648f4ade6b494fe433a81c1fce` 위로 50개 커밋을 재적용했다.
+  리베이스 직후 head는 `6ece02cdf73c8d521dc84bcbcdf8ed245820202e`다.
+- 탭은 #8160의 공통 블록 폭과 새 devel의 실제 줄 원점을 함께 소비한다.
+  글꼴 프로그램 투영 슬롯과 쪽번호 HFT 판정, WMF 클립과 원본 재생 계약도 함께 보존했다.
+- 저장 줄 갱신은 선택 프로그램 경로와 새 base의 본문·목록·이전 여백 처리 경로를 연결했다.
+  내부 재귀의 정책 인자는 한 구조체로 전달한다. 실제 보존 여부는 후속 출력 검증으로 판정한다.
+- #8160 40개 모듈은 리베이스 전과 바이트가 모두 일치한다. 일반 대조군 261개 중
+  자동 적용으로 빠진 `export_structure_envelope_matches_fixture_keys`를 복원했다.
+  기존 원본 글꼴 대조군의 가운뎃점 기대값 보강은 새 devel의 독립 Print 근거와 함께 유지했다.
+- 자동 수집의 제외 목록은 새 devel의 `deferred_document_regressions.txt`로 통합했다.
+  #8160의 명시적 전용 검사는 실행하며, 편람 두 파일은 계속 제외한다.
+- 새 devel 시각 보존 범위 35조건/2,041쪽의 입력·독립 PDF 70개 해시는 모두 일치했다.
+- 1차 Native `cargo check --features native-skia --bin rhwp`는 exit 0이다. 이후 정책 인자 정리까지
+  포함한 최종 빌드·테스트·Native/fresh WASM 출력 검증은 아직 진행 중이다.
+  처음 fmt는 오래된 generated suite의 삭제 모듈 참조로 실패했다. 검토 worktree에서 suite를
+  다시 준비해 검사하며, 실패한 실행을 통과로 표시하지 않는다.

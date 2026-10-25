@@ -5,7 +5,7 @@ fn is_deferred_exam_document(path: &str) -> bool {
     let name = normalized.rsplit('/').next().unwrap_or(&normalized);
     // 사용자 요청: sample16과 변형본의 회귀는 #8160 / PR #8188에서 처리한다.
     name.starts_with("hwp3-sample16")
-        || include_str!("../fixtures/transferred_document_regressions.txt")
+        || include_str!("../fixtures/deferred_document_regressions.txt")
             .lines()
             .any(|retired| retired == name)
         || name.starts_with("exam_")
