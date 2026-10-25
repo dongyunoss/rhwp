@@ -2011,3 +2011,35 @@ focused native Clippy와 rustfmt도 통과했다. 수집기는 같은 1810개 so
 연결했다. 72개 또는 전체 Rust를 새로 실행한 결과로 바꾸지 않는다. #5715는 원본을
 수정하지 않고 win10-ted의 전용 폴더로 복사하고 SHA를 확인한 뒤 수동 Print 또는 한컴의
 열기 오류 관측을 요청했다. 해당 원본의 대조는 답변을 기다리며 다른 검증을 계속한다.
+
+
+### PREP 원문 소유 선택자와 현재 실제 실행 결과
+
+PREP 원본 HWPX와 독립 한컴 2024 Print PDF의 SHA를 유지하고 현재 Native224와
+fresh WASM063으로 전 140쪽을 산출했다. 양쪽 쪽수가 같고 raw 최저는 각각
+96.01430%, 96.16717%이며 70쪽은 모두 100%다. 3619의 review와 standalone overlay에서
+표와 뒤 본문의 시작·기준선·순서·하단 내용을 직접 확인했다.
+[전쪽 TSV·대표 PNG·독립 원점과 명령](../pr/assets/stored_flow_prep_source_20261025/README.md)을
+정식 경로에 보존했다. 이는 해당 기존 검사의 적절성을 확인한 증거다.
+
+기존 검사는 첫 어절이 `char:1`의 run에 있어야 한다고 가정했지만 실제 해당 원문
+문자는 선행 공백이다. 같은 문단 소유의 전체 run에서 원문 순서·누락·중복을 확인하고
+첫 실제 cluster에 전체 runToPage 변환을 적용하도록 보정했다. 다른 문자 번호로 핀을
+옮기지 않았다. 독립 Print의 첫 글자 원점 `(105.44, 818.88)` CSS px·±2px와 전체
+140쪽 검사는 유지했다. 제품 코드·입력·PDF·baseline은 변경하지 않았다.
+
+3620에서 해당 모듈 전체 네 검사를 실제 실행해 4 PASS / 0 FAIL, ignore·누락 0건이며
+3625의 focused native Clippy와 rustfmt도 통과했다. 3589에서 소스와 runtime이 그대로인
+잔여 실패 23건을 3626에 연결했다. 전체 검사를 새로 실행한 결과로 표현하지 않는다.
+
+이전에 매핑하지 못했던 OOXML 차트 8개 이름은 현재 패키지의 공식 nextest 실행
+3618에서 모두 실제 통과했으며 패키지 전체 결과는 165 PASS / 0 FAIL이다. 기존
+`overflow_cell_baseline` partition 2도 원본 모듈의 해당 검사만 동결 Native224로 실행해
+1 PASS(3622)다. `test_task229_field_svg_guide_text`는 현재 함수 그대로의 공개 API
+추출 검사 1 PASS(3623)이며 공식 lib unit target의 완료로 바꾸어 쓰지 않는다.
+각 검사는 기대값을 이번에 완화하지 않았으며, 이 제한된 실행은 전체 Rust·lint·Studio·
+원 #8064 전체 corpus와 새 base 대비 기능 보존 게이트를 대체하지 않는다.
+
+수동 Print 답변의 Windows 파일 `C:\temp\full-source-156483831-2020.pdf`도 다시 확인했다.
+689957바이트와 SHA-256 `0cf13bad0700f54d775efeb346a38253eb9dd1d914bbd476185bf99984993d5a`가
+이미 보존·실행한 PDF와 같아 중복 사본이나 동일 입력의 불필요한 재산출을 만들지 않았다.
