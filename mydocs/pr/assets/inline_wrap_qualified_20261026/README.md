@@ -62,3 +62,21 @@ Canvas PNG다. 같은 원본의 독립 한컴 2020 Print PDF와 96DPI·print 프
 
 이 자료는 위 세 입력의 시각 검증 증거다. 별도로 실행 중인 전체 Rust·lint·Native Skia 게이트나
 통합 PR의 준비 완료·원격 CI·merge 완료를 뜻하지 않는다.
+
+## 고정 devel의 실제 base와 비교
+
+원본·독립 Print의 해시가 같은 기존 Native247/fresh WASM070 실행을 재사용했다.
+base 제품 소스 `3e02fe2749866a8453af3eb3901b9c1a674cccaf`는 정책 base와 런타임이 동등하다.
+수정 전 후보 Native253/fresh072의 결과와 base를 혼동하지 않았으며, 같은 입력의 실제 base
+TSV 여섯 개를 바이트 그대로 보존했다. 새로 빌드하거나 동일 검증을 다시 실행하지 않았다.
+
+| 조건 | backend | base raw | 현재 raw | 하락폭 | base TSV |
+| --- | --- | ---: | ---: | ---: | --- |
+| pr8093-form-slot-hwp | native | 94.80944% | 100.00000% | -5.19056%p | [TSV](native/base/pr8093-form-slot-hwp/silhouette.tsv) |
+| pr8093-form-slot-hwp | fresh-wasm | 94.90909% | 100.00000% | -5.09091%p | [TSV](fresh-wasm/base/pr8093-form-slot-hwp/silhouette.tsv) |
+| pr8093-form-slot-hwpx | native | 94.52700% | 100.00000% | -5.47300%p | [TSV](native/base/pr8093-form-slot-hwpx/silhouette.tsv) |
+| pr8093-form-slot-hwpx | fresh-wasm | 94.66037% | 100.00000% | -5.33963%p | [TSV](fresh-wasm/base/pr8093-form-slot-hwpx/silhouette.tsv) |
+| pr8045-hancom-saved-square | native | 51.84932% | 100.00000% | -48.15068%p | [TSV](native/base/pr8045-hancom-saved-square/silhouette.tsv) |
+| pr8045-hancom-saved-square | fresh-wasm | 51.84510% | 100.00000% | -48.15490%p | [TSV](fresh-wasm/base/pr8045-hancom-saved-square/silhouette.tsv) |
+
+세 조건 모두 양쪽 0.1%p 초과 하락이 없으며 현재 100%다. 음의 하락폭은 개선이다. base의 낮은 점수를 현재 회귀의 기대값으로 고정하지 않았다.

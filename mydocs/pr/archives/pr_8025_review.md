@@ -45,7 +45,7 @@ tests/cases/canvas_heavy_display_face_bold.rs. Canvas 실제 출력 증거는 �
 
 원 PR의 증적이나 helper assertion만으로 독립 Print 일치를 선언하지 않는다. 적용 입력·최종 head의 결과를 개별적으로 대조한 뒤 최종 판정을 갱신한다.
 
-현재 descriptor 검사는 글꼴 문자열 계약만 입증한다. 실제 Canvas에서 해당 표시용 face가 그려지는 입력·독립 Print의 대조는 아직 이 기록에 연결되지 않았으므로 그 항목을 PASS로 쓰지 않는다.
+기존 월간 수출입 원본의 [실제 Canvas·독립 Print 증거](../assets/intrinsic_heavy_face_20261026/README.md)를 연결했다. 원본 셀의 HY헤드라인M·bold=false 제목 10개와 실제 적재 프로그램을 확인했고, 전 19쪽의 Native255/fresh WASM073 최저는 96.62490%/96.89977%였다. 고정 base 대비 0.1%p 초과 하락은 양쪽 0쪽이다. 4·8·10쪽의 제목 굵기·기준선·간격과 표·차트 경계를 양쪽 review·overlay로 직접 판독했다. descriptor 검사만으로 승인하지 않았으며, 남은 ○ glyph 차이는 같은 증거에서 base 보존·개선과 구분했다. 새로운 HWP 문서는 추가하지 않았다.
 
 전체 로컬 검증은 고정 target `target/pr-review`, 빌드 잡 8개·검사 스레드 12개로 순차 실행 중이다. fmt·suite 정책·unit tier 정책·Release build·Release 라이브러리 검사는 통과했다. 전체 nextest·Native Skia·lint 등의 후속 결과는 아직 완료되지 않았으므로 미리 PASS로 쓰지 않는다.
 

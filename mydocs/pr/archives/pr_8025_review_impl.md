@@ -28,3 +28,7 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 ## 완료 전 남은 기록
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
+
+## 실제 표시용 face의 독립 증거 보완
+
+기존 font trace 원본의 [전쪽 Native/fresh WASM·실제 Canvas 프로그램·직접 판독](../assets/intrinsic_heavy_face_20261026/README.md)을 보완했다. 원본을 새로 만들지 않았고 기존 2026-10-19의 engine 2020 Print를 같은 해시로 정식 등록했다. 원본 셀 속성의 bold=false와 실제 굵은 제목을 함께 확인했으며, base/candidate 전 19쪽의 raw·쪽수·0.1%p 비교를 완료했다. 실제 코드·회귀 후보는 유지한다. 전체 Rust 순차 검증은 아직 완료되지 않았다.
