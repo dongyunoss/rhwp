@@ -4,8 +4,18 @@ use super::{is_para_topbottom_float, stored_complete_column_frame, stored_plain_
 use crate::model::table::{Table, TablePageBreak};
 
 pub(crate) struct StoredOpeningRowFrame {
+    /// 첫 조각에서 내용과 여백을 인증한 행만 포함한다.
     pub row_heights: Vec<i32>,
     pub end_row: usize,
+}
+
+impl StoredOpeningRowFrame {
+    /// 인증하지 않은 이후 행은 실제 내용으로 측정한 높이를 유지한다.
+    pub fn apply_to(&self, rows: &mut [f64], dpi: f64) {
+        for (target, source) in rows.iter_mut().zip(&self.row_heights) {
+            *target = crate::renderer::hwpunit_to_px(*source, dpi);
+        }
+    }
 }
 
 /// 개체 높이는 첫 조각, 칸 높이는 보조 행 상자일 수 있다. 선택 행의 저장 줄과
@@ -69,6 +79,7 @@ pub(crate) fn stored_plain_opening_row_frame(table: &Table) -> Option<StoredOpen
                 return None;
             }
         }
+        rows.truncate(last + 1);
         return Some(StoredOpeningRowFrame {
             row_heights: rows,
             end_row: last + 1,

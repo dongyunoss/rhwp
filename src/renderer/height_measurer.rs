@@ -4853,12 +4853,6 @@ impl HeightMeasurer {
         .then(|| {
             super::float_placement::stored_complete_row_frame_heights(table)
                 .or_else(|| super::float_placement::stored_plain_object_row_frame_heights(table))
-                .or_else(|| {
-                    (self.is_native_hwp5 || self.hwpx_stored_layout)
-                        .then(|| self.render_normalization.stored_opening_row_frame(table))
-                        .flatten()
-                        .map(|frame| frame.row_heights)
-                })
         })
         .flatten();
         if let Some(rows) = &stored_rows {
@@ -4866,6 +4860,10 @@ impl HeightMeasurer {
                 .iter()
                 .map(|height| hwpunit_to_px(*height, self.dpi))
                 .collect();
+        } else if stored {
+            if let Some(frame) = self.render_normalization.stored_opening_row_frame(table) {
+                frame.apply_to(&mut row_heights, self.dpi);
+            }
         }
 
         // 셀 간격 포함한 표 높이

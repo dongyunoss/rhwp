@@ -5471,6 +5471,19 @@ impl LayoutEngine {
                 return frames;
             }
         }
+        let stored_opening_frame = (!self.profile.get().session_edited()
+            && (self.profile.get().hwpx_stored_layout()
+                || self.profile.get().hwp5_stored_pagination_layout())
+            && !self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(table))
+        .then(|| {
+            self.render_normalization
+                .borrow()
+                .stored_opening_row_frame(table)
+        })
+        .flatten();
         if !self.profile.get().session_edited()
             && (self.profile.get().hwpx_stored_layout()
                 || self.profile.get().hwp5_stored_pagination_layout())
@@ -5479,20 +5492,12 @@ impl LayoutEngine {
                 .borrow()
                 .table_text_reflowed(table)
         {
-            if let Some(rows) =
-                crate::renderer::float_placement::stored_complete_row_frame_heights(table)
-                    .or_else(|| {
-                        crate::renderer::float_placement::stored_plain_object_row_frame_heights(
-                            table,
-                        )
-                    })
-                    .or_else(|| {
-                        self.render_normalization
-                            .borrow()
-                            .stored_opening_row_frame(table)
-                            .map(|frame| frame.row_heights)
-                    })
-            {
+            if let Some(rows) = crate::renderer::float_placement::stored_complete_row_frame_heights(
+                table,
+            )
+            .or_else(|| {
+                crate::renderer::float_placement::stored_plain_object_row_frame_heights(table)
+            }) {
                 return rows
                     .iter()
                     .map(|height| hwpunit_to_px(*height, self.dpi))
@@ -5586,8 +5591,11 @@ impl LayoutEngine {
             // 측정된 TAC 행은 셀 내용과 저장 프레임을 이미 반영한다.
             // 여기서 개체 선언을 최소 높이로 다시 적용하면 회수한 낡은
             // 프레임이 paint에서 부활하여 조판과 실제 표 높이가 달라진다.
-            if fit_common_height && !table.common.treat_as_char {
+            if fit_common_height && !table.common.treat_as_char && stored_opening_frame.is_none() {
                 self.fit_row_heights_to_common_height(table, &mut rh);
+            }
+            if let Some(frame) = &stored_opening_frame {
+                frame.apply_to(&mut rh, self.dpi);
             }
             return rh;
         }
@@ -5917,8 +5925,11 @@ impl LayoutEngine {
                 row_heights = fitted;
             }
         }
-        if fit_common_height {
+        if fit_common_height && stored_opening_frame.is_none() {
             self.fit_row_heights_to_common_height(table, &mut row_heights);
+        }
+        if let Some(frame) = &stored_opening_frame {
+            frame.apply_to(&mut row_heights, self.dpi);
         }
         row_heights
     }
