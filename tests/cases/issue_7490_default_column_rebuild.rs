@@ -15,21 +15,26 @@ fn default_column_rebuild_preserves_tac_slice_source_contract() {
 }
 
 #[test]
-fn default_column_rebuild_preserves_content_and_object_geometry() {
-    // The complete IR sweep identified these no-column body sections. A
-    // default single-column record may change control-stream offsets, but
-    // cannot change paragraph content, paper geometry or painted text and object boxes.
-    let samples = [
+fn default_column_rebuild_preserves_no_column_source_contracts() {
+    // 단 정의를 추가하면 한컴이 활성화하는 용지가 달라진다. 원본 선언 속성의
+    // 저장 계약과 서로 다른 활성 용지에서의 배치 동일성을 혼동하지 않는다.
+    for input in [
         "samples/issue5802/hf_cross_section_inherit.hwp",
-        // #7863: 기존 미달 축약 입력의 geometry는 별도 보정 후 복원한다.
         "samples/issue5871/ws_host_float_double_charge.hwp",
         "samples/issue6133/156483831_poster_title_above_offset_float.hwp",
         "samples/issue6135/156544683_title_row_underfit.hwp",
         "samples/issue6184/156489124_tail_line_before_deferred_table.hwp",
-        "samples/issue6190/center_align_first_line_indent.hwp",
         "samples/issue6196/cell_char_spacing_fit.hwp",
         "samples/issue6204/square_picture_band_host.hwp",
-    ];
+    ] {
+        rebuild_preserving_source_contract(input);
+    }
+}
+
+#[test]
+fn explicit_column_rebuild_preserves_content_and_object_geometry() {
+    // 이 입력에는 이미 본문 단 정의가 있어 재작성 전후 유효 용지가 같다.
+    let samples = ["samples/issue6190/center_align_first_line_indent.hwp"];
     fn painted_boxes(node: &RenderNode, out: &mut Vec<(f64, f64, f64, f64)>) {
         if matches!(
             node.node_type,
