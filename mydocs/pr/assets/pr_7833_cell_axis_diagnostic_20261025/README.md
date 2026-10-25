@@ -2,7 +2,7 @@
 
 ## 판정과 보존 목적
 
-**미해결 — 제품 출력은 Native/fresh WASM 모두 90% 미만이다.** 이 자료는 기존 실패를
+**최초 진단(runtime `8dc75860ce`)은 Native/fresh WASM 모두 90% 미만이다.** 이 자료는 기존 실패를
 재현하기 위한 음성 증거이며, 정상 fixture·golden·신규 회귀 등록이나 PR 제출 승인의
 근거가 아니다. 활성 검사·기대값·제품 코드는 이 단계에서 변경하지 않았다.
 진단 모델에서 얻은 수치를 실제 제품 출력의 개선으로 보고하지 않는다.
@@ -145,3 +145,69 @@ Native/fresh Sweep은 같은 원본/PDF에 `--file-target <key> <hwpx> <pdf>`,
 
 - 보존 `tests/common/cell_boundary_object_fixture.rs`: source `745f3acbdc182cc7249e623f4f07e9e2b3a70230`,
   Git blob `71b390336b6b0b906b846065f00eaafc66262db4`, SHA-256 `8470987fa153d71419f2fa6277bcddcfe256ee654e3529686d04c4a1d74500f0`.
+
+
+## 부모 물리 프레임 후속 보정: Native229와 이전 fresh064
+
+Native229는 `8e5f1858d70f05ec32eb6006cc6d048948d0c74e` 위의 추가 소스를 빌드한
+후보다. 빌드 중 source 불변·exit0을 확인했으며 실제 patch와 source 해시는 ignored
+output의 `rebase-native229-build-3692-result.json`에 있다. 아래 fresh064는 추가 보정
+전의 정확한 커밋8e5f1858d7을 표준 release와 wasm-opt -O로 빌드한 결과다.
+**두 runtime을 같은 최종 head의 Native/fresh 통과라고 합치지 않는다.**
+
+| 원본 | 부모 프레임 보정 전 Native228 | 보정 후 Native229 | 보정 전 fresh064 |
+| --- | ---: | ---: | ---: |
+| flat | 100% | [100%](tsv/native229/flat.tsv) | [100%](tsv/wasm064-before-parent-frame/flat.tsv) |
+| nested | 82.68332% | [100%](tsv/native229/nested.tsv) | [82.63757%](tsv/wasm064-before-parent-frame/nested.tsv) |
+
+Native229는 원본2개·개체 크기 대조군5개·#5785 정상 대조군을 각각 전체 한 쪽씩
+비교해 **8조건 모두 raw100%**다. 같은 여덟 입력의 이전 fresh064는7조건100%, 깊은
+중첩만82.63757%였다. 새 보정의 fresh WASM은 아직 검증하지 않았다. 새 정식 회귀나
+fixture/golden 등록·PR 제출 가능 판정으로 사용하지 않는다.
+
+![부모 프레임 보정 후 Native229 nested review](png/native229/nested-review.png)
+![부모 프레임 보정 후 Native229 nested overlay](png/native229/nested-overlay.png)
+
+[보정 후 flat review](png/native229/flat-review.png) /
+[overlay](png/native229/flat-overlay.png),
+[이전 fresh nested review](png/wasm064-before-parent-frame/nested-review.png) /
+[overlay](png/wasm064-before-parent-frame/nested-overlay.png)를 함께 보존한다.
+원본·Print·PNG를 정렬·축척 보정하거나 비교 영역을 줄이지 않았다.
+
+독립 PDF의 두 바깥 래퍼는 각각 약38.357px 높이이며 자식은 약275.38px까지 이어진다.
+보정 후 실제 RenderTree는 각각38.4px/38.4px와275.7px다. ‘중간’ 문단의 왼쪽
+두 원점과 오른쪽 형제 셀의 정렬도 PDF에 대응함을 review/overlay로 직접 확인했다.
+raw100%는 글꼴·괘선의 모든 픽셀이 같다는 뜻이 아니다. 엄격 픽셀 값과 구분한다.
+
+실제 생산·소비는 `reflow_block_cell_flow`의 셀 앞 간격/저장 prefix 기준 →
+`reflow_cell_frame_rows`의 부모 행(일반 텍스트 형제 칸 포함) → 공통
+`reflow_external_table_flow`의 자손 최대 점유 → whole 배치/중첩 본체 조회/분할 예약이다.
+부모 프레임을 줄이면서 자손이나 후속 본문의 예약을 버리지 않는다. 원본 IR·검사 기대값·
+한컴 PDF는 변경하지 않았다. 일반 순수 저장 셀과 걸침 칸, 한 칸의 여러 독립 자식은 기존
+경로를 유지한다. 기존64검사의 실제 재실행은50 PASS/14 FAIL/0 ignored이며 새 실패는
+없다. 이전 실패 기록18개 중4개가 현재 통과했으나 모두 이 코드가 해결했다고 단정하지 않는다.
+공식 전체 Rust·최종 fresh WASM·전체 시각 게이트는 별도로 완료해야 한다.
+
+Native229 바이너리 SHA-256: `f862650c422e853988c51eefc919b15e6885e7770ea8e44d0e86859d471ab8b5`.
+fresh064 JS/WASM SHA-256: `75cae6af5d48aa54e2d182681313dc85d824c60ebbea973ab4eb9285807c967d` /
+`88928e2270e06226846ba051fb5a0ea5d395211b7212f1b53c26e3ef415abb15`.
+
+### 선언 크기·정상 대조군의 독립 입력과 Print
+
+다섯 크기 대조군은 flat 원본의 TAC 개체 선언 크기만 바꾸었으며 다른 XML 속성의
+불변을 대조했다. 모두 한컴2020 `11.0.0.9136`·PrintMethod0·preprocess none의
+한 쪽 출력이다. 다섯 PDF의96DPI 래스터는 원래 flat PDF와 픽셀 단위로 같았다.
+아래 파일은 진단 자료이며 자동 회귀 수집에 등록하지 않는다.
+
+| 입력 / Print PDF | 입력 SHA-256 | PDF SHA-256 | Print job |
+| --- | --- | --- | --- |
+| [width-1200-height-1282.hwpx](inputs/controls/width-1200-height-1282.hwpx) / [PDF](../../../../pdf/pr7833-cell-axis-diagnostic/width-1200-height-1282-2020.pdf) | `9cfea4b753406ff6af981b4da7afdcd8dfae4f973d28bf30bbc94be2610180a6` | `e9932d18beedbcf22f0699133e4feb70c0d524fafd41e295f3eb13616d269491` | `c86e79d9-fc62-49b7-b0dc-57566e0b8d1a` |
+| [width-1200-height-2800.hwpx](inputs/controls/width-1200-height-2800.hwpx) / [PDF](../../../../pdf/pr7833-cell-axis-diagnostic/width-1200-height-2800-2020.pdf) | `ad23feb2b16c503b875b34defd66febb491a22a25f239bad41bd6fa31e73443a` | `732177619d41297539acef208a0915fec20b6948dec394ec643662e18bfed980` | `9404a581-2d53-48c4-8379-57683303c440` |
+| [width-41954-height-1400.hwpx](inputs/controls/width-41954-height-1400.hwpx) / [PDF](../../../../pdf/pr7833-cell-axis-diagnostic/width-41954-height-1400-2020.pdf) | `2a65d46014d4fcf7266b5b9d3ef9ca24fc53ba5c0b9cd226eb1d8940a666b8d4` | `b8b9e0e641cebd5e2185fd4dd8b4c5de1d8bb2c8ce908364ea60b72e0544874f` | `d3068ba3-f868-4d73-808b-511d57f25441` |
+| [width-41954-height-2800.hwpx](inputs/controls/width-41954-height-2800.hwpx) / [PDF](../../../../pdf/pr7833-cell-axis-diagnostic/width-41954-height-2800-2020.pdf) | `bcea2638c89afffa2aeb40adca80645c391504e5961c9e67c55609f461872fde` | `66dc77e03781175cd3b5da6af102157ac657e18a0ad6e0398d7f44d7d93fccd5` | `c4c241a8-522b-4ec8-9388-ca47850b7151` |
+| [width-83908-height-2800.hwpx](inputs/controls/width-83908-height-2800.hwpx) / [PDF](../../../../pdf/pr7833-cell-axis-diagnostic/width-83908-height-2800-2020.pdf) | `d4fba658d72e72cd12f84306f686476c958eb93d38824c46b0bb2f0de3c31319` | `c873564f2677b291ed9643e3aab966027b195caf258a9b82554599499706e69f` | `60db78ce-da6f-4a04-8f95-53e5fd1e16f5` |
+| [medal_cells_ws_host_inline.hwpx](../../../../samples/issue5785/medal_cells_ws_host_inline.hwpx) / [PDF](../../../../pdf/pr7833-cell-axis-diagnostic/medal_cells_ws_host_inline-2020.pdf) | `dc2062af95eaf71ff77d769331964f915f21f122abfd7071fdef5d3de8331ee1` | `0c0fff8bcb6c972866cc25447995b1d45d69e44f0d900a4baf563b2e574434ef` | `ce4a1b96-a3a0-4273-bf12-ef3b77ec3d26` |
+
+현재 검증 명령과 결과는 `cell-frame-native229-3694-result.json`,
+`cell-frame-wasm064-3688-result.json`, `pr8054-focused-after-3693-result.json`에 있다.
+실행 로그·중간 JSON은 ignored output에 유지하고 커밋하지 않는다.

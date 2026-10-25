@@ -83,23 +83,18 @@ pub(crate) fn reflow_host_line_height(
 /// 저장된 선행 글줄 뒤의 NO_LS 호스트도 동일한 재조판 프레임을 연다.
 /// 다른 개체와 혼합된 호스트·저장 위치로 돌아오는 후속 문단은 각각의 기존
 /// 줄 구성/저장 프레임 계약을 유지한다. 자식 높이는 바깥여백을 제외한 실제 본체다.
-pub(crate) fn reflow_block_cell_flow(
-    paragraphs: &[Paragraph],
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    mut table_body_height: impl FnMut(&Table) -> f64,
-) -> Option<ReflowBlockCellFlow> {
+pub(crate) fn has_reflow_block_cell_host(paragraphs: &[Paragraph]) -> bool {
     let mut reflow_started = false;
     let mut has_host = false;
     for para in paragraphs {
         let no_ls = crate::renderer::para_has_no_stored_line_segs(para);
         if para.column_type != ColumnBreakType::None {
-            return None;
+            return false;
         }
         if no_ls {
             // 가시 텍스트의 줄 나눔은 실제 가용 폭에서 구성한 결과가 소유한다.
             if !para.text.is_empty() {
-                return None;
+                return false;
             }
             reflow_started = true;
         } else if reflow_started
@@ -111,7 +106,7 @@ pub(crate) fn reflow_block_cell_flow(
                     || line.line_height <= 0
             })
         {
-            return None;
+            return false;
         }
         for control in &para.controls {
             match control {
@@ -131,13 +126,37 @@ pub(crate) fn reflow_block_cell_flow(
                     has_host = true;
                 }
                 Control::ColumnDef(columns) if columns.column_count == 1 => {}
-                _ => return None,
+                _ => return false,
             }
         }
     }
-    if !has_host {
+    has_host
+}
+
+pub(crate) fn reflow_block_cell_flow(
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    mut table_body_height: impl FnMut(&Table) -> f64,
+) -> Option<ReflowBlockCellFlow> {
+    if !has_reflow_block_cell_host(paragraphs) {
         return None;
     }
+
+    // 혼합 재조판 프레임의 저장 prefix는 첫 줄을 셀의 앞 간격에 연결한다.
+    // 원래 본문에서 옮겨 온 첫 vpos를 새 셀의 빈 물리 띠로 더하지 않는다.
+    // 저장 줄 사이의 차이와 원본 속성에서 입증된 앞 간격은 그대로 보존한다.
+    let stored_origin = paragraphs.first().map_or(0.0, |para| {
+        let first = para
+            .line_segs
+            .first()
+            .map_or(0.0, |line| hwpunit_to_px(line.vertical_pos, dpi));
+        let before = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map_or(0.0, |style| style.spacing_before);
+        first - crate::renderer::cell_first_para_stored_lead(para, before, dpi)
+    });
 
     let mut flow = ReflowBlockCellFlow {
         paragraph_origins: Vec::with_capacity(paragraphs.len()),
@@ -170,8 +189,7 @@ pub(crate) fn reflow_block_cell_flow(
         flow.host_bottom += before;
         let no_ls = crate::renderer::para_has_no_stored_line_segs(para);
         if !no_ls {
-            // 선행 저장 사다리의 빈 밴드는 글자 수나 합산 높이로 추측하지 않는다.
-            let top = hwpunit_to_px(para.line_segs.first()?.vertical_pos, dpi);
+            let top = hwpunit_to_px(para.line_segs.first()?.vertical_pos, dpi) - stored_origin;
             if top < cursor {
                 return None;
             }
@@ -180,6 +198,7 @@ pub(crate) fn reflow_block_cell_flow(
             flow.paragraph_origins.push(cursor);
             for (li, line) in para.line_segs.iter().enumerate() {
                 let end = hwpunit_to_px(line.vertical_pos.saturating_add(line.line_height), dpi)
+                    - stored_origin
                     + if !last || li + 1 < para.line_segs.len() {
                         hwpunit_to_px(line.line_spacing, dpi)
                     } else {
@@ -253,4 +272,81 @@ pub(crate) fn reflow_block_cell_flow(
     }
     flow.bottom = cursor;
     Some(flow)
+}
+
+/// 부모 행의 물리 프레임과 공동 앵커 자손들의 최대 점유를 함께 발행한다.
+/// 일반 텍스트 형제 칸은 부모 프레임만 소유하며 외부 자식 스트림을 만들지 않는다.
+pub(crate) fn supports_reflow_external_table_frame(table: &Table) -> bool {
+    super::is_para_topbottom_float(&table.common)
+        && !table.common.flow_with_text
+        && table.common.vert_align == VertAlign::Top
+        && table.caption.is_none()
+        && table.row_count == 1
+        && !table.cells.is_empty()
+}
+
+pub(crate) fn reflow_external_table_flow(
+    table: &Table,
+    dpi: f64,
+    parent_frame_height: f64,
+    mut cell_flow: impl FnMut(&Cell) -> Option<ReflowBlockCellFlow>,
+) -> Option<ReflowExternalTableFlow> {
+    if !supports_reflow_external_table_frame(table)
+        || !parent_frame_height.is_finite()
+        || parent_frame_height <= 0.0
+    {
+        return None;
+    }
+    let mut external_bottom = None::<f64>;
+    let mut child_splittable = false;
+    for cell in &table.cells {
+        if cell.row_span != 1 || cell.text_direction != 0 {
+            return None;
+        }
+        let children = cell
+            .paragraphs
+            .iter()
+            .flat_map(|para| &para.controls)
+            .filter(|control| matches!(control, Control::Table(_)))
+            .count();
+        if children == 0
+            && cell
+                .paragraphs
+                .iter()
+                .all(crate::renderer::cell_paragraph_has_only_single_column_metadata)
+        {
+            continue;
+        }
+        // 한 칸의 여러 독립 자식은 일반 컷 원장이 계속 소유한다.
+        if children != 1 {
+            return None;
+        }
+        let flow = cell_flow(cell)?;
+        if flow
+            .origins
+            .iter()
+            .flatten()
+            .flatten()
+            .any(|origin| !origin.host_relative)
+        {
+            return None;
+        }
+        let child_end = flow.external_bottom?;
+        external_bottom = Some(external_bottom.map_or(child_end, |end| end.max(child_end)));
+        child_splittable |= flow.external_child_splittable;
+    }
+    let external_bottom = external_bottom?;
+    let outside = hwpunit_to_px(
+        i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+        dpi,
+    );
+    let offset = hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    external_bottom
+        .is_finite()
+        .then_some(ReflowExternalTableFlow {
+            parent_frame_height,
+            external_bottom,
+            effective_height: parent_frame_height.max(external_bottom - offset - outside),
+            child_splittable,
+        })
 }

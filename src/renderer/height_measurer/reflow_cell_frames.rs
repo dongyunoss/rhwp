@@ -1,6 +1,7 @@
 //! 원본 소유의 예약 높이와 완료 셀의 물리 테두리 높이를 함께 발행한다.
 
-use super::{HeightMeasurer, ResolvedStyleSet, Table};
+use super::{HeightMeasurer, MeasuredCell, MeasuredTable, ResolvedStyleSet, Table};
+use crate::renderer::{float_placement::ReflowExternalTableFlow, hwpunit_to_px};
 
 impl HeightMeasurer {
     pub(super) fn reflow_cell_frame_rows(
@@ -9,6 +10,7 @@ impl HeightMeasurer {
         styles: &ResolvedStyleSet,
         depth: usize,
         source_rows: &[f64],
+        measured_cells: &[MeasuredCell],
     ) -> Option<Vec<f64>> {
         let mut frames = source_rows.to_vec();
         let mut resolved = false;
@@ -28,18 +30,62 @@ impl HeightMeasurer {
             if cells.is_empty() {
                 continue;
             }
+            let mut has_reflow_host = false;
             let known_frames: Option<Vec<_>> = cells
                 .into_iter()
                 .map(|cell| {
-                    let flow = self.cell_reflow_block_flow(cell, styles, depth)?;
-                    flow.parent_frame_height(cell, table, self.dpi)
+                    if let Some(flow) = self.cell_reflow_block_flow(cell, styles, depth) {
+                        has_reflow_host = true;
+                        return flow.parent_frame_height(cell, table, self.dpi);
+                    }
+                    // 실제로 측정한 일반 텍스트 형제 칸도 같은 부모 행을 소유한다.
+                    // 외부 개체·세로쓰기·별도 자식의 높이를 plain 몫으로 추측하지 않는다.
+                    if cell.text_direction != 0
+                        || !cell
+                            .paragraphs
+                            .iter()
+                            .all(crate::renderer::cell_paragraph_has_only_single_column_metadata)
+                    {
+                        return None;
+                    }
+                    let measured = measured_cells.iter().find(|measured| {
+                        measured.row == usize::from(cell.row)
+                            && measured.col == usize::from(cell.col)
+                    })?;
+                    Some(
+                        hwpunit_to_px(i32::try_from(cell.height).ok()?, self.dpi).max(
+                            measured.total_content_height
+                                + measured.padding_top
+                                + measured.padding_bottom,
+                        ),
+                    )
                 })
                 .collect();
-            if let Some(known) = known_frames {
+            if let Some(known) = known_frames.filter(|_| has_reflow_host) {
                 *height = known.into_iter().fold(0.0_f64, f64::max);
                 resolved = true;
             }
         }
         resolved.then_some(frames)
+    }
+
+    /// 자식의 물리 행과 그 밖으로 이어지는 자손의 점유를 재귀해서 구분한다.
+    /// 배치도 같은 집계 함수를 사용하며 부모 prefix를 자식 끝에 합산하지 않는다.
+    pub(super) fn measured_reflow_external_flow(
+        &self,
+        table: &Table,
+        styles: &ResolvedStyleSet,
+        depth: usize,
+        measured: &MeasuredTable,
+    ) -> Option<ReflowExternalTableFlow> {
+        let frames = measured.row_frame_heights.as_ref()?;
+        let parent_height =
+            frames.iter().sum::<f64>() + measured.cell_spacing * (frames.len() + 1) as f64;
+        crate::renderer::float_placement::reflow_external_table_flow(
+            table,
+            self.dpi,
+            parent_height,
+            |cell| self.cell_reflow_block_flow(cell, styles, depth),
+        )
     }
 }

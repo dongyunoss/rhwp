@@ -3770,6 +3770,12 @@ impl LayoutEngine {
     ) -> f64 {
         // [#6929] 진입 시점의 단 상태 — 이후 이 함수가 자식을 붙이므로 먼저 찍어 둔다.
         let column_is_empty_on_entry = col_node.children.is_empty();
+        // 중첩 표도 최상위 측정과 같은 부모 행/외부 자식 분리를 소비한다.
+        let reflow_measured = measured_table
+            .is_none()
+            .then(|| self.measured_reflow_block_table(table, styles))
+            .flatten();
+        let measured_table = measured_table.or(reflow_measured.as_ref());
         if table.cells.is_empty() {
             if depth == 0 {
                 return y_start;
@@ -5455,6 +5461,16 @@ impl LayoutEngine {
             })
             .flatten();
         let measured_table = measured_table.or(inline_measured.as_ref());
+        // None으로 들어오는 중첩 본체 조회에는 예약 전량이 아니라 실제 물리 행을 준다.
+        // 명시적인 MeasuredTable 소비자는 기존 예약/paint 분리 경로를 유지한다.
+        if measured_table.is_none() {
+            if let Some(frames) = self
+                .measured_reflow_block_table(table, styles)
+                .and_then(|measured| measured.row_frame_heights)
+            {
+                return frames;
+            }
+        }
         if !self.profile.get().session_edited()
             && (self.profile.get().hwpx_stored_layout()
                 || self.profile.get().hwp5_stored_pagination_layout())

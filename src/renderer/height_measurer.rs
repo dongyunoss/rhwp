@@ -2896,6 +2896,11 @@ impl HeightMeasurer {
             |child| {
                 let stretch = self.render_normalization.nested_table_width_scale(child);
                 let measured = self.measure_table_impl(child, 0, 0, styles, depth + 1, stretch);
+                if let Some(flow) =
+                    self.measured_reflow_external_flow(child, styles, depth + 1, &measured)
+                {
+                    return flow.effective_height;
+                }
                 measured.row_frame_heights.as_ref().map_or(
                     measured.total_height - measured.caption_height,
                     |rows| {
@@ -5491,7 +5496,8 @@ impl HeightMeasurer {
             }
         }
 
-        let row_frame_heights = self.reflow_cell_frame_rows(table, styles, depth, &row_heights);
+        let row_frame_heights =
+            self.reflow_cell_frame_rows(table, styles, depth, &row_heights, &measured_cells);
         if let Some(frames) = row_frame_heights.as_ref() {
             for (row, &height) in frames.iter().enumerate() {
                 let growth = (height - row_heights[row]).max(0.0);

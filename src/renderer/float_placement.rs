@@ -28,8 +28,9 @@ pub(crate) use stored_cell_flow_picture::{
 mod reflow_block_cell;
 mod stored_closed_cell_frame;
 pub(crate) use reflow_block_cell::{
-    reflow_block_cell_flow, reflow_host_line_height, ReflowBlockCellFlow, ReflowBlockOrigin,
-    ReflowExternalTableFlow,
+    has_reflow_block_cell_host, reflow_block_cell_flow, reflow_external_table_flow,
+    reflow_host_line_height, supports_reflow_external_table_frame, ReflowBlockCellFlow,
+    ReflowBlockOrigin, ReflowExternalTableFlow,
 };
 mod stored_empty_host_frame;
 mod stored_nested_before_host;

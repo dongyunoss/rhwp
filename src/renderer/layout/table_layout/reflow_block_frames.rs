@@ -18,6 +18,35 @@ impl Drop for ReflowBlockHostScope<'_> {
 }
 
 impl LayoutEngine {
+    /// 전체 표·중첩 높이 조회가 같은 측정기의 부모 물리 프레임을 소비한다.
+    /// 저장 문서 전체에 적용하지 않고 기존 혼합 재조판 호스트가 있는 표만 측정한다.
+    pub(in crate::renderer::layout) fn measured_reflow_block_table(
+        &self,
+        table: &Table,
+        styles: &ResolvedStyleSet,
+    ) -> Option<crate::renderer::height_measurer::MeasuredTable> {
+        if self.profile.get().hwp3_layout()
+            || !table.cells.iter().any(|cell| {
+                crate::renderer::float_placement::has_reflow_block_cell_host(&cell.paragraphs)
+            })
+        {
+            return None;
+        }
+        let profile = self.profile.get();
+        let measurer = crate::renderer::height_measurer::HeightMeasurer::new(self.dpi)
+            .with_stored_geometry_policy(profile.stored_geometry_policy())
+            .with_native_hwp5(profile.hwp5_stored_pagination_layout())
+            .with_hwpx_stored_layout(profile.hwpx_stored_layout())
+            .with_session_edited(profile.session_edited())
+            .with_render_normalization(self.render_normalization_overlay());
+        if let Some(spacing) = self.section_column_spacing_hu.get() {
+            measurer.set_section_column_spacing_hu(spacing);
+        }
+        let measured = measurer.measure_table(table, 0, 0, styles);
+        measured.row_frame_heights.as_ref()?;
+        Some(measured)
+    }
+
     /// 셀 단위 나눔의 페이지 초과 여부는 호스트 밴드와 부동 자식 프레임을 구분한다.
     /// 부동 자식까지 합친 전체 높이는 예약·배치에서 유지한다. 그 확장만으로 셀 내부
     /// 나눔을 허용하면 한 쪽에 들어가는 호스트에 붙은 자식도 부모 정책과 달리 잘린다.
@@ -126,7 +155,13 @@ impl LayoutEngine {
             paragraphs,
             styles,
             self.dpi,
-            |child| self.nested_table_body_height(child, styles),
+            |child| {
+                self.reflow_unrestricted_table_flow(child, styles)
+                    .map_or_else(
+                        || self.nested_table_body_height(child, styles),
+                        |flow| flow.effective_height,
+                    )
+            },
         )
     }
 
