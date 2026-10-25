@@ -28,6 +28,7 @@ Native 신원은 [별도 기록](native/proof.json)에 있다. 후속 커밋의 
 기본 86개와 `native-skia` 전용 1개다. 최종 본문의 수정 전/후 재현과 전체 필수 검증은 계속한다.
 
 새 devel의 [35조건·2,041쪽 Native 보존 및 관련 비시각 검사](preservation/README.md)는 통과했다.
-새 base와 후보의 WASM 보존 대조·실제 Studio 소비·최종 전체 Rust 검사는 별도 완료 조건이다.
+실제 Studio·Canvas·CanvasKit 소비와 최종 WMF 검사 본문의 수정 전/후 재현은
+[별도 증거](consumer/README.md)로 확인했다. 새 base와 후보의 WASM 보존 대조·최종 전체 Rust 검사는 별도 완료 조건이다.
 이 자료를 CI·원격 제출·머지 완료로 표시하지 않는다. 편람 HWP/HWPX 두 파일과 문서 정오표는
 이번 검토 범위에서 제외한다.

@@ -140,3 +140,19 @@
   Native Skia 3종과 관련 Native 전용 검사도 실행한다.
 - 새 devel의 WASM 전쪽 대조와 실제 Studio/CanvasKit 소비 검증은 계속 진행 중이다.
   임시 스크립트·진단 파일은 ignored output에 두며 새 테스트 원본만 정식 경로에 등록한다.
+
+## 실제 브라우저 소비와 최종 WMF 경계 재현
+
+- 최종 검사 본문 SHA `4a156823671a3ff2c7bc3bbaade187abfd59f5cb17b427accef4c957b7e68037`를
+  보정 전과 보정 후 frozen Native 라이브러리에 각각 연결했다. 두 컴파일은 exit 0이며,
+  같은 본문의 보정 전 실행은 의도한 인쇄 frame 단언에서 exit 101, 보정 후는 exit 0·1 PASS다.
+- 목표 문서 주요 8쪽을 Native·최적화 WASM·독립 Print로 직접 판독했다. BCP 2022 문단의
+  원본 두 줄, 2024 원본의 해당 한 줄, 수식의 분수·괄호를 확대 대조했다.
+- Canvas 브라우저 계약 8건과 CanvasKit crop 네 모드를 통과했다. 실제 WMF 18쪽·35쪽의
+  네 영역은 최적화 WASM의 CanvasKit software backend에서 정수 미대응 0/0이다.
+  readiness·image 실패 없음·fallback 미사용 및 실제 초기화 응답 WASM SHA를 확인했다.
+- Studio 후보 5종과 새 base 3종을 실제 브라우저에서 통과했다. 초기화 응답 자체의 SHA를
+  확인했으며 별도 파일 재요청으로 실행 신원을 대신하지 않았다.
+- [실제 소비·이미지·해시·종료 코드](../pr/assets/issue_8160/rebase-8231/consumer/README.md)를 고정한다.
+  CanvasKit 판정 범위는 두 그림 영역이다. 전체 Rust·Native Skia와 새 devel의 WASM 전쪽
+  보존은 계속 진행하며, 이 단계의 통과를 나머지 필수 항목 완료로 표시하지 않는다.
