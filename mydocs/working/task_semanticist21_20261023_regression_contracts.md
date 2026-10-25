@@ -85,3 +85,62 @@ used/known feature, SVG 및 Skia replay를 검사한다. 과거 전역 minor 29�
 
 최종 전체 Rust·lint·feature 보존·시각 검증 및 PR 제출·CI·merge·후속 처리는 아직 완료하지
 않았다. 활성 작업의 미완료 항목으로 계속 처리하며 이 상태로 PR을 제출하지 않는다.
+
+## 2026-10-25: 독립 근거와 모순되는 기존 검사 제거
+
+사용자의 「기존 회귀가 틀렸다면 제거」 지시에 따라 아래 잘못된 기대값만 제거한다.
+제거 전 코드는 `43e2697fe76e495fd6363123b3021270eac54cc7`의 Git 이력에 있으며,
+사용자가 별도 보관을 거절했으므로 `.rs.txt`나 백업 사본은 만들지 않는다.
+정상 검사·원본 입력·독립 PDF는 유지한다. 출력의 미해결 차이를 해결했다고 판정하지 않는다.
+
+### #5700: 9쪽에 있다는 잘못된 소유 가정
+
+원 해결 PR #6125의 `832217afbc47` 및 통합 PR #6159,
+`400406a861f0a45c5c9e3d2a69261fa6a8fab54d`를 추적했다. 수정은 되감긴 TAC 꼬리의
+리셋 방지이며, 슬라이스의 과거 9쪽 배치 자체가 독립 정답이라는 근거는 없었다.
+
+같은 입력 `samples/issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp`를
+한컴 2020 11.0.0.9136의 PrintMethod 0·1-up으로 출력한 결과는 12쪽이다.
+원본 SHA-256은 `276c9ac502983b6e438d8dbf766965363da50783ab1f4d2402241bb7adf9d490`,
+[기준 PDF](../../pdf/issue5700/1530000-200800002_slice_p139_tac_reset_tail-2020.pdf)의
+SHA-256은 `a35d8b0426d83a27a40445d96859053ecc0fdbbd220f12836f8d45ed08fc6e2a`다.
+MCP는 코드가 없는 빈 스크립트 레코드만 제거했으며, 원본의 압축 해제 레코드와 전처리
+내용을 `issue5700-script-inventory-3767.json`에서 확인했다. PDF 본문에서 pi53의
+GPS floater는 10쪽, pi54의 Appendix 2는 11쪽에 있다.
+
+기존 `issue_5700_tac_reset_tail_stays_in_flow`는 두 문단을 모두 9쪽에서 찾았으므로
+검사 파일을 삭제한다. #7490의 재저장 검사는 이 입력의 기존 10쪽 출력과 재저장 출력을
+동일한 정답으로 고정하던 쪽수·배치 비교만 제거한다. 용지·문단 수·본문·문단 모양의
+IR 저장 계약은 `issue_7490_default_column_rebuild` 모듈에서 계속 검사하며, 다른 정상
+입력 8개의 기존 배치 검사는 그대로 유지한다. 원 모듈도 1,000줄 미만으로 줄였다.
+
+고정 base `9418ed0c7cf289c5c4ac2b3bb8cdc18a1b637a9a`와 소스가 같은 Native 194는
+10쪽, 현재 Native 232는 12쪽이다. 기존 검사가 base에서 통과했다는 사실은 독립 정답을
+입증하지 않는다. 현재 11쪽은 raw 34.55795%로 여전히 배치 차이가 있어 시각 통과나
+문서 보정 완료로 기록하지 않는다. base는 전체 쪽수가 달라 전쪽 최저값을 산출하지 못했다.
+`issue5700-exact-comparison-3770-result.json`과
+`issue5700-page-owner-review-3771/`의 10·11쪽 review/overlay에서 근거를 확인했다.
+
+### #6812: 원문 글자 인덱스와 논리 주소의 혼동
+
+공통 `assert_inline_text_order`가 인라인 표 앞뒤의 `TextRun.char_start`를 `(0, 1)`로
+고정하던 assertion을 제거한다. `7ee0669a578`의 공통 논리 주소 계약은 인라인 개체도
+한 슬롯으로 소비하므로 원문 「앞뒤」의 두 번째 글자 인덱스와 편집 주소는 다르다.
+원 해결·소유 계약 분석은
+[인라인 원문 주소 보고서](task_semanticist21_20261022_inline_flow_source_addresses.md)에 있다.
+
+세 검사 함수는 삭제하지 않는다. 두 글자의 보존·중복 금지·분리된 run 수와 표 앞뒤의
+배치 관계를 계속 검사한다. 같은 수동 입력의 고정 base 전쪽 Native 최저값은 각각
+34.76837%·14.23695%·34.76837%였다. 이 점수를 삭제의 유일한 근거로 삼거나, 잘못된
+주소 assertion을 제거한 것을 해당 입력의 한컴 출력 일치로 보고하지 않는다.
+`issue6812-comparison-3718-result.json`에 같은 원본·Print PDF·base/head의 결과가 있다.
+
+실행 로그·중간 JSON의 접두어는 `output/pr-review/semanticist21-20261019/`다.
+`incorrect-regression-removal-3772.json`에 제거 전 source commit·Git blob·SHA-256과
+제거·유지 범위를 기록했다. 최종 실행 결과는 검증이 끝난 뒤 아래에 추가한다.
+
+실행 결과: `logs/incorrect-regression-validation-3777.log`에서 **46건 실행, 45 PASS·
+1 FAIL**(종료 코드 100)을 확인했다. #6812의 세 관계 검사, #5700 축약본의 IR 저장 계약,
+#5929 두 건과 부모 프레임 검사는 통과했다. 남은 실패는
+`samples/issue5802/hf_cross_section_inherit.hwp`의 재저장 전후 배치 비교이며, 독립
+기대값의 판정이 끝나지 않았으므로 삭제하지 않았다. 전체 통과로 보고하지 않는다.
