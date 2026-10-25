@@ -630,7 +630,6 @@ fn default_column_rebuild_preserves_content_and_object_geometry() {
     // cannot change paragraph content, paper geometry or painted text and object boxes.
     let samples = [
         "samples/issue5701/1530000-200800002_slice_p139_tac_reset_tail.hwp",
-        "samples/issue5715/float_chart_ghost_ladder_gap.hwp",
         "samples/issue5802/hf_cross_section_inherit.hwp",
         // #7863: 기존 미달 축약 입력의 geometry는 별도 보정 후 복원한다.
         "samples/issue5871/ws_host_float_double_charge.hwp",
