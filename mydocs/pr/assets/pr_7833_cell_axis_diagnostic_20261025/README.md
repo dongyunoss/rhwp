@@ -211,3 +211,61 @@ fresh064 JS/WASM SHA-256: `75cae6af5d48aa54e2d182681313dc85d824c60ebbea973ab4eb9
 현재 검증 명령과 결과는 `cell-frame-native229-3694-result.json`,
 `cell-frame-wasm064-3688-result.json`, `pr8054-focused-after-3693-result.json`에 있다.
 실행 로그·중간 JSON은 ignored output에 유지하고 커밋하지 않는다.
+
+
+## 같은 runtime의 최종 국소 검증과 새 회귀 검사
+
+제품 코드 `98c2a364e68731e4f4911d765756904a0258dd46`의 fresh065는 표준
+release와 `wasm-opt -O`로 빌드했다. Native229는 빌드 당시 작업 트리의 제품 소스가
+이 commit과 동일한지 312개 파일의 SHA-256으로 대조했다. 이 절은 위의 보정 전
+fresh064와 구분한 후속 결과다.
+
+| 원본 | Native229 전체 쪽 raw | fresh065 전체 쪽 raw | 독립 PDF 쪽수 |
+| --- | ---: | ---: | ---: |
+| flat | [100%](tsv/native229/flat.tsv) | [100%](tsv/wasm065/flat.tsv) | 1 |
+| nested | [100%](tsv/native229/nested.tsv) | [100%](tsv/wasm065/nested.tsv) | 1 |
+
+원본 2개·선언 크기 대조군 5개·#5785 정상 대조군은 양쪽 모두 8조건/8쪽 raw100%다.
+전체 쪽수도 각각 한 쪽이다. 아래 fresh review/overlay와 Native 대응 자료를 직접 읽어
+부모의 짧은 프레임, 바깥으로 이어지는 자손, 글줄의 순서·형제 셀 원점을 확인했다.
+괘선 두께와 글꼴의 엄격 픽셀 차이는 남으며 raw100%와 혼동하지 않는다.
+
+![fresh065 nested review](png/wasm065/nested-review.png)
+![fresh065 nested overlay](png/wasm065/nested-overlay.png)
+
+[flat review](png/wasm065/flat-review.png) / [overlay](png/wasm065/flat-overlay.png).
+
+신규 이름의 `tests/cases/verified_inline_grid_parent_frames.rs`는 원본·PDF SHA,
+한 쪽 전체의 글자 보존·무중복, 본문 순서, 인라인 표 앞뒤 본문과의 관계, 부모/자손의
+물리 프레임을 검사한다. 양쪽 raw100%인 완료 페이지에 한해
+[independent-frame-oracle.json](independent-frame-oracle.json)의 독립 PDF 벡터 괘선
+중심을 96 DPI CSS px로 환산한 좌표에 ±2px를 적용한다. 기대 좌표를 렌더 helper에서
+읽거나 PNG를 이동·축소해 맞추지 않았다.
+
+현재 동결 CLI로 실행한 새 검사 2개는 모두 PASS다. 같은 검사에서 보정 전 Native224는
+2개 모두 FAIL이고, 셀 폭은 보정됐지만 부모 프레임은 보정 전인 Native228은 flat PASS /
+nested FAIL이다. 후자의 실패는 독립 PDF 부모 높이38.357px 대 실제340.9px이며,
+현재38.4px로 개선된 결함을 직접 검출한다. 동결 library/CLI 검사 결과와 공식 Cargo
+수집·실행 결과는 구분한다. 이 국소 성공은 통합 브랜치 전체의 PR 제출 가능 판정이 아니다.
+
+실행 명령·exit code·바이너리 hash·로그는 ignored output의
+`verified-inline-grid-3710-result.json`, `verified-inline-grid-before224-3712-result.json`,
+`verified-inline-grid-before228-3712-result.json`, `cell-frame-wasm065-3700-result.json`에
+보존한다. `native229-committed-runtime-equivalence-3698.json`이 제품 소스의 동일성을
+입증한다. 전체 Rust와 나머지 최종 검증은 별도 필수 게이트다.
+
+
+정식 자동 수집 경로에서도 다음 명령을 실행했다.
+
+```bash
+CARGO_BUILD_JOBS=8 node scripts/run-rust-test.mjs verified_inline_grid_parent_frames -- \
+  --cargo-profile release-test --target-dir target/pr-review \
+  --features native-skia,pdf-jbig2,pdf-jpeg2000 --test-threads 12 --no-fail-fast
+```
+
+`regression_suite_006`에서 **2 tests run / 2 passed / exit0**다. 이 실행의 290 skipped는
+선택식에 포함하지 않은 같은 suite의 다른 검사이며 전체 Rust 성공을 뜻하지 않는다.
+빌드 5분39초, 실제 테스트 0.127초이며 로그는
+`output/pr-review/semanticist21-20261019/logs/verified-inline-grid-nextest-3714.log`에 있다.
+자동 수집은 1810 sources / 7874 static attributes / 48 targets이며 파생 harness·manifest는
+커밋하지 않는다. 변경 파일의 rustfmt와 `git diff --check`도 통과했다.
