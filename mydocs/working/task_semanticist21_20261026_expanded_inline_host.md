@@ -86,3 +86,13 @@ strict fit에 전달했지만 그 앞의 `physical_tac::prepare → commit_store
 성공을 전체 회귀 성공으로 확대하지 않는다. 로그·source/artifact SHA와 실패 가족별 분류는
 `expanded-inline-host-4004-result.json`, `full-rust-failure-families-4003.json`에 있다.
 새 단축 보정의 검증은 아직 남아 있다.
+
+Native250도 같은 70검사에서 69 PASS·#6448 1 FAIL이었다. raw parser와 Core의
+편집 IR은 모두 host 1,000HU·표 68,000HU를 보존하므로, IR을 이미 덮어썼다는 가설은
+실제 읽기 전용 probe로 기각했다. `commit_stored_tac_control`의 전체 호출을 다시 추적하면
+TAC 함수 내부 이전에 `try_place_stored_tac_paragraph`의 computed/stored 두 계획과
+`flow_table::prepare_coanchored_first_line`도 조기 반환한다. 이 세 수용도 같은 확장 출처를
+제외해야 실제 공통 배치에 도달한다. `physical_tac`와 일반 배치의 출처 소비를 포함해
+전체 저장 TAC commit 지점을 대조했으며, 이번 두 입구에도 동일 overlay 조건을 전달한다.
+실제 재검증 전 성공으로 보고하지 않는다. probe와 실행은
+`6448-source-frame-4009-result.json`, `expanded-inline-host-focused-4006-result.json`에 있다.

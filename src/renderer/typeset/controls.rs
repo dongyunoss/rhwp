@@ -526,6 +526,14 @@ pub(super) fn try_place_stored_tac_paragraph(
     composed: Option<&ComposedParagraph>,
 ) -> bool {
     let dpi = engine.dpi;
+    // 커진 인라인 줄은 원본 저장 TAC 계획의 수용 증거가 아니다.
+    // 공통 표 경로가 실제 상자와 뒤 본문의 전체 점유를 함께 검사한다.
+    if para.controls.iter().any(|control| {
+        matches!(control, Control::Table(table)
+            if engine.render_normalization.inline_host_frame_expanded(table))
+    }) {
+        return false;
+    }
     let source_frame = st.stored_tac_line_frame(para, paragraphs.get(para_idx + 1), styles);
     if let Some(placement) = stored_tac::prepare_computed(
         para_idx,
