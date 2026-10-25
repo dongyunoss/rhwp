@@ -383,7 +383,7 @@ def load_manifest(path: Path, repo: Path) -> tuple[list[Pair], list[str]]:
         doc_s, pdf_s = _pair_keys(item)
         if not doc_s or not pdf_s:
             continue
-        if is_deferred_regression_input(doc_s):
+        if is_deferred_regression_input(doc_s, axis="oracle"):
             continue
         doc = Path(doc_s)
         pdf = Path(pdf_s)
@@ -393,7 +393,7 @@ def load_manifest(path: Path, repo: Path) -> tuple[list[Pair], list[str]]:
             pdf = repo / pdf
         stem = str(item.get("stem") or doc.stem)
         pairs.append(Pair(doc=doc, pdf=pdf, stem=stem))
-    return pairs, [p for p in unpaired if not is_deferred_regression_input(p)]
+    return pairs, [p for p in unpaired if not is_deferred_regression_input(p, axis="oracle")]
 
 
 def write_manifest(path: Path, pairs: Sequence[Pair], repo: Path, unpaired: Sequence[str] | None = None) -> None:
@@ -439,7 +439,7 @@ def iter_docs(docs_roots: Sequence[Path]) -> list[Path]:
     docs: list[Path] = []
     seen: set[str] = set()
     for root in docs_roots:
-        if is_deferred_regression_input(root):
+        if is_deferred_regression_input(root, axis="oracle"):
             continue
         if root.is_file() and root.suffix.lower() in DOC_SUFFIXES:
             key = str(root.resolve()).casefold()
@@ -452,7 +452,7 @@ def iter_docs(docs_roots: Sequence[Path]) -> list[Path]:
         for path in sorted(root.rglob("*")):
             if not path.is_file() or path.suffix.lower() not in DOC_SUFFIXES:
                 continue
-            if is_deferred_regression_input(path):
+            if is_deferred_regression_input(path, axis="oracle"):
                 continue
             key = str(path.resolve()).casefold()
             if key in seen:

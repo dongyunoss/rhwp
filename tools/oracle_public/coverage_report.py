@@ -110,7 +110,7 @@ def walk_samples(samples_dir: Path, repo_root: Path) -> list[SampleDoc]:
     excluded.update(deferred_names)
     found: list[SampleDoc] = []
     for path in samples_dir.rglob("*"):
-        if is_deferred_regression_input(path):
+        if is_deferred_regression_input(path, axis="oracle"):
             continue
         if not path.is_file():
             continue
