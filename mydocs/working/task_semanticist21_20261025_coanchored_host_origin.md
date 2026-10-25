@@ -190,3 +190,28 @@ TypesetEngine의 수용·배제 프레임 → LayoutEngine의 같은 문단·프
 양수 오프셋 표의 위 바깥여백은 `exclusion_top` 한 함수에서 측정·paint 양쪽에 전달한다.
 기존 글 뒤 `NextLine`의 호스트 줄 소유는 바꾸지 않는다. 정상 대조군은 #6950의 글 끝
 앵커·단일 표·여러 줄·폭 부족과 #6133 원본·축약본이며 위 113개 실행에 포함했다.
+
+### fresh WASM의 완료와 새 이름의 정식 회귀
+
+코드 `ca4420fad6d974931aafdfbc1a803d729611967c`의 표준 release WASM068은
+실제 wasm-opt 최적화까지 exit 0으로 완료했다. 빌드 중 source hash는 불변이며
+그 코드 commit의 1,600개 런타임 파일과 일치한다. Native240과 fresh WASM068은
+4개 원본·7쪽 전쪽 raw 100%, 독립 Print와 쪽수 일치를 각각 확인했다.
+`logs/after-wasm068-3875.log`와 `remaining-visual-3875-result.json`을 연결한다.
+
+#1510 HWP/HWPX와 #1535의 글자·표 경계·여백·이어받기 영역을 직접 대조했다.
+초기 Native239와 안전성 보완 뒤 Native240의 7쪽 PNG는 바이트 단위로 같다.
+[선행 증거](../pr/assets/issue1510/coanchored-host-flow-20261025/README.md)에
+원본 TSV와 대표 review·overlay를 보존했다. 이 자료는 뒤의 #6970·#7158 보정에 대한
+최종 시각 검증을 대신하지 않는다.
+
+`tests/cases/verified_coanchored_host_flow.rs`에 새 이름의 정식 검사 4개를 추가한다.
+형제 표의 원문 여백 일회 소비·본문 순서·누락·겹침, HWP 호스트의 저장 IR 보존,
+이어받기 첫·마지막 문단을 보호한다. 독립 PDF의 글자 원점을 96 DPI로 환산한
+핵심 위치만 ±2 CSSpx로 검사하며, 같은 페이지의 양쪽 raw는 100%다.
+
+동일한 새 검사 source를 보정 전 Native234와 보정 후 Native240의 보관 라이브러리로
+실행했다. 두 빌드는 모두 성공했다. 전자는 2 PASS / 2 FAIL, 후자는 4 PASS였다.
+전자의 실패는 원문 여백 566HU를 883HU로 중복 소비한 관계와 독립 PDF 제목 기준선이다.
+이미 통과하던 2개는 정상 동작 보존 검사로 기록하며 결함 검출 증거로 부풀리지 않는다.
+`logs/verified-coanchored-{before-native234,after-native240}-3891.log`를 연결한다.
