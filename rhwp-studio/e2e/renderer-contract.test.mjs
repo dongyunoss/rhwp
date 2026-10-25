@@ -2309,7 +2309,7 @@ requireSnippet(
 );
 requireSnippet(
   renderTextRunBody,
-  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?const replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?const glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?this\.drawCachedGlyphs\(/,
+  /const replayText = op\.displayText \?\? op\.text;[\s\S]*?let replayPositions = op\.displayText !== undefined \? op\.displayPositions : op\.positions;[\s\S]*?for \(const character of replayText\)[\s\S]*?textRun:visualItemLimitExceeded[\s\S]*?let glyphReplayText = verticalPresentationText \?\? replayText;[\s\S]*?if \(hasLayoutPositions\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs\(glyphReplayText, codePoints\.length\)[\s\S]*?const runPositions = new Float32Array[\s\S]*?runPositions\[\(index - runStart\) \* 2\] = replayPositions!\[index\];[\s\S]*?this\.drawCachedGlyphs\(/,
   'textRun replay should bound display projection and preserve serialized advances',
 );
 requireSnippet(
