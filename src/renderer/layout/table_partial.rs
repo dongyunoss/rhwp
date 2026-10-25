@@ -4419,16 +4419,6 @@ impl LayoutEngine {
                                         } else {
                                             para_y
                                         }
-                                    } else if nested_table.common.treat_as_char
-                                        && table_host_line_only_fragment
-                                    {
-                                        // 잉크 없는 앞 글줄도 흐름을 소비한다. TAC 표는
-                                        // 자신의 확정 줄 원점에 놓고 바깥 여백은 한 번 적용한다.
-                                        para_y_before_lines
-                                            + stored_nested_table_line_offset_px(
-                                                para, ctrl_idx, start_line, self.dpi,
-                                            )
-                                            .unwrap_or(0.0)
                                     } else {
                                         inner_area.y
                                     };

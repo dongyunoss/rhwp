@@ -300,3 +300,10 @@ WASM 검사는 해당 경계에서만 `unavailable`·null을 요구하고, 나�
 현재 후보는 2 PASS / 0 FAIL이다. `font-trace-source-contract-3975-result.json`에 원본 바이트,
 수정 전후 및 base의 실제 로그·검사 SHA를 연결했다. 검증된 code와 별개인 전체 Rust·lint·
 개별 PR 최종 판정은 해당 실행을 마친 뒤 확정한다.
+
+Native Clippy는 중첩 표의 `nested_y` 선택에 같은 `treat_as_char &&
+table_host_line_only_fragment` 분기가 두 번 있음을 검출했다. 앞 분기와 뒤 분기가 호출하는
+원점 계산도 같고, 조건이 참이면 앞 분기에서 이미 끝나므로 뒤 분기는 실행 불가능하다.
+앞 분기의 저장 줄 소유·원점 소비를 유지하고 뒤 중복만 제거했다. 기대값·허용치·입력은
+바꾸지 않았다. 재실행한 형식 검사와 Native Clippy는 모두 exit 0이며, 원 실패와 재검증 로그는
+각각 `logs/final-rust-native-clippy-3973.log`와 `logs/final-rust-native-clippy-3976.log`다.
