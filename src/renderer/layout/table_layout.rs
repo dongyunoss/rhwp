@@ -25950,7 +25950,7 @@ impl LayoutEngine {
     /// Physical header band preceding a nested-row continuation.
     /// These repetitions occupy space without consuming additional body units.
     /// Child paint prepends the same leading rows before its starting row.
-    fn nested_continuation_header_height(
+    pub(super) fn nested_continuation_header_height(
         &self,
         cell: &crate::model::table::Cell,
         units: &[CellUnit],

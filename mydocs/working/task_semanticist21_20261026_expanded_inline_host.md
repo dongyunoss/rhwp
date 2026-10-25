@@ -96,3 +96,10 @@ TAC 함수 내부 이전에 `try_place_stored_tac_paragraph`의 computed/stored 
 전체 저장 TAC commit 지점을 대조했으며, 이번 두 입구에도 동일 overlay 조건을 전달한다.
 실제 재검증 전 성공으로 보고하지 않는다. probe와 실행은
 `6448-source-frame-4009-result.json`, `expanded-inline-host-focused-4006-result.json`에 있다.
+
+## 모든 저장 우회 경로 보정 후 Native251 확인
+
+`bdea9b6e9d`의 추가 가드와 `addcac4560`의 공통 접두 프레임 보정을 함께 빌드했다.
+4011의 기존 70건은 70 PASS / 0 FAIL이며 #6448의 기존 3쪽 검사가 통과한다.
+4012의 동일 원본·독립 Print는 3/3쪽, 전쪽 Native 최저 raw 99.05213%다.
+기대값·쪽수·기준값을 바꾸지 않았다. fresh WASM과 최종 필수 검증은 계속 진행한다.

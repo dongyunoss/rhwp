@@ -45,3 +45,14 @@ Native248 49.85191%다. base의 글자 겹침은 0건, 후보는 같은 쪽 55�
 전체 TSV·대표 review와 overlay를 확인한다. 새 base 대비 허용 하락은 사용자 지정
 0.1%p다. 전체 Rust·lint 및 Studio 검증은 최종 소스에서 다시 수행한다.
 현재는 구현 단계이며 새 출력·전체 통과·PR 준비 완료로 판정하지 않는다.
+
+## Native251 실행 결과
+
+`addcac45600dc6cbfeb1b1b660fc87a71792672f`의 빌드 4011은 255.32초·exit 0·
+source_unchanged=true다. 기존 70개 경계·차트 검사는 모두 통과했다.
+4012에서 정책연구는 64/64쪽, 전쪽 Native 최저 raw 92.04708%, 미달 0쪽이다.
+18쪽 raw는 49.85191%에서 99.92928%로 회복했고 글자 겹침 55건이 0건이 됐다.
+같은 쪽의 새 review와 standalone overlay를 함께 열어 행 높이·내용 소속·표 외곽을
+직접 판독했다. 이 결과는 Native 단계이며 fresh WASM·최종 전체 Rust 통과가 아니다.
+원문 TSV와 명령·로그·생산자 SHA는 ignored `opening-prefix-native-4012-result.json`,
+`rebase-native251-build-4011-result.json`에 기록했다.
