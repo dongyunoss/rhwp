@@ -2423,6 +2423,11 @@ impl LayoutEngine {
                     ("closing", closing_source_frame_owns_alignment),
                     ("full_width", full_width_row_frame_owns_alignment),
                     ("restart_span", original_restart_span_owns_alignment),
+                    ("complete_suffix", complete_suffix_frame),
+                    ("reflow_content", reflow_content_height.is_some()),
+                    ("stored_page_content", stored_page_content_height.is_some()),
+                    ("stored_mixed", stored_mixed_opening_frame.is_some()),
+                    ("cut_frame", cut_frame_owns_alignment),
                 ],
                 cut_units,
             );
