@@ -156,3 +156,22 @@
 - [실제 소비·이미지·해시·종료 코드](../pr/assets/issue_8160/rebase-8231/consumer/README.md)를 고정한다.
   CanvasKit 판정 범위는 두 그림 영역이다. 전체 Rust·Native Skia와 새 devel의 WASM 전쪽
   보존은 계속 진행하며, 이 단계의 통과를 나머지 필수 항목 완료로 표시하지 않는다.
+
+## 새 devel의 WASM 전쪽 보존 확인
+
+- 새 base와 보정 producer의 표준 최적화 fresh WASM으로 35조건·2,041쪽을 각각 산출했다.
+  후보 최저 91.70207%, 최대 하락 0.09506%p이며 0.1%p 이상 하락·90% 미만·누락·쪽수 불일치가 없다.
+  Native의 대응 최대 하락은 0.08523%p다. 목표 sample16 세 문서의 각각 64쪽은 별도의 더 엄격한
+  raw100·정수 미대응 0/0 계약을 계속 만족한다.
+- WASM의 전쪽 PNG export receipt 해시·render tree 수를 확인했고, 실제 본문 소유키가 있는
+  전 35조건의 페이지·가용 소유키별 본문 문자 순서가 같다. 주요 17쪽도 새 base·후보·독립 Print로
+  직접 판독했다. 그림 내부 문자와 IR 전체 동일성을 뜻하지 않는다.
+- 415쪽 교육과정 문서는 기본 CDP timeout 실패 후 지원 옵션 `protocolTimeoutMs=3600000`을
+  양쪽에 적용했다. 임시 wrapper의 multiprocessing 재진입 오류는 `__main__` 보호로 고쳤고,
+  실제 2쪽 실행의 exit 0을 확인한 뒤 양쪽 전 415쪽을 재산출했다. 두 실패 시도의 자료는 보존하고
+  통과에 합산하지 않았다. 제품·문턱·비교기를 바꾸거나 임시 호출 스크립트를 커밋하지 않았다.
+- 온새미로 변환본의 WASM도 기존 #7881 Print 글꼴 환경을 양쪽에 동일하게 적용했다.
+  양쪽 최저 94.60320%, 46쪽은 양쪽 100.00000%이며 제목·프레임·바닥글을 확대 대조했다.
+- [전쪽 TSV·신원·실제 페이지 대조·직접 판독](../pr/assets/issue_8160/rebase-8231/preservation/README.md)을 고정한다.
+  최종 전체 nextest는 exit 0·11,573 PASS·45 skip이며 #8160 기본 86건도 모두 포함한다.
+  Native Skia Clippy는 통과했고 나머지 Native Skia 필수 검증을 계속한다.
