@@ -87,3 +87,19 @@
   재실행해 exit 0·2,572 PASS·2 skip을 확인했다.
 - 보정 전 표준 WASM 빌드는 최적화까지 exit 0으로 완료했다. 이 자료를 보정 후 결과로
   표시하지 않는다. 보정 후 Native 빌드와 전쪽 검사로 진행한다.
+
+## Native 전쪽 raw100 고정
+
+- 보정 producer `e01e7540fd4c8a67ce5d1d1e5802170973acb998`에서 세 목표 문서 각각
+  전 64쪽을 다시 출력했다. 192/192쪽의 정수 미대응이 양방향 모두 0이며 raw100이다.
+- [HWPX TSV](../pr/assets/issue_8160/rebase-8231/native/hwpx.tsv),
+  [HWP 2024 TSV](../pr/assets/issue_8160/rebase-8231/native/hwp2024.tsv),
+  [HWP 2022 TSV](../pr/assets/issue_8160/rebase-8231/native/hwp2022.tsv)와
+  [실행·입력/PDF/PNG 해시 및 정수 비교](../pr/assets/issue_8160/rebase-8231/native/proof.json)를 고정한다.
+  이 단계는 Native 결과이며 최종 WASM 완료로 표시하지 않는다.
+- 새 devel과의 Native 대조 791쪽까지 0.1%p 이상 하락을 확인하지 않았다.
+  전체 2,041쪽과 본문 소유 대조는 진행 중이다.
+- 보정 후 fmt·Native/WASM/workspace all-targets Clippy·workspace build·두 정책 검사가
+  통과했다. #8160 및 새 devel의 신규 경계 검사들은 release-test로 컴파일·실행 중이다.
+- 실행 관찰이 중단됐던 작업은 실제 프로세스 종료를 확인한 뒤 미완료 명령만 재개했다.
+  완료된 HWPX/HWP 2024 출력은 다시 실행하지 않고 보존했다.
