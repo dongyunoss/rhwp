@@ -46,3 +46,12 @@
   포함한 최종 빌드·테스트·Native/fresh WASM 출력 검증은 아직 진행 중이다.
   처음 fmt는 오래된 generated suite의 삭제 모듈 참조로 실패했다. 검토 worktree에서 suite를
   다시 준비해 검사하며, 실패한 실행을 통과로 표시하지 않는다.
+
+### 정책 검사 보정
+
+- 새 base의 신규 integration source 정책은 복원한 루트 `tests/diag_1042_version_check.rs`를 거부했다.
+  K-water 두 대조군의 기존 검사 본문을 바꾸지 않고
+  `tests/cases/issue_1042_k_water_version_read.rs`로 이동했다. sample16 검사를 다시 넣지 않았다.
+- 파생 suite를 새 후보로 준비한 검토 worktree의 fmt와 source unit 정책은 통과했다.
+  Node 테스트 등록·잠금 검사는 25/25 통과했다. 경로 이동 후 suite 정책은 다시 확인한다.
+- raw100 이름으로 한 Python discover는 실제 테스트 0건이었다. 통과 증거로 세지 않는다.
