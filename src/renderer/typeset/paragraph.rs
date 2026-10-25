@@ -25,6 +25,7 @@ pub(super) mod metrics;
 pub(super) mod overflow;
 pub(super) mod placement;
 pub(super) mod scan;
+pub(super) mod spacing;
 pub(super) mod split;
 pub(super) mod split_entry;
 pub(super) mod stored_lines;
@@ -132,6 +133,8 @@ pub(super) fn place_split_paragraph(
     let mut cursor_line = st.take_prefilled_line_prefix(para_idx);
     let mut on_entry_page = true;
     while cursor_line < line_count {
+        let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+        let fmt = confirmed.as_ref().unwrap_or(fmt);
         let reserve = if on_entry_page {
             safety.entry
         } else {
@@ -366,9 +369,12 @@ pub(super) fn place_fitted_paragraph(
     body_bottom_vpos: Option<i32>,
     dpi: f64,
 ) {
+    let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let fmt = confirmed.as_ref().unwrap_or(fmt);
     let defer_preceding_float =
         placement::defer_preceding_float(&st.current_items, paragraphs, para_idx, para);
     let split_float_spacing_before = match st.current_items.last() {
+        _ if confirmed.is_some() => None,
         Some(PageItem::PartialTable {
             para_index,
             is_continuation: true,
@@ -562,6 +568,8 @@ pub(super) fn try_place_overflow_paragraph(
     current_page_vpos_base: Option<i32>,
     dpi: f64,
 ) -> bool {
+    let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let fmt = confirmed.as_ref().unwrap_or(fmt);
     let page = st.paragraph_overflow_page(current_page_vpos_base);
     if overflow::atomic_overflow_fits(
         para,
@@ -672,6 +680,9 @@ pub(super) fn place_after_failed_fit(
     current_page_vpos_base: Option<i32>,
     dpi: f64,
 ) {
+    let original_fmt = fmt;
+    let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
+    let fmt = confirmed.as_ref().unwrap_or(fmt);
     // split: 줄 단위 분할
     let line_count = fmt.line_heights.len();
     // [#2004] tac(글자처럼) 전면 그림이 줄마다 하나씩 쌓인 "이미지 스택" 문단은 저장
@@ -752,7 +763,7 @@ pub(super) fn place_after_failed_fit(
         st,
         para_idx,
         para,
-        fmt,
+        original_fmt,
         paragraphs,
         styles,
         line_count,

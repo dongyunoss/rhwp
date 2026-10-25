@@ -7581,6 +7581,15 @@ pub(crate) fn split_float_successor_spacing_before(
             Control::Table(table) if is_para_topbottom_float(&table.common) => Some(table),
             _ => None,
         })?;
+    // 계산한 빈 호스트는 이어받기 조각의 점유 끝이 앞 간격의 하한을 소유한다.
+    // 구현 태그가 있는 옛 줄 위치를 저장 사다리 증거로 사용하지 않는다.
+    if computed_empty_table_host(fragment_host, table) {
+        return Some(float_pushed_line_spacing_before(
+            column_top,
+            spacing_before,
+            fragment_bottom,
+        ));
+    }
     let stored = |seg: &&crate::model::paragraph::LineSeg| seg.tag & 0x8000_0000 == 0;
     let host_line = fragment_host.line_segs.first().filter(stored)?;
     let successor_line = successor.line_segs.first().filter(stored)?;
