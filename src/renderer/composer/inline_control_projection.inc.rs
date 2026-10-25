@@ -7,6 +7,7 @@ fn identify_inline_controls(para: &Paragraph) -> Vec<InlineControl> {
             Control::Shape(shape) if shape.common().treat_as_char => InlineControlType::Shape,
             Control::Picture(pic) if pic.common.treat_as_char => InlineControlType::Shape,
             Control::Equation(eq) if eq.common.treat_as_char => InlineControlType::Shape,
+            Control::Form(form) if form.common.treat_as_char => InlineControlType::Shape,
             Control::SectionDef(_) | Control::ColumnDef(_) => InlineControlType::Other,
             _ => continue,
         };

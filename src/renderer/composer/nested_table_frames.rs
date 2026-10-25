@@ -43,10 +43,10 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
     let source = width_projection.as_ref().unwrap_or(source);
     let stored_projection = (!stored_geometry_policy.preserve_hwp3_origins
         && !crate::renderer::para_has_no_stored_line_segs(source)
-        && source
-            .controls
-            .iter()
-            .any(|control| matches!(control, Control::Table(table) if table.common.treat_as_char)))
+        && source.controls.iter().any(|control| {
+            matches!(control, Control::Table(table) if table.common.treat_as_char)
+                || matches!(control, Control::Form(form) if form.common.treat_as_char)
+        }))
     .then(|| {
         super::inline_box_rows::normalized_host_with_table_height(source, styles, |table, _| {
             let measured = nested_height(table);

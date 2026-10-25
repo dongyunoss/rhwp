@@ -11235,21 +11235,13 @@ impl LayoutEngine {
         para: &Paragraph,
         height: f64,
     ) -> Option<f64> {
-        use crate::model::shape::TextWrap;
         if self.nested_table_is_overlay(table) {
             return None;
         }
         // [#5702] 어울림 표는 앵커 줄만 전진한다. 저장 줄이 없으면 표 높이를 쓴다.
-        let anchor_height = (!table.common.treat_as_char
-            && table.common.flow_with_text
-            && matches!(
-                table.common.text_wrap,
-                TextWrap::Square | TextWrap::Tight | TextWrap::Through
-            ))
-        .then(|| para.line_segs.first())
-        .flatten()
-        .map(|seg| hwpunit_to_px(seg.line_height, self.dpi))
-        .filter(|h| *h > 0.0);
+        let anchor_height =
+            crate::renderer::float_placement::stored_nested_wrap_anchor_height_hu(table, para)
+                .map(|height| hwpunit_to_px(height, self.dpi));
         Some(anchor_height.unwrap_or(height))
     }
 

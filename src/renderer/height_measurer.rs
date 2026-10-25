@@ -2740,6 +2740,16 @@ impl HeightMeasurer {
                 if crate::renderer::float_placement::nested_table_is_overlay(nested) {
                     return None;
                 }
+                if !crate::renderer::para_has_no_stored_line_segs(p)
+                    && crate::renderer::float_placement::stored_nested_wrap_anchor_height_hu(
+                        nested, p,
+                    )
+                    .is_some()
+                {
+                    // 실제 배치도 앵커 줄만 전진한다. 어울림 표의 시각 하단은
+                    // cell_nested_controls_bottom과 합치며 줄 뒤에 다시 쌓지 않는다.
+                    return None;
+                }
                 if para_max_lh >= nested.common.height as i32 {
                     // [#7419] 합성 줄은 중첩 표 선언만 담으므로 실제 성장분을 더한다.
                     // 유효한 저장 줄의 기존 흡수 계약은 유지한다.

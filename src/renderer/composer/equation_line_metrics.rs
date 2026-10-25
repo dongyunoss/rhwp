@@ -61,6 +61,7 @@ fn refresh_rows(
         let mut spacing_object_height = 0_i32;
         let mut changed = false;
         let mut has_equation = false;
+        let mut has_form = false;
         let mut supported = true;
         for (control_index, (control, position)) in para.controls.iter().zip(&positions).enumerate()
         {
@@ -93,6 +94,19 @@ fn refresh_rows(
                     // 한글 대체 글꼴 경로도 같은 flow 메트릭을 발행한다.
                     // 특정 정규화 helper의 실행 여부 대신 실제 변경을 소비한다.
                     changed |= height != old_height || baseline != old_baseline;
+                }
+                Control::Form(form) if form.common.treat_as_char => {
+                    has_form = true;
+                    let height = form.height as i32;
+                    let baseline = super::line_breaking::baseline_distance_hwp(height);
+                    old_ascent = old_ascent.max(baseline);
+                    old_logical_height = old_logical_height.max(height);
+                    new_logical_height = new_logical_height.max(height);
+                    new_ascent = new_ascent.max(baseline);
+                    new_descent = new_descent.max(height - baseline);
+                    if form.common.affect_line_spacing {
+                        spacing_object_height = spacing_object_height.max(height);
+                    }
                 }
                 Control::Picture(_) | Control::Table(_) | Control::Shape(_) => supported = false,
                 _ => {}
@@ -157,7 +171,7 @@ fn refresh_rows(
             .unwrap_or(0);
         let text_ascent = (f64::from(text_height) * 0.85).round() as i32;
         let text_descent = text_height - text_ascent;
-        if !has_equation && text_height == 0 {
+        if !has_equation && !has_form && text_height == 0 {
             continue;
         }
         old_ascent = old_ascent.max(text_ascent);
@@ -188,20 +202,20 @@ fn refresh_rows(
         let generated_row = para.line_segs.get(line_index).is_some_and(|line| {
             line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         });
-        // 저장 줄이 없거나 재생성된 줄은 본문과 수식의 실제 합집합을
-        // 소비한다. 본문 유무로 수식의 점유·기준선을 제외하지 않는다.
-        let owned_equation_row =
-            has_equation && (generated_row || regenerated || para.line_segs.is_empty());
+        // 저장 줄이 없거나 재생성된 줄은 본문과 인라인 상자의 실제 합집합을
+        // 소비한다. 본문 유무로 수식·양식의 점유·기준선을 제외하지 않는다.
+        let owned_inline_row = (has_equation || has_form)
+            && (generated_row || regenerated || para.line_segs.is_empty());
         // 저장 줄이 이 개체 합집합에서 나온 경우만 메트릭을 다시 발행한다.
         // 별도 줄 높이·수직 정렬 계약을 실제 상자의 대용으로 덮어쓰지 않는다.
         if (changed
             && line.line_height == old_logical_height
             && (line.baseline_distance - old_ascent).abs() <= 1)
             || following_inline_box_was_reserved
-            || owned_equation_row
+            || owned_inline_row
         {
             let occupied_height = new_ascent + new_descent;
-            let leading = if owned_equation_row {
+            let leading = if owned_inline_row {
                 // 새 줄의 간격은 원본 글자·문단 속성에서 매번 같은 값으로 생산한다.
                 // 이미 합집합 차이를 뺀 leading을 다시 빼면 재구성마다 줄이 짧아진다.
                 let font_size = line

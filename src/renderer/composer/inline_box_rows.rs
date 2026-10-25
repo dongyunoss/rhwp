@@ -104,6 +104,10 @@ pub(super) fn normalized_host_with_table_height(
                 .checked_add(i32::from(picture.common.margin.top))?
                 .checked_add(i32::from(picture.common.margin.bottom))?
         }
+        Control::Form(form) if form.common.treat_as_char => i32::try_from(form.height)
+            .ok()?
+            .checked_add(i32::from(form.common.margin.top))?
+            .checked_add(i32::from(form.common.margin.bottom))?,
         _ => return None,
     };
     if height <= stored.line_height {
