@@ -883,6 +883,15 @@ pub(super) fn empty_no_lineseg_paragraph_metrics(
     hwp3_legacy_caps: bool,
     dpi: f64,
 ) -> Option<(f64, f64, f64)> {
+    if let Some(metrics) = crate::renderer::reflow_float_host_line::neutral_anchor_metrics(
+        para,
+        styles,
+        para_style,
+        hwp3_legacy_caps,
+        dpi,
+    ) {
+        return Some(metrics);
+    }
     // typeset 쪽 empty_paragraph_fallback_line_metrics 와
     // 동일 완화 — 비자리차지(글앞/글뒤/어울림) 앵커 도형·그림만 가진 빈 문단도 한글은
     // 완전한 em 줄박스를 부여한다. 두 장부(판정·그리기)가 같은 규칙을 가져야 렌더 y 와

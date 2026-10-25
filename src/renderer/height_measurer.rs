@@ -608,6 +608,17 @@ fn empty_paragraph_fallback_line_metrics(
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
     hwp3_legacy_caps: bool,
 ) -> Option<(f64, f64)> {
+    if let Some((height, leading, _)) =
+        crate::renderer::reflow_float_host_line::neutral_anchor_metrics(
+            para,
+            styles,
+            para_style,
+            hwp3_legacy_caps,
+            DEFAULT_DPI,
+        )
+    {
+        return Some((height, leading));
+    }
     if !para.text.trim().is_empty()
         || !para.controls.is_empty()
         || !para.line_segs.is_empty()
@@ -2300,11 +2311,6 @@ impl HeightMeasurer {
         };
 
         let lines_total: f64 = {
-            let sum: f64 = line_heights
-                .iter()
-                .zip(line_spacings.iter())
-                .map(|(h, s)| h + s)
-                .sum();
             // `compose_paragraph()` 는 LINE_SEG 없는 빈 문단에도 400HU 안내 줄을
             // 만든다. 그 합성 줄을 그대로 쓰면 HWP5의 실제 글자모양/줄간격이
             // 소실된다(p81 20pt 빈 줄은 5.3px로, 1pt spacer는 5.3px로 오판).
@@ -2319,6 +2325,13 @@ impl HeightMeasurer {
                 line_heights = vec![lh];
                 line_spacings = vec![ls];
             }
+            // 최종 줄 배열과 합계가 같은 메트릭을 소비한다. 폴백 적용 전의
+            // 합을 남기면 셀 측정 높이가 실제 빈 글자 줄보다 작아진다.
+            let sum: f64 = line_heights
+                .iter()
+                .zip(line_spacings.iter())
+                .map(|(height, leading)| height + leading)
+                .sum();
 
             // TAC 표 문단에서 첫 LINE_SEG의 lh가 표 높이로 확장되고
             // 마지막 SEG도 동일한 lh를 가질 때, 합산이 이중 계산됨.

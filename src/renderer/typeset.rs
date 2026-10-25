@@ -115,6 +115,17 @@ fn empty_paragraph_fallback_line_metrics(
     para_style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
     hwp3_legacy_caps: bool,
 ) -> Option<(f64, f64)> {
+    if let Some((height, leading, _)) =
+        crate::renderer::reflow_float_host_line::neutral_anchor_metrics(
+            para,
+            styles,
+            para_style,
+            hwp3_legacy_caps,
+            DEFAULT_DPI,
+        )
+    {
+        return Some((height, leading));
+    }
     // 글앞으로/글뒤로/어울림(비자리차지) 앵커 도형·그림만
     // 가진 빈 문단은 한글이 텍스트 관점의 빈 문단과 동일하게 완전한 em 줄박스를
     // 부여한다 (사용안내 실측: Square 그림 앵커 빈 문단 pi1/pi6 이 0~5.3px 로 붕괴
