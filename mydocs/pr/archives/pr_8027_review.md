@@ -59,6 +59,16 @@ src/emf/parser/mod.rs의 상수와 record dispatch, src/emf/tests.rs의 16bit re
 
 sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
 
+## 현재 OLE 차트 원본의 직접 증거
+
+[현재 원본 검증](../assets/legacy_chart_physical_layout_20261020/current-20261026/README.md)에서
+같은 HWP·독립 Print의 한 쪽을 다시 비교했다. Native255는 base 94.51108% → 99.28860%,
+최적화 fresh WASM073은 base 94.08200% → 99.30234%다. 쪽수 일치와 양쪽 90% 이상,
+0.1%p 초과 하락 0쪽을 확인했다. 두 출력의 review·standalone overlay를 직접 판독해
+막대·축·범례·차트 외곽·배경 색조와 뒤 본문 보존을 확인했다. #8064에서 반영한 기능과
+통합 후보의 공통 OLE paint 보정이 함께 유지된다. 본문 일부의 미세 간격 잔차는 별도로 남긴다.
+이는 이 원본의 완료 증거이며 전체 PR의 미완료 로컬 게이트를 대신하지 않는다.
+
 ## Merge 후 contributor PR comment 계획
 
 [Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 실제 통합 PR·merge SHA·CI 결과와 이 PR의 보정 범위를 존댓말로 설명한다. 시각 검증에 사용한 대표 review·overlay는 위 안정 경로에서 실제 merge SHA로 고정한 raw URL로 함께 표시한다. 아직 확정하지 않은 수치·이미지 URL이나 미실행 경로를 만들지 않는다.
