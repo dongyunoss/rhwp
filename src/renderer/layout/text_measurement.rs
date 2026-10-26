@@ -903,7 +903,7 @@ pub(crate) fn resolved_to_text_style(
                         .map(str::trim),
                     Some("HCR Dotum" | "HCRDotum" | "함초롬돋움")
                 )
-                .then_some("HCR Dotum")
+                .then_some(crate::renderer::IsolatedJamoFont::HcrDotum)
             }),
             font_family: cs.font_family_for_lang(lang_index).to_string(),
             supplemental_metrics: styles.supplemental_metrics.clone(),
@@ -1787,7 +1787,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     }
     if cluster_len[i] == 1
         && super::super::conjoining_jamo::is_mark(c)
-        && style.isolated_jamo_font == Some("HCR Dotum")
+        && style.isolated_jamo_font == Some(crate::renderer::IsolatedJamoFont::HcrDotum)
     {
         // 독립 2020 Print의 HCRDotum 단독 중성·종성은 표시하되 전진하지 않는다.
         // 초성으로 시작하는 조합 내부는 위 clusterContinuation 경로가 소유한다.

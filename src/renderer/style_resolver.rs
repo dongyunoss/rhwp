@@ -127,7 +127,7 @@ pub(crate) fn resolve_styles_with_environment(
     // 자모 전진을 유지한다. 세대는 기존 명시적 출력 profile에서만 받는다.
     styles.isolated_jamo_font = (!profile.hangul2024_layout()
         && document.provenance.format != crate::model::provenance::SourceFormat::Pdf)
-        .then_some("HCR Dotum");
+        .then_some(crate::renderer::IsolatedJamoFont::HcrDotum);
     if !missing_fonts::missing_char_table(document) {
         (
             styles.page_number_char_style_id,

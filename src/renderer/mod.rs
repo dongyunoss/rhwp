@@ -22,6 +22,7 @@ pub(crate) mod cell_paragraph_spacing;
 pub mod char_overlap;
 pub mod composer;
 mod conjoining_jamo;
+pub use conjoining_jamo::IsolatedJamoFont;
 pub(crate) mod emphasis;
 pub(crate) mod endnote_spacing;
 pub mod equation;
@@ -380,7 +381,7 @@ pub struct TextStyle {
         Option<std::sync::Arc<supplemental_metrics::SupplementalMetricSnapshot>>,
     /// 출력 세대가 독립 중성·종성에 선택한 무전진 프로그램. 세션 속성이다.
     #[serde(skip)]
-    pub isolated_jamo_font: Option<&'static str>,
+    pub isolated_jamo_font: Option<IsolatedJamoFont>,
     /// 글꼴 이름
     pub font_family: String,
     /// 글꼴 크기 (px)
