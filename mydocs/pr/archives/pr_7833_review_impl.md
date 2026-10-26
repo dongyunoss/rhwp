@@ -155,3 +155,13 @@ suite023에서 새 함수 1 PASS·exit0을 확인했다(4371/4372). 기존109 PA
 원본 생성기의 8개 HWPX를 그대로 사용한 Native270 전쪽 대조는 모두 raw100이며, 독립 한컴 Print와 각각 1쪽/1쪽이다. 이전의 진단 사본이나 별도 대조군의 통과를 원본 통과로 바꾸어 보고하지 않았다. 실제 HWPX 컨테이너에서 셀의 가로 소유 폭과 설명되지 않는 첫 세로 원점이 함께 어긋나는 저장 캐시를 부모 호스트와 함께 폐기하고 현재 프레임을 구성했다. 정상 저장본의 문단 앞 간격 반례는 보존했다.
 
 현재 통합 후보의 구현·실제 소비 경로는 [작업 기록](../../working/task_semanticist21_20261027_cell_cache_defaults.md)에 연결했다. 소스는 시작 head `2fa7137b0b85c2e29594f96d2107ebbe167d7873`의 추가 보정이며, Native270의 정확한 source별 SHA는 ignored `output/pr-review/semanticist21-20261019/cell-defaults-native-build-4452-result.json`에 있다. 같은 원본 11조건과 정상 대조 13조건의 24건이 모두 통과했다(4453). 마지막 fit 소비 보완 전후의 24개 PNG도 SHA-256이 같다(4458). 대표 compare·review·standalone overlay는 4461에서 재출력했다. fresh080·새 회귀의 양쪽 선행 증거·최종 전체 Rust/lint/Studio 검증과 CI는 아직 완료하지 않았으므로, 이 중간 결과로 통합 승인이나 PR 준비 완료를 선언하지 않는다.
+
+
+## 새 회귀와 새 base의 최종 검증 착수 — 2026-10-27
+
+[정식 회귀·독립 원본/PDF·양쪽 TSV·대표 PNG](../assets/hwpx_cell_frame_print/README.md)를
+추가했다. 원래 생성기 8개 조건과 암묵적 스타일 3개 조건을 같은 원본으로 보호하며 기존 함수를
+교체하지 않는다. code head `b4aca422ec`·base `0bb36e6f97`의 자동 suite016에서
+새 두 함수 2 PASS·0 FAIL, 같은 바이너리의 보정 전 CLI 2 FAIL / 현재 CLI 2 PASS를 확인했다(4502).
+최신 의존성의 전체 Native/fresh WASM·base 대조·Rust/lint·Studio는 계속 검증 중이다.
+최종 판정은 이 필수 항목의 실제 종료 뒤 갱신한다.

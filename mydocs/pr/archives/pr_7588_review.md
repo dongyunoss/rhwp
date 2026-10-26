@@ -42,6 +42,15 @@ Merge 후에는 이 대표 파일을
 `--body-file` 본문을 게시한 뒤 API에서 한글·링크·실제 Markdown을 다시 확인한다.
 
 
+## 원 기여의 현재 커밋 대응
+
+현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
+
+| 원 커밋 | 통합 후보의 대응 |
+| --- | --- |
+| `428728a0154aebfa3cf80a8734109c9dcabedc82` | `d3d79a6bf0be61f7ce5b302923482e229176e61b` |
+| `4fd99f4f3c1e173d6840c19a4ef0cab3f75cf388` | 원 PR의 merge 전용 커밋: 별도 기능 적용 없음 |
+
 ## 접수 정보
 
 이하 최초 접수와 중간 검토의 제품·기준 SHA 및 당시 진행 상태를 보존한다.

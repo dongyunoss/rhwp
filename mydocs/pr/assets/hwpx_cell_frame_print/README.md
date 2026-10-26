@@ -59,3 +59,18 @@ fresh WASM 쪽 번호:
 
 ![fresh WASM review](wasm/pr8031-page-number-cell_review.png)
 ![fresh WASM overlay](wasm/pr8031-page-number-cell_overlay.png)
+
+
+## 새 회귀의 정식 실행과 전후 검출 — 2026-10-27
+
+새 base `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`로 리베이스하고 기본 feature의
+공통 보간 모듈 접근을 보정한 code head는 `b4aca422ec`다. 4502에서 fmt·자동 suite 수집을
+확인한 뒤 `regression_suite_016`의 새 검사 두 함수가 2 PASS·0 FAIL·exit0이었다.
+같은 검사 바이너리로 Native266을 사용하면 2 FAIL·각 exit101, 현재 실제 CLI를 사용하면
+2 PASS·각 exit0이었다. 첫 실패는 0% 전진 관계, 다른 실패는 독립 Print의 첫 글자
+x=123.93283px 대비 실제145.10667px를 검출했다. 파일 누락이나 실행 환경 오류를 RED로
+사용하지 않았다. 기존 검사는 교체하지 않았다.
+
+새 의존성 기준의 Native/fresh WASM 전쪽 검증과 전체 lint·Rust·Studio는 4503·4504·4506에서
+이어 간다. 이전 runtime의 시각 선행 증거와 이번 정식 Rust 실행을 구분하며, 이 결과만으로
+최종 전체 검증·원격 CI·통합 완료를 선언하지 않는다.

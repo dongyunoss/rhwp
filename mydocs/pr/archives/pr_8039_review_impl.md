@@ -51,3 +51,13 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 원본 최소 HWPX의 control-tail false/true 두 조건은 Native270에서 모두 raw100이며, 독립 한컴 Print와 각각 1쪽/1쪽이다. 원본의 결측 글자모양·수동 줄 사다리를 읽기 전용 렌더 사본에서 정규화하고, 공통 InlineFlow가 Percent 음수 간격을 유지하도록 보정했다. 실제 줄 점유는 페이지 수용에 보존하고 다음 본문으로의 전진과 구분한다. 원본 HWP 대응본의 독립 Print 검증까지 완료했다는 뜻은 아니다.
 
 현재 통합 후보의 구현·실제 소비 경로는 [작업 기록](../../working/task_semanticist21_20261027_cell_cache_defaults.md)에 연결했다. 소스는 시작 head `2fa7137b0b85c2e29594f96d2107ebbe167d7873`의 추가 보정이며, Native270의 정확한 source별 SHA는 ignored `output/pr-review/semanticist21-20261019/cell-defaults-native-build-4452-result.json`에 있다. 같은 원본 11조건과 정상 대조 13조건의 24건이 모두 통과했다(4453). 마지막 fit 소비 보완 전후의 24개 PNG도 SHA-256이 같다(4458). 대표 compare·review·standalone overlay는 4461에서 재출력했다. fresh080·새 회귀의 양쪽 선행 증거·최종 전체 Rust/lint/Studio 검증과 CI는 아직 완료하지 않았으므로, 이 중간 결과로 통합 승인이나 PR 준비 완료를 선언하지 않는다.
+
+
+## 새 회귀와 새 base의 최종 검증 착수 — 2026-10-27
+
+[정식 회귀·독립 원본/PDF·양쪽 TSV·대표 PNG](../assets/hwpx_cell_frame_print/README.md)를
+추가했다. 원래 생성기 8개 조건과 암묵적 스타일 3개 조건을 같은 원본으로 보호하며 기존 함수를
+교체하지 않는다. code head `b4aca422ec`·base `0bb36e6f97`의 자동 suite016에서
+새 두 함수 2 PASS·0 FAIL, 같은 바이너리의 보정 전 CLI 2 FAIL / 현재 CLI 2 PASS를 확인했다(4502).
+최신 의존성의 전체 Native/fresh WASM·base 대조·Rust/lint·Studio는 계속 검증 중이다.
+최종 판정은 이 필수 항목의 실제 종료 뒤 갱신한다.

@@ -60,11 +60,13 @@ CI·merge·devel 포함과 asset 존재를 확인한 뒤 한국어 존댓말의 
 
 ## 변경과 원 커밋 적용
 
+현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
+
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `7ded7ca1d468326844ede2e934b10c4add9c7d81` | `2e942b530b412f404c76595ef57b004781250214` |
-| `a3f80b14adcbec5974debb537a02eb84aa061603` | `029e133e428041af1ec16002d4b586b326e61cc3` |
-| `36f9d3ac4091cc5c85cd74dee030c93b62c80964` | `4a1d15b0e78b5c6963d8c03b3ef252360f06383a` |
+| `7ded7ca1d468326844ede2e934b10c4add9c7d81` | `7806521a71a5b4185429d365467f87f88a135a6e` |
+| `a3f80b14adcbec5974debb537a02eb84aa061603` | `525ebd5cf5a24bcdc804f79ee2070deb194dd7b7` |
+| `36f9d3ac4091cc5c85cd74dee030c93b62c80964` | `33f61b16de624f6d7617eac3796506c433e321f4` |
 
 ### 실제 소비 경로와 반례
 

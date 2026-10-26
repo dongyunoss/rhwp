@@ -20,10 +20,12 @@
 
 ## 변경과 원 커밋 적용
 
+현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
+
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `cf62911cb24009aca4b7c6e2857b1c0a2f4e8a21` | `17719bfe0f3f79b41d9987444cba91669c3da42e` |
-| `b9f84e4105b146902297a4e3c46fd82e0f2c6225` | `4033c3119a60db3f755762c48c1dc2012959545b` |
+| `cf62911cb24009aca4b7c6e2857b1c0a2f4e8a21` | `73bdaaa52c3ad4771f73a6dd5277b90fbc9d3d23` |
+| `b9f84e4105b146902297a4e3c46fd82e0f2c6225` | `9e2c52d5805ab731ca3d2c8bd4e2df6fb88dec4d` |
 
 ### 실제 소비 경로와 반례
 

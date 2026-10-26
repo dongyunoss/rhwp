@@ -60,9 +60,11 @@ Merge 후에는 이 대표 파일을
 
 ## 변경과 원 커밋 적용
 
+현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
+
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `75c93fe0cc91c6ff74ebd85ac3c8f3d3b708a6d9` | `0f0f1bfda7f56036fb4e74813ec2ea6eefe08d25` |
+| `75c93fe0cc91c6ff74ebd85ac3c8f3d3b708a6d9` | `c74eccf66730e4b03cb921ff5870234652edfaa0` |
 
 ### 실제 소비 경로와 반례
 

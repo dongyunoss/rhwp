@@ -226,3 +226,34 @@ TextStyle472·TextRunNode712·PathNode512·RenderNodeType712바이트를 확인�
 이후 후보 제품·필수 lint/전체 Rust와 Native/fresh WASM 출력을 새 source에서 재검증한다.
 완료한 새 base0bb의 제품·TSV는 동일 source·프로그램 SHA를 확인해 재사용하며, 이전 후보B4의
 검증을 새 표현 변경의 최종 결과로 바꾸어 보고하지 않는다. 원본·기준 PDF·기대값은 유지한다.
+
+## 재현 자료 보존과 표현 변경 후 검증
+
+생산 코드 `df65ef9a58eecb5e96f86a0d7e4ca623bb4eb85d`의 기존 대조군 입력·독립 Print
+PDF 23쌍과 TSV·출처를 `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`에 보존했다.
+[알파·코덱 대조군](../pr/assets/pr_8032_print_controls/README.md)과
+[최소 셀 폭·주석 소유 대조군](../pr/assets/pr_7833_print_controls/README.md)은 원본의
+기준 출력을 바꾼 것이 아니다. 기존 169조건에서 실제 사용한 입력·PDF 338개 참조가
+모두 커밋된 바이트와 일치한다. 새 실제 문서를 추가하지 않았다. 이 증적 커밋 전후 생산
+소스 3,043개와 검사 소스 2,494개의 바이트도 동일하다(4530/4533).
+
+4522에서 fmt·WASM Clippy·workspace build·workspace all-target Clippy와 suite·unit-tier
+정책 검사가 각각 exit0이었다. Native Clippy 4520의 source도 같다. 정식 자동 수집 경로의
+`issue_8160_hwp3_print_boundaries` 5건과 `hwpx_cell_frame_print` 2건은 모두 PASS이며,
+Native275 빌드도 exit0이다. 실제 결과를 수집한 이 단계에서 최적화 fresh085·전체 Rust·
+Studio·후보 전쪽 시각 비교는 아직 완료 전이다. 과거 B4의 전체 결과로 대신하지 않는다.
+
+새 Native275의 #8188 상속 네 입력은 각 64쪽, 합계256쪽 모두 raw100·정수 미대응0/0이다
+(4525). 217개 글꼴 프로그램·세대별 인쇄 환경을 유지했다. Native273의 이전 출력과
+새 후보 PNG·기준 PNG도 각각256쪽 전부 SHA-256이 같다(4541). 이는 현재 Native 검증
+결과이며 fresh085의 완료를 뜻하지 않는다. 삭제한 옛 sample16·편람 검사는 복구하지 않았다.
+
+개별 원 PR45개의 review·review_impl90개는 모두 존재하며 최종 판정 절 순서·중복과 내부
+링크 오류가 없었다(4540). 현재 검증 결과의 최종 반영·통합 PR CI·merge·후속 처리는 별도
+필수 단계다. 추가 스크립트 계약은33 PASS·0 FAIL이며, 로컬 POC 자료가 있을 때만 실행하는
+기존 선택 검사1건은 SKIP이다(4538). 실행하지 않은 검사를 PASS로 집계하지 않았다.
+
+종료한 검증용 Chromium 프로필의 실제 사용·소유·잠금을 확인해 약450MiB를 정리했다(4534).
+초기 #8064 검증의 완료된 성공 항목에서 중간 raster 약2.5GB도 정리했다(4536). 원본·독립
+PDF·TSV·manifest·로그·review/overlay와 실패 항목 이미지는 유지했으며 공유 target은
+삭제하지 않았다. 실제 삭제 경로·SHA·전후 여유 공간은 ignored output에 남겼다.

@@ -13,6 +13,15 @@ last_verified: 2026-10-21
 원 Draft의 실패 재현을 그대로 수용하는 판정이 아니다. 전체 회귀·lint·Native/fresh WASM과
 고정 devel 대조를 마친 뒤 판정을 갱신한다. 원격 게시·PR 생성·merge는 수행하지 않았다.
 
+## 원 기여의 현재 커밋 대응
+
+현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
+
+| 원 커밋 | 통합 후보의 대응 |
+| --- | --- |
+| `828a2a1e14c341dcd72ea41fe582486b66495939` | `1b7d1d46560036faaa81089c1c97ebe38be04bd0` |
+| `59276bb29419c3a439866d132f5be69a6c759c7c` | 원 PR의 merge 전용 커밋: 별도 기능 적용 없음 |
+
 ## 접수 정보와 적용 계보
 
 | 항목 | 확인값 |
