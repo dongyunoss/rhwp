@@ -61,3 +61,29 @@
 - 정식 입력·한컴 기준 PDF·전쪽 TSV·대표 PNG는 역할별 정식 경로에 반영한다. 대용량 PDF는 별도 로컬 보관 규칙을 따른다.
 - 검토·후속 처리 종료 후 output 전체와 사용 종료된 review debug를 별도 지시·백업 없이 정리한다.
   다른 profile과 다른 작업의 worktree를 보존하며 유휴 셸 cwd만으로 삭제를 보류하지 않는다.
+
+## 2026-10-27 통합과 첫 보정
+
+- 원 PR 20건의 고유 commit 94개를 `-x`로 적용하고 적층 중복 35개를 제외했다.
+  원본·적용 SHA와 순서는 [적용 원장](assets/review_integration_20261026/cherry_pick_ledger.json)에 기록한다.
+  체리픽 완료 head는 `be1de8e41ed32f461706f9c8ddcefcfd392b0e5c`다.
+- 각 PR 적용 결과는 누적 기준에 원 head의 변경을 병합한 예상 tree와 모두 일치했다.
+  #8227·#8237의 사전 tree 비교는 이미 체리픽한 적층 부모를 각각 `1a69db153`·`a34d1fb70`으로
+  명시했다. 중복 도입에 따른 함수 공개 범위·검사 파일의 가상 충돌이었으며 실제 체리픽 충돌은 없었다.
+- 기준 Native 빌드와 합성 입력 21쌍의 전쪽 비교를 완료했다. 기준 WASM은 원본 head에서 Rust
+  컴파일을 끝낸 뒤 바이너리 최적화와 코드 체리픽을 병행했다. 기준 패키지/public의 JS·WASM 해시와
+  복사한 기준 모듈의 `WebAssembly.compile`을 확인했다. 후보 비교는 남았다.
+- 사용자가 불필요한 범위 확장을 지적해 sample16 별도 시각 재검증과 그 자식 프로세스를 종료했다.
+  이 별도 재검증은 재실행하지 않는다.
+- #8265 원 head의 `readSse`는 CRLF의 CR과 LF가 서로 다른 청크에 오면 LF를 빈 줄로 처리했다.
+  event 이름과 여러 data 줄이 사라지는 실패를 원 코드와 실제 새 검사에서 각각 확인했다.
+  [SSE 해석 규약](https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation)에
+  따라 청크 끝 CR을 다음 청크 또는 EOF까지 보존했다. 모든 바이트 분할·UTF-8·LF/CR/CRLF 검사와
+  기존 제공자 검사를 합쳐 22개가 통과했고 Studio TypeScript 검사도 통과했다.
+  보정 commit은 `57abd92f0`이며 실제 API 키는 사용하지 않았다.
+- #8167·#8168·#8271 입력의 마지막 저장 제품을 확인하고, 누락됐거나 다른 저장본·세대의 PDF만 있던
+  8개 입력을 자체 원본에서 MCP 2020 Print로 출력했다. 입력·PDF 해시, 실제 한컴 버전,
+  `pdf_print_method=0`·1-up 출력 모드는 [Print 근거](assets/review_integration_20261026/hancom_print_inputs.json)에 기록한다.
+  이 PDF와 기존 PR의 2024 비교는 세대를 구분한다.
+- 현재 수용 판정은 미완료다. Rust 전체 검증, Native/fresh WASM 후보 전쪽 비교, 관련 Studio 브라우저
+  검증과 확대 판독을 마친 뒤 PR을 준비한다. 원 PR별 archive review·오늘할일은 정확한 code head CI 성공 뒤 기록한다.
