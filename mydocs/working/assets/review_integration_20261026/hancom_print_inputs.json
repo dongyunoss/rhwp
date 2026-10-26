@@ -506,6 +506,50 @@
         "--timeout-seconds",
         "600"
       ]
+    },
+    {
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": null,
+        "version": "7.5.12.754"
+      },
+      "engine_selection": "7.5.12.754 is earlier than 2022; product metadata is null.",
+      "pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "bytes": 625577,
+      "job_id": "cc627da2-d599-49f6-95d2-72f0693a4f08",
+      "result": {
+        "job_id": "cc627da2-d599-49f6-95d2-72f0693a4f08",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwp",
+        "format": "pdf",
+        "bytes": 625577,
+        "pdf_page_count": 17,
+        "logical_page_count": null,
+        "elapsed_ms": 23482,
+        "worker_elapsed_ms": 22396,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "scripts_disabled",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
     }
   ],
   "client_archive_sha256": "830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72"

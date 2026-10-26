@@ -11,8 +11,8 @@ impl LayoutEngine {
     pub(crate) fn stored_hwpx_cut_owns_outer_frame(&self, host: &Paragraph, table: &Table) -> bool {
         let profile = self.profile.get();
         crate::renderer::float_placement::stored_hwpx_cut_owns_outer_frame(
-            profile.hwpx_stored_layout()
-                && !profile.hwp5_origin_hwpx()
+            (profile.hwp5_stored_pagination_layout()
+                || profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx())
                 && !profile.session_edited(),
             host,
             table,

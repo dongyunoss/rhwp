@@ -12139,12 +12139,16 @@ impl LayoutEngine {
         // 가운데/아래 정렬의 빈 밴드도 선언된 물리 상자가 소유한다.
         // glyph의 끝과 상자 끝이 같다는 가정으로 그 공간을 버리지 않는다.
         let opening_content = self.row_cut_content_height(table, 0, &[], &[reset_cut], styles);
-        let closing_height = self.row_cut_content_height(table, 0, &[reset_cut], &[], styles);
+        let closing_content = self.row_cut_content_height(table, 0, &[reset_cut], &[], styles);
+        // The saved cell height is the sum of its physical fragments. The
+        // remaining box keeps its blank alignment band as well as its ink.
+        let closing_height = hwpunit_to_px((cell.height - table.common.height) as i32, self.dpi);
         let opening_flow: f64 = units[..reset_cut].iter().map(|unit| unit.height).sum();
         let closing_flow: f64 = units[reset_cut..].iter().map(|unit| unit.height).sum();
         let body_height = self.current_body_area.get().3;
         if opening_content > opening_height
             || opening_flow > opening_height
+            || closing_content > closing_height
             || closing_flow > closing_height
             || !body_height.is_finite()
             || body_height <= 0.0
@@ -25433,15 +25437,15 @@ impl LayoutEngine {
                 .skip(hi.saturating_add(1))
                 .map(MixedNestedOwnerMarker::from),
         );
-        // A non-terminal fragment must not paint the synthetic trailing unit:
-        // its successor owns that source window.  The terminal fragment is
-        // different — that trailing unit can contain the final ordinary
-        // paragraphs after the nested table, so discarding it clips the
-        // document's last content (42065 p17's section 4).
+        // Scalar fallback can carry a synthetic trailing window owned by its
+        // successor. A recursive unit instead identifies an actual child
+        // cursor: even an inkless closing band belongs to that selected cut.
+        // Dropping it shortens the child's physical cell and changes Center
+        // alignment before the next source page (42065 p12).
         if offset > 0.5 && !terminal {
             while visible_units
                 .last()
-                .is_some_and(|(_, trailing, _, _)| *trailing)
+                .is_some_and(|(_, trailing, recursive, _)| *trailing && !*recursive)
             {
                 visible_units.pop();
             }
