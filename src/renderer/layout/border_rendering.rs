@@ -233,7 +233,9 @@ pub(crate) fn build_row_col_x(
         }
         if let Some(row) = cell_width_grid.get_mut(r) {
             if let Some(slot) = row.get_mut(c) {
-                *slot = Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
+                *slot = Some(
+                    hwpunit_to_px(table.physical_cell_width_hu(cell) as i32, dpi) * width_scale,
+                );
             }
         }
     }
@@ -424,7 +426,7 @@ fn declared_row_col_x(
             return None;
         }
         candidate[c] = cursor;
-        let cell_w = hwpunit_to_px(cell.width as i32, dpi) * width_scale;
+        let cell_w = hwpunit_to_px(table.physical_cell_width_hu(cell) as i32, dpi) * width_scale;
         for width in &mut widths[c..end] {
             *width = if span == 1 {
                 cell_w

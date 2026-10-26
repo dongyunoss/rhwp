@@ -4964,7 +4964,8 @@ impl LayoutEngine {
                 continue;
             }
             if cell.col_span == 1 && (cell.col as usize) < col_count {
-                let w = hwpunit_to_px(cell.width as i32, self.dpi) * width_scale;
+                let w = hwpunit_to_px(table.physical_cell_width_hu(cell) as i32, self.dpi)
+                    * width_scale;
                 if w > col_widths[cell.col as usize] {
                     col_widths[cell.col as usize] = w;
                 }
@@ -4981,9 +4982,11 @@ impl LayoutEngine {
                 let c = cell.col as usize;
                 let span = cell.col_span as usize;
                 if span > 1 && c + span <= col_count {
-                    let total_w = hwpunit_to_px(cell.width as i32, self.dpi) * width_scale
-                        - hwpunit_to_px(i32::from(table.cell_spacing), self.dpi)
-                            * span.saturating_sub(1) as f64;
+                    let total_w =
+                        hwpunit_to_px(table.physical_cell_width_hu(cell) as i32, self.dpi)
+                            * width_scale
+                            - hwpunit_to_px(i32::from(table.cell_spacing), self.dpi)
+                                * span.saturating_sub(1) as f64;
                     if let Some(existing) = constraints.iter_mut().find(|x| x.0 == c && x.1 == span)
                     {
                         if total_w > existing.2 {

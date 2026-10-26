@@ -732,7 +732,7 @@ impl Table {
         let mut owners = self
             .cells
             .iter()
-            .map(|cell| to_i32(u64::from(cell.width)))
+            .map(|cell| to_i32(u64::from(self.physical_cell_width_hu(cell))))
             .collect::<Vec<_>>();
         let col_count = usize::from(self.col_count);
         if owners.is_empty()
@@ -759,7 +759,7 @@ impl Table {
             {
                 continue;
             }
-            base_tracks[col] = base_tracks[col].max(cell.width);
+            base_tracks[col] = base_tracks[col].max(self.physical_cell_width_hu(cell));
         }
         if base_tracks.contains(&0) {
             return owners;
@@ -807,7 +807,7 @@ impl Table {
                     complete = false;
                     break;
                 }
-                row_total = row_total.saturating_add(u64::from(cell.width));
+                row_total = row_total.saturating_add(u64::from(self.physical_cell_width_hu(cell)));
                 next_col = end;
             }
             let row_spacing = i64::from(self.outer_cell_spacing_hu())

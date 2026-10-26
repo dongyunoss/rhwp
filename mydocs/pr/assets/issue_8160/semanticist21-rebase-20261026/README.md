@@ -194,3 +194,28 @@ Native/fresh의 2쪽 review·standalone overlay에서 목차 점선의 단일 �
 검사 source SHA-256: `580eb38d593dc6ae5caba2e4f6dbe32782fbdc4b810ee83213bd26ad0fd9dc4c`.
 
 현재 브랜치의 전체 Rust/lint·45개 PR 통합 검증 완료를 뜻하지 않는다.
+
+
+### 최소 셀 폭 보정 뒤 새 출력 — 2026-10-27
+
+공통 reflow 프레임과 최소 물리 셀 폭 보정을 반영한 Native265·표준 최적화 fresh
+WASM078로 위 세 변환본과 기존 탭 입력을 전쪽 다시 출력했다. 이전 캡처를 새
+실행으로 표시하지 않았다. 같은 원본/Print·217개 원본 글꼴·96 DPI·compat로
+Native 256쪽과 fresh 256쪽을 산출하고 양방향 정수 미대응을 직접 세었다.
+**512/512쪽 raw100·미대응0/0**, 원본/기준 쪽수 일치다. 이전 검증본과 실제 새
+후보 PNG의 SHA도 512쪽 모두 같으며, 새 8개 TSV는 이 폴더의 기존 TSV와 바이트가
+같다. 따라서 동일 파일을 중복 커밋하지 않는다.
+
+Native265 실행 파일 SHA-256은
+`75991e51cddb71d38dd07923dd7b3ee73d0020437e550fe604358a8603f0fc55`,
+fresh078 WASM은 `1ebc656b1b74c2a7e47bf36b9557cb0acd7f9f84b857342da3910debd1cb0e16`,
+JS는 `a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434`다.
+시작 head8e44c0f233의 작업 트리에서 빌드한 source별 해시는 ignored 4352/4356
+receipt에 고정했다. 같은 소스로 #8188 88건·셀 경계 17건·쪽 번호 4건을 자동
+수집해 **109 PASS/0 FAIL**을 확인했다. 이후 새 검사 추가의 실행 결과와 구분한다.
+
+현재 실행 정본은 ignored `output/pr-review/semanticist21-20261019/`의
+`8188-priority-native-4355-result.json`, `8188-priority-wasm-4362-result.json`,
+`minimum-cell-width-inherited-both-preservation-4368.json`,
+`logs/reflow-inherited-contracts-nextest-4365.log`다. 로그·중간 JSON은 커밋하지 않는다.
+45개 PR의 나머지 미달이나 전체 Rust/lint 완료를 뜻하지 않는다.
