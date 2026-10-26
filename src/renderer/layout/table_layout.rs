@@ -12142,13 +12142,13 @@ impl LayoutEngine {
         let closing_content = self.row_cut_content_height(table, 0, &[reset_cut], &[], styles);
         // The saved cell height is the sum of its physical fragments. The
         // remaining box keeps its blank alignment band as well as its ink.
-        let closing_height = hwpunit_to_px((cell.height - table.common.height) as i32, self.dpi);
+        let closing_height = hwpunit_to_px((cell.height - table.common.height) as i32, self.dpi)
+            .max(closing_content);
         let opening_flow: f64 = units[..reset_cut].iter().map(|unit| unit.height).sum();
         let closing_flow: f64 = units[reset_cut..].iter().map(|unit| unit.height).sum();
         let body_height = self.current_body_area.get().3;
         if opening_content > opening_height
             || opening_flow > opening_height
-            || closing_content > closing_height
             || closing_flow > closing_height
             || !body_height.is_finite()
             || body_height <= 0.0

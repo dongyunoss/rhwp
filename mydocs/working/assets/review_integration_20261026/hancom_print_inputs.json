@@ -550,6 +550,49 @@
         "pdf_print_method": 0,
         "pdf_output_mode": "hancom2020_pdf_driver_one_up"
       }
+    },
+    {
+      "input": "samples/hwpspec.hwp",
+      "input_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2010",
+        "version": "8.0.4.762"
+      },
+      "pdf": "pdf/review-integration-20261026/hwpspec-2020.pdf",
+      "pdf_sha256": "257f02c14ce843f38398c6702274434ec129c73b9da8ed41f9f61dc107a6bbc4",
+      "bytes": 1901742,
+      "job_id": "7627474f-8405-4216-bb03-9aee05719267",
+      "result": {
+        "job_id": "7627474f-8405-4216-bb03-9aee05719267",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwp",
+        "format": "pdf",
+        "bytes": 1901742,
+        "pdf_page_count": 178,
+        "logical_page_count": null,
+        "elapsed_ms": 53248,
+        "worker_elapsed_ms": 51154,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "scripts_disabled",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
     }
   ],
   "client_archive_sha256": "830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72"

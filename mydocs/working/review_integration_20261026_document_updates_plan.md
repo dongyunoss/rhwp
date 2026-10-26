@@ -220,3 +220,18 @@
   다음 후보에서 선언된 잔여를 최소로, 실제 내용 점유를 성장 하한으로 함께 소비하도록 한다.
   이 26HU 차이를 별도 px 허용치로 면제하지 않는다. 로그는 `nested-v6-all.log`,
   `nested-v6-p14-detail.log`, `nested-v6-p15-detail.log`다.
+- `legacy-v7`의 종료 행 최소 높이 보정으로 중첩 표 **전체 17쪽이 90% 이상**이다.
+  최저 90.18496%, 14쪽 97.88003%·15쪽 98.31085%, 쪽수 17을 유지한다.
+  선언된 잔여 높이와 실제 내용 점유 중 큰 값으로 종료 행을 성장시키며, 같은 source reset과
+  첫 물리 프레임 인증은 유지한다. fresh WASM·확대 판독·전체 회귀는 아직 남았다.
+  이 바이너리에는 진행 중인 그림·도형 계획도 들어 있지만, 중첩 원본의 해당 본문에는
+  새 NO_LS 그림 계획이 적용되지 않는다. 정확한 전체 source diff·바이너리 해시는
+  `legacy-v7-producer.json`, 실행은 `v7-nested-v7.log`에 연결한다.
+- hwpspec의 MCP Print PDF도 `pdf/review-integration-20261026/hwpspec-2020.pdf`에 정식 보존하고
+  기존 Print 근거 JSON에 job·입력/PDF 해시·실제 runtime·Print method를 추가했다.
+- 진행 중인 그림 계획은 배제 전 실제 control 줄에서 앵커를 확정하고, 그 도형 띠로
+  다시 구성한 글줄과 흐름 끝을 `InlineFlowPlan`으로 전달한다. Native 첫 후보에서
+  세 줄 문단의 이동·뒤 문단 위치는 한컴의 6,535HU 이동과 대응했으나, 가로 원점을
+  소비자가 기대하는 종이 절대 좌표 대신 단 상대 좌표로 전달했고 BehindText 도형을
+  기존 control 경로가 중복 등록했다. 그 후보는 수용하지 않는다. 다음 후보에서 좌표계와
+  단일 개체 소유 전달을 보정하며 별도 backend 보정·기대값 변경을 하지 않는다.
