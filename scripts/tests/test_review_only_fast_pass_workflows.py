@@ -457,6 +457,9 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             self._run_resolution_check("mydocs/orders/20260807.md").returncode,
             0,
         )
+        for filename in ("AGENTS.md", "CLAUDE.md"):
+            with self.subTest(root_document=filename):
+                self.assertEqual(self._run_resolution_check(filename).returncode, 0)
         rejected = self._run_resolution_check("src/lib.rs")
         self.assertNotEqual(rejected.returncode, 0)
         self.assertIn("current-base-merge-resolution-not-mydocs", rejected.stderr)

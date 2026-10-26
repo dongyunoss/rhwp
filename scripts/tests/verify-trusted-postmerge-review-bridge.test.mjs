@@ -463,3 +463,14 @@ for (const status of ["failure", "cancelled", "in_progress"]) {
     assert.equal(evaluateTrustedPostMergeReuse(data).reason, "latest-pr-workflow-candidate-not-successful");
   });
 }
+
+for (const filename of ['AGENTS.md', 'CLAUDE.md']) {
+  test(`#8267 trusted bridge accepts ${filename} documentation tails with the same tested tree`, () => {
+    const data = provenFixture();
+    data.prCommits[1].files = [file(filename)];
+    data.prCommits.at(-1).files = [file(filename)];
+    assert.equal(evaluateTrustedPostMergeReuse(data).reuse, true);
+    data.prCommits.at(-1).files.push(file('src/lib.rs'));
+    assert.equal(evaluateTrustedPostMergeReuse(data).reuse, false);
+  });
+}

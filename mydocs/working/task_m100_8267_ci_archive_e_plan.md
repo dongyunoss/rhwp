@@ -4,7 +4,9 @@
 - 작업 브랜치: `task/8267-nextest-archive-e`
 - 시작 base: `upstream/devel`의 `4e690c930105fa09fef484787ed0a2e5e182d444`
 - 범위: GitHub 운영 O3. 제품 Rust·렌더링·sample16 기준 자료는 변경하지 않는다.
-- 사용자 지시: 새 브랜치에서 구현·로컬 검증·개선 PR을 준비한다. 모든 PR 머지는 대기한다.
+- 최초 사용자 지시: 새 브랜치에서 구현·로컬 검증·개선 PR을 준비한다.
+- 최신 사용자 지시: 검증이 끝나면 이번 CI 개선을 [PR #8188](https://github.com/edwardkim/rhwp/pull/8188)에
+  후속 커밋으로 반영한다. 별도 개선 PR을 생성하지 않고 모든 PR 머지는 대기한다.
 
 ## 원인과 선행 근거
 
@@ -54,3 +56,33 @@ review-only 허용 경로와 trusted policy에는 빠져 있다.
   artifact 누락, builder/worker 실패·취소·skip은 실제 aggregate shell에서 실패함을 확인했다.
 - 기존 1,000줄 초과 policy 파일은 기존 신뢰 로딩 구조를 보존하기 위해 job identity 최소
   추가만 수행했다. 새 코드 파일은 1,000줄 이하로 유지한다.
+
+## 2단계 결과: 루트 지침 문서 fast-pass와 최종 로컬 검증
+
+- CI·CodeQL의 `*.md` ignore는 이 두 문서의 preflight 실행 자체를 막았다. 기존의 다른 루트
+  Markdown 제외 목록을 명시적으로 보존하고 `AGENTS.md`·`CLAUDE.md`는 preflight로 보냈다.
+  Render Diff도 두 경로에서 시작해 stable check의 fast-pass 판정을 발행하도록 맞췄다.
+- 다섯 workflow, trusted policy, postmerge bridge 및 문서 충돌 해결 검사기가 같은 두 루트
+  문서를 허용한다. 단독 added/modified와 검증된 코드 뒤의 문서 tail을 허용하고 코드 혼합,
+  rename·삭제·하위 경로 동명 문서로 문서 전용 fast-pass를 얻는 것은 거부한다.
+  소스 변경 후 검증된 코드 결과를 재사용하는 기존 계약은 유지한다.
+- Required job과 review-only 허용 계약 변경에 맞춰 policy version을 8로 올리고 모든 status
+  소비자도 맞췄다. 구 version 7의 status는 새 계약의 재사용 근거로 허용하지 않는다.
+- 최종 로컬 검사: Node 643개 통과, Python 146개 통과, 전체 workflow actionlint 통과,
+  `git diff --check` 통과, 수정 문서 3개의 내부 Markdown 상대 링크 정상.
+  Node 11개 파일과 Python 9개 모듈의 기존 실행 경로에 계약을 추가해 CI 중복 호출을 만들지 않았다.
+- 독립 실행으로 실제 Cargo metadata의 integration target 48개를 B 14·C 11·D 11·E 12개로
+  배정했다. 각 CLI 출력과 현재 source manifest 기반 배정을 대조했다. A의 lib 분리는 유지한다.
+- 제품 Rust·시각 기준 자료 변경이 없는 O3 작업이므로 제품 전체 Cargo/WASM 렌더 재검증은
+  이번 로컬 검증 범위가 아니다. 실제 GitHub runner의 archive 실행과 최신 head CI는 push 뒤
+  별도로 관찰한다. 로컬 계약 통과를 GitHub CI 완료로 기록하지 않는다.
+- PR #8188의 사용자 재실행 attempt 2도 job `121436248331`에서 30분 상한으로 취소됐다.
+  annotation을 재확인했으며 중복 재실행하지 않았다. 이번 변경의 새 head에서 CI를 실행한다.
+
+## PR #8188 반영 절차
+
+`task/8267-nextest-archive-e`의 검증된 단계별 커밋을 기존 PR 브랜치
+`task/8160-sample16-raw100`의 `a01381d0e2a29f94dcdc567319fd61ade08039db` 뒤에
+일반 커밋으로 적용한다. source·sample·PDF·TSV 및 Native 전용 #8160 검사 연결 보존을 Git으로
+대조하고, 합쳐진 head에서 관련 계약과 lint를 다시 실행한 뒤 upstream의 기존 PR head에 push한다.
+검토/오늘할일의 Option 2 후속 문서 PR과 merge는 현재 수행하지 않는다.

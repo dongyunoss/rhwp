@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       archive_label:
-        description: Stable A/B/C/D/E/E archive partition label.
+        description: Stable A/B/C/D/E archive partition label.
         required: true
         type: string
       filterset:

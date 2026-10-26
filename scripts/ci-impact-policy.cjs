@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '7';
+const POLICY_VERSION = '8';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -23,7 +23,19 @@ const CI_PULL_REQUEST_PATHS_IGNORE = [
   'assets/edge/**',
   'assets/logo/**',
   'assets/screenshots/**',
-  '*.md',
+  'CHANGELOG.md',
+  'CHANGELOG_EN.md',
+  'CONTRIBUTING.md',
+  'CONVENTIONS.md',
+  'GEMINI.md',
+  'QWEN.md',
+  'README.md',
+  'README_EN.md',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'THIRD_PARTY.md',
+  'THIRD_PARTY_LICENSES.md',
+  'replit.md',
   'LICENSE',
   '.github/ISSUE_TEMPLATE/**',
   '.github/FUNDING.yml',
@@ -38,7 +50,19 @@ const CODEQL_PUSH_PATHS_IGNORE = []; // CodeQL has no push trigger.
 
 const CODEQL_PULL_REQUEST_PATHS_IGNORE = [
   'assets/**',
-  '*.md',
+  'CHANGELOG.md',
+  'CHANGELOG_EN.md',
+  'CONTRIBUTING.md',
+  'CONVENTIONS.md',
+  'GEMINI.md',
+  'QWEN.md',
+  'README.md',
+  'README_EN.md',
+  'ROADMAP.md',
+  'SECURITY.md',
+  'THIRD_PARTY.md',
+  'THIRD_PARTY_LICENSES.md',
+  'replit.md',
   'LICENSE',
   '.github/ISSUE_TEMPLATE/**',
   '.github/FUNDING.yml',
@@ -66,6 +90,8 @@ const DEPLOY_PAGES_PUSH_PATHS_IGNORE = [
 ];
 
 const RENDER_DIFF_PULL_REQUEST_PATHS = [
+  'AGENTS.md',
+  'CLAUDE.md',
   'Cargo.toml',
   'Cargo.lock',
   'src/paint/**',
@@ -306,6 +332,10 @@ function isReviewReferencePath(filename) {
 
 function isAllowedReviewFile(file) {
   const normalized = normalizeFile(file);
+  if (normalized.filename === 'AGENTS.md' || normalized.filename === 'CLAUDE.md') {
+    return !normalized.previous_filename
+      && (normalized.status === 'added' || normalized.status === 'modified');
+  }
   if (
     normalized.filename.startsWith('mydocs/')
     && !RENDER_CONTRACT_DOC_PATHS.has(normalized.filename)
