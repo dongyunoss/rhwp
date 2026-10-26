@@ -54,17 +54,17 @@ CI·merge·devel 포함과 asset 존재를 확인한 뒤 한국어 존댓말의 
 | 고정 원 head | `36f9d3ac4091cc5c85cd74dee030c93b62c80964` |
 | 원격 확인 | 2026-10-26 KST: head 일치, reviewer jangster77 지정 확인; 당시 draft=true |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 코드·회귀 후보 | `61528013511c87c732524f91c6f224286a055337` |
-| 실제 렌더 소스·증거 등록 | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
+| 현재 통합 후보 | `d6ea10837218e7e490b166ed76af221490b61ba2` |
+| 초기 렌더 소스·증거 등록(과거) | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
 | 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
 
 ## 변경과 원 커밋 적용
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `7ded7ca1d468326844ede2e934b10c4add9c7d81` | `1269479a2a0f5dfac5a6ce9ca43346d987ea2f35` |
-| `a3f80b14adcbec5974debb537a02eb84aa061603` | `c9334ddea87c9472c7b3a964e8cde6916d337fa0` |
-| `36f9d3ac4091cc5c85cd74dee030c93b62c80964` | `aa90bdb2c5b1e34e7e341803cb66b9314c0e5c52` |
+| `7ded7ca1d468326844ede2e934b10c4add9c7d81` | `2e942b530b412f404c76595ef57b004781250214` |
+| `a3f80b14adcbec5974debb537a02eb84aa061603` | `029e133e428041af1ec16002d4b586b326e61cc3` |
+| `36f9d3ac4091cc5c85cd74dee030c93b62c80964` | `4a1d15b0e78b5c6963d8c03b3ef252360f06383a` |
 
 ### 실제 소비 경로와 반례
 
@@ -106,48 +106,35 @@ CharOverlap과 note의 logical 한 칸을 원문 scalar 길이와 구분한다. 
 
 sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/char_overlap_caret_axis.rs](../../../tests/cases/char_overlap_caret_axis.rs): SHA-256 `9a680fef8d58f03c6492f58e25f9f57c0195006f1f49b2265b3181c7fdb53c89`.
-  - `mixed_overlap_note_uses_one_axis_in_public_getters_and_both_formats`: PASS, `logs/final-full-nextest-4052.log:10110` (`rhwp::regression_suite_023`).
-  - `public_caret_and_selection_use_the_rendered_overlap_and_note_boundaries`: PASS, `logs/final-full-nextest-4052.log:10112` (`rhwp::regression_suite_023`).
-  - `input_before_and_after_overlap_and_note_preserves_source_slots`: PASS, `logs/final-full-nextest-4052.log:10107` (`rhwp::regression_suite_023`).
-  - `logical_copy_excludes_or_includes_the_overlap_slot_without_neighbor_text`: PASS, `logs/final-full-nextest-4052.log:10109` (`rhwp::regression_suite_023`).
-  - `split_merge_and_snapshot_restore_keep_the_logical_seam_after_overlap`: PASS, `logs/final-full-nextest-4052.log:10114` (`rhwp::regression_suite_023`).
-  - `empty_overlap_and_same_anchor_slots_are_counted_without_claiming_middle_input`: PASS, `logs/final-full-nextest-4052.log:10105` (`rhwp::regression_suite_023`).
-  - `floating_and_auto_number_keep_their_existing_caret_contract`: PASS, `logs/final-full-nextest-4052.log:10106` (`rhwp::regression_suite_023`).
-  - `non_bmp_text_and_note_keep_source_order_complete_caret_and_hit_boundaries`: PASS, `logs/final-full-nextest-4052.log:10111` (`rhwp::regression_suite_023`).
-  - `same_anchor_notes_keep_control_order_and_terminal_overlap_geometry`: PASS, `logs/final-full-nextest-4052.log:10113` (`rhwp::regression_suite_023`).
-  - `issue_7819_print_qualified_overlap_note_caret_boundaries_stay_within_two_pixels`: PASS, `logs/final-full-nextest-4052.log:10108` (`rhwp::regression_suite_023`).
+  - `empty_overlap_and_same_anchor_slots_are_counted_without_claiming_middle_input`: PASS, `logs/current-full-nextest-4184.log:10135` (`rhwp::regression_suite_023`).
+  - `floating_and_auto_number_keep_their_existing_caret_contract`: PASS, `logs/current-full-nextest-4184.log:10134` (`rhwp::regression_suite_023`).
+  - `input_before_and_after_overlap_and_note_preserves_source_slots`: PASS, `logs/current-full-nextest-4184.log:10143` (`rhwp::regression_suite_023`).
+  - `issue_7819_print_qualified_overlap_note_caret_boundaries_stay_within_two_pixels`: PASS, `logs/current-full-nextest-4184.log:10137` (`rhwp::regression_suite_023`).
+  - `logical_copy_excludes_or_includes_the_overlap_slot_without_neighbor_text`: PASS, `logs/current-full-nextest-4184.log:10139` (`rhwp::regression_suite_023`).
+  - `mixed_overlap_note_uses_one_axis_in_public_getters_and_both_formats`: PASS, `logs/current-full-nextest-4184.log:10138` (`rhwp::regression_suite_023`).
+  - `non_bmp_text_and_note_keep_source_order_complete_caret_and_hit_boundaries`: PASS, `logs/current-full-nextest-4184.log:10140` (`rhwp::regression_suite_023`).
+  - `public_caret_and_selection_use_the_rendered_overlap_and_note_boundaries`: PASS, `logs/current-full-nextest-4184.log:10141` (`rhwp::regression_suite_023`).
+  - `same_anchor_notes_keep_control_order_and_terminal_overlap_geometry`: PASS, `logs/current-full-nextest-4184.log:10144` (`rhwp::regression_suite_023`).
+  - `split_merge_and_snapshot_restore_keep_the_logical_seam_after_overlap`: PASS, `logs/current-full-nextest-4184.log:10142` (`rhwp::regression_suite_023`).
 - [tests/cases/issue_7408_stored_row_key_folded_origin.rs](../../../tests/cases/issue_7408_stored_row_key_folded_origin.rs): SHA-256 `5916b148a6b41d49de4b4d14ba626a6c079cb274b88afec4cba224c442963f65`.
-  - `footnote_sample_keeps_every_stored_cut`: PASS, `logs/final-full-nextest-4052.log:5616` (`rhwp::regression_suite_006`).
-  - `endnote_sample_keeps_every_stored_cut`: PASS, `logs/final-full-nextest-4052.log:5615` (`rhwp::regression_suite_006`).
-  - `tac_picture_sample_keeps_its_stored_cuts`: PASS, `logs/final-full-nextest-4052.log:5641` (`rhwp::regression_suite_006`).
-  - `edited_paragraph_is_rewrapped`: PASS, `logs/final-full-nextest-4052.log:5614` (`rhwp::regression_suite_006`).
+  - `edited_paragraph_is_rewrapped`: PASS, `logs/current-full-nextest-4184.log:4437` (`rhwp::regression_suite_002`).
+  - `endnote_sample_keeps_every_stored_cut`: PASS, `logs/current-full-nextest-4184.log:4438` (`rhwp::regression_suite_002`).
+  - `footnote_sample_keeps_every_stored_cut`: PASS, `logs/current-full-nextest-4184.log:4439` (`rhwp::regression_suite_002`).
+  - `tac_picture_sample_keeps_its_stored_cuts`: PASS, `logs/current-full-nextest-4184.log:4449` (`rhwp::regression_suite_002`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `7ded7ca1d468326844ede2e934b10c4add9c7d81` | `1269479a2a0f5dfac5a6ce9ca43346d987ea2f35` |
-| `a3f80b14adcbec5974debb537a02eb84aa061603` | `c9334ddea87c9472c7b3a964e8cde6916d337fa0` |
-| `36f9d3ac4091cc5c85cd74dee030c93b62c80964` | `aa90bdb2c5b1e34e7e341803cb66b9314c0e5c52` |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
 
 ## Merge 후 contributor PR comment 계획
 

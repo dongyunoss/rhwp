@@ -92,3 +92,27 @@ self-review·오늘할일 후속 PR을 처리하고, merge 뒤 원 PR에 실제 
 sample16·편람의 삭제와 이전 파생 참조 부재는 검증 worktree에서도 유지한다.
 주 작업 트리의 과거 ignored generated 파일은 실행·복원·stage하지 않으며 실제 수집 소스에서
 메모리로 계산한 신규 harness와 준비한 검증 worktree를 대조한다.
+
+## 현재 후보의 실제 검사 실행 — 2026-10-26
+
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+
+- [tests/cases/verified_cell_picture_layer_scope.rs](../../../tests/cases/verified_cell_picture_layer_scope.rs): SHA-256 `943d352051dc56854faf4fec87c6768f615f4e176f5930f298159ea86ab624de`.
+  - `verified_cell_picture_bitmap_precedes_its_own_border`: PASS, `logs/cell-scope-focused-4175.log:8` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_floating_higher_z_preserves_page_order`: PASS, `logs/cell-scope-focused-4175.log:9` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_floating_owner_preserves_page_order`: PASS, `logs/cell-scope-focused-4175.log:10` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_floating_text_flow_preserves_owner_plane`: PASS, `logs/cell-scope-focused-4175.log:7` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_following_text_inherits_cell_paint`: PASS, `logs/cell-scope-focused-4175.log:12` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_higher_page_z_order_remains_above_shape`: PASS, `logs/cell-scope-focused-4175.log:11` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_page_shape_occludes_independent_picture`: PASS, `logs/cell-scope-focused-4175.log:13` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_print_pixels_match_independent_occlusion`: PASS, `logs/cell-scope-focused-4175.log:15` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_without_occluder_remains_visible`: PASS, `logs/cell-scope-focused-4175.log:6` (`rhwp::regression_suite_013`).
+
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.

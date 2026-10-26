@@ -8,7 +8,7 @@
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `72c825408e39d2084a85b746440fd29469f2805c` | `b5aff38d64880ab4ed44834e1e78fc75cf60c71d` |
+| `72c825408e39d2084a85b746440fd29469f2805c` | `52231bcd879f4d22b1dbae257cf2517fe3255517` |
 
 충돌 보정과 원 기능의 유지 여부는 원 커밋·현재 코드 후보·독립 기대값을 대조한다. 메인터너의 공통 renderer·편집 소유 보정과 원 contributor 변경을 혼동하지 않는다. 원 head는 직접 merge 대상이 아니다.
 
@@ -29,40 +29,29 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/cell_padding_exceeding_declared_height_grows_row.rs](../../../tests/cases/cell_padding_exceeding_declared_height_grows_row.rs): SHA-256 `da4166c7c9fd1d71c0522d9dcd442f0ae1561db5a3188fed423b2a385d5f785a`.
-  - `cell_padding_exceeding_declared_height_grows_row`: PASS, `logs/final-full-nextest-4052.log:4307` (`rhwp::regression_suite_002`).
+  - `cell_padding_exceeding_declared_height_grows_row`: PASS, `logs/current-full-nextest-4184.log:5178` (`rhwp::regression_suite_005`).
 - [tests/cases/issue_5751_dense_table_row_growth.rs](../../../tests/cases/issue_5751_dense_table_row_growth.rs): SHA-256 `0dd2c71d4c4e0fe990c0c08ac999f7c1d973a52758bedfd9b8ccc6ad136a63cc`.
-  - `issue_5751_dense_row_grows_to_content_plus_padding`: PASS, `logs/final-full-nextest-4052.log:8385` (`rhwp::regression_suite_016`).
+  - `issue_5751_dense_row_grows_to_content_plus_padding`: PASS, `logs/current-full-nextest-4184.log:8888` (`rhwp::regression_suite_018`).
 - [tests/cases/issue_6442_unused_cell_padding_is_garbage.rs](../../../tests/cases/issue_6442_unused_cell_padding_is_garbage.rs): SHA-256 `6facaefae946cb165e5e61af269aff049adcd4086b5db88c4a6fdaad35f9d620`.
-  - `both_back_side_cards_on_page2_carry_their_content`: PASS, `logs/final-full-nextest-4052.log:6135` (`rhwp::regression_suite_008`).
-  - `page3_control_group_is_unchanged`: PASS, `logs/final-full-nextest-4052.log:6137` (`rhwp::regression_suite_008`).
-  - `unused_inner_margin_field_is_not_charged`: PASS, `logs/final-full-nextest-4052.log:6136` (`rhwp::regression_suite_008`).
+  - `both_back_side_cards_on_page2_carry_their_content`: PASS, `logs/current-full-nextest-4184.log:5615` (`rhwp::regression_suite_006`).
+  - `page3_control_group_is_unchanged`: PASS, `logs/current-full-nextest-4184.log:5616` (`rhwp::regression_suite_006`).
+  - `unused_inner_margin_field_is_not_charged`: PASS, `logs/current-full-nextest-4184.log:5613` (`rhwp::regression_suite_006`).
 - [tests/cases/issue_7234_scaffold_table_cell_height.rs](../../../tests/cases/issue_7234_scaffold_table_cell_height.rs): SHA-256 `2aa9d7f8251b1cc445829cd902fe28a80c843ca8d5cc105565a323830dcadfb8`.
-  - `issue_7234_scaffold_cell_height_is_one_line_row_height`: PASS, `logs/final-full-nextest-4052.log:7615` (`rhwp::regression_suite_013`).
-  - `issue_7234_scaffold_tall_table_first_fragment_stays_inside_body`: PASS, `logs/final-full-nextest-4052.log:7616` (`rhwp::regression_suite_013`).
-  - `issue_7234_existing_minimum_height_rows_fit_the_painted_fragment`: PASS, `logs/final-full-nextest-4052.log:7614` (`rhwp::regression_suite_013`).
-  - `issue_7234_content_cut_fit_must_not_accept_an_overfull_whole_row`: PASS, `logs/final-full-nextest-4052.log:7613` (`rhwp::regression_suite_013`).
+  - `issue_7234_content_cut_fit_must_not_accept_an_overfull_whole_row`: PASS, `logs/current-full-nextest-4184.log:9470` (`rhwp::regression_suite_020`).
+  - `issue_7234_existing_minimum_height_rows_fit_the_painted_fragment`: PASS, `logs/current-full-nextest-4184.log:9477` (`rhwp::regression_suite_020`).
+  - `issue_7234_scaffold_cell_height_is_one_line_row_height`: PASS, `logs/current-full-nextest-4184.log:9471` (`rhwp::regression_suite_020`).
+  - `issue_7234_scaffold_tall_table_first_fragment_stays_inside_body`: PASS, `logs/current-full-nextest-4184.log:9475` (`rhwp::regression_suite_020`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `72c825408e39d2084a85b746440fd29469f2805c` | `b5aff38d64880ab4ed44834e1e78fc75cf60c71d` |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.

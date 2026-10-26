@@ -2,10 +2,10 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 같은 재현의 독립 Print·Native/fresh WASM 시각 검증과 새 집중 회귀를 완료했다. 새 공통 코드의 전체 제출 게이트는 추가 확인 중이다.**
+**메인터너 보정 후 수용 가능 — 같은 재현의 독립 Print·Native/fresh WASM 시각 검증과 새 집중 회귀를 완료했다. 공통 생산 코드의 전체 Rust·lint·Studio 게이트도 완료했다. 통합 PR의 잔여 원 PR별 확인과 정확한 head CI는 앞으로 수행한다.**
 
-원 contributor head를 직접 merge하지 않는다. 새 코드의 전체 Rust·lint·Studio 및 통합
-head CI를 완료하기 전에는 통합하지 않는다. 아직 PR을 제출하거나 원 PR을 close하지 않았다.
+원 contributor head를 직접 merge하지 않는다. 전체 로컬 게이트의 실제 종료 결과를 확인했다. 통합 head CI와 나머지 원 PR별 필수
+검증을 완료하기 전에는 통합하지 않는다. 아직 PR을 제출하거나 원 PR을 close하지 않았다.
 
 ## 접수 정보와 통합 대응
 
@@ -17,7 +17,7 @@ head CI를 완료하기 전에는 통합하지 않는다. 아직 PR을 제출하
 | 통합 브랜치 | `review/semanticist21-20261019` |
 | 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
 | 원격 확인 | 2026-10-26 KST: 원 head 일치, reviewer jangster77 지정, draft=false |
-| 새 생산 코드 | Native 257 / 최적화 fresh WASM 074.Git head와 실제 덧씌운 파일 해시는 아래 provenance에서 구분한다. |
+| 새 생산 코드 | Native 257 / 최적화 fresh WASM 074. Git head와 실제 덧씌운 파일 해시는 아래 provenance에서 구분한다. |
 
 ## 원 주장과 독립 검증
 
@@ -80,3 +80,27 @@ sample16·편람의 기존 삭제를 유지하며 이전 파생 참조를 재생
 self-review·오늘할일 후속 PR을 처리한다. merge 뒤 실제 merge SHA의 증적·통합 링크와
 보정 결과를 원 PR에 남긴다. contributor fork·branch는 보존한다.
 [개별 구현 기록](pr_8061_review_impl.md)을 따른다.
+
+## 현재 후보의 실제 검사 실행 — 2026-10-26
+
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+
+- [tests/cases/verified_cell_picture_layer_scope.rs](../../../tests/cases/verified_cell_picture_layer_scope.rs): SHA-256 `943d352051dc56854faf4fec87c6768f615f4e176f5930f298159ea86ab624de`.
+  - `verified_cell_picture_bitmap_precedes_its_own_border`: PASS, `logs/cell-scope-focused-4175.log:8` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_floating_higher_z_preserves_page_order`: PASS, `logs/cell-scope-focused-4175.log:9` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_floating_owner_preserves_page_order`: PASS, `logs/cell-scope-focused-4175.log:10` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_floating_text_flow_preserves_owner_plane`: PASS, `logs/cell-scope-focused-4175.log:7` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_following_text_inherits_cell_paint`: PASS, `logs/cell-scope-focused-4175.log:12` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_higher_page_z_order_remains_above_shape`: PASS, `logs/cell-scope-focused-4175.log:11` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_page_shape_occludes_independent_picture`: PASS, `logs/cell-scope-focused-4175.log:13` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_print_pixels_match_independent_occlusion`: PASS, `logs/cell-scope-focused-4175.log:15` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_without_occluder_remains_visible`: PASS, `logs/cell-scope-focused-4175.log:6` (`rhwp::regression_suite_013`).
+
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.

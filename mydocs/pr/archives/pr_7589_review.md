@@ -121,31 +121,19 @@ SECOND 미표시, 두 결과의 동일성을 함께 검사한다. 동일성만 �
 적고 위 대표 Native/WASM review·overlay를 merge SHA 고정 raw URL의 이미지로 표시한다.
 그 뒤 원 PR을 통합 PR과 연결해 처리한다. 현재는 문안 게시나 PR close를 실행하지 않았다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/form_multiline_rendering.rs](../../../tests/cases/form_multiline_rendering.rs): SHA-256 `ae0297fb8e81b93876e23a756dea1abb80bc6ae046d5ecd21f81f9cf2dd0c01c`.
-  - `edit_print_displays_first_stored_line_for_both_multiline_values`: PASS, `logs/final-full-nextest-4052.log:7495` (`rhwp::regression_suite_013`).
-  - `multiline_edit_without_line_break_keeps_single_line_output`: PASS, `logs/final-full-nextest-4052.log:7497` (`rhwp::regression_suite_013`).
+  - `edit_print_displays_first_stored_line_for_both_multiline_values`: PASS, `logs/current-full-nextest-4184.log:8534` (`rhwp::regression_suite_017`).
+  - `multiline_edit_without_line_break_keeps_single_line_output`: PASS, `logs/current-full-nextest-4184.log:8536` (`rhwp::regression_suite_017`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `b03f3072bf81ffa83ee43e6cc77cf8c7f2e10aef` | `d68c870ad15946f381d44be54eee8a322e4147c6` |
-| `300d1af385064eb32bb85c94f3a40ab7213d2d2a` | 원 devel merge; 기능 체리픽에서 제외 |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.

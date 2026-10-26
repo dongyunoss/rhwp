@@ -14,15 +14,15 @@
 | 고정 원 head | `67acb6d0562dc3b8df04e4a2ebbc6bf39ea9ba07` |
 | 원격 확인 | 2026-10-26 KST: head 일치, reviewer jangster77 지정 확인; 당시 draft=false |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 코드·회귀 후보 | `61528013511c87c732524f91c6f224286a055337` |
-| 실제 렌더 소스·증거 등록 | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
+| 현재 통합 후보 | `d6ea10837218e7e490b166ed76af221490b61ba2` |
+| 초기 렌더 소스·증거 등록(과거) | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
 | 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
 
 ## 변경과 원 커밋 적용
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `67acb6d0562dc3b8df04e4a2ebbc6bf39ea9ba07` | `06e3af2b4c99059d85260407f6809b55f492becc` |
+| `67acb6d0562dc3b8df04e4a2ebbc6bf39ea9ba07` | `03ed73cbcf845b4b08296ef55fc33477638cea96` |
 
 ### 실제 소비 경로와 반례
 
@@ -59,35 +59,40 @@ equation_line_metrics::refresh_single_tac_host_row는 하나의 TAC Form/Equatio
 
 sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/form_only_paragraph_without_lineseg.rs](../../../tests/cases/form_only_paragraph_without_lineseg.rs): SHA-256 `28bc094cc75d639de873f3b621ac9a895f61e4477426e461aeeb388eb9ee3ced`.
-  - `form_only_paragraph_draws_after_hwpx_reopen_without_lineseg`: PASS, `logs/final-full-nextest-4052.log:6908` (`rhwp::regression_suite_011`).
+  - `form_only_paragraph_draws_after_hwpx_reopen_without_lineseg`: PASS, `logs/current-full-nextest-4184.log:9349` (`rhwp::regression_suite_020`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `67acb6d0562dc3b8df04e4a2ebbc6bf39ea9ba07` | `06e3af2b4c99059d85260407f6809b55f492becc` |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
 
 ## Merge 후 contributor PR comment 계획
 
 [Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 실제 통합 PR·merge SHA·CI 결과와 이 PR의 보정 범위를 존댓말로 설명한다. 시각 검증에 사용한 대표 review·overlay는 위 안정 경로에서 실제 merge SHA로 고정한 raw URL로 함께 표시한다. 아직 확정하지 않은 수치·이미지 URL이나 미실행 경로를 만들지 않는다.
 
 실제 asset의 devel 반영을 확인한 뒤 `--body-file`로 게시하고 API로 본문·이미지를 재조회한다. contributor branch·fork를 삭제하거나 원 history를 rewrite하지 않는다. [개별 구현·후속 절차](pr_8096_review_impl.md)를 따른다.
+
+## 현재 Form 기본값의 독립 Print 대조 — 2026-10-26
+
+[정식 입력](../../../tests/fixtures/pr8096_form_defaults/README.md)의 HWP/HWPX 두 파일을
+독립 한컴 2020 Print PDF와 대조했다. 각 1쪽이며 Native/fresh WASM 전쪽 raw가 모두
+99.99194%다. 같은 원본·Print의 base보다 개선됐으며 0.1%p 초과 하락은 없다.
+[최종 전쪽 TSV·Print job과 입력/PDF 해시·대표 review·overlay](../assets/semanticist21_final_20261026/README.md)의
+`form-only-defaults-hwp`·`form-only-defaults-hwpx` 행을 따른다.
+
+양쪽 경로의 정본 review·standalone overlay를 실제로 열어 다섯 Form의 원본 높이·순서와
+앞뒤 `가`·`나` 본문 전진을 확인했다. 검은 배경·문자색은 원본에 명시된 0 값과 Print에도
+있으므로 일반 사용자 UI 배경이나 보이지 않는 캡션까지 확인했다고 주장하지 않는다.
+코드의 공통 단일 TAC host 줄 메트릭과 HWPX 재열기 뒤 LineSeg 부재를 확인하는 기존
+`form_only_paragraph_draws_after_hwpx_reopen_without_lineseg`의 현재 전체 실행 PASS를
+위 실제 검사 절에서 연결했다. 독립 Print 대조와 모델·높이 계약의 통과를 구분한다.
+원 PR별 최종 기록과 통합 PR CI·후속 절차는 진행 중이며 원격 완료를 선언하지 않는다.

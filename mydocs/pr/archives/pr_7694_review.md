@@ -14,30 +14,30 @@
 | 고정 원 head | `0e7383d03753ac2546b0be74f19a244fe81747ff` |
 | 원격 확인 | 2026-10-26 KST: head 일치, reviewer jangster77 지정 확인; 당시 draft=true |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 코드·회귀 후보 | `61528013511c87c732524f91c6f224286a055337` |
-| 실제 렌더 소스·증거 등록 | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
+| 현재 통합 후보 | `d6ea10837218e7e490b166ed76af221490b61ba2` |
+| 초기 렌더 소스·증거 등록(과거) | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
 | 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
 
 ## 변경과 원 커밋 적용
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `f7c0acb2c9580cae3ebc14e09bb503dba261ffaa` | `cca5817c81a6679b2fadc957997dc2ef95286450` |
-| `3e2a9dc1c6597e357634835208e0efcfca5288c0` | `f7be47cbf4abdfb0f849faf3d980df4c673d80cb` |
-| `9dab2711be1156aefc5318a1adb4e98fb0a309fe` | `e854311d59c6faf5824dfe4d3df8fc24b0d9d7ea` |
-| `30a29eaf5481b6ca8b1c283c10b695a735eadc35` | `f21c4a7da8481e65ca324449b3c2b9051919a4ed` |
-| `5f7a4fca71f816c2fb72154639c31e3826423a28` | `44903a1025a656b46beb7b579f26e9385ebe70e6` |
-| `3e68f620a9c2643bb52a78d305b2f7e95f06a631` | `19969825ec2779f74b8b6673d258eac66e0d5742` |
-| `55f06f5505d6f6ddd449a3f7b1cb4acd84c29ac2` | `cc29ccf21e930832d06756e4210ce6efe3419866` |
-| `09f91ff16986b6f64db4a3b46d1a63ca0f6e8de5` | `ce062af329914df8564bed3f525eb01a0e9c6585` |
+| `f7c0acb2c9580cae3ebc14e09bb503dba261ffaa` | `7649c9cea4a9d58971286439679923942e3198d0` |
+| `3e2a9dc1c6597e357634835208e0efcfca5288c0` | `d7e9c740d24850458714ee18f9702463ef99d3dd` |
+| `9dab2711be1156aefc5318a1adb4e98fb0a309fe` | `dd5fb7e0fa9480cee81489aa3a11fb33f2fe3144` |
+| `30a29eaf5481b6ca8b1c283c10b695a735eadc35` | `53390b6d801bcc61ef81314b1b3cd4795a0d0267` |
+| `5f7a4fca71f816c2fb72154639c31e3826423a28` | `29ebef650759de94893649b0e780381d555859c3` |
+| `3e68f620a9c2643bb52a78d305b2f7e95f06a631` | `0758d3f6d26adbcd13638a59ccb52c0eab38f8cd` |
+| `55f06f5505d6f6ddd449a3f7b1cb4acd84c29ac2` | `215da38331fece58f4047cabede6346015d87ee8` |
+| `09f91ff16986b6f64db4a3b46d1a63ca0f6e8de5` | `a1a5a91759cdd1f422bf0ad1c3a7724a8704c31e` |
 | `9052f0bde427f93bf3cefe5de09875065a49bfbb` | 원 devel merge; 기능 체리픽에서 제외 |
-| `133e09e154d0d496850d64deb7e823b2599cceba` | `4fa3c6d58382f40dd586fccc5742a752c47156b6` |
-| `680f44ae667ba16b8ecc1073ce815286788d138b` | `46a476abbbffad8f085cb701fca049aa6be458bb` |
-| `0e7383d03753ac2546b0be74f19a244fe81747ff` | `f0e526e3e33dd6b29d221b719035fe94e4b6dbe1` |
+| `133e09e154d0d496850d64deb7e823b2599cceba` | `00bf9e023f51562a6c704fa586165ac71931e7c9` |
+| `680f44ae667ba16b8ecc1073ce815286788d138b` | `508693b3afb3d625521c82f412fd6fef6d5d1c80` |
+| `0e7383d03753ac2546b0be74f19a244fe81747ff` | `a5493a01a4be9822d1fa18e918fbb34ae5a33b5a` |
 
 ### 실제 소비 경로와 반례
 
-move_inline_control_native는 배포 문서·원본/대상 주소·잠금·logical caret를 먼저 검증하고 영향 구역 복제본에서 remove/insert를 실행한다. 실제 문서 commit 이전에 실패할 수 있는 검사를 끝내는 순서를 확인한다. 같은 위치 no-op은 이벤트를 발행하지 않으며, source 제거 후 sibling 경로와 목적지 offset을 다시 계산한다. inline_control_move의 19개 검사는 Unicode·필드·형광펜·범위 태그·BinData·실제 OOXML 차트 payload 및 공개 HWP/HWPX 저장을 포함한다. 시각 chart-before/after 미달을 뒤의 OLE/차트 공통 보정과 구분해 기록한다.
+move_inline_control_native는 배포 문서·원본/대상 주소·잠금·logical caret를 먼저 검증하고 영향 구역 복제본에서 remove/insert를 실행한다. 실제 문서 commit 이전에 실패할 수 있는 검사를 끝내는 순서를 확인한다. 같은 위치 no-op은 이벤트를 발행하지 않으며, source 제거 후 sibling 경로와 목적지 offset을 다시 계산한다. inline_control_move의 18개 검사와 분리한 유효 저장본 검사 1개는 Unicode·필드·형광펜·범위 태그·BinData·실제 OOXML 차트 payload 및 공개 HWP/HWPX 저장을 포함한다. 시각 chart-before/after 미달을 뒤의 OLE/차트 공통 보정과 구분해 기록한다.
 
 
 
@@ -53,7 +53,7 @@ move_inline_control_native는 배포 문서·원본/대상 주소·잠금·logic
 - [src/wasm_api.rs](../../../src/wasm_api.rs)
 - [tests/cases/inline_control_move.rs](../../../tests/cases/inline_control_move.rs)
 
-- `tests/cases/inline_control_move.rs`: SHA-256 `d76cd31037ae4ba897601230b0499e4b6d152491ea251a403a8404bcb0f777f8`. 직접 선언 검사 19개: `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`, `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`, `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`, `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`, `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`, `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`, `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`, `header_and_note_destinations_return_existing_owner_forms`, `picture_binary_identity_and_control_metadata_survive_cross_owner_move`, `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`, `locked_object_and_locked_parent_reject_without_mutation`, `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`, `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`, `nested_markpen_colors_keep_outer_inner_order_when_moved`, `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`, `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`, `public_hwp_export_preserves_inline_chart_with_and_without_move`, `malformed_source_or_destination_coordinates_reject_without_changes`, `committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets`.
+- `tests/cases/inline_control_move.rs`: SHA-256 `d85b9ba7f75bed2cdd5c7f942bee95d9c609ca94d0ccf345e62b9c95a9412ea1`. 직접 선언 검사 18개: `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`, `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`, `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`, `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`, `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`, `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`, `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`, `header_and_note_destinations_return_existing_owner_forms`, `picture_binary_identity_and_control_metadata_survive_cross_owner_move`, `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`, `locked_object_and_locked_parent_reject_without_mutation`, `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`, `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`, `nested_markpen_colors_keep_outer_inner_order_when_moved`, `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`, `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`, `public_hwp_export_preserves_inline_chart_with_and_without_move`, `malformed_source_or_destination_coordinates_reject_without_changes`.
 
 삭제·교체한 옛 검사와 현재 활성 검사를 구분한다. 위 목록은 현재 source 검사이며 실행 PASS 집계가 아니다.
 
@@ -76,61 +76,44 @@ move_inline_control_native는 배포 문서·원본/대상 주소·잠금·logic
 
 sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 저장본 계약 1개는 [분리한 새 검사](../../../tests/cases/valid_inline_move_fixture_contract.rs)에서 실제 실행했다. 손상 HWP를 다시 읽는 확장자 순회는 제거했다.
 
-- [tests/cases/inline_control_move.rs](../../../tests/cases/inline_control_move.rs): SHA-256 `d76cd31037ae4ba897601230b0499e4b6d152491ea251a403a8404bcb0f777f8`.
-  - `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`: PASS, `logs/final-full-nextest-4052.log:9364` (`rhwp::regression_suite_020`).
-  - `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`: PASS, `logs/final-full-nextest-4052.log:9350` (`rhwp::regression_suite_020`).
-  - `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`: PASS, `logs/final-full-nextest-4052.log:9352` (`rhwp::regression_suite_020`).
-  - `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`: PASS, `logs/final-full-nextest-4052.log:9359` (`rhwp::regression_suite_020`).
-  - `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`: PASS, `logs/final-full-nextest-4052.log:9368` (`rhwp::regression_suite_020`).
-  - `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`: PASS, `logs/final-full-nextest-4052.log:9366` (`rhwp::regression_suite_020`).
-  - `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`: PASS, `logs/final-full-nextest-4052.log:9363` (`rhwp::regression_suite_020`).
-  - `header_and_note_destinations_return_existing_owner_forms`: PASS, `logs/final-full-nextest-4052.log:9353` (`rhwp::regression_suite_020`).
-  - `picture_binary_identity_and_control_metadata_survive_cross_owner_move`: PASS, `logs/final-full-nextest-4052.log:9362` (`rhwp::regression_suite_020`).
-  - `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`: PASS, `logs/final-full-nextest-4052.log:9358` (`rhwp::regression_suite_020`).
-  - `locked_object_and_locked_parent_reject_without_mutation`: PASS, `logs/final-full-nextest-4052.log:9354` (`rhwp::regression_suite_020`).
-  - `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`: PASS, `logs/final-full-nextest-4052.log:9357` (`rhwp::regression_suite_020`).
-  - `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`: PASS, `logs/final-full-nextest-4052.log:9361` (`rhwp::regression_suite_020`).
-  - `nested_markpen_colors_keep_outer_inner_order_when_moved`: PASS, `logs/final-full-nextest-4052.log:9360` (`rhwp::regression_suite_020`).
-  - `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`: PASS, `logs/final-full-nextest-4052.log:9365` (`rhwp::regression_suite_020`).
-  - `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`: PASS, `logs/final-full-nextest-4052.log:9349` (`rhwp::regression_suite_020`).
-  - `public_hwp_export_preserves_inline_chart_with_and_without_move`: PASS, `logs/final-full-nextest-4052.log:9367` (`rhwp::regression_suite_020`).
-  - `malformed_source_or_destination_coordinates_reject_without_changes`: PASS, `logs/final-full-nextest-4052.log:9356` (`rhwp::regression_suite_020`).
-  - `committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets`: PASS, `logs/final-full-nextest-4052.log:9351` (`rhwp::regression_suite_020`).
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
 
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `f7c0acb2c9580cae3ebc14e09bb503dba261ffaa` | `cca5817c81a6679b2fadc957997dc2ef95286450` |
-| `3e2a9dc1c6597e357634835208e0efcfca5288c0` | `f7be47cbf4abdfb0f849faf3d980df4c673d80cb` |
-| `9dab2711be1156aefc5318a1adb4e98fb0a309fe` | `e854311d59c6faf5824dfe4d3df8fc24b0d9d7ea` |
-| `30a29eaf5481b6ca8b1c283c10b695a735eadc35` | `f21c4a7da8481e65ca324449b3c2b9051919a4ed` |
-| `5f7a4fca71f816c2fb72154639c31e3826423a28` | `44903a1025a656b46beb7b579f26e9385ebe70e6` |
-| `3e68f620a9c2643bb52a78d305b2f7e95f06a631` | `19969825ec2779f74b8b6673d258eac66e0d5742` |
-| `55f06f5505d6f6ddd449a3f7b1cb4acd84c29ac2` | `cc29ccf21e930832d06756e4210ce6efe3419866` |
-| `09f91ff16986b6f64db4a3b46d1a63ca0f6e8de5` | `ce062af329914df8564bed3f525eb01a0e9c6585` |
-| `9052f0bde427f93bf3cefe5de09875065a49bfbb` | 원 devel merge; 기능 체리픽에서 제외 |
-| `133e09e154d0d496850d64deb7e823b2599cceba` | `4fa3c6d58382f40dd586fccc5742a752c47156b6` |
-| `680f44ae667ba16b8ecc1073ce815286788d138b` | `46a476abbbffad8f085cb701fca049aa6be458bb` |
-| `0e7383d03753ac2546b0be74f19a244fe81747ff` | `f0e526e3e33dd6b29d221b719035fe94e4b6dbe1` |
+- [tests/cases/inline_control_move.rs](../../../tests/cases/inline_control_move.rs): SHA-256 `d85b9ba7f75bed2cdd5c7f942bee95d9c609ca94d0ccf345e62b9c95a9412ea1`.
+  - `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`: PASS, `logs/move-cleanup-focused-4207.log:22` (`rhwp::regression_suite_014`).
+  - `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`: PASS, `logs/move-cleanup-focused-4207.log:7` (`rhwp::regression_suite_014`).
+  - `committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets`: PASS, `logs/current-full-nextest-4184.log:9361` (`rhwp::regression_suite_020`).
+  - `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`: PASS, `logs/move-cleanup-focused-4207.log:9` (`rhwp::regression_suite_014`).
+  - `header_and_note_destinations_return_existing_owner_forms`: PASS, `logs/move-cleanup-focused-4207.log:8` (`rhwp::regression_suite_014`).
+  - `locked_object_and_locked_parent_reject_without_mutation`: PASS, `logs/move-cleanup-focused-4207.log:13` (`rhwp::regression_suite_014`).
+  - `malformed_source_or_destination_coordinates_reject_without_changes`: PASS, `logs/move-cleanup-focused-4207.log:11` (`rhwp::regression_suite_014`).
+  - `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`: PASS, `logs/move-cleanup-focused-4207.log:10` (`rhwp::regression_suite_014`).
+  - `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`: PASS, `logs/move-cleanup-focused-4207.log:21` (`rhwp::regression_suite_014`).
+  - `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`: PASS, `logs/move-cleanup-focused-4207.log:12` (`rhwp::regression_suite_014`).
+  - `nested_markpen_colors_keep_outer_inner_order_when_moved`: PASS, `logs/move-cleanup-focused-4207.log:6` (`rhwp::regression_suite_014`).
+  - `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`: PASS, `logs/move-cleanup-focused-4207.log:19` (`rhwp::regression_suite_014`).
+  - `picture_binary_identity_and_control_metadata_survive_cross_owner_move`: PASS, `logs/move-cleanup-focused-4207.log:17` (`rhwp::regression_suite_014`).
+  - `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`: PASS, `logs/move-cleanup-focused-4207.log:16` (`rhwp::regression_suite_014`).
+  - `public_hwp_export_preserves_inline_chart_with_and_without_move`: PASS, `logs/move-cleanup-focused-4207.log:23` (`rhwp::regression_suite_014`).
+  - `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`: PASS, `logs/move-cleanup-focused-4207.log:14` (`rhwp::regression_suite_014`).
+  - `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`: PASS, `logs/move-cleanup-focused-4207.log:18` (`rhwp::regression_suite_014`).
+  - `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`: PASS, `logs/move-cleanup-focused-4207.log:15` (`rhwp::regression_suite_014`).
+  - `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`: PASS, `logs/move-cleanup-focused-4207.log:20` (`rhwp::regression_suite_014`).
+- [tests/cases/valid_inline_move_fixture_contract.rs](../../../tests/cases/valid_inline_move_fixture_contract.rs): SHA-256 `00528471f32b6f7dc3fbab806ad0b814d7b07156be298ef679f2f73d7a48d8aa`.
+  - `valid_inline_move_fixtures_preserve_saved_carets_and_chart_data`: PASS, `logs/move-cleanup-focused-4207.log:24` (`rhwp::regression_suite_017`).
 
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
 
 ## Merge 후 contributor PR comment 계획
 

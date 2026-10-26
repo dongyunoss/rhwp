@@ -138,44 +138,33 @@ HWP/HWPX×묶기/풀기4개는 Native079에서4FAIL, Native081에서4PASS다. �
 마친 뒤 구체적인 통합 PR 결과에 대한 작업지시자 승인을 받는다. 통합 PR 번호용 별도
 review 문서나 docs PR을 만들지 않는다. 오늘할일은 통합 PR 절차의 해당 시점에 기록한다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/active_field_group_root_owner.rs](../../../tests/cases/active_field_group_root_owner.rs): SHA-256 `bd095b50f8d4110db554606333b975aa6525b91249d40d1a3faf989aae3489f1`.
-  - `group_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/final-full-nextest-4052.log:8781` (`rhwp::regression_suite_018`).
-  - `group_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/final-full-nextest-4052.log:8782` (`rhwp::regression_suite_018`).
-  - `ungroup_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/final-full-nextest-4052.log:8783` (`rhwp::regression_suite_018`).
-  - `ungroup_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/final-full-nextest-4052.log:8784` (`rhwp::regression_suite_018`).
+  - `group_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/current-full-nextest-4184.log:9318` (`rhwp::regression_suite_020`).
+  - `group_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/current-full-nextest-4184.log:9319` (`rhwp::regression_suite_020`).
+  - `ungroup_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/current-full-nextest-4184.log:9320` (`rhwp::regression_suite_020`).
+  - `ungroup_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/current-full-nextest-4184.log:9321` (`rhwp::regression_suite_020`).
 - [tests/cases/group_shapes_child_geometry.rs](../../../tests/cases/group_shapes_child_geometry.rs): SHA-256 `4974f0e3b4cb13396948c4fa66b3019f8666031bf2fc4d1b95ea88f763376dfb`.
-  - `grouping_keeps_scaled_and_rotated_children_drawn_in_place`: PASS, `logs/final-full-nextest-4052.log:5792` (`rhwp::regression_suite_007`).
-  - `grouping_keeps_stacking_order_regardless_of_target_order`: PASS, `logs/final-full-nextest-4052.log:5791` (`rhwp::regression_suite_007`).
-  - `grouping_keeps_children_positioned_against_different_bases`: PASS, `logs/final-full-nextest-4052.log:5789` (`rhwp::regression_suite_007`).
+  - `grouping_keeps_children_positioned_against_different_bases`: PASS, `logs/current-full-nextest-4184.log:4310` (`rhwp::regression_suite_002`).
+  - `grouping_keeps_scaled_and_rotated_children_drawn_in_place`: PASS, `logs/current-full-nextest-4184.log:4311` (`rhwp::regression_suite_002`).
+  - `grouping_keeps_stacking_order_regardless_of_target_order`: PASS, `logs/current-full-nextest-4184.log:4312` (`rhwp::regression_suite_002`).
 - [tests/cases/ungroup_content_geometry.rs](../../../tests/cases/ungroup_content_geometry.rs): SHA-256 `ea0c6ce8a03aff92b6757d9652e63e7bd587ee7397c5b8964ce4012c9b7df807`.
-  - `ungroup_plain_child_keeps_drawn_position_and_roundtrips`: PASS, `logs/final-full-nextest-4052.log:9052` (`rhwp::regression_suite_018`).
-  - `ungroup_rotated_child_keeps_drawn_position_and_roundtrips`: PASS, `logs/final-full-nextest-4052.log:9053` (`rhwp::regression_suite_018`).
-  - `ungroup_keeps_following_field_live_and_in_both_formats`: PASS, `logs/final-full-nextest-4052.log:9051` (`rhwp::regression_suite_018`).
-  - `group_keeps_following_field_live_and_in_both_formats`: PASS, `logs/final-full-nextest-4052.log:9050` (`rhwp::regression_suite_018`).
+  - `group_keeps_following_field_live_and_in_both_formats`: PASS, `logs/current-full-nextest-4184.log:10405` (`rhwp::regression_suite_023`).
+  - `ungroup_keeps_following_field_live_and_in_both_formats`: PASS, `logs/current-full-nextest-4184.log:10406` (`rhwp::regression_suite_023`).
+  - `ungroup_plain_child_keeps_drawn_position_and_roundtrips`: PASS, `logs/current-full-nextest-4184.log:10407` (`rhwp::regression_suite_023`).
+  - `ungroup_rotated_child_keeps_drawn_position_and_roundtrips`: PASS, `logs/current-full-nextest-4184.log:10408` (`rhwp::regression_suite_023`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `9c83132affd66957e024fce12c4b63a51ab0d33c` | `e1df04c3bae432c02e96112fce99305b7e52d3af` |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
 
 ## Merge 후 contributor PR comment 계획
 

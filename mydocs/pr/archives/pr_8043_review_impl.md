@@ -8,7 +8,7 @@
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `a0bb863a08edf4e1461fbbf18ac2baaeaaea4450` | `edceca08577a63fbe28c7a913dd77e76fb86edff` |
+| `a0bb863a08edf4e1461fbbf18ac2baaeaaea4450` | `d64ae0770906bd4e41274539fb8b9d4d02bd3ab4` |
 
 충돌 보정과 원 기능의 유지 여부는 원 커밋·현재 코드 후보·독립 기대값을 대조한다. 메인터너의 공통 renderer·편집 소유 보정과 원 contributor 변경을 혼동하지 않는다. 원 head는 직접 merge 대상이 아니다.
 
@@ -55,38 +55,27 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 공통 renderer 보정 이후의 통합 후보 필수 검증은 별도이며, 이 분석만으로 전체 통합
 head의 새 검증이나 원격 CI를 완료 처리하지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/issue_6963_bookmark_hyperlink.rs](../../../tests/cases/issue_6963_bookmark_hyperlink.rs): SHA-256 `fb9ace1ce4c092a6ace6b6feadbd5678e8525e07d10da783d6bbc4284ea21a91`.
-  - `bookmark_command_matches_hancom_encoding`: PASS, `logs/final-full-nextest-4052.log:7341` (`rhwp::regression_suite_012`).
-  - `hancom_sample_bookmark_link_reports_its_bookmark`: PASS, `logs/final-full-nextest-4052.log:7345` (`rhwp::regression_suite_012`).
-  - `bookmark_link_inserts_updates_and_survives_hwp_and_hwpx`: PASS, `logs/final-full-nextest-4052.log:7343` (`rhwp::regression_suite_012`).
-  - `web_link_is_not_turned_into_bookmark_link`: PASS, `logs/final-full-nextest-4052.log:7344` (`rhwp::regression_suite_012`).
+  - `bookmark_command_matches_hancom_encoding`: PASS, `logs/current-full-nextest-4184.log:10298` (`rhwp::regression_suite_023`).
+  - `bookmark_link_inserts_updates_and_survives_hwp_and_hwpx`: PASS, `logs/current-full-nextest-4184.log:10300` (`rhwp::regression_suite_023`).
+  - `hancom_sample_bookmark_link_reports_its_bookmark`: PASS, `logs/current-full-nextest-4184.log:10304` (`rhwp::regression_suite_023`).
+  - `web_link_is_not_turned_into_bookmark_link`: PASS, `logs/current-full-nextest-4184.log:10301` (`rhwp::regression_suite_023`).
 - [tests/issue_2724_passthrough_invalidation_guard.rs](../../../tests/issue_2724_passthrough_invalidation_guard.rs): SHA-256 `e2663ebd831dc39e4787a31c4cacd11a95cc2136a915d5cfae59047e37ebe7dd`.
-  - `classification_drift_is_blocked`: PASS, `logs/final-full-nextest-4052.log:8333` (`rhwp::regression_suite_016`).
-  - `stale_exemptions_are_reclaimed`: PASS, `logs/final-full-nextest-4052.log:8337` (`rhwp::regression_suite_016`).
-  - `delegation_targets_actually_invalidate`: PASS, `logs/final-full-nextest-4052.log:8334` (`rhwp::regression_suite_016`).
-  - `invalidation_density_ledger_is_ratcheted`: PASS, `logs/final-full-nextest-4052.log:8335` (`rhwp::regression_suite_016`).
-  - `guard_scanner_self_check`: PASS, `logs/final-full-nextest-4052.log:8336` (`rhwp::regression_suite_016`).
+  - `classification_drift_is_blocked`: PASS, `logs/current-full-nextest-4184.log:8305` (`rhwp::regression_suite_016`).
+  - `delegation_targets_actually_invalidate`: PASS, `logs/current-full-nextest-4184.log:8306` (`rhwp::regression_suite_016`).
+  - `guard_scanner_self_check`: PASS, `logs/current-full-nextest-4184.log:8307` (`rhwp::regression_suite_016`).
+  - `invalidation_density_ledger_is_ratcheted`: PASS, `logs/current-full-nextest-4184.log:8308` (`rhwp::regression_suite_016`).
+  - `stale_exemptions_are_reclaimed`: PASS, `logs/current-full-nextest-4184.log:8314` (`rhwp::regression_suite_016`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `a0bb863a08edf4e1461fbbf18ac2baaeaaea4450` | `edceca08577a63fbe28c7a913dd77e76fb86edff` |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.

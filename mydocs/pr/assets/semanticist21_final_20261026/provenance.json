@@ -21270,5 +21270,18 @@
   ],
   "font_inventories": {
     "0cfae0a3b5032b4041a4bd61e2a6e4f49e099a88967e3d21de55d24a329a1a71": "font_supply_1.json"
-  }
+  },
+  "scope_status": "Completed positive subset only; 57 existing source-PR reproductions are under separate current/base validation. Not the complete PR submission gate.",
+  "current_base": "4e690c930105fa09fef484787ed0a2e5e182d444",
+  "measured_base": "238de6de41a208648f4ade6b494fe433a81c1fce",
+  "base_equivalence": {
+    "changed_paths": [
+      "THIRD_PARTY.md"
+    ],
+    "all_other_base_trees_equal": true,
+    "candidate_code_and_tests_trees_unchanged": true,
+    "candidate_after_rebase": "d6ea10837218e7e490b166ed76af221490b61ba2"
+  },
+  "overall_pr_review_gate": "re_review_required",
+  "overall_reason": "57 existing source-PR reproduction conditions remain under actual candidate/base validation; completed positive subset is not overall PR readiness."
 }

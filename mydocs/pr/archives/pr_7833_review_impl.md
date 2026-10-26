@@ -8,12 +8,12 @@
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `cbb2d3ee9b702027a8101526fbd2b5f9152603c8` | `cb6e32d92b76e884cd64d6413448f27f557bc324` |
-| `3ae9e3b71ea08fdd1ae06a02aab33b7c31b22ad5` | `54203bb5d828401122aeddad3ec62e21a89fc524` |
-| `a0c72f3cb85347958194a88d0fec4a81f28155ba` | `6e5d2ad721d16e4ce3c3904a629e625b0b95a052` |
-| `efec7825d325beb5f2eff65ac921f148818367a5` | `aada9428fc1c4dddb92f96280291ba27e7b4c16f` |
-| `c03d1f98ed5b19c091c7028e370089dc6a3dfbc3` | `a825b7a531e9eb576f7e2fcdd86e58773aee1b31` |
-| `79b7dd66f20f89787521175762879f73df478674` | `40069c0bda36d52e0bbf43b7c0f2390cbc144fe1` |
+| `cbb2d3ee9b702027a8101526fbd2b5f9152603c8` | `94d0267d8534ca1b0ab64f8ea39b27b16244b3ee` |
+| `3ae9e3b71ea08fdd1ae06a02aab33b7c31b22ad5` | `5d80892479114bd613c13ece7044c9889c3dad04` |
+| `a0c72f3cb85347958194a88d0fec4a81f28155ba` | `d5a461f2073987e11bf86e2f8e2184e1f40fcfde` |
+| `efec7825d325beb5f2eff65ac921f148818367a5` | `8abe0091e1b15b36f434b32614aa0b8433b306d6` |
+| `c03d1f98ed5b19c091c7028e370089dc6a3dfbc3` | `5421224c2fae1a357752f90c6265ab64e29c4a86` |
+| `79b7dd66f20f89787521175762879f73df478674` | `98b029df5daed2fb7007aa6cbaf99ca816b25b12` |
 | `255413cdbc74d34f7c1d1be09fb7ad640eac6feb` |  |
 
 충돌 보정과 원 기능의 유지 여부는 원 커밋·현재 코드 후보·독립 기대값을 대조한다. 메인터너의 공통 renderer·편집 소유 보정과 원 contributor 변경을 혼동하지 않는다. 원 head는 직접 merge 대상이 아니다.
@@ -35,74 +35,57 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/cell_boundary_object_cut.rs](../../../tests/cases/cell_boundary_object_cut.rs): SHA-256 `409364a7b7993261f42e3c89eee92de12e5e886188decd8545746bf2e406fde7`.
-  - `flat_cell_cut_removes_boundary_pictures_and_tables`: PASS, `logs/final-full-nextest-4052.log:7750` (`rhwp::regression_suite_014`).
-  - `path_cell_cut_removes_boundary_pictures_and_tables_at_each_depth`: PASS, `logs/final-full-nextest-4052.log:7756` (`rhwp::regression_suite_014`).
-  - `same_paragraph_cell_cut_removes_only_selected_object`: PASS, `logs/final-full-nextest-4052.log:7753` (`rhwp::regression_suite_014`).
-  - `invalid_cell_ranges_keep_document_and_clipboard`: PASS, `logs/final-full-nextest-4052.log:7752` (`rhwp::regression_suite_014`).
-  - `cell_boundary_with_field_is_rejected_before_mutation`: PASS, `logs/final-full-nextest-4052.log:7741` (`rhwp::regression_suite_014`).
-  - `empty_cell_ranges_keep_tail_objects_raw_stream_and_events`: PASS, `logs/final-full-nextest-4052.log:7747` (`rhwp::regression_suite_014`).
-  - `cell_boundary_range_tags_are_rejected_before_mutation`: PASS, `logs/final-full-nextest-4052.log:7742` (`rhwp::regression_suite_014`).
-  - `cell_boundary_markpen_marks_are_rejected_before_mutation`: PASS, `logs/final-full-nextest-4052.log:7740` (`rhwp::regression_suite_014`).
-  - `metadata_without_boundary_objects_keeps_existing_deletion_paths`: PASS, `logs/final-full-nextest-4052.log:7751` (`rhwp::regression_suite_014`).
-  - `styled_inline_objects_keep_first_and_last_cell_paragraph_logical_offsets`: PASS, `logs/final-full-nextest-4052.log:7761` (`rhwp::regression_suite_014`).
-  - `styled_inline_objects_keep_body_run_logical_offsets`: PASS, `logs/final-full-nextest-4052.log:7755` (`rhwp::regression_suite_014`).
-  - `styled_inline_objects_keep_logical_offsets_across_line_breaks`: PASS, `logs/final-full-nextest-4052.log:7757` (`rhwp::regression_suite_014`).
-  - `styled_inline_objects_keep_prior_slots_on_continuation_pages`: PASS, `logs/final-full-nextest-4052.log:7758` (`rhwp::regression_suite_014`).
-  - `cell_cut_paste_restores_text_offsets_after_inline_and_floating_objects`: PASS, `logs/final-full-nextest-4052.log:7748` (`rhwp::regression_suite_014`).
-  - `cell_single_control_paste_keeps_same_anchor_objects_before_the_scalar_offset`: PASS, `logs/final-full-nextest-4052.log:7743` (`rhwp::regression_suite_014`).
-  - `cell_text_paste_keeps_scalar_fast_path_and_multiline_split_after_inline_objects`: PASS, `logs/final-full-nextest-4052.log:7746` (`rhwp::regression_suite_014`).
-  - `flat_table_caption_text_delete_keeps_legacy_address`: PASS, `logs/final-full-nextest-4052.log:7749` (`rhwp::regression_suite_014`).
+  - `cell_boundary_markpen_marks_are_rejected_before_mutation`: PASS, `logs/current-full-nextest-4184.log:7733` (`rhwp::regression_suite_014`).
+  - `cell_boundary_range_tags_are_rejected_before_mutation`: PASS, `logs/current-full-nextest-4184.log:7742` (`rhwp::regression_suite_014`).
+  - `cell_boundary_with_field_is_rejected_before_mutation`: PASS, `logs/current-full-nextest-4184.log:7734` (`rhwp::regression_suite_014`).
+  - `cell_cut_paste_restores_text_offsets_after_inline_and_floating_objects`: PASS, `logs/current-full-nextest-4184.log:7750` (`rhwp::regression_suite_014`).
+  - `cell_single_control_paste_keeps_same_anchor_objects_before_the_scalar_offset`: PASS, `logs/current-full-nextest-4184.log:7736` (`rhwp::regression_suite_014`).
+  - `cell_text_paste_keeps_scalar_fast_path_and_multiline_split_after_inline_objects`: PASS, `logs/current-full-nextest-4184.log:7737` (`rhwp::regression_suite_014`).
+  - `empty_cell_ranges_keep_tail_objects_raw_stream_and_events`: PASS, `logs/current-full-nextest-4184.log:7738` (`rhwp::regression_suite_014`).
+  - `flat_cell_cut_removes_boundary_pictures_and_tables`: PASS, `logs/current-full-nextest-4184.log:7739` (`rhwp::regression_suite_014`).
+  - `flat_table_caption_text_delete_keeps_legacy_address`: PASS, `logs/current-full-nextest-4184.log:7740` (`rhwp::regression_suite_014`).
+  - `invalid_cell_ranges_keep_document_and_clipboard`: PASS, `logs/current-full-nextest-4184.log:7745` (`rhwp::regression_suite_014`).
+  - `metadata_without_boundary_objects_keeps_existing_deletion_paths`: PASS, `logs/current-full-nextest-4184.log:7743` (`rhwp::regression_suite_014`).
+  - `path_cell_cut_removes_boundary_pictures_and_tables_at_each_depth`: PASS, `logs/current-full-nextest-4184.log:7748` (`rhwp::regression_suite_014`).
+  - `same_paragraph_cell_cut_removes_only_selected_object`: PASS, `logs/current-full-nextest-4184.log:7746` (`rhwp::regression_suite_014`).
+  - `styled_inline_objects_keep_body_run_logical_offsets`: PASS, `logs/current-full-nextest-4184.log:7747` (`rhwp::regression_suite_014`).
+  - `styled_inline_objects_keep_first_and_last_cell_paragraph_logical_offsets`: PASS, `logs/current-full-nextest-4184.log:7754` (`rhwp::regression_suite_014`).
+  - `styled_inline_objects_keep_logical_offsets_across_line_breaks`: PASS, `logs/current-full-nextest-4184.log:7749` (`rhwp::regression_suite_014`).
+  - `styled_inline_objects_keep_prior_slots_on_continuation_pages`: PASS, `logs/current-full-nextest-4184.log:7751` (`rhwp::regression_suite_014`).
 - [tests/cases/issue_4961_font_decision_trace.rs](../../../tests/cases/issue_4961_font_decision_trace.rs): SHA-256 `289815610b16ab6b0e99bd71f158f5383de79772c20111587581e91d378fa17f`.
-  - `font_trace_profiles_follow_source_ownership_and_preserve_font_decisions`: PASS, `logs/final-full-nextest-4052.log:6459` (`rhwp::regression_suite_009`).
-  - `stage4_public_trace_limit_and_unsupported_backends_fail_closed`: PASS, `logs/final-full-nextest-4052.log:6412` (`rhwp::regression_suite_009`).
-  - `public_fixture_trace_is_bounded_and_deterministic`: PASS, `logs/final-full-nextest-4052.log:6413` (`rhwp::regression_suite_009`).
-  - `issue4967_combined_evidence_uses_one_tree_and_preserves_trace`: PASS, `logs/final-full-nextest-4052.log:6408` (`rhwp::regression_suite_009`).
-  - `issue4967_combined_evidence_reports_actual_cache_key_rejection`: PASS, `logs/final-full-nextest-4052.log:6407` (`rhwp::regression_suite_009`).
-  - `standalone_native_trace_requires_a_prepared_renderer_snapshot`: PASS, `logs/native-trace-contracts-4119.log:10` (`rhwp::regression_suite_009`).
-  - `prepared_native_renderer_snapshot_preserves_custom_font_inventory`: PASS, `logs/native-trace-contracts-4119.log:18` (`rhwp::regression_suite_009`).
-  - `trace_options_fail_closed`: PASS, `logs/final-full-nextest-4052.log:6415` (`rhwp::regression_suite_009`).
-  - `logical_tac_runs_join_exact_scalar_source_in_body_and_nested_cells`: PASS, `logs/final-full-nextest-4052.log:6409` (`rhwp::regression_suite_009`).
-  - `synthetic_overlap_cannot_claim_repeated_source_and_real_pua_keeps_source`: PASS, `logs/final-full-nextest-4052.log:6414` (`rhwp::regression_suite_009`).
-  - `note_markers_are_transparent_to_body_and_nested_source_glyph_addresses`: PASS, `logs/final-full-nextest-4052.log:6411` (`rhwp::regression_suite_009`).
-  - `coanchored_logical_copy_preserves_endpoint_inclusion_and_source_in_both_formats`: PASS, `logs/final-full-nextest-4052.log:6405` (`rhwp::regression_suite_009`).
+  - `coanchored_logical_copy_preserves_endpoint_inclusion_and_source_in_both_formats`: PASS, `logs/current-native-trace-4191.log:14` (`rhwp::regression_suite_009`).
+  - `font_trace_profiles_follow_source_ownership_and_preserve_font_decisions`: PASS, `logs/current-native-trace-4191.log:19` (`rhwp::regression_suite_009`).
+  - `issue4967_combined_evidence_reports_actual_cache_key_rejection`: PASS, `logs/current-native-trace-4191.log:17` (`rhwp::regression_suite_009`).
+  - `issue4967_combined_evidence_uses_one_tree_and_preserves_trace`: PASS, `logs/current-native-trace-4191.log:15` (`rhwp::regression_suite_009`).
+  - `logical_tac_runs_join_exact_scalar_source_in_body_and_nested_cells`: PASS, `logs/current-native-trace-4191.log:12` (`rhwp::regression_suite_009`).
+  - `note_markers_are_transparent_to_body_and_nested_source_glyph_addresses`: PASS, `logs/current-native-trace-4191.log:16` (`rhwp::regression_suite_009`).
+  - `prepared_native_renderer_snapshot_preserves_custom_font_inventory`: PASS, `logs/current-native-trace-4191.log:18` (`rhwp::regression_suite_009`).
+  - `public_fixture_trace_is_bounded_and_deterministic`: PASS, `logs/current-native-trace-4191.log:13` (`rhwp::regression_suite_009`).
+  - `stage4_public_trace_limit_and_unsupported_backends_fail_closed`: PASS, `logs/current-native-trace-4191.log:11` (`rhwp::regression_suite_009`).
+  - `standalone_native_trace_requires_a_prepared_renderer_snapshot`: PASS, `logs/current-native-trace-4191.log:10` (`rhwp::regression_suite_009`).
+  - `synthetic_overlap_cannot_claim_repeated_source_and_real_pua_keeps_source`: PASS, `logs/current-native-trace-4191.log:8` (`rhwp::regression_suite_009`).
+  - `trace_options_fail_closed`: PASS, `logs/current-native-trace-4191.log:9` (`rhwp::regression_suite_009`).
 - [tests/issue_1452_saved_caret.rs](../../../tests/issue_1452_saved_caret.rs): SHA-256 `4a66d919b6da3938fd4654b1ed48df97acac6bb1fc1f480dab1e2a90a805c148`.
-  - `transparency_sample_restores_saved_caret_after_second_inline_picture`: PASS, `logs/final-full-nextest-4052.log:10410` (`rhwp::regression_suite_024`).
-  - `enter_before_second_tac_picture_splits_inline_controls`: PASS, `logs/final-full-nextest-4052.log:10406` (`rhwp::regression_suite_024`).
-  - `repeated_enter_before_second_tac_picture_keeps_picture_after_blank_lines`: PASS, `logs/final-full-nextest-4052.log:10408` (`rhwp::regression_suite_024`).
-  - `repeated_enter_after_second_tac_picture_appends_blank_lines`: PASS, `logs/final-full-nextest-4052.log:10407` (`rhwp::regression_suite_024`).
-  - `arrow_up_from_second_tac_picture_end_moves_to_first_picture_end`: PASS, `logs/final-full-nextest-4052.log:10404` (`rhwp::regression_suite_024`).
-  - `clicking_after_second_tac_picture_hits_picture_end_position`: PASS, `logs/final-full-nextest-4052.log:10405` (`rhwp::regression_suite_024`).
-  - `short_inline_picture_hits_follow_styled_empty_carets_in_both_formats`: PASS, `logs/final-full-nextest-4052.log:10409` (`rhwp::regression_suite_024`).
-  - `arrow_up_after_enter_before_first_tac_picture_moves_to_previous_picture_end`: PASS, `logs/final-full-nextest-4052.log:10403` (`rhwp::regression_suite_024`).
-  - `transparency_test_sample_text_line_boundaries_keep_visual_affinity`: PASS, `logs/final-full-nextest-4052.log:10411` (`rhwp::regression_suite_024`).
+  - `arrow_up_after_enter_before_first_tac_picture_moves_to_previous_picture_end`: PASS, `logs/current-full-nextest-4184.log:10460` (`rhwp::regression_suite_024`).
+  - `arrow_up_from_second_tac_picture_end_moves_to_first_picture_end`: PASS, `logs/current-full-nextest-4184.log:10461` (`rhwp::regression_suite_024`).
+  - `clicking_after_second_tac_picture_hits_picture_end_position`: PASS, `logs/current-full-nextest-4184.log:10462` (`rhwp::regression_suite_024`).
+  - `enter_before_second_tac_picture_splits_inline_controls`: PASS, `logs/current-full-nextest-4184.log:10463` (`rhwp::regression_suite_024`).
+  - `repeated_enter_after_second_tac_picture_appends_blank_lines`: PASS, `logs/current-full-nextest-4184.log:10464` (`rhwp::regression_suite_024`).
+  - `repeated_enter_before_second_tac_picture_keeps_picture_after_blank_lines`: PASS, `logs/current-full-nextest-4184.log:10465` (`rhwp::regression_suite_024`).
+  - `short_inline_picture_hits_follow_styled_empty_carets_in_both_formats`: PASS, `logs/current-full-nextest-4184.log:10466` (`rhwp::regression_suite_024`).
+  - `transparency_sample_restores_saved_caret_after_second_inline_picture`: PASS, `logs/current-full-nextest-4184.log:10467` (`rhwp::regression_suite_024`).
+  - `transparency_test_sample_text_line_boundaries_keep_visual_affinity`: PASS, `logs/current-full-nextest-4184.log:10468` (`rhwp::regression_suite_024`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `cbb2d3ee9b702027a8101526fbd2b5f9152603c8` | `cb6e32d92b76e884cd64d6413448f27f557bc324` |
-| `3ae9e3b71ea08fdd1ae06a02aab33b7c31b22ad5` | `54203bb5d828401122aeddad3ec62e21a89fc524` |
-| `a0c72f3cb85347958194a88d0fec4a81f28155ba` | `6e5d2ad721d16e4ce3c3904a629e625b0b95a052` |
-| `efec7825d325beb5f2eff65ac921f148818367a5` | `aada9428fc1c4dddb92f96280291ba27e7b4c16f` |
-| `c03d1f98ed5b19c091c7028e370089dc6a3dfbc3` | `a825b7a531e9eb576f7e2fcdd86e58773aee1b31` |
-| `79b7dd66f20f89787521175762879f73df478674` | `40069c0bda36d52e0bbf43b7c0f2390cbc144fe1` |
-| `255413cdbc74d34f7c1d1be09fb7ad640eac6feb` |  |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.

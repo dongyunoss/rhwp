@@ -318,3 +318,62 @@ ignored 영수증은 `cell-scope-focused-4175-result.json`,
 새로 출력한 것을 이전 캡처의 재사용으로 대신하지 않았다. HWPX 차트 네 경로도 별도로
 출력했으며 판독한 HWP 차트와 RHWP/PDF 픽셀이 각각 동일함을 확인했다.
 Print 증거·입력·원문 TSV를 보존하고 font 목록만 동일 해시별 한 번 저장했다.
+
+## #8240 문서 전용 리베이스와 원 PR별 실행 대조 — 2026-10-26
+
+최신 base `4e690c930105fa09fef484787ed0a2e5e182d444` 위로 리베이스했다.
+새 base의 변경은 `THIRD_PARTY.md` 41줄뿐이다. 이전 후보 `53ef4bcfc6`과 새 후보
+`d6ea108372`의 src·crates·tests·scripts·Studio·npm·Cargo tree ID가 모두 같고,
+replay한 356개 commit은 range-diff에서 전부 같은 patch다. #8228의 조상 관계와
+삭제한 표본을 유지했다. 새 base의 suite·unit-tier 정책 검사도 통과했다.
+[리베이스 증거](../pr/assets/semanticist21_final_20261026/rebase_equivalence.json)와
+[원 PR별 현재 commit 대응](../pr/assets/semanticist21_final_20261026/source_commit_map.json)을
+등록했다. 실제 생산 코드는 리베이스 뒤 `e436d8aeefb5e46265f5f15f71ccfb0925742197`이며,
+실행 당시 `a90a2057a7`의 코드와 같다. 이를 새로 빌드·실행한 결과로 재표기하지 않았다.
+
+45개 개별 review·impl의 실제 실행 절을 현재 소스에 맞춰 갱신했다.
+[실제 실행 대응](../pr/assets/semanticist21_final_20261026/source_execution_map.json)의
+206개 함수 대응과 Studio 소스 4개에 누락이 없다. 94개 문서의 내부 Markdown 링크도
+검사했다. 이 작업으로 최종 승인 판정을 일괄 변경하지 않았다.
+
+## 원 PR 재현의 잔여 게이트 — 진행 중
+
+129조건·344쪽/backend는 **완료한 통과 자료의 부분집합**이다. 별도의 원 PR 재현
+59조건은 과거 Native 미달로 실행이 중단됐던 기록이 있었다. 그중 정상 RowBreak는
+현재 같은 입력·Print의 완료 증거를 재사용하고, 초기 #8061의 불완전한 기하 입력은
+독립 Print로 검증한 같은 재현 8조건으로 교체한 경계를 유지한다. 나머지 57조건은 기존
+원본과 PDF의 바이트를 그대로 사용해 현재 후보/base × Native/fresh WASM을 다시 관측한다.
+새 문서 수집·입력 생성·Cargo 빌드는 하지 않는다. `remaining-contracts-current-4213-result.json`과
+`logs/remaining-contracts-current-supervisor-4213.log`에 실제 상태·명령·종료를 기록한다.
+Native 후보 57회 중 36조건이 통과했고, 20조건은 raw 미달, 1조건은 쪽수 불일치다.
+전 경로의 측정과 원인 판정 전에는 통합 PR을 제출하지 않는다.
+
+### 확인한 실제 회귀: #8036
+
+`pr8036-saved-vpos-0.hwpx`는 같은 원본의 독립 Hancom Print와 새 base가 모두 1쪽이며
+base Native raw는 100%다. 현재 후보만 2쪽이라 TSV 산출이 쪽수 불일치로 중단된다.
+`stored_reset_after_tall_line`의 2쪽 기대값과
+`typeset/section/stored_reset.rs`에서 `pv > 5000`을
+`pv > 0 && prev_vpos_end > 5000`으로 바꾼 강제 분기부터 재검토한다.
+수동으로 만든 저장 줄의 큰 높이만으로 쪽 경계 수용을 넓힌 가정이 독립 Print와 다르다.
+그대로 승인하거나 base 미달 문서로 이관할 수 없다. 원본 입력·Print는 보존하고,
+공통 경계 판단을 보정한 뒤 두 vpos 대조군의 전쪽 Native/fresh WASM을 다시 확인한다.
+잘못된 2쪽 기대를 새 정상 baseline으로 고정하지 않으며 새 이름의 관계 검사로 보호한다.
+
+### 별도로 구분한 기존 중첩 표·문자 전진
+
+#7833의 첫 nested 표 재현은 base raw 18.58277%, 후보 18.37031%다. 직접 Native 재출력의
+모든 픽셀 차이는 `(175,367)..(247,387)`의 수달 문자와 후속 글자 구간에 한정된다.
+노드에서는 문자 폭 7→18px와 뒤 세 요소의 x 이동만 달랐고, 표의 좌표·높이는 같았다.
+같은 Print에서 해당 기호(F000으로 매핑)와 다음 `나`의 원점을 직접 읽은 전진은
+18.23011px다. 따라서 raw 하락과 실제 문자 전진의 정확성을 구분해야 한다. 이 사실로
+기존 표의 배치 미달을 통과 처리하거나 px 고정을 정당화하지 않는다.
+
+`cell_boundary_object_fixture`는 본문 문단·호스트를 복제해 중첩 셀로 옮기면서 저장
+LineSeg를 함께 가져오는 구조다. 수동 이동 뒤 저장 좌표가 유효한지 먼저 확인하고,
+정상 저장본의 수용 조건을 완화하는 대신 입력 생성 계약과 실제 renderer 문제를 구분한다.
+이 원인 가설은 아직 완료 판정이 아니며, 고정 원본의 대조 결과를 보존한 뒤 검증한다.
+21개 Native 실패는 같은 producer로 묶어 노드·PNG 차이를 추가 수집했다.
+`failed-tree-comparison-4221-result.json`과 독립 문자 원점의
+`pr7833-base-candidate-diagnosis-4219.json`은 ignored output에 있다.
+잔여 판정과 필요한 변경을 모은 뒤 한 번에 보정·빌드·재검증한다.

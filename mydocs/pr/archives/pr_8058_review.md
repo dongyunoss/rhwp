@@ -14,15 +14,15 @@
 | 고정 원 head | `a5cc4f15f32426a8fe9232650a4c125b3f434f17` |
 | 원격 확인 | 2026-10-26 KST: head 일치, reviewer jangster77 지정 확인; 당시 draft=false |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 코드·회귀 후보 | `61528013511c87c732524f91c6f224286a055337` |
-| 실제 렌더 소스·증거 등록 | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
+| 현재 통합 후보 | `d6ea10837218e7e490b166ed76af221490b61ba2` |
+| 초기 렌더 소스·증거 등록(과거) | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
 | 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
 
 ## 변경과 원 커밋 적용
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `a5cc4f15f32426a8fe9232650a4c125b3f434f17` | `8023522e781d9d59ff9301e9e5093578c9a5996d` |
+| `a5cc4f15f32426a8fe9232650a4c125b3f434f17` | `34e5c661d1808427f9aa266f925ac97cf110b8ab` |
 
 ### 실제 소비 경로와 반례
 
@@ -59,35 +59,24 @@ canvas_cluster_fit은 양수 배분 간격을 실제 glyph fit 폭과 분리한�
 
 sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [src/renderer/mod.rs](../../../src/renderer/mod.rs): SHA-256 `c2044dcc3f75e7004ad3b8155865aba9b3b81f50589ae299096b588223cffb38`.
-  - `positive_distribution_spacing_is_not_part_of_glyph_fit_advance`: PASS, `logs/final-full-nextest-4052.log:2788` (`rhwp`).
-  - `issue_2809_negative_letter_spacing_does_not_compress_canvas_glyph`: PASS, `logs/final-full-nextest-4052.log:2787` (`rhwp`).
-  - `canvas_glyph_fit_never_stretches_and_keeps_symbol_ink`: PASS, `logs/final-full-nextest-4052.log:2784` (`rhwp`).
-  - `distribution_spacing_does_not_resize_ascii_canvas_glyph`: PASS, `logs/final-full-nextest-4052.log:2785` (`rhwp`).
+  - `positive_distribution_spacing_is_not_part_of_glyph_fit_advance`: PASS, `logs/current-full-nextest-4184.log:2787` (`rhwp`).
+  - `issue_2809_negative_letter_spacing_does_not_compress_canvas_glyph`: PASS, `logs/current-full-nextest-4184.log:2788` (`rhwp`).
+  - `canvas_glyph_fit_never_stretches_and_keeps_symbol_ink`: PASS, `logs/current-full-nextest-4184.log:2781` (`rhwp`).
+  - `distribution_spacing_does_not_resize_ascii_canvas_glyph`: PASS, `logs/current-full-nextest-4184.log:2784` (`rhwp`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `a5cc4f15f32426a8fe9232650a4c125b3f434f17` | `8023522e781d9d59ff9301e9e5093578c9a5996d` |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
 
 ## Merge 후 contributor PR comment 계획
 

@@ -8,7 +8,7 @@
 
 | 원 커밋 | 통합 후보의 대응 |
 | --- | --- |
-| `8a02d977b6e72e9a8117a15a0f786e0cc0cfb598` | `b9412a5e58b9f3cbc084e2d77111c44d194d8667` |
+| `8a02d977b6e72e9a8117a15a0f786e0cc0cfb598` | `ef820abffcac7069c3a49f1938394fef9ac19f66` |
 
 충돌 보정과 원 기능의 유지 여부는 원 커밋·현재 코드 후보·독립 기대값을 대조한다. 메인터너의 공통 renderer·편집 소유 보정과 원 contributor 변경을 혼동하지 않는다. 원 head는 직접 merge 대상이 아니다.
 
@@ -29,30 +29,19 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+## 현재 후보의 실제 검사 실행 — 2026-10-26
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
+`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
+동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
+Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
+이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+
+아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
 - [tests/cases/tac_table_no_lineseg_outer_margin_fit.rs](../../../tests/cases/tac_table_no_lineseg_outer_margin_fit.rs): SHA-256 `24b41078c20b69d33be9661968bab3bf2150702beffcacb7627ba57aaf7b616a`.
-  - `tac_table_counts_outer_margin_once_at_page_bottom`: PASS, `logs/final-full-nextest-4052.log:11423` (`rhwp::regression_suite_027`).
-  - `tac_table_overflowing_with_single_margin_moves_to_next_page`: PASS, `logs/final-full-nextest-4052.log:11424` (`rhwp::regression_suite_027`).
+  - `tac_table_counts_outer_margin_once_at_page_bottom`: PASS, `logs/current-full-nextest-4184.log:11191` (`rhwp::regression_suite_026`).
+  - `tac_table_overflowing_with_single_margin_moves_to_next_page`: PASS, `logs/current-full-nextest-4184.log:11192` (`rhwp::regression_suite_026`).
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
-
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
-
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `8a02d977b6e72e9a8117a15a0f786e0cc0cfb598` | `b9412a5e58b9f3cbc084e2d77111c44d194d8667` |
-
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
