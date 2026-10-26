@@ -2,9 +2,43 @@
 
 ## 최종 판정
 
-**머지 보류 — 고정한 통합 코드 후보의 전체 로컬 검증과 이 PR의 필수 증거를 대조 중이다.**
+**메인터너 보정 후 수용 가능 — 점 기호의 실제 공급자·자연 전진·뒤 글자 보존 범위의 로컬 검증 완료.**
 
-최신 원격 CI·통합·후속 처리는 아직 완료되지 않았다. 원 contributor head의 직접 merge가 아니라 메인터너 보정한 통합 후보를 검토한다. 실제 완료 결과를 수집한 뒤 판정을 갱신한다.
+원 contributor head가 아니라 메인터너 보정한 통합 후보의 판정이다. 통합 PR의 정확한
+code head CI·merge·후속 처리는 앞으로 수행할 조건이며 로컬 검증으로 대신하지 않는다.
+
+## 최종 로컬 판정 근거 — 2026-10-26
+
+코드·회귀 후보는 `61528013511c87c732524f91c6f224286a055337`, 실제 렌더 source는
+`bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`, 고정 devel은
+`238de6de41a208648f4ade6b494fe433a81c1fce`다. 이후 문서·증거는 코드·검사를 바꾸지 않았다.
+
+| 필수 근거 | 최종 확인 결과 |
+| --- | --- |
+| 현재 회귀와 입력 | 해당 원 PR의 기존 입력·독립 Print 3조건, 각 전체 1쪽. 새 입력·PDF·회귀 생성 없음 |
+| Native/fresh WASM | 전쪽 최저 100.00000% / 100.00000%, 독립 PDF 쪽수 일치·90% 미만/누락/측정 불가 0쪽 |
+| base 보존 | 같은 입력·Print·글꼴·backend의 전쪽 0.1%p 초과 하락 0쪽 |
+| 실제 검사 | 아래 현재 모듈·함수의 실제 PASS 행과 source SHA를 확인했다. 파일 존재를 실행 결과로 대신하지 않았다. |
+| 확대 판독·px 경계 | Gulim과 Arial에 없는 점의 실제 대체 공급자와 HCR Batang이 가진 원 프로그램을 구분했다. 두 경로의 점 높이·기준선·기호 모양과 뒤 글자의 자연 간격을 같은 좌표로 확대 판독했다. 원 PR의 글꼴 없는 IR에서 모든 U+2024를 벡터 원으로 바꾸던 가정을 수용하지 않았고, 실제 공급자·원문·소유 관계 및 독립 Print 좌표를 보호했다. |
+| 전체 로컬 게이트 | 전체 nextest 11,708 PASS·0 FAIL, Skia 3종·fmt·정책·Native/WASM/workspace Clippy·workspace build·doctest의 실제 완료 근거를 재사용했다. 소스 불변을 확인했고 다시 빌드하지 않았다. |
+
+[전쪽 Native/fresh 원문 TSV·base 비교·입력/Print·producer·글꼴과 PNG 해시](../assets/active_regression_qualified_20261026/README.md)를
+연결한다. 정본 패널 12쌍과 같은 좌표의 최근접 확대 6장을 실제로 열었다. crop에서 점수를
+다시 계산하거나 원본을 이동·정렬하지 않았다. 아래 현재 패널은 같은 source의 완료 캡처를
+정본 함수로 합성한 재사용이며 새 재캡처로 표시하지 않는다.
+
+| 출력 경로 | 현재 대표 review | 현재 standalone overlay |
+| --- | --- | --- |
+| Native | [review](../assets/active_regression_qualified_20261026/png/native/028/review_001.png) | [overlay](../assets/active_regression_qualified_20261026/png/native/028/overlay_001.png) |
+| fresh WASM | [review](../assets/active_regression_qualified_20261026/png/fresh-wasm/028/review_001.png) | [overlay](../assets/active_regression_qualified_20261026/png/fresh-wasm/028/overlay_001.png) |
+
+[같은 좌표 확대](../assets/active_regression_qualified_20261026/details/028-detail.png)도 함께
+확인했다. Merge 뒤에는 위 실제 상대 경로를
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/active_regression_qualified_20261026/`
+아래로 고정해 contributor comment에 review와 overlay를 같이 표시한다. 정확한 통합 head의
+CI·merge·devel 포함과 asset 존재를 확인한 뒤 한국어 존댓말의 `--body-file`을 게시하고 API에서
+실제 Markdown·한글·이미지 링크를 재조회한다. 원 contributor head를 직접 merge한 기록이 아니다.
+
 
 ## 접수 정보
 
@@ -44,7 +78,7 @@ Unicode U+2024를 글꼴과 무관하게 벡터 원으로 바꾸는 원 검사�
 
 ## 검증 입력과 결과
 
-원 PR의 증적이나 helper assertion만으로 독립 Print 일치를 선언하지 않는다. 적용 입력·최종 head의 결과를 개별적으로 대조한 뒤 최종 판정을 갱신한다.
+위 현재 원본·독립 Print·Native/fresh 결과와 직접 판독으로 판정했다. 아래 과거 제품의 수치는 당시 결과로 구분한다.
 
 전체 로컬 Rust 검증은 완료했다. 현재 함수별 실제 PASS와 종료 근거는 아래 「통합 후보의 실제 검사 실행」에 기록했다. 독립 시각 근거와 원격 CI는 별도로 판정한다.
 
