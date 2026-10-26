@@ -128,6 +128,20 @@ fn stored_frame_prefix(
             }
         }
     }
+    // A carried heading can retain its old page-bottom coordinate while the
+    // following body already consumes the new saved frame. Once that frame's
+    // actual tail agrees with its source tail, the opening prefix no longer
+    // invalidates later boundaries. Use the same accepted-owner/end comparison
+    // as whole-fit rather than treating the first item's origin as page-wide.
+    if super::super::stored_rewind_boundary_matches_current_flow(
+        paragraphs,
+        para_idx,
+        &st.current_items,
+        st.current_height,
+        st.layout.dpi,
+    ) {
+        return false;
+    }
     // 완전한 TAC 줄이 새 단의 원점에서 수용되고 뒤 저장 줄까지 같은
     // 전진 끝으로 이어지면 새 저장 프레임이 이미 확립됐다. 옛 host의
     // 양수 vpos만 보고 그 뒤 모든 쪽 경계를 무효화하지 않는다.

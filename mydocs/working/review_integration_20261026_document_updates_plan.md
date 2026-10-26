@@ -117,3 +117,21 @@
   2,607개 통과·기존 skip 2개·실패 0개다. HWP 전쪽 Native/fresh WASM 검증은 아직 남았다.
 - 실행 로그는 `output/pr-review/planet6897-20261026/`의 `canvaskit-contract-before.log`,
   `canvaskit-contract-after.log`, `canvaskit-tsc.log`, `studio-unit-after-canvaskit.log`에 있다.
+
+
+### sungeo 저장 프레임 후속 경계
+
+- 원본 2구역의 문단 43은 저장 위치 64,594HU를 가진 표제어지만 다음 본문과 함께 새 쪽에
+  수용된다. 뒤 문단 44부터 새 저장 프레임의 본문을 소비해도, 이전 prefix 판정이 첫 표제어의
+  옛 위치만 보고 문단 65·85의 후속 쪽 경계를 계속 무효화했다.
+- 원 수정 `8cc5042c1`과 보완 `7f7cb6086`, 관련 #7642의 stage2649·2666·3429 기록을
+  대조했다. 기존 whole-fit이 사용하는 실제 소유자·저장 끝 대조 결과를 prefix 유효성 조회에도
+  사용한다. 실제 흐름이 저장 프레임 끝에 도달하면 첫 항목의 옛 좌표를 쪽 전체의 무효 상태로
+  사용하지 않는다. 명시적 경계와 TAC 원점 계약은 그대로 소비한다.
+- `legacy-v2` Native는 수정 전 21쪽 26.13435%·22쪽 38.97308%에서 각각 99.94110%·
+  99.93512%로 개선됐다. 전체 94쪽 최저 99.85165%, 90% 미만 0쪽, PDF와 쪽수 일치다.
+  fresh WASM·최종 전체 Rust 검증은 아직 남아 있으며 이를 완료 전 전체 수용으로 판정하지 않는다.
+- 빌드와 전쪽 로그: `output/pr-review/planet6897-20261026/legacy-v2-native-build.log`,
+  `sungeo-v2-all.log`. 고정 바이너리와 source diff 해시는 `legacy-v2-producer.json`에 기록했다.
+- OpenAI·Gemini 제공자 E2E, AI panel·설정·side panel E2E도 통과했다. 모의 API이며 실제 키는
+  사용하지 않았다. 브라우저가 소비한 Rust 모듈은 기준 WASM이므로 조판 후보 검증과 구분한다.
