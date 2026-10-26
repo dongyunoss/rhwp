@@ -14,9 +14,9 @@
 | 고정 원 head | `3b79ee07292b6d386af1ee9e909e0a5549ec52f8` |
 | 원격 확인 | 2026-10-26 KST: head 일치, reviewer jangster77 지정 확인; 당시 draft=false |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 현재 통합 후보 | `d6ea10837218e7e490b166ed76af221490b61ba2` |
+| 이전 검증 후보(과거) | `d6ea10837218e7e490b166ed76af221490b61ba2` |
 | 초기 렌더 소스·증거 등록(과거) | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
-| 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
+| 이전 고정 devel(과거) | `238de6de41a208648f4ade6b494fe433a81c1fce` |
 
 ## 변경과 원 커밋 적용
 
@@ -61,7 +61,7 @@ tests/cases/page_number_pos_in_table_cell.rs의 공개 표시 검사와 legacy p
 
 sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
 
-## 현재 후보의 실제 검사 실행 — 2026-10-26
+## 이전 후보의 실제 검사 실행 — 2026-10-26
 
 현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
 `a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
@@ -83,3 +83,27 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 [Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 실제 통합 PR·merge SHA·CI 결과와 이 PR의 보정 범위를 존댓말로 설명한다. 시각 검증에 사용한 대표 review·overlay는 위 안정 경로에서 실제 merge SHA로 고정한 raw URL로 함께 표시한다. 아직 확정하지 않은 수치·이미지 URL이나 미실행 경로를 만들지 않는다.
 
 실제 asset의 devel 반영을 확인한 뒤 `--body-file`로 게시하고 API로 본문·이미지를 재조회한다. contributor branch·fork를 삭제하거나 원 history를 rewrite하지 않는다. [개별 구현·후속 절차](pr_8031_review_impl.md)를 따른다.
+
+## API 생성 Print 대조군 추가 — 2026-10-26
+
+작업 시작 head는 `a72ce747362f537cc6dba4906dd38a8ea40daece`, 고정 base는
+`49bc935a149c20b942d3045c2f5c733aeccf57d0`다. 엔진은 c2513250과 동일하며
+이번 단계에서는 제품 코드를 수정하지 않았다. 기존 최소 IR 검사·입력의 미달을
+완료된 다른 입력으로 대체하지 않는다. 아래 표는 새 대조군에 한정한다.
+
+| 항목 | 직접 확인한 결과 |
+| --- | --- |
+| 독립 입력·Print | [입력·기준 PDF·생성 절차·SHA](../assets/pr_8031_page_number_cell/README.md) |
+| Native/fresh 전쪽 | 각각 1/1쪽, raw 100.00000%, 미달·누락 0쪽 |
+| 직접 판독 | 양쪽 review·standalone overlay에서 표 외곽·후속 BODY·꼬리말을 대조함 |
+| 새 이름의 정식 검사 | `page_number_cell_print_contract.rs`: 2 PASS/0 FAIL, `regression_suite_007` |
+| 검사 SHA-256 | `eac944341598401ea1640e235ac4f9053435ead0a845341f99e8565858f1affe` |
+| 독립 기대값 | 셀 선언 소유·각 1회 내용 보존·순서 및 Print 꼬리말 기준선 ±2px |
+| 기존 검사 유지 | `page_number_pos_in_table_cell.rs`는 HEAD의 바이트 그대로 유지함 |
+| 판정 경계 | 기존 최소 IR 원본의 시각 미달과 통합 전체 잔여 게이트는 아직 해결로 세지 않음 |
+
+자동 suite 최초 실행은 오래된 생성 목록으로 0건·exit4였고, manifest `--prepare` 후
+새 함수 2건을 실제 실행해 exit0을 확인했다. base070에서도 쪽 번호가 보이므로
+수정 전 FAIL 근거라고 기록하지 않는다. 이는 상속 기능 보존의 양성 대조다.
+로그는 `output/pr-review/semanticist21-20261019/logs/page-number-cell-auto-nextest-4322.log`다.
+기존 과거 전체 검증 수치는 아래/앞선 기록의 head에만 적용한다.

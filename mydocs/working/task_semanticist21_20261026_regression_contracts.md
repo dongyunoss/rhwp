@@ -662,3 +662,33 @@ HWP를 수집하거나 삭제된 corpus 참조를 복구하지 않았다. 입력
 제품 source 동일성도 확인했다. 검증한 엔진은 c2513250의 Native261/fresh077이며
 이번 단계는 검사·증적만 수정했다. 전체 통합의 잔여 시각 미달·전체 Rust/lint는
 다음 보정 후 최종 head에서 계속 확인한다.
+
+### #8031 API 대조군의 정식 회귀와 원 입력 보존
+
+원 PR의 1×1 셀 안 PageNumberPos와 후속 BODY를 공개 blank/table API로 구성한
+같은 기능의 대조군을 한컴 2020 Print와 검증했다. 용지·명목 표 크기는 원 PR과
+같으며 DocInfo·기본 셀 여백·괘선은 API의 정상 생성 값을 유지한다. 원래 최소 IR의
+시각 미달과 구분하며 원 `page_number_pos_in_table_cell.rs`는 바이트 그대로 유지했다.
+새 `page_number_cell_print_contract.rs` 두 함수는 양쪽 raw100·1/1쪽·직접 판독 후
+소유·유일성·내용 순서·독립 Print 꼬리말 기준선 ±2px를 보호한다. 자동 suite007에서
+실제로 2 PASS/0 FAIL이다. Native261/fresh077의 제품 source는 c2513250과 같다.
+
+초기 standalone 검사에서는 HWPX sideChar를 prefix/suffix 별도 저장이라고 가정해
+legacy format assertion이 실패했다. 실제 XML의 sideChar="-"와 파서 모델 dash_char를
+대조해 검사 가정을 정정했다. old base247 RLIB의 링크 실패는 실행 RED가 아니며,
+base070 WASM도 이미 같은 collector를 포함해 BODY·쪽 번호 각 1회 보존이 PASS다.
+이를 수정 전 실패로 사용하지 않는다. 첫 자동 nextest0건은 생성 목록 불일치로,
+manifest --prepare 후 새 두 검사 실행·exit0을 확인했다. 로그4322와 정식 asset
+`mydocs/pr/assets/pr_8031_page_number_cell/README.md`에 정확한 근거를 연결했다.
+
+현재 단계는 검증된 대조군의 정식 회귀를 보강한 것이며 기존 최소 IR의 미달,
+#7833 혼합 NO_LS wrapper·#8032 투명 확대 그림·#8039 control-tail의 차이는
+계속 확인한다. 통합 전체나 원 최소 입력의 피델리티 완료로 보고하지 않는다.
+
+기존 모듈은 manifest 재배치 후 `regression_suite_014`에서 별도 2 PASS/0 FAIL을
+확인했다(`logs/page-number-cell-original-nextest-4325.log`). 신규 suite007과 합계
+4 PASS이며, 4323의 suite007 단독 필터 결과를 4건이라고 세지 않는다.
+새 검사 rustfmt·diff 공백 검사와 고정 base manifest 검사를 통과했다. 내부 링크
+검사 도구의 동일 helper로 변경 Markdown 4개와 등록부를 검사해 오류0을 확인했다.
+기본 CLI는 redirect 인자가 없어도 전체 추적 바이너리를 읽는 비효율 때문에
+중단했으며, 이를 통과 기록으로 쓰지 않았다. 로그는 `logs/page-number-cell-links-focused-4328.log`다.
