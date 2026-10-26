@@ -2946,7 +2946,7 @@ fn paragraph_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option
 
 /// 표시되지 않는 문단 끝 문자도 마지막 줄의 글자모양 높이를 소유한다.
 /// 문자 수는 확장 제어를 포함한 원본 UTF-16 축이므로 표시 문자열 길이로 대신하지 않는다.
-fn paragraph_end_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
+pub(crate) fn paragraph_end_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> f64 {
     let Some(end_pos) = para.char_count.checked_sub(1) else {
         return 0.0;
     };

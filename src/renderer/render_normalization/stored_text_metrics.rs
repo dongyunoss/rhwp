@@ -82,6 +82,13 @@ fn nominal_height(paragraph: &Paragraph, styles: &ResolvedStyleSet, dpi: f64) ->
         }
         height = height.max(px_to_hwpunit(size, dpi));
     }
+    // 마지막 빈 run은 보이는 글자가 없어도 문단 끝 줄 상자의 글자모양이다.
+    // 재조판과 같은 원본 UTF-16 종단 주소를 소비해야 정상 저장 높이를
+    // 가시 글자의 크기만으로 줄이고 셀의 기준선을 이동시키지 않는다.
+    let end_size = crate::renderer::composer::paragraph_end_font_size_px(paragraph, styles);
+    if end_size.is_finite() && end_size > 0.0 {
+        height = height.max(px_to_hwpunit(end_size, dpi));
+    }
     (visible && height > 0).then_some(height)
 }
 

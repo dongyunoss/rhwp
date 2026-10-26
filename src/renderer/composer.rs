@@ -275,7 +275,8 @@ pub(crate) mod inline_box_rows;
 mod line_breaking;
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{
-    control_is_width_neutral_marker, frame_metrics_for_line, text_word_ranges,
+    control_is_width_neutral_marker, frame_metrics_for_line, paragraph_end_font_size_px,
+    text_word_ranges,
 };
 pub mod lineseg_compare;
 
