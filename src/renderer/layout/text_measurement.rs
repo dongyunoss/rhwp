@@ -1793,6 +1793,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         // 초성으로 시작하는 조합 내부는 위 clusterContinuation 경로가 소유한다.
         return CharWidthDecision {
             width_source: "isolatedConjoiningJamo",
+            measurement_character: None,
             base_width_px: 0.0,
             final_width_px: 0.0,
             bold_tracking_px: 0.0,
