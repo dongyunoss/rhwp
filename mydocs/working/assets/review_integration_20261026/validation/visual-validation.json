@@ -5,7 +5,7 @@
   "metric": "silhouette_raw_match_percent",
   "radius_px": 2,
   "scope": "38 HWP/HWPX cases and 3 PDF versions in each of two layout modes; no handbook or custom sample16 sweep",
-  "full_rust_validation": "pending",
+  "full_rust_validation": "running_with_failures",
   "backends": {
     "native": {
       "cases": 44,
@@ -3597,5 +3597,9 @@
         }
       ]
     }
+  },
+  "full_rust_observed_failures": {
+    "onsemiro_hwp_hwpx": "Own 7ccf8dffc endpoint-only early return regressed46 to47 pages; two existing owner/width assertions and two oracle partitions expose it. Correct production logic; do not relax expectations.",
+    "civil_petition_form": "Existing margin edit relation fails; original solution and same-input independent PDF under investigation."
   }
 }

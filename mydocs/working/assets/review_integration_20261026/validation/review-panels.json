@@ -1,0 +1,112 @@
+[
+  {
+    "backend": "native",
+    "key": "nested-height-cache",
+    "page": 11,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "9b2398f7db7f32d33eff8d1e345db7624439971619997a268c5ddd2ccf093810",
+    "pdf_png_sha256": "bc02eb8e7d09c23693742497733b454b1e694c3fa4457293087e17005a230870",
+    "raw_match_percent": 98.82287,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/native/nested-height-cache-p011.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/native/nested-height-cache-p011.png"
+  },
+  {
+    "backend": "native",
+    "key": "hairline-calendar",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "12d7202efce736cc9f07a86367f96c3cb2815678081dbadeeddf8033dfb18456",
+    "pdf_png_sha256": "9768092b9c55b7a4ef9cbd93d7062ff7120bfd6dcb8e5e183687465f2da3748c",
+    "raw_match_percent": 98.83153,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/native/hairline-calendar-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/native/hairline-calendar-p001.png"
+  },
+  {
+    "backend": "native",
+    "key": "equation-lim",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "bdf1043fe0a3d042f73abb361c4c2fb71f41f223207b8314246749bf59f9197f",
+    "pdf_png_sha256": "f2f942fbedbd545b582c0877f45cf95acd7db0d0c8494afee3aecde0b20b7e88",
+    "raw_match_percent": 99.88926,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/native/equation-lim-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/native/equation-lim-p001.png"
+  },
+  {
+    "backend": "native",
+    "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "2b5c42482d5c2b642b5eaa1674d061c7b499a43a970263dfd79e5dbf25834d99",
+    "pdf_png_sha256": "fca679c50b4fb86a76b9f3145b6086cbb0fda0b4bc267666800e5755fba8f5d6",
+    "raw_match_percent": 94.9191,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above-p001.png"
+  },
+  {
+    "backend": "native",
+    "key": "pdf-2010-editable",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "04c1f8baedfc86438d00cb827759407ad5c581d4c17973b06df81a81aa8cf7b4",
+    "pdf_png_sha256": "e80cb6779824e059f989133cc2f8ba7fad06a40a9348d443ef09185a8c46440e",
+    "raw_match_percent": 99.69372,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/native/pdf-2010-editable-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/native/pdf-2010-editable-p001.png"
+  },
+  {
+    "backend": "wasm",
+    "key": "nested-height-cache",
+    "page": 11,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "d3246229c15cc711a004f01032e976e34ec12af31857284399e5cccbcfcb88cd",
+    "pdf_png_sha256": "bc02eb8e7d09c23693742497733b454b1e694c3fa4457293087e17005a230870",
+    "raw_match_percent": 98.8328,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/wasm/nested-height-cache-p011.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/wasm/nested-height-cache-p011.png"
+  },
+  {
+    "backend": "wasm",
+    "key": "hairline-calendar",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "6a5ed7baf9cdb980a8fa2d74bb5011a4c7dde6b50eba0c5f4c44f46e746a08e4",
+    "pdf_png_sha256": "9768092b9c55b7a4ef9cbd93d7062ff7120bfd6dcb8e5e183687465f2da3748c",
+    "raw_match_percent": 98.512,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/wasm/hairline-calendar-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/wasm/hairline-calendar-p001.png"
+  },
+  {
+    "backend": "wasm",
+    "key": "equation-lim",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "9fe7ffcf3c587e42f44b18789aafdfa044e157ec7ee922ed67ee06426cf0435d",
+    "pdf_png_sha256": "f2f942fbedbd545b582c0877f45cf95acd7db0d0c8494afee3aecde0b20b7e88",
+    "raw_match_percent": 98.50905,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/wasm/equation-lim-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/wasm/equation-lim-p001.png"
+  },
+  {
+    "backend": "wasm",
+    "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "9dd21d18f2dd6aafa708bcf9a2a2f30f4237bc3268103887ee6dc8a6407a367f",
+    "pdf_png_sha256": "fca679c50b4fb86a76b9f3145b6086cbb0fda0b4bc267666800e5755fba8f5d6",
+    "raw_match_percent": 95.0532,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above-p001.png"
+  },
+  {
+    "backend": "wasm",
+    "key": "pdf-2010-editable",
+    "page": 1,
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "actual_png_sha256": "169693afff069f83ad2309609522f044f1f45820f27e464fea5a0b6e2a463b84",
+    "pdf_png_sha256": "e80cb6779824e059f989133cc2f8ba7fad06a40a9348d443ef09185a8c46440e",
+    "raw_match_percent": 98.69835,
+    "review": "mydocs/working/assets/review_integration_20261026/validation/review/wasm/pdf-2010-editable-p001.png",
+    "overlay": "mydocs/working/assets/review_integration_20261026/validation/overlay/wasm/pdf-2010-editable-p001.png"
+  }
+]

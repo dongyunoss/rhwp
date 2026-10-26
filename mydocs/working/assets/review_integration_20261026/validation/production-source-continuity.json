@@ -1,0 +1,15 @@
+{
+  "production_visual_head": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+  "regression_and_binding_head": "f34157026afad07c423e58a9b3018b9c46593325",
+  "production_and_studio_sources_byte_identical": true,
+  "scope": [
+    "src",
+    "crates",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "rhwp-studio/src"
+  ],
+  "generated_public_bindings": "Output of verified fresh WASM wrapper, not handwritten code.",
+  "wasm_sha256": "987a000459ddec38d0095348d425016c30e2b0b173c39c31c212a6e15e814bee"
+}
