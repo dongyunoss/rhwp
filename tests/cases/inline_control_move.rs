@@ -17,8 +17,9 @@ use rhwp::{
     },
 };
 
-#[path = "../support/inline_control_move_contract.rs"]
-mod fixture_support;
+mod fixture_support {
+    include!("../support/inline_control_move_contract.rs");
+}
 use fixture_support::{body, caret, chart_content, source};
 
 fn equation(id: u32) -> Control {

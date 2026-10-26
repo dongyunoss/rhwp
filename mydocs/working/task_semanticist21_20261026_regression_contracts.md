@@ -276,3 +276,19 @@ ignored 영수증은 `cell-scope-focused-4175-result.json`,
 구분한다. 종료 뒤 검증 worktree에도 삭제를 반영하고 변경한 검사의 집중 회귀·lint를
 완료한다. 새 source에 과거 PASS를 적용하지 않는다. 실제 삭제와 근거는 #7694 개별
 구현 기록 및 ignored `damaged-move-removal-4195.json`에 연결한다.
+
+## 손상 표본 삭제 뒤 자동 수집 유지 — 2026-10-26
+
+손상 HWP 두 개를 삭제한 `5e71af95aa` 뒤 일반 HWPX의 기존 배치 결함은
+`a1fe7fb50f`와 #8266으로 구분했다. 모델·저장 계약과 정상 차트 계약은 유지한다.
+검사 분리 과정에서 추가한 `#[path] mod` 두 개가 자동 수집기의 singleton 예외로
+분류되어 integration target 예산이 48에서 50으로 늘어나는 문제를 확인했다.
+기존 `tests/cases/`의 공유 helper 포함 방식처럼 명시적인 내부 모듈에서 `include!`하도록
+수정했다. target 예산·정책·CI 호출을 완화하지 않으며, 같은 helper를 실제 suite 안에서
+컴파일·실행해 보존 여부를 확인한다. `.rs.txt` 보존본은 제거 전 source 바이트 그대로 둔다.
+
+`current-full-nextest-4184.log`는 생산 코드 `a90a2057a7`에서 11,716 PASS·0 FAIL·45 skipped,
+전체 Native Skia 3종과 문서 테스트도 exit 0이다. Studio의 TypeScript·전체 Node·fresh WASM
+실브라우저·production build·오류 표시 검증은 4186에서 모두 exit 0이다. 이 결과를 삭제 후
+변경한 두 검사 source의 실행으로 바꾸어 기록하지 않는다. 변경된 검사와 필수 lint는
+`logs/current-*-4205.log`에서 별도로 검증하고 terminal 결과를 추가 기록한다.

@@ -3,8 +3,9 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
-#[path = "../support/inline_control_move_contract.rs"]
-mod fixture_support;
+mod fixture_support {
+    include!("../support/inline_control_move_contract.rs");
+}
 use fixture_support::{body, caret, chart_content, source};
 
 #[test]

@@ -1,4 +1,4 @@
-//! 인라인 이동 계약 검사에서 사용하는 공개 API 주소와 차트 내용 조회.
+// 인라인 이동 계약 검사에서 사용하는 공개 API 주소와 차트 내용 조회.
 use rhwp::document_core::{
     inline_control::{InlineControlAddress, InlineControlCaret, InlineControlOwner},
     DocumentCore,
