@@ -2020,6 +2020,17 @@ impl LayoutEngine {
                     }
                     let line_count = comp.lines.len();
                     for li in start..end {
+                        // CellUnit은 좌우 조각의 마지막 seg에서만 한 물리 줄을
+                        // 전진한다. 정렬 높이도 같은 저장 줄 소속을 소비한다.
+                        if line_count == para.line_segs.len()
+                            && li + 1 < end
+                            && crate::renderer::height_measurer::stored_seg_is_row_fragment(
+                                para,
+                                li + 1,
+                            )
+                        {
+                            continue;
+                        }
                         if li < line_count {
                             let line = &comp.lines[li];
                             let h = hwpunit_to_px(line.line_height, self.dpi);
@@ -2348,6 +2359,15 @@ impl LayoutEngine {
                             );
                         }
                         for li in start..end.min(comp.lines.len()) {
+                            if comp.lines.len() == para.line_segs.len()
+                                && li + 1 < end
+                                && crate::renderer::height_measurer::stored_seg_is_row_fragment(
+                                    para,
+                                    li + 1,
+                                )
+                            {
+                                continue;
+                            }
                             let line = &comp.lines[li];
                             let raw_height = hwpunit_to_px(line.line_height, self.dpi);
                             let glyph_em = line

@@ -1,0 +1,30 @@
+[RustTestSuite] issue_6712_cell_visual_row_units -> regression_suite_010::issue_6712_cell_visual_row_units
+[RustTestSuite] cargo nextest run --locked --test regression_suite_010 -E test(/(^|::)issue_6712_cell_visual_row_units::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia
+   Compiling quantette v0.6.0
+   Compiling skia-safe v0.153.3
+   Compiling icy_sixel v0.7.0
+   Compiling rhwp v0.8.7 (/home/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 8m 35s
+────────────
+ Nextest run ID 023cb3f1-b947-4dca-a7bd-da4bc7548f5e with nextest profile: default
+    Starting 18 tests across 1 binary (251 tests skipped)
+        PASS [   0.049s] ( 1/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::page_cuts_never_split_the_left_and_right_fragments_of_a_row
+        PASS [   0.050s] ( 2/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::row_advance_uses_the_last_fragment_height
+        PASS [   0.063s] ( 3/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::equal_vpos_without_different_columns_is_not_a_wrap_fragment
+        PASS [   0.067s] ( 4/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::synthetic_segments_are_not_stored_wrap_evidence
+        PASS [   0.045s] ( 5/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::whole_table_preserves_both_fragments_on_each_visual_row
+        PASS [   0.050s] ( 6/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::three_fragments_of_a_row_are_also_indivisible
+        PASS [   0.145s] ( 7/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::terminal_frame_does_not_cross_the_recovered_footer_line
+        PASS [   0.151s] ( 8/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::following_paragraph_wraps_beside_a_picture_with_its_own_title
+        PASS [   0.177s] ( 9/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::footer_overlay_group_images_are_owned_once_by_the_last_page
+        PASS [   0.189s] (10/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::stored_square_picture_flow_matches_chinese_hancom_oracle
+        PASS [   0.203s] (11/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::empty_last_wrap_fragment_still_advances_the_visible_row
+        PASS [   0.210s] (12/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::stored_square_picture_flow_matches_korean_hancom_oracle
+        PASS [   0.230s] (13/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::text_after_a_nested_square_table_keeps_the_stored_successor_slot
+        PASS [   0.358s] (14/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::empty_picture_anchor_preserves_its_distinct_stored_row_advance
+        PASS [   0.407s] (15/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::nested_square_tables_use_the_host_origin_and_stored_offset
+        PASS [   0.423s] (16/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::chinese_footer_is_painted_inside_the_second_page_clip
+        PASS [   0.479s] (17/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::following_paragraph_requires_real_adjacent_stored_segments
+        PASS [   0.493s] (18/18) rhwp::regression_suite_010 issue_6712_cell_visual_row_units::prevention_tail_is_visible_once_on_its_original_page
+────────────
+     Summary [   0.503s] 18 tests run: 18 passed, 251 skipped
