@@ -100,3 +100,14 @@ Cargo와 npm lockfile의 누적 버전 정합성을 확인하고 실제 빌드·
 13줄 package 항목 삭제만 발생했다. 다른 버전·checksum·의존성은 바꾸지 않았다.
 오프라인 metadata 자체는 미캐시 `bit-set 0.11.1` 다운로드 단계에서 중단됐으므로,
 온라인 fetch 뒤 같은 `--locked` lint 묶음부터 실제 재검증한다.
+
+## SDK major 갱신의 브라우저 검사 보정
+
+AI 패널 E2E는 대화·도구 적용/undo·오류 복구를 실행했으나 기존 `x-api-key` 기대 1건이 실패했다.
+원 검사는 #8228 merge `3e02fe2749866a8453af3eb3901b9c1a674cccaf`에서 들어왔다.
+공식 SDK의 [0.137.0 client](https://github.com/anthropics/anthropic-sdk-typescript/blob/sdk-v0.137.0/src/client.ts)는
+`X-Api-Key`를, [1.1.0 client](https://github.com/anthropics/anthropic-sdk-typescript/blob/sdk-v1.1.0/src/client.ts)는
+`Authorization: Bearer`를 생성한다. [공식 changelog](https://github.com/anthropics/anthropic-sdk-typescript/blob/sdk-v1.1.0/CHANGELOG.md)는
+1.0.0의 API 버전 2026-10-21 변경을 명시한다. 제품의 인증 동작은 SDK에 맡긴 기존 구현을 유지하고,
+E2E가 정확한 Bearer 키·기존 헤더 미전송·API 버전을 보호하도록 정정했다.
+실제 API 키·외부 Anthropic 요청은 사용하지 않으며 응답 가로채기 범위다. 재실행 결과를 별도로 기록한다.
