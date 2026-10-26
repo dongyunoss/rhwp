@@ -148,7 +148,7 @@
   `host_spacing`의 기존 source reset 판정이 RowBreak만 허용해 347→348을 같은 쪽 표 묶음으로
   오인했다. 분할 정책과 후속 쪽 소유를 구분하고, pagination·paint가 같은 원본 되감김 조회를
   사용하도록 공유했다. 표 116의 앞 간격·후행 줄간격 중복이 제거됐다.
-- 선행 원 해결 #8184의 `9ec584a15`·`b879809af` 및 실제 소비 경로인
+- 선행 원 해결 #8184의 `9ec584a15`와 기존 간격 판정 `1d6bc70767` 및 실제 소비 경로인
   `section::stored_reset` → `controls::flow_table` → 빈 호스트/공동 앵커 → `layout`을 대조했다.
   첫 표 상자와 뒤 호스트 줄의 소유를 바꿨으며 내용 숨김·좌표 clamp·문서 ID 분기는 추가하지 않았다.
 - `legacy-v3` Native는 hwpspec 전체 178쪽 최저 92.45586%, 미달 0쪽이며 쪽수가 유지됐다.
@@ -157,3 +157,25 @@
   원문 공식 PDF는 변경하지 않았다. 최종 fresh WASM과 전체 회귀 검증은 계속 남았다.
 - 로그: `output/pr-review/planet6897-20261026/hwpml-v3-all.log`, `hwp5spec-v3-all.log`.
   빌드 원본 diff와 고정 바이너리의 해시는 `legacy-v3-producer.json`에 기록했다.
+
+
+### 중첩 표의 빈 줄 쪽 소유·세로 오프셋 1차 보정
+
+- 같은 원본을 MCP 2020 Print로 다시 출력했다. 저장 제품 revision `7.5.12.754`는 2022 이전이며,
+  job `cc627da2-d599-49f6-95d2-72f0693a4f08`의 실제 Hancom `11.0.0.9136`, Print method 0,
+  `hancom2020_pdf_driver_one_up`, 17쪽을 확인했다. 기존 `-hwp-2020.pdf`의 Creator는
+  `Hwp 2022 0.0.0.0`이므로 새 Print와 버전·출처를 구분한다. 파일명만으로 기존 출력을
+  2020 제품으로 판정하지 않는다. 원본·기존 PDF는 변경하지 않았다.
+- 원 해결 #3820 stage56과 #6697 및 #7445의 중첩 offset 계약을 대조했다. `CellUnit` 98(문단 73)의
+  10.6667px 빈 줄은 저장된 새 쪽의 첫 슬롯이지만, 직전 TAC 표에 float placement가 없다는
+  이유로 프레임 종료 인증이 거절돼 앞쪽 컷에 흡수됐다. 완전한 원본 개체 줄은 이미 저장 줄
+  상자를 소유하므로, 기존 `owns_saved_object_line` 결과를 같은 body 종료 조회에 전달한다.
+  인증된 빈 줄 경계는 재귀 투영에도 전달하며 일반 빈 overlay 리셋은 기존 계약을 유지한다.
+- 부분 표 배치는 저장 줄이 있다는 사실만으로 세로 오프셋이 이미 소비됐다고 간주했다.
+  실제 확정 float frame의 유무로 판단하고, 셀 끝 호스트의 첫 행 예약과 실제 배치가 같은
+  `para_relative_float_table_lead`를 소비하도록 맞췄다. 2쪽 선언 offset 713HU를 복원했다.
+- `legacy-v4` Native 17쪽은 쪽수를 유지했다. 새 Print 기준 2쪽 68.22392%→98.82900%,
+  9쪽 49.65136%→94.27405%, 10쪽 61.16692%→90.26331%로 개선됐다.
+  11·12·14·16쪽 미달은 아직 남아 있어 보정을 계속한다. 새 회귀의 기대값으로 고정하지 않는다.
+- 로그: `output/pr-review/planet6897-20261026/nested-v4-all.log`, `nested-mcp-finish.log`,
+  `nested-units-v2.log`. 고정 바이너리는 `candidate-v4-rhwp`, 빌드 출처는 `legacy-v4-producer.json`이다.

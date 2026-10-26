@@ -14591,7 +14591,13 @@ impl LayoutEngine {
         }
         let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
         let ink_end = hwpunit_to_px(last.vertical_pos.saturating_add(last.line_height), self.dpi);
-        let float_end = if previous.controls.is_empty() {
+        // Inline objects own the saved line box itself. Their complete box
+        // closes the same physical frame as text, without a separate float
+        // placement. Requiring a non-inline float here loses the next blank
+        // line's page ownership after an intact inline table.
+        let float_end = if previous.controls.is_empty()
+            || crate::renderer::stored_frame_boundary::owns_saved_object_line(previous)
+        {
             None
         } else if line_index == 0 && previous.line_segs.len() == 1 {
             let [Control::Table(child)] = previous.controls.as_slice() else {
@@ -16661,9 +16667,7 @@ impl LayoutEngine {
                             let leading = om_top
                                 + spacing_before
                                 + nt_cap_top
-                                + if host_is_cell_last_para
-                                    && crate::renderer::para_has_no_stored_line_segs(p)
-                                {
+                                + if host_is_cell_last_para && stored_frame.is_none() {
                                     para_relative_float_table_lead(nt, self.dpi)
                                 } else {
                                     0.0
@@ -17600,7 +17604,9 @@ impl LayoutEngine {
                     // 강제 분할하지 않는다 — 여분 빈 연속 페이지 방지. 중첩표가 있으면
                     // 가시 콘텐츠를 가지므로 리셋 보존.
                     hard_break_before: hard_break_before
-                        && (has_table_in_para || para_has_visible_text),
+                        && (has_table_in_para
+                            || para_has_visible_text
+                            || self.stored_cell_reset_closes_body(cell, table, pi, 0, styles)),
                     // [#6013] 빈 문단이어도 **쪽-스케일 저장 프레임 되감김**
                     // (is_stored_frame_rewind: 직전 끝이 본문 절반 이상 내려간 뒤
                     // 되감김)은 나른다 — 30269 p[17](vpos 67053+1200 → 500)이
@@ -17768,7 +17774,9 @@ impl LayoutEngine {
                         // 겹쳐 놓인 빈 문단(동일/역방향 vpos)들이 리셋마다 페이지를 1장씩
                         // 양산하던 여분 빈 연속 페이지 회귀를 제거한다. 가시 텍스트 문단 사이
                         // 리셋(Task #993 의도)은 그대로 하드 브레이크로 보존한다.
-                        hard_break_before: hard_break_before && para_has_visible_text,
+                        hard_break_before: hard_break_before
+                            && (para_has_visible_text
+                                || self.stored_cell_reset_closes_body(cell, table, pi, li, styles)),
                         // [#6013] 쪽-스케일 저장 프레임 되감김은 빈 문단이어도
                         // 나른다(위 whole-para 분기와 동일 원칙 — 판정 자체가
                         // is_stored_frame_rewind 의 본문-절반 하한을 통과한 신호다).

@@ -4426,9 +4426,7 @@ impl LayoutEngine {
                                     };
                                     let owns_nested_start = owns_paragraph_entry;
                                     let nested_y = nested_y
-                                        + if stored_float_frame.is_some()
-                                            || !crate::renderer::para_has_no_stored_line_segs(para)
-                                        {
+                                        + if stored_float_frame.is_some() {
                                             0.0
                                         } else {
                                             if owns_nested_start {
