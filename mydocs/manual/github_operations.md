@@ -20,6 +20,8 @@ roundtrip을 시작하지 않으며, Oracle advisory도 devel push를 구독하�
 없다는 이유로 병합 후 Full CI를 실행하거나 수동으로 재실행하지 않는다.
 
 `devel` push에서는 `Refresh nextest target duration data`가 실행 시간 메타데이터만 갱신한다.
+단, `mydocs/**`, 루트 Markdown, `llms.txt`, `LICENSE`만 바뀐 push는 경로 필터로 생략한다.
+문서와 코드가 섞인 push 및 `devel`의 명시적인 `workflow_dispatch`는 계속 실행한다.
 성공 PR CI의 정확한 head 또는 완전한 linear review-only 후행 변경을 확인한 후보에서 B/C/D/E
 실측을 읽는다. artifact의 run/repository/head/PR/tested merge와 worker별 실제 attempt를
 검증하므로 lint만 재실행한 attempt 2에서도 성공 worker attempt 1의 실측을 사용할 수 있다.

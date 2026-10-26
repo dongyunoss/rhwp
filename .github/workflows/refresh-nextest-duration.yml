@@ -4,6 +4,12 @@ name: Refresh nextest target duration data
 on:
   push:
     branches: [devel]
+    # #8277: 문서 전용 병합은 실측할 Rust worker가 없으므로 checkout부터 생략한다.
+    paths-ignore:
+      - 'mydocs/**'
+      - '*.md'
+      - 'llms.txt'
+      - 'LICENSE'
   workflow_dispatch:
 
 permissions: {}

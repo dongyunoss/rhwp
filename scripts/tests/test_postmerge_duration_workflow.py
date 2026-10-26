@@ -7,6 +7,45 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / '.github/workflows'
 
 class PostmergeDurationWorkflowTests(unittest.TestCase):
+    def test_refresh_push_skips_only_documentation_changes(self):
+        text = (WORKFLOWS / 'refresh-nextest-duration.yml').read_text(encoding='utf-8')
+        push = re.search(r'^  push:(.*?)(?=^  [a-z_]+:|^\S|\Z)', text, re.M | re.S)[1]
+        self.assertIn('branches: [devel]', push)
+        self.assertNotRegex(push, re.compile(r'^    paths:', re.M),
+                            '제외 목록으로 알 수 없는 변경의 실행을 보존한다')
+        ignored = re.search(r'^    paths-ignore:\n((?:^      .*\n)+)', push, re.M)
+        self.assertIsNotNone(ignored)
+        patterns = re.findall(r"^      - '([^']+)'$", ignored[1], re.M)
+
+        def ignored_path(path):
+            for pattern in patterns:
+                glob = re.escape(pattern).replace(r'\*\*', '.*').replace(r'\*', '[^/]*')
+                if re.fullmatch(glob, path):
+                    return True
+            return False
+
+        def runs(paths):
+            return any(not ignored_path(path) for path in paths)
+
+        # 추가·수정·삭제된 문서, 문서 경로 간 이동 및 문서 증적 묶음.
+        for paths in [
+            ['README.md'], ['AGENTS.md', 'CLAUDE.md', 'llms.txt', 'LICENSE'],
+            ['mydocs/manual/mcp_hwp2024Convert_usage.md'],
+            ['mydocs/pr/assets/issue_8277/native.tsv', 'mydocs/pr/assets/issue_8277/review.png'],
+            ['mydocs/old.md', 'mydocs/archive/new.md'],
+        ]:
+            with self.subTest(skipped=paths):
+                self.assertFalse(runs(paths))
+        # 혼합 변경, 코드에서 문서로 이동, 알 수 없는 경로는 실행을 유지한다.
+        for path in ['src/lib.rs', 'Cargo.toml', 'Cargo.lock', 'tests/cases/example.rs',
+                     '.github/workflows/refresh-nextest-duration.yml',
+                     'scripts/collect-postmerge-duration-data.mjs', 'unknown/file',
+                     'samples/example.hwpx', 'src/README.md']:
+            with self.subTest(runs=path):
+                self.assertTrue(runs([path]))
+                self.assertTrue(runs(['mydocs/manual/example.md', path]))
+        self.assertIn('\n  workflow_dispatch:\n', text)
+
     def test_devel_push_subscribers_are_metadata_only(self):
         # An allowlist makes newly introduced implicit/all-branch push triggers fail too.
         for path in WORKFLOWS.iterdir():
