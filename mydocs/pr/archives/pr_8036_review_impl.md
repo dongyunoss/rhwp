@@ -40,8 +40,19 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
 원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
-- [tests/cases/stored_reset_after_tall_line.rs](../../../tests/cases/stored_reset_after_tall_line.rs): SHA-256 `7acb58898d46c70088b022589101080b6ec4fcd99f28f314461bbafaf0e30ee0`.
+- [tests/cases/verified_stored_tall_line_print_flow.rs](../../../tests/cases/verified_stored_tall_line_print_flow.rs): SHA-256 `7acb58898d46c70088b022589101080b6ec4fcd99f28f314461bbafaf0e30ee0`.
   - `stored_continuing_vpos_after_page_tall_line_stays_on_page`: PASS, `logs/current-full-nextest-4184.log:7697` (`rhwp::regression_suite_013`).
   - `stored_zero_vpos_after_page_tall_line_starts_new_page`: PASS, `logs/current-full-nextest-4184.log:7698` (`rhwp::regression_suite_013`).
 
 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+
+## 2026-10-26 독립 Print 대조에 따른 보정
+
+원 최소 재현의 2쪽 가정은 잘못됐으며, 실제 Print·base는 1쪽이다.
+`55f06decaf`는 큰 표의 줄 끝만으로 재시작을 추측하던 조건을 제거한다.
+[입력·Print·전쪽 Native/fresh WASM 각 100%·대표 review/overlay](../assets/pr8036_print_contract_20261026/README.md)를
+고정하고 새 이름의 관계 검사와 완료 페이지의 ±2px 괘선 검사를 등록했다.
+검사 초안의 실제 실행은 Native257에서 되감김 FAIL, Native258에서 두 조건 PASS다.
+ignored `logs/independent-regression-drafts-supervisor-4257.log`와 실행 영수증을 연결한다.
+새 이름의 정식 자동 수집·전체 회귀는 리베이스 뒤 최종 source에서 다시 확인한다.
+원 PR의 다른 13쪽 문서까지 해결됐다고 확대하지 않는다.

@@ -26,14 +26,16 @@
 
 ### 실제 소비 경로와 반례
 
-stored_reset은 직전 저장 줄의 시작 vpos만으로 쪽 경계를 판단하지 않고 줄 점유 끝과 다음 0 원점을 함께 본다. 큰 TAC 한 줄 뒤 reset=0과 연속 vpos 대조군을 구분하며, 다음 문단을 같은 쪽에 무조건 합치는 완화를 막는다. 수동 저장 줄 fixture의 Print 대응은 독립 증거이고, 테스트 통과 자체를 원본 제품 출력의 증거로 삼지 않는다.
-
-
+원 contributor의 `prev_vpos_end > 5000` 조건과 2쪽 기대는 같은 최소 입력의 독립 Print와 충돌한다.
+Print와 고정 base는 1쪽이고, 후보 Native257만 2쪽이었다. `55f06decaf`에서 기존 시작 vpos
+기준을 복원해 Native258/fresh WASM075 모두 1쪽·raw 100%로 보정했다. 원 PR의 조건을
+그대로 수용했다는 판정은 하지 않는다. 원 PR이 언급한 별도의 13쪽 문서는 이 최소 입력의
+검증으로 대신하지 않는다.
 
 ### 현재 소스와 검사
 
 - [src/renderer/typeset/section/stored_reset.rs](../../../src/renderer/typeset/section/stored_reset.rs)
-- [tests/cases/stored_reset_after_tall_line.rs](../../../tests/cases/stored_reset_after_tall_line.rs)
+- [tests/cases/verified_stored_tall_line_print_flow.rs](../../../tests/cases/verified_stored_tall_line_print_flow.rs)
 
 - `tests/cases/stored_reset_after_tall_line.rs`: SHA-256 `7acb58898d46c70088b022589101080b6ec4fcd99f28f314461bbafaf0e30ee0`. 직접 선언 검사 2개: `stored_zero_vpos_after_page_tall_line_starts_new_page`, `stored_continuing_vpos_after_page_tall_line_stays_on_page`.
 
@@ -69,7 +71,7 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
 원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
 
-- [tests/cases/stored_reset_after_tall_line.rs](../../../tests/cases/stored_reset_after_tall_line.rs): SHA-256 `7acb58898d46c70088b022589101080b6ec4fcd99f28f314461bbafaf0e30ee0`.
+- [tests/cases/verified_stored_tall_line_print_flow.rs](../../../tests/cases/verified_stored_tall_line_print_flow.rs): SHA-256 `7acb58898d46c70088b022589101080b6ec4fcd99f28f314461bbafaf0e30ee0`.
   - `stored_continuing_vpos_after_page_tall_line_stays_on_page`: PASS, `logs/current-full-nextest-4184.log:7697` (`rhwp::regression_suite_013`).
   - `stored_zero_vpos_after_page_tall_line_starts_new_page`: PASS, `logs/current-full-nextest-4184.log:7698` (`rhwp::regression_suite_013`).
 
@@ -80,3 +82,14 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 [Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 실제 통합 PR·merge SHA·CI 결과와 이 PR의 보정 범위를 존댓말로 설명한다. 시각 검증에 사용한 대표 review·overlay는 위 안정 경로에서 실제 merge SHA로 고정한 raw URL로 함께 표시한다. 아직 확정하지 않은 수치·이미지 URL이나 미실행 경로를 만들지 않는다.
 
 실제 asset의 devel 반영을 확인한 뒤 `--body-file`로 게시하고 API로 본문·이미지를 재조회한다. contributor branch·fork를 삭제하거나 원 history를 rewrite하지 않는다. [개별 구현·후속 절차](pr_8036_review_impl.md)를 따른다.
+
+## 독립 Print로 확인한 원 기대값 오류와 새 검사 — 2026-10-26
+
+[같은 두 입력·PDF·전쪽 TSV·대표 PNG](../assets/pr8036_print_contract_20261026/README.md)를
+대조했다. 잘못된 기존 2쪽 검사 모듈은 제거하고 새 이름의
+`printed_tall_line_rewind_preserves_table_and_successor_on_one_page`와
+`printed_tall_line_continuation_preserves_table_and_successor_on_one_page`로 대체한다.
+내용 보존·셀 포함·앞뒤 순서를 유지하고, 양쪽 raw 100%·직접 판독을 마친 페이지의
+독립 PDF 괘선도 ±2px로 보호한다. 보정 전 되감김 검사 FAIL, 보정 후 두 검사 PASS다.
+위의 옛 함수명·전체 PASS 표는 해당 과거 source의 실행 이력이며 새 검사의 전체 suite
+실행으로 보지 않는다. 새 devel 리베이스·관련 회귀·전체 필수 게이트는 계속 확인한다.
