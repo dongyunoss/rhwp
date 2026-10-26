@@ -34,7 +34,7 @@ raw 100%이며 canonical review와 standalone overlay에서 기호·다음 글�
 | Native 65쪽 직접 판독 | `selected-native253-4024/5846-native253/review/review_065.png`, 같은 조건의 `overlay/overlay_065.png` |
 | fresh WASM 65쪽 직접 판독 | `selected-wasm072-4030/5846-wasm072/review/review_065.png`, 같은 조건의 `overlay/overlay_065.png` |
 
-## 남은 검토와 삭제 유지
+## 당시 남은 검토와 삭제 유지
 
 #8045의 수동 LineSeg 재현본과 한컴 저장본은 같은 입력으로 취급하지 않는다. 같은
 재현본의 한컴 저장본에서 드러난 표 높이 차이와 #8093의 혼합 텍스트·양식 개체 기준선
@@ -45,3 +45,50 @@ sample16·편람의 기존 삭제를 유지한다. 이전 파생 참조를 되�
 재생성하지 않는다. `retired-reference-readonly-4038.json`은 manifest를 저장하지 않고
 현재 1,767개 수집 소스와 전용 검증 worktree의 실제 1,767개 참조를 대조했다.
 누락·제외 대상 참조는 0개이며 주 작업공간의 generated 파일은 변경하지 않았다.
+
+## 후속 보정과 최종 Rust 검증 — 2026-10-26
+
+위 #8045·#8093의 당시 미완료 상태는 공통 보정과 독립 Print 대조로 해소했다.
+[Form·정상 한컴 중첩 표 증거](../pr/assets/inline_wrap_qualified_20261026/README.md)의
+세 조건은 전쪽 Native255·최적화 fresh WASM073 모두 raw 100%다. 수동 LineSeg 입력과
+정상 한컴 저장본을 구별하며, 정상 저장본의 통과를 수동 입력의 완전 일치로 바꾸어 쓰지 않는다.
+코드·회귀 후보는 `61528013511c87c732524f91c6f224286a055337`, 실제 runtime은
+`bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`다. 이후 문서·증거 커밋과 해당 코드·검사
+파일이 동일함을 대조했다. 새 회귀의 수정 전 실패·수정 후 통과는 4057·4059 기록에 있다.
+
+| 필수 Rust 검증 | 실제 최종 결과 | ignored output의 로그·영수증 |
+| --- | --- | --- |
+| 준비·fmt·suite 정책·unit tier 정책·Release build | 각각 exit 0 | `final-full-rust-4052-result.json`의 완료 단계 |
+| Release 라이브러리 | 3,983 PASS·0 FAIL·12 ignored | `logs/final-release-lib-4052.log` |
+| 전체 nextest | 11,708 PASS·0 FAIL·45 skipped | `logs/final-full-nextest-4052.log`, `full-nextest-terminal-audit-4092.json` |
+| Native Skia 라이브러리 | 4,040 PASS·0 FAIL·12 ignored | `logs/final-native-skia-lib-4093.log` |
+| Native Skia placeholder·직접 PDF 검사 | 각각 exit 0 | `remaining-rust-4093-result.json` |
+| Native·WASM32 Clippy | 각각 exit 0 | `logs/final-native-clippy-4093.log`, `logs/final-wasm-clippy-4093.log` |
+| workspace build·all-target Clippy | 각각 exit 0 | `logs/final-workspace-build-4100.log`, `logs/final-workspace-clippy-4100.log` |
+| 문서 테스트 | 8 PASS·0 FAIL·3 ignored, exit 0 | `logs/final-doctests-4108.log` |
+
+표의 공통 루트는 `output/pr-review/semanticist21-20261019/`다.
+최종 집계 `final-rust-validation-4111.json`은 각 로그의 SHA-256과 실제 종료 결과를 연결한다.
+전체 nextest의 바깥 driver는 SIGTERM으로 끝났고 child 종료 코드는 수집되지 않았다.
+따라서 driver를 성공으로 표시하지 않고, 별도 감사로 확인한 명시적 terminal summary와
+연속된 11,708개 PASS를 전체 nextest의 완료 근거로 쓴다. 이후 미실행 단계는 따로 완료했다.
+
+workspace query cache 쓰기는 ENOSPC로, 첫 문서 테스트의 다섯 항목은 같은 시점의
+링커 SIGBUS로 실패했다. 종료된 정확한 증분 캐시와 사용하지 않는 output 실행 파일 사본을
+정리하고 같은 소스로 재실행했다. 문서 테스트는 임시 실행 파일 링크가 겹치지 않도록
+한 개씩 실행했으며 빌드 잡은 8개, 공유 target은 `target/pr-review`로 유지했다.
+기대값·golden·검사 항목은 바꾸지 않았다. 실패 기록을 삭제하거나 이전 driver의 상태를
+성공으로 덮어쓰지 않는다.
+
+현재 원 PR 재현 입력 62조건의 후보 Native·fresh WASM 캡처 124개는 모두 완료됐다.
+base 대조는 디스크 부족으로 중단된 뒤, 출처가 일치하는 완료 캡처는 canonical
+`--png-pair`로 다시 측정하고 누락된 캡처만 실제 export해 계속한다. 일반 PNG 모드의
+`--resume`을 실루엣 전용 모드에 적용했던 4109는 인자 오류이며 통과 증거에서 제외한다.
+이 대조와 대표 경계의 직접 판독이 완료되기 전에는 전체 PR 준비 완료로 판정하지 않는다.
+
+sample16·편람의 삭제된 회귀·fixture·보관본·파생 참조는 생성하지 않았다.
+`retired-reference-preservation-4103.json`은 manifest를 쓰지 않고 현재 수집 소스와
+주 작업공간·검증 worktree의 generated 참조를 대조했다. 삭제 파일을 가리키는 참조와
+수집 소스의 누락은 0개다. OLE 원본의
+[현재 Native·WASM 증거](../pr/assets/legacy_chart_physical_layout_20261020/current-20261026/README.md)는
+기존 HWP·추적 중인 동일 Print PDF를 재사용했으며 제외 문서의 복원과 무관하다.
