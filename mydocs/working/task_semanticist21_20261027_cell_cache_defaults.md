@@ -257,3 +257,37 @@ Studio·후보 전쪽 시각 비교는 아직 완료 전이다. 과거 B4의 전
 초기 #8064 검증의 완료된 성공 항목에서 중간 raster 약2.5GB도 정리했다(4536). 원본·독립
 PDF·TSV·manifest·로그·review/overlay와 실패 항목 이미지는 유지했으며 공유 target은
 삭제하지 않았다. 실제 삭제 경로·SHA·전후 여유 공간은 ignored output에 남겼다.
+
+## 현재 소스와 다른 차트 의존성 산출물의 발견 및 재검증
+
+Native275의 전체 153조건 측정은 149건 통과·차트 4건 미달이었다. 기존 인라인 이동
+전후의 HWP/HWPX 네 입력에서 raw가 89.00396~89.38709%로 내려갔다. 같은 입력·Print·
+글꼴·프로필에서 정상 Native273과 Native275를 각각 두 번 실행해 결과가 반복되는 것을
+확인했다. 축약 RenderTree JSON은 같았지만 실제 SVG의 제목·플롯·외곽선은 달랐다.
+축약 JSON은 RawSvg payload를 담지 않으므로 최종 차트 배치의 동일성 근거로 쓸 수 없다.
+
+현재 source의 제목에는 `dominant-baseline="text-before-edge"`가 있고 공통 Cartesian
+배치 모듈을 사용한다. 그러나 Native275와 연결된 `rhwp_ooxml_chart` rlib에는 과거 제목
+형식이 남았고 해당 dep-info에도 새 배치 모듈이 없었다. 생산 파일의 해시 일치만으로
+공유 target의 모든 path 의존성이 현재 소스로 빌드됐다고 판정한 것이 불충분했다.
+실제 source와 연결된 산출물의 불일치를 확인한 뒤 전체 Rust와 미완료 WASM 측정을
+중단하고 4522를 `superseded`로 기록했다. 시간 초과나 출력 공백 때문에 중단한 것이 아니다.
+앞 절의 실행·측정 수치는 당시 관측으로 보존하며 최종 통과 근거로 사용하지 않는다.
+
+4557에서 변경된 차트 source 6개의 mtime만 갱신하고 내용 해시 불변을 확인했다. 공유
+target을 삭제하거나 허용치를 바꾸지 않았다. Cargo가 `StaleDepFingerprint`와 변경 source를
+감지해 해당 라이브러리를 실제 재컴파일한 로그를 확인했다. 새 Native276 바이너리에는
+현재 제목 형식이 있고 기존 네 입력의 raw가 다시 99.71479~99.80761%다. 이동 전·후의
+새 review와 standalone overlay에서 제목·플롯·막대·범례·앞뒤 본문의 관계를 직접 대조했다.
+글자 가장자리와 선 농도의 잔차는 RGB 동일성으로 바꾸어 보고하지 않는다.
+
+새 최적화 fresh086과 기존 169조건·384쪽/backend의 재측정을 진행한다(4557/4558).
+독립 Print의 96dpi 축·외곽선 좌표와 내용 관계를 함께 보호하는 새 차트 검사 초안은
+output에만 준비했다. fresh WASM도 98% 이상이고 직접 판독을 완료한 뒤 정식 회귀로
+등록한다. 원본·Print·기대값을 변경하지 않으며 새로운 실제 문서로 범위를 넓히지 않는다.
+정확한 base `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 이미 완료한 제품·TSV는
+동일한 해시를 확인해 재사용한다. 최종 전체 Rust·Studio와 개별 판정 갱신은 남아 있다.
+
+원격 원 PR45개의 head·상태·reviewer를 다시 조회했고 모두 고정한 source head와
+`jangster77` reviewer가 유지됐다(4567). 본인 계정의 열린 PR은 없었으며 원격 devel도
+같은 SHA였다. 이 조회는 원 PR의 직접 merge나 새 PR 생성·원격 CI 완료를 뜻하지 않는다.
