@@ -40,3 +40,25 @@ fresh WASM 이동 후:
 
 ![fresh WASM review](wasm/chart-after-hwp/review_001.png)
 ![fresh WASM overlay](wasm/chart-after-hwp/overlay_001.png)
+
+## 정식 실행과 관측한 잘못된 산출물의 검출
+
+검사 코드 `182754a9350f9b3ad1aa0aa9a9453a7974431062`에서 자동 수집한
+`regression_suite_008::ooxml_chart_print_frame`의 새 함수는 1 PASS·0 FAIL이었다.
+함수 안에서 기존 네 입력을 모두 확인했다. 같은 단계의 `hwpx_cell_frame_print` 2건과
+`issue_8160_hwp3_print_boundaries` 5건도 통과했다. fmt·Native/WASM/workspace Clippy·
+workspace build·suite/unit-tier 정책은 각각 exit0이었다.
+
+같은 정식 검사 바이너리 SHA-256
+`010f1322a7388fe8533aaf4ed0c82dac973777447b6a2f14489a895abebd41c3`로
+관측한 잘못된 옛 Native275를 직접 실행하면 1 FAIL·exit101이었다.
+독립 Print의 값축 x=145에 대해 실제 x=140.05를 검출했다. Native276을 사용하면
+같은 함수가 1 PASS·exit0이었다. source나 기대값은 바꾸지 않았다.
+
+처음에는 nextest 바깥에서 `CARGO_BIN_EXE_rhwp`를 지정했지만 nextest가 이를 현재
+CLI로 다시 설정해 옛 제품 음성 대조가 되지 않았다. 이 실행의 PASS를 RED로 기록하지
+않고, 같은 검사 바이너리를 직접 실행해 실제 옛 CLI와 현재 CLI를 대조했다.
+이는 실행 환경 보정이며 기대 좌표·허용치 변경이 아니다.
+
+여기까지는 새 회귀와 음성 대조의 완료 결과다. 같은 소스의 전체 Rust·전쪽 fresh WASM·
+Studio 검증과 원격 CI는 별도로 완료한 뒤 최종 판정에 연결한다.
