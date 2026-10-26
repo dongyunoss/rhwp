@@ -92,3 +92,11 @@ patch는 로컬 영구 복구 경로에 보관했다. 새 branch에서 21개 원
 | #8261 | `5d309c517f42866b560b4b82327e93a8ac91a110` | 충돌 없음 |
 
 Cargo와 npm lockfile의 누적 버전 정합성을 확인하고 실제 빌드·검증을 시작한다. 이 단계는 검증 완료 판정이 아니다.
+
+## 누적 lockfile 정합성 보정
+
+`cargo clippy --locked`가 lockfile 갱신 필요로 중단됐다. `cargo metadata --offline`으로 resolver의
+변경을 대조했으며, 앞선 read-fonts/skera 동시 갱신 뒤 참조가 없어진 `read-fonts 0.45.1`의
+13줄 package 항목 삭제만 발생했다. 다른 버전·checksum·의존성은 바꾸지 않았다.
+오프라인 metadata 자체는 미캐시 `bit-set 0.11.1` 다운로드 단계에서 중단됐으므로,
+온라인 fetch 뒤 같은 `--locked` lint 묶음부터 실제 재검증한다.
