@@ -43,8 +43,10 @@
 - 검증 입력 커밋 확인: HWP/HWPX/PDF를 검증 입력으로 사용하거나 추가하지 않았다.
 - 권한·실행 경계: 기존 job 명령과 권한, PR required check `Build & Test`를 유지했다.
   merge 뒤 제품 검증 CI를 수동 실행하지 않았다.
-- 코드 PR 병합 후 [duration metadata run](https://github.com/edwardkim/rhwp/actions/runs/40308158691)을
-  관찰한다. 이 문서 PR은 PR 전체 review-only fast-pass와 merge 뒤 duration no-run의 실제 대조군이다.
+- 코드 PR 병합 후 [duration metadata run](https://github.com/edwardkim/rhwp/actions/runs/40308158691)은
+  성공했다. 실제 `refreshed_targets=46`과 metrics branch의 `222ae0a6 → 9e8d1846` 발행을 확인했다.
+  [문서 전용 PR #8280](https://github.com/edwardkim/rhwp/pull/8280)은 PR 전체 review-only fast-pass와
+  merge 뒤 duration no-run의 실제 대조군이다.
 - 문서 PR merge 전 최신 head의 preflight·Build & Test·mergeability를 확인한다. merge 뒤에는
   정확한 merge SHA의 workflow 목록을 재조회해 duration run 부재를 확인한다.
   아직 실행하지 않은 문서 PR의 결과를 통과로 기록하지 않는다.
