@@ -12172,6 +12172,17 @@ export function init_panic_hook() {
 }
 
 /**
+ * @param {Uint8Array} data
+ * @returns {boolean}
+ */
+export function isPrintMetafile(data) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.isPrintMetafile(ptr0, len0);
+    return ret !== 0;
+}
+
+/**
  * @param {Uint8Array} bytes
  * @param {Float64Array} destination
  * @param {Float64Array} matrix
@@ -12192,6 +12203,72 @@ export function prepareBitmapRaster(bytes, destination, matrix, profile, paper_g
     var len4 = WASM_VECTOR_LEN;
     const ret = wasm.prepareBitmapRaster(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
     return ret;
+}
+
+/**
+ * host의 실제 JPEG codec 결과만 받아 Native와 같은 공통 재생을 수행한다.
+ * @param {Uint8Array} data
+ * @param {Float64Array} matrix
+ * @param {Function} decode
+ * @returns {Uint8Array | undefined}
+ */
+export function rasterizePrintMetafile(data, matrix, decode) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(matrix, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.rasterizePrintMetafile(ptr0, len0, ptr1, len1, decode);
+    let v3;
+    if (ret[0] !== 0) {
+        v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v3;
+}
+
+/**
+ * @param {Uint8Array} rgba
+ * @param {number} width
+ * @param {number} height
+ * @param {Float64Array} destination
+ * @returns {Uint8Array | undefined}
+ */
+export function resamplePrintBitmapRgba(rgba, width, height, destination) {
+    const ptr0 = passArray8ToWasm0(rgba, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(destination, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.resamplePrintBitmapRgba(ptr0, len0, width, height, ptr1, len1);
+    let v3;
+    if (ret[0] !== 0) {
+        v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v3;
+}
+
+/**
+ * @param {Uint8Array} rgba
+ * @param {number} width
+ * @param {number} height
+ * @param {Float64Array} frame
+ * @param {Float64Array} scale
+ * @returns {Uint8Array | undefined}
+ */
+export function resamplePrintFrameRgba(rgba, width, height, frame, scale) {
+    const ptr0 = passArray8ToWasm0(rgba, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(frame, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArrayF64ToWasm0(scale, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.resamplePrintFrameRgba(ptr0, len0, width, height, ptr1, len1, ptr2, len2);
+    let v4;
+    if (ret[0] !== 0) {
+        v4 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    }
+    return v4;
 }
 
 /**
@@ -12341,6 +12418,9 @@ function __wbg_get_imports() {
             const ret = arg0.document;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
+        __wbg_drawImage_426c25f11858e3bd: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+            arg0.drawImage(arg1, arg2, arg3);
+        }, arguments); },
         __wbg_drawImage_4f05aa5544efd528: function() { return handleError(function (arg0, arg1, arg2, arg3) {
             arg0.drawImage(arg1, arg2, arg3);
         }, arguments); },
@@ -12445,6 +12525,16 @@ function __wbg_get_imports() {
             const ret = result;
             return ret;
         },
+        __wbg_instanceof_Uint8Array_f935dbb0aa7cdeed: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof Uint8Array;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
+        },
         __wbg_instanceof_Window_5625ff9937037a38: function(arg0) {
             let result;
             try {
@@ -12457,6 +12547,10 @@ function __wbg_get_imports() {
         },
         __wbg_isArray_6339f732981044bf: function(arg0) {
             const ret = Array.isArray(arg0);
+            return ret;
+        },
+        __wbg_length_36bd29c6848c2144: function(arg0) {
+            const ret = arg0.length;
             return ret;
         },
         __wbg_length_ecfa2c63d3d0d82c: function(arg0) {
@@ -12536,6 +12630,9 @@ function __wbg_get_imports() {
             const ret = JSON.parse(getStringFromWasm0(arg0, arg1));
             return ret;
         }, arguments); },
+        __wbg_prototypesetcall_de8e0d9553586985: function(arg0, arg1, arg2) {
+            Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
+        },
         __wbg_push_adb0107829f02d75: function(arg0, arg1) {
             const ret = arg0.push(arg1);
             return ret;

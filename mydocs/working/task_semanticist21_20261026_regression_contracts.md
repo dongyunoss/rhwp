@@ -500,3 +500,32 @@ AST의 그룹 소유는 유지하며 해당 레거시 프레임의 표시 가능
 투영했다. 재조판이 이미 소비하는 `paragraph_end_font_size_px`를 이 정규화에도
 공유해 원본 UTF-16 종단 주소의 줄 높이를 보존한다. 문서별·문구별 보정은 추가하지 않는다.
 같은 원본의 Print와 전체 Native/fresh 재측정으로 완료 여부를 판정한다.
+
+### #8188 전쪽 복원과 누락된 26쪽 회귀 검사 완료
+
+제품 source `c2513250ef976cc8189671a5766cd646d75bc4ed`의 Native261과 최적화한
+fresh WASM077에서 같은 3개 원본 × 64쪽을 각각 다시 산출했다. 양쪽 192/192쪽,
+총 384쪽 모두 raw 100%이고 양방향 정수 미대응 수는 0이다. 입력과 독립 Print의
+쪽수도 각각 64/64다. 이전 base 증적의 100%를 현재 출력으로 대신하지 않았다.
+217개 실제 공급 글꼴 프로그램은 기존 증적과 해시가 같으며 글꼴 파일은 커밋하지 않는다.
+
+새 `issue_8160_terminal_style_cell_frame` 검사는 기존 26쪽 검사가 놓친 셀26의
+`주센타와`·`교체활용`을 보호한다. 독립 Print 기준선·가로 원점 ±2px와 셀 소유·
+서로 다른 문단·위아래 순서·셀 내부 포함·누락/중복 없음을 함께 검사한다.
+Native/fresh 양쪽 100%와 26쪽 review·standalone overlay 직접 판독 후 등록했다.
+같은 정식 검사 source의 Native260 실행은 exit101, Native261은 exit0이다.
+자동 수집 `regression_suite_007`의 실제 nextest는 1 PASS/0 FAIL, 필터 제외291개,
+exit0으로 끝났다. 기존 `issue_8160_all_pages`의 독립 기대값은 유지했다.
+
+fresh077의 실제 Canvas 브라우저 계약도 8 PASS/0 FAIL/0 skip이다. 생성된
+`rhwp-studio/public/rhwp.js`는 검증한 pkg와 SHA가 같고, #8188의 Print metafile·
+frame resampling 관련 export를 포함한다. 이후 검사·문서·증적 커밋은 엔진 Rust를
+바꾸지 않으며, 제품 source c2513250에서 실행한 결과임을 명시한다.
+
+최종 전체 TSV 6개와 대표 Native/fresh 26쪽 review·overlay는
+[정식 증적](../pr/assets/issue_8160/semanticist21-rebase-20261026/README.md)에 보존한다.
+중간 JSON·로그·원시 페이지 PNG와 글꼴 파일은 output에만 유지한다.
+로그는 `logs/8188-new-regression-nextest-4290.log`, 수정 전후 실행은
+`8188-terminal-formal-red-green-4289-result.json`, 전쪽 판정은
+`8188-priority-{native,wasm}-4282-result.json`이다. 모두 같은 검토 output 아래에 있다.
+이 완료는 #8188 보존과 새 회귀 검사에 한정하며 통합 PR 전체 검증 완료를 뜻하지 않는다.
