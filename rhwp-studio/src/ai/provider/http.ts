@@ -48,6 +48,9 @@ export async function readSse(body: ReadableStream<Uint8Array>, onEvent: (event:
     buffer += done ? decoder.decode() : decoder.decode(value, { stream: true });
     let newline;
     while ((newline = buffer.search(/\r\n|\r|\n/)) >= 0) {
+      // 청크 끝의 CR은 다음 청크의 LF와 한 줄 끝일 수 있다. 둘 사이에서
+      // 소비하면 LF를 빈 줄로 읽어 이벤트를 일찍 끊고 event/data를 잃는다.
+      if (!done && newline === buffer.length - 1 && buffer[newline] === '\r') break;
       const line = buffer.slice(0, newline);
       buffer = buffer.slice(newline + (buffer.startsWith('\r\n', newline) ? 2 : 1));
       consumeLine(line);
