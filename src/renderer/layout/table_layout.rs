@@ -16963,7 +16963,12 @@ impl LayoutEngine {
                             || exceeds_physical_page
                             || native_short_parent_child_fragment
                             || self.reflowed_single_cell_child_is_fragmentable(nt, styles)
-                            || stored_frame_tail_before_next_para
+                            // 뒤 문단의 reset은 현재 개체 내부의 분할 경계가 아니다.
+                            // 저장 TAC 줄이 완전한 개체 상자를 소유하면 일반 행 측정이
+                            // 선언 최소 높이와 정렬 여유를 보존한다. 실제로 여러 쪽인
+                            // 자식·내부 source reset은 다른 분해 조건을 그대로 따른다.
+                            || (stored_frame_tail_before_next_para
+                                && !crate::renderer::stored_frame_boundary::owns_saved_object_line(p))
                             || self.native_child_has_stored_frame_boundary(nt, styles)
                             || source_frames.is_some())
                     {
