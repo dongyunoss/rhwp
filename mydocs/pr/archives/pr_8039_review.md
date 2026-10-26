@@ -81,3 +81,10 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 [Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 실제 통합 PR·merge SHA·CI 결과와 이 PR의 보정 범위를 존댓말로 설명한다. 시각 검증에 사용한 대표 review·overlay는 위 안정 경로에서 실제 merge SHA로 고정한 raw URL로 함께 표시한다. 아직 확정하지 않은 수치·이미지 URL이나 미실행 경로를 만들지 않는다.
 
 실제 asset의 devel 반영을 확인한 뒤 `--body-file`로 게시하고 API로 본문·이미지를 재조회한다. contributor branch·fork를 삭제하거나 원 history를 rewrite하지 않는다. [개별 구현·후속 절차](pr_8039_review_impl.md)를 따른다.
+
+
+## 원본 캐시·암묵적 스타일과 줄 전진의 Native 재검증 — 2026-10-27
+
+원본 최소 HWPX의 control-tail false/true 두 조건은 Native270에서 모두 raw100이며, 독립 한컴 Print와 각각 1쪽/1쪽이다. 원본의 결측 글자모양·수동 줄 사다리를 읽기 전용 렌더 사본에서 정규화하고, 공통 InlineFlow가 Percent 음수 간격을 유지하도록 보정했다. 실제 줄 점유는 페이지 수용에 보존하고 다음 본문으로의 전진과 구분한다. 원본 HWP 대응본의 독립 Print 검증까지 완료했다는 뜻은 아니다.
+
+현재 통합 후보의 구현·실제 소비 경로는 [작업 기록](../../working/task_semanticist21_20261027_cell_cache_defaults.md)에 연결했다. 소스는 시작 head `2fa7137b0b85c2e29594f96d2107ebbe167d7873`의 추가 보정이며, Native270의 정확한 source별 SHA는 ignored `output/pr-review/semanticist21-20261019/cell-defaults-native-build-4452-result.json`에 있다. 같은 원본 11조건과 정상 대조 13조건의 24건이 모두 통과했다(4453). 마지막 fit 소비 보완 전후의 24개 PNG도 SHA-256이 같다(4458). 대표 compare·review·standalone overlay는 4461에서 재출력했다. fresh080·새 회귀의 양쪽 선행 증거·최종 전체 Rust/lint/Studio 검증과 CI는 아직 완료하지 않았으므로, 이 중간 결과로 통합 승인이나 PR 준비 완료를 선언하지 않는다.

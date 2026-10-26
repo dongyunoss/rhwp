@@ -171,10 +171,11 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow(
             .then_some(composed)
             .flatten()
         })
-        .filter(|_| {
-            para.controls.iter().any(|control| {
-                matches!(control,
-            Control::Table(table) if is_para_topbottom_float(&table.common))
+        .filter(|comp| {
+            para.controls.iter().enumerate().any(|(index, control)| {
+                matches!(control, Control::Table(table)
+                    if is_para_topbottom_float(&table.common)
+                        || comp.frame_owns_inline_table(index))
             })
         })
         .map(|comp| {
@@ -327,6 +328,11 @@ fn recompose_for_flow(
                 crate::renderer::composer::ParagraphBox::body_for_style(cw, para_style, ctx.dpi());
             // NO_LS 와 저장분할 both go to the frame.
             if inner > 0.0 {
+                let inline_table_heights = if ctx.profile().legacy_hwp3_stored_geometry() {
+                    Vec::new()
+                } else {
+                    crate::renderer::composer::reflow_inline_table_heights(para, styles, ctx.dpi())
+                };
                 crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band(
                     c,
                     para,
@@ -340,7 +346,7 @@ fn recompose_for_flow(
                     known_square_band,
                     ctx.profile().hwpx_stored_layout(),
                     ctx.uniform_filler_ladder(),
-                    &[],
+                    &inline_table_heights,
                 )
             } else {
                 None

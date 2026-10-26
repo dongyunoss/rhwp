@@ -468,7 +468,12 @@ pub(crate) fn tac_host_trailing_spacing(
     native_stored_layout: bool,
     dpi: f64,
 ) -> f64 {
-    let spacing = crate::renderer::hwpunit_to_px(seg.line_spacing.max(0), dpi);
+    let spacing = crate::renderer::hwpunit_to_px(seg.line_spacing, dpi);
+    // 압축 간격은 글자 높이에 대한 전진 감소량이다. 양수 저장 간격의
+    // 절반 분배 규칙을 적용하거나 0으로 올리면 다음 문단이 내려간다.
+    if spacing <= 0.0 {
+        return spacing;
+    }
     let current_owned_row = hwpx_stored_layout
         && para.line_segs.len() == 1
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
@@ -527,7 +532,7 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
             .is_some_and(|last| std::ptr::eq(last, seg))
         && next_para.is_some_and(successor_lacks_stored_text_axis)
     {
-        crate::renderer::hwpunit_to_px(seg.line_spacing.max(0), dpi)
+        crate::renderer::hwpunit_to_px(seg.line_spacing, dpi)
     } else {
         tac_host_trailing_spacing(
             para,

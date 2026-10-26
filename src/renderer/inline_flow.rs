@@ -573,7 +573,13 @@ pub(crate) fn plan(
         frame.dpi,
         RowEnding::ParagraphEnd(&chars),
     )?;
-    result.end = result.end.max(result.next_row_top) + style.spacing_after;
+    // Percent 간격의 다음 원점은 물리 점유 하단과 다르다. 음수 간격도
+    // 줄 구성 결과대로 전진시키며 쪽 수용은 occupied_end로 따로 판단한다.
+    result.end = if style.line_spacing_type == crate::model::style::LineSpacingType::Percent {
+        result.next_row_top
+    } else {
+        result.end.max(result.next_row_top)
+    } + style.spacing_after;
     (result.start.is_finite() && result.end.is_finite()).then_some(result)
 }
 
@@ -687,8 +693,11 @@ fn finish_row(
         dpi,
     );
     let gap = hwpunit_to_px(metrics.line_spacing, dpi);
-    // 텍스트의 sub-100% 간격은 유지하되, 표의 물리 하단을 후속 줄이 침범하지 않는다.
-    plan.next_row_top = y + height + if has_table { gap.max(0.0) } else { gap };
+    // 표도 Percent의 부호 있는 간격을 소비한다. 표의 실제 점유 높이는
+    // rows에 보존하므로 다음 줄 원점을 물리 하단으로 clamp하지 않는다.
+    let signed_gap =
+        !has_table || style.line_spacing_type == crate::model::style::LineSpacingType::Percent;
+    plan.next_row_top = y + height + if signed_gap { gap } else { gap.max(0.0) };
     plan.end = plan.end.max(y + height);
     Some(())
 }

@@ -6035,13 +6035,21 @@ impl DocumentCore {
                 continue;
             }
             let section = &self.document.sections[idx];
+            let cached_frames =
+                crate::renderer::render_normalization::cached_frame_owner::normalize(
+                    &section.paragraphs,
+                    &self.styles,
+                    self.dpi,
+                    crate::renderer::style_resolver::missing_char_table(&self.document),
+                    profile.hwpx_container() && !profile.legacy_hwp3_stored_geometry(),
+                );
+            let source_paragraphs = cached_frames.as_deref().unwrap_or(&section.paragraphs);
             let pd = &section.section_def.page_def;
             let body_area = PageAreas::from_page_def(pd).body_area;
             let body_h_hu = body_area.height();
             let body_bottom_hu = body_area.bottom;
             let min_height_hu = (body_h_hu / 2).max(1);
-            let matches: Vec<usize> = section
-                .paragraphs
+            let matches: Vec<usize> = source_paragraphs
                 .iter()
                 .enumerate()
                 .filter(|(_, p)| {
@@ -6051,7 +6059,7 @@ impl DocumentCore {
                 .map(|(i, _)| i)
                 .collect();
             // [#2004] 표 셀 내부 부동 이미지 스택 검출(본문 스택과 별개 경로).
-            let has_cell_stack = section.paragraphs.iter().any(|p| {
+            let has_cell_stack = source_paragraphs.iter().any(|p| {
                 p.controls.iter().any(|ctrl| match ctrl {
                     Control::Table(table) => table.cells.iter().any(|cell| {
                         cell.paragraphs
@@ -6062,11 +6070,11 @@ impl DocumentCore {
                 })
             });
             let math_tables = crate::renderer::render_normalization::math_table::normalize(
-                &section.paragraphs,
+                source_paragraphs,
                 &self.styles,
             );
             let math_textboxes = crate::renderer::render_normalization::math_textbox::normalize(
-                math_tables.as_deref().unwrap_or(&section.paragraphs),
+                math_tables.as_deref().unwrap_or(source_paragraphs),
                 &self.styles,
             );
             let text_metrics = (!profile.hwp3_layout())
@@ -6075,7 +6083,7 @@ impl DocumentCore {
                         math_textboxes
                             .as_deref()
                             .or(math_tables.as_deref())
-                            .unwrap_or(&section.paragraphs),
+                            .unwrap_or(source_paragraphs),
                         &self.styles,
                         self.dpi,
                         profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
@@ -6088,7 +6096,7 @@ impl DocumentCore {
                     let source = math_textboxes
                         .as_deref()
                         .or(math_tables.as_deref())
-                        .unwrap_or(&section.paragraphs);
+                        .unwrap_or(source_paragraphs);
                     paragraphs
                         .iter()
                         .zip(source)
@@ -6131,21 +6139,22 @@ impl DocumentCore {
                     text_metrics
                         .as_deref()
                         .or(math_textboxes.as_deref().or(math_tables.as_deref()))
-                        .unwrap_or(&section.paragraphs),
+                        .unwrap_or(source_paragraphs),
                     &self.styles,
                     pd,
-                    &Self::find_initial_column_def(&section.paragraphs),
+                    &Self::find_initial_column_def(source_paragraphs),
                     refresh_markers,
                     self.dpi,
                     previous_margins.as_ref(),
                 )
             });
-            let paragraph_geometry_changed =
-                stored_word_tails.is_some() || math_textboxes.is_some() || math_tables.is_some();
+            let paragraph_geometry_changed = cached_frames.is_some()
+                || stored_word_tails.is_some()
+                || math_textboxes.is_some()
+                || math_tables.is_some();
             let unplaced_rows =
-                normalize_widthless_rows && section_has_unplaced_stored_rows(&section.paragraphs);
-            let widthless: Vec<usize> = section
-                .paragraphs
+                normalize_widthless_rows && section_has_unplaced_stored_rows(source_paragraphs);
+            let widthless: Vec<usize> = source_paragraphs
                 .iter()
                 .enumerate()
                 .filter(|(_, para)| unplaced_rows && has_widthless_stored_rows(para))
@@ -6155,8 +6164,7 @@ impl DocumentCore {
                 if (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
                     && !profile.session_edited()
                 {
-                    section
-                        .paragraphs
+                    source_paragraphs
                         .iter()
                         .enumerate()
                         .filter_map(|(index, paragraph)| {
@@ -6193,14 +6201,14 @@ impl DocumentCore {
                 .or(text_metrics)
                 .or(math_textboxes)
                 .or(math_tables)
-                .unwrap_or_else(|| section.paragraphs.clone());
+                .unwrap_or_else(|| source_paragraphs.to_vec());
             let mut frame_changes = Vec::new();
             if !inline_frames.is_empty() {
                 let mut frames = inline_frames.into_iter().peekable();
                 let mut shift_hu = 0i32;
                 let mut previous_source_end = None;
                 for (index, paragraph) in np.iter_mut().enumerate() {
-                    let source = &section.paragraphs[index];
+                    let source = &source_paragraphs[index];
                     let first = source.line_segs.first();
                     if !matches!(source.column_type, ColumnBreakType::None)
                         || first.is_some_and(|line| {

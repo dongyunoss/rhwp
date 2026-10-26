@@ -20,7 +20,7 @@ pub const LANG_COUNT: usize = 7;
 
 mod ascii_punctuation;
 mod missing_fonts;
-pub(crate) use missing_fonts::missing_latin_default;
+pub(crate) use missing_fonts::{missing_char_table, missing_latin_default};
 mod page_number;
 mod resolved;
 pub use resolved::{
@@ -39,6 +39,10 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
     let profile = document.layout_profile();
     let lookup = missing_fonts::lookup_context(document);
     let mut styles = resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout());
+    if missing_fonts::missing_char_table(document) {
+        styles.page_number_char_style_id = Some(0);
+        styles.page_number_font_is_hft = false;
+    }
     if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5 {
         styles.char_overlap_size_bounds = Some((-8, 2));
     }
@@ -124,10 +128,12 @@ pub(crate) fn resolve_styles_with_environment(
     styles.isolated_jamo_font = (!profile.hangul2024_layout()
         && document.provenance.format != crate::model::provenance::SourceFormat::Pdf)
         .then_some("HCR Dotum");
-    (
-        styles.page_number_char_style_id,
-        styles.page_number_font_is_hft,
-    ) = page_number::resolve(&document.doc_info, profile.hangul2024_layout());
+    if !missing_fonts::missing_char_table(document) {
+        (
+            styles.page_number_char_style_id,
+            styles.page_number_font_is_hft,
+        ) = page_number::resolve(&document.doc_info, profile.hangul2024_layout());
+    }
     if environment.is_some() {
         let lookup = missing_fonts::lookup_context(document);
         for (style, shape) in styles

@@ -784,7 +784,13 @@ pub(crate) fn reflowed_tac_table_host_trailing_spacing_px(
         ps.line_spacing_type,
         ps.line_spacing,
     );
-    Some((line - fs).max(0.0))
+    Some(
+        if ps.line_spacing_type == crate::model::style::LineSpacingType::Percent {
+            line - fs
+        } else {
+            (line - fs).max(0.0)
+        },
+    )
 }
 
 /// 표의 측정된 높이 정보

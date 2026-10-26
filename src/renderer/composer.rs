@@ -23,7 +23,7 @@ mod inline_table_frame;
 mod nested_table_frames;
 pub(crate) use inline_table_frame::{
     inline_table_needs_reflow_measurement, inline_table_width_cache_is_stale,
-    measured_reflow_inline_table,
+    measured_reflow_inline_table, reflow_inline_table_heights,
 };
 pub(crate) use nested_table_frames::{
     recompose_cell_lines_with_nested_tables, table_cells_have_no_stored_lines,

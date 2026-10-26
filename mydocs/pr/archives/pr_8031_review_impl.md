@@ -69,3 +69,10 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 수정 전 FAIL 근거라고 기록하지 않는다. 이는 상속 기능 보존의 양성 대조다.
 로그는 `output/pr-review/semanticist21-20261019/logs/page-number-cell-auto-nextest-4322.log`다.
 기존 과거 전체 검증 수치는 아래/앞선 기록의 head에만 적용한다.
+
+
+## 원본 캐시·암묵적 스타일과 줄 전진의 Native 재검증 — 2026-10-27
+
+글자모양 표가 없는 원본 HWPX의 Native270 전쪽 대조는 raw98.91304%, 독립 한컴 Print와 1쪽/1쪽이다. 조회 문맥에서 원본 Print의 Gulim 10pt 기본값을 제공하고 원본 DocInfo·저장 바이트는 변경하지 않는다. 본문 위치는 표의 물리 높이에 대한 Percent 음수 간격을 공통 InlineFlow 전진에 반영해 맞췄다. 쪽 번호 주변과 글자 가장자리의 작은 차이는 전체 점수와 구분한다.
+
+현재 통합 후보의 구현·실제 소비 경로는 [작업 기록](../../working/task_semanticist21_20261027_cell_cache_defaults.md)에 연결했다. 소스는 시작 head `2fa7137b0b85c2e29594f96d2107ebbe167d7873`의 추가 보정이며, Native270의 정확한 source별 SHA는 ignored `output/pr-review/semanticist21-20261019/cell-defaults-native-build-4452-result.json`에 있다. 같은 원본 11조건과 정상 대조 13조건의 24건이 모두 통과했다(4453). 마지막 fit 소비 보완 전후의 24개 PNG도 SHA-256이 같다(4458). 대표 compare·review·standalone overlay는 4461에서 재출력했다. fresh080·새 회귀의 양쪽 선행 증거·최종 전체 Rust/lint/Studio 검증과 CI는 아직 완료하지 않았으므로, 이 중간 결과로 통합 승인이나 PR 준비 완료를 선언하지 않는다.

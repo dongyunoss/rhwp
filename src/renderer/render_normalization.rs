@@ -4,6 +4,7 @@
 //! durable cache keys; pointer indexes are rebuilt from the current source IR
 //! and exist only as a fast lookup surface for renderer hot paths.
 
+pub(crate) mod cached_frame_owner;
 mod stored_nested_text_frames;
 pub(crate) use stored_nested_text_frames::{StoredNestedTextFrames, StoredTextFrame};
 
