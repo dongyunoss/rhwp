@@ -55,4 +55,4 @@ Issue: [#8160](https://github.com/edwardkim/rhwp/issues/8160), [#8267](https://g
   75개 source/PDF와 code/merge Git blob을 대조한 영구 검증 색인이다. 임시 실행 로그·생성기는 제외한다.
 - 코드 PR 뒤 기본 검증 CI는 재실행하지 않는다. 자동 metadata refresh와 문서 PR의 fast-pass만 확인한다.
 
-- 실제 metadata refresh 40290628059에서 CLI의 B/C/D 전용 최종 검사가 남아 E를 거부했다. #8267의 별도 CI 보정 PR에서 실제 CLI 네 입력을 보호하고 갱신 성공을 확인한다. 문서 PR에는 이 코드 보정을 섞지 않는다.
+- 실제 metadata refresh 40290628059에서 CLI의 B/C/D 전용 최종 검사가 남아 E를 거부했다. [#8272](https://github.com/edwardkim/rhwp/issues/8272)·[PR #8273](https://github.com/edwardkim/rhwp/pull/8273)의 별도 CI 보정에서 실제 CLI 네 입력을 보호하고 갱신 성공을 확인한다. 문서 PR에는 이 코드 보정을 섞지 않는다.

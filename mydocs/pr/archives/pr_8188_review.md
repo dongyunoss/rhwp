@@ -121,7 +121,7 @@ CI Impact Policy의 최종 success와 정확한 head/base를 재확인했다.
 
 ## Merge 후 contributor PR comment 계획
 
-사용자 승인 범위에서 정확한 최종 head를 지정해 일반 merge했고 `2546c8b2ab7041399fb15fe82e0f50c1ade21724`의 upstream/devel 포함을 확인했다. 병합 후 duration metadata run 40290628059는 CLI의 구 B/C/D 전용 최종 검사에서 E 입력을 거부해 실패했다. 이 누락은 별도 #8267 후속 CI PR에서 실제 네 report CLI 검사와 함께 보정하며, 완료 전 #8267 종료로 처리하지 않는다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment), 실제 3×64쪽×2 backend의 raw100·0/0, 0.1%p 기준, CI URL과 남은 RGB 차이를 한국어 존댓말 comment로 남긴다.
+사용자 승인 범위에서 정확한 최종 head를 지정해 일반 merge했고 `2546c8b2ab7041399fb15fe82e0f50c1ade21724`의 upstream/devel 포함을 확인했다. 병합 후 duration metadata run 40290628059는 CLI의 구 B/C/D 전용 최종 검사에서 E 입력을 거부해 실패했다. 이 누락은 사용자 지시로 별도 [#8272](https://github.com/edwardkim/rhwp/issues/8272)에 등록하고 [보정 PR #8273](https://github.com/edwardkim/rhwp/pull/8273)에서 실제 네 report CLI 검사와 함께 보정한다. 보정 완료와 metadata 갱신 결과는 원 코드 CI 성공과 구분해 기록한다. [Visual Sweep 정본](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment), 실제 3×64쪽×2 backend의 raw100·0/0, 0.1%p 기준, CI URL과 남은 RGB 차이를 한국어 존댓말 comment로 남긴다.
 
 본문·후속 comment는 `mydocs/pr/assets/issue_8160/rebase-8231/publication/{native,wasm}/review_018.png` 및 `overlay_018.png`를 사용한다. PR 본문은 최종 code SHA, 병합 후 comment는 실제 merge SHA의 raw image URL로 고정한다. API로 본문·한글·SHA·이미지 링크를 다시 확인하고 같은 증거의 중복 comment는 게시하지 않는다.
 
