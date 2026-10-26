@@ -135,3 +135,25 @@
   `sungeo-v2-all.log`. 고정 바이너리와 source diff 해시는 `legacy-v2-producer.json`에 기록했다.
 - OpenAI·Gemini 제공자 E2E, AI panel·설정·side panel E2E도 통과했다. 모의 API이며 실제 키는
   사용하지 않았다. 브라우저가 소비한 Rust 모듈은 기준 WASM이므로 조판 후보 검증과 구분한다.
+
+
+### hwpspec 공동 앵커·후속 표 간격
+
+- 2구역 문단 126의 첫 표는 본체 8,046HU + 양쪽 여백 282HU + 아래 캡션 1,802HU가
+  빈 호스트 줄의 저장 위치 10,130HU를 정확히 닫는다. 첫 표만 남은 공간에 넣으면 표는
+  22쪽에 남고 호스트·형제 표는 23쪽으로 갈라졌다. 첫 표 앞 공간을 포함한 저장 호스트 줄과
+  앞 문단의 끝을 기존 `saved_positive_frame_reset`에 전달해 개체 방출 전에 쪽 소유를 확정한다.
+  `is_textless_coanchored_float_host`의 같은 공동 앵커 경로가 배치를 계속 담당한다.
+- 54쪽 문단 347은 나누지 않는 표이며 후속 빈 호스트 문단 348은 저장 위치가 되감기는 새 쪽이다.
+  `host_spacing`의 기존 source reset 판정이 RowBreak만 허용해 347→348을 같은 쪽 표 묶음으로
+  오인했다. 분할 정책과 후속 쪽 소유를 구분하고, pagination·paint가 같은 원본 되감김 조회를
+  사용하도록 공유했다. 표 116의 앞 간격·후행 줄간격 중복이 제거됐다.
+- 선행 원 해결 #8184의 `9ec584a15`·`b879809af` 및 실제 소비 경로인
+  `section::stored_reset` → `controls::flow_table` → 빈 호스트/공동 앵커 → `layout`을 대조했다.
+  첫 표 상자와 뒤 호스트 줄의 소유를 바꿨으며 내용 숨김·좌표 clamp·문서 ID 분기는 추가하지 않았다.
+- `legacy-v3` Native는 hwpspec 전체 178쪽 최저 92.45586%, 미달 0쪽이며 쪽수가 유지됐다.
+  23쪽은 86.58353%→99.99389%, 54쪽은 89.58093%→99.99765%다.
+  같은 경로를 사용하는 HWP5 공식 사양 71쪽도 최저 95.27413%를 유지했다.
+  원문 공식 PDF는 변경하지 않았다. 최종 fresh WASM과 전체 회귀 검증은 계속 남았다.
+- 로그: `output/pr-review/planet6897-20261026/hwpml-v3-all.log`, `hwp5spec-v3-all.log`.
+  빌드 원본 diff와 고정 바이너리의 해시는 `legacy-v3-producer.json`에 기록했다.

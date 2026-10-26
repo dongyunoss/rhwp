@@ -14966,8 +14966,14 @@ impl LayoutEngine {
                 // 표-표 사이 간격이므로 HWP처럼 보존한다.
                 let next_is_empty_topbottom_table_anchor = paragraphs
                     .get(para_index + 1)
-                    .map(para_is_empty_topbottom_table_anchor)
-                    .unwrap_or(false);
+                    .is_some_and(|next| {
+                        para_is_empty_topbottom_table_anchor(next)
+                            && !(self.profile.get().hwp5_stored_pagination_layout()
+                                && !self.profile.get().session_edited()
+                                && crate::renderer::stored_float_anchor::stored_anchor_successor_rewinds(
+                                    para, next,
+                                ))
+                    });
                 let suppress_empty_anchor_spacing =
                     is_current_empty_para_float && !next_is_empty_topbottom_table_anchor;
                 let reflow_host_tail = para.controls.get(control_index).and_then(|control| {

@@ -199,22 +199,7 @@ pub(super) fn resolve(
             // Preserve the stack rule for edited/reflowed or synthetic input.
             let source_frame_reset = profile().hwp5_stored_pagination_layout()
                 && !profile().session_edited()
-                && matches!(
-                    table.page_break,
-                    crate::model::table::TablePageBreak::RowBreak
-                )
-                && !para.stored_text_partition_is_dirty()
-                && !para.cell_format_vpos_dirty
-                && !p.stored_text_partition_is_dirty()
-                && !p.cell_format_vpos_dirty
-                && para.line_segs.len() == 1
-                && p.line_segs.len() == 1
-                && [&para.line_segs[0], &p.line_segs[0]].iter().all(|line| {
-                    line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-                        && line.vertical_pos >= 0
-                        && line.line_height > 0
-                })
-                && p.line_segs[0].vertical_pos < para.line_segs[0].vertical_pos;
+                && crate::renderer::stored_float_anchor::stored_anchor_successor_rewinds(para, p);
             is_table_anchor && !source_frame_reset
         })
         .unwrap_or(false);

@@ -78,6 +78,60 @@ fn stored_line(para: &Paragraph) -> Option<i32> {
         .then_some(line.vertical_pos)
 }
 
+/// The first coanchored table can precede its own empty host line. A saved
+/// line immediately below its complete outer box authenticates that leading
+/// space; fitting only the table would leave it on the preceding page.
+pub(crate) fn coanchored_host_restarts_page(
+    previous: &Paragraph,
+    host: &Paragraph,
+    body_height: i32,
+) -> bool {
+    if !super::is_textless_coanchored_float_host(host)
+        || host.column_type != ColumnBreakType::None
+        || host.line_segs.len() != 1
+    {
+        return false;
+    }
+    let Some(table) = host.controls.iter().find_map(|control| match control {
+        Control::Table(table) if is_para_topbottom_float(&table.common) => Some(table.as_ref()),
+        _ => None,
+    }) else {
+        return false;
+    };
+    let Some(caption) = stored_bottom_caption_hu(table) else {
+        return false;
+    };
+    let leading = i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + caption
+        + i64::from(table.outer_margin_bottom);
+    let (Some(host_vpos), Some(_)) = (stored_line(host), stored_line(previous)) else {
+        return false;
+    };
+    let line = &host.line_segs[0];
+    let Some(last) = previous.line_segs.last() else {
+        return false;
+    };
+    if previous.line_segs.iter().any(|line| {
+        line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            || line.line_height <= 0
+            || line.line_spacing < 0
+    }) || i64::from(host_vpos) != leading
+    {
+        return false;
+    }
+    crate::renderer::stored_frame_boundary::saved_positive_frame_reset(
+        Some((
+            last.vertical_pos,
+            last.vertical_pos
+                .saturating_add(last.line_height)
+                .saturating_add(last.line_spacing),
+        )),
+        line,
+        body_height,
+    )
+}
+
 impl ParagraphFloatPlacement {
     /// 표 이어받기 옆의 빈 저장 줄이 새 쪽의 앵커 축을 닫는다.
     /// 이전 쪽의 마지막 줄간격은 새 쪽 호스트의 원점에 재가산하지 않는다.
