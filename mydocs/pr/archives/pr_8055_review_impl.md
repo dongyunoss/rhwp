@@ -55,3 +55,13 @@ Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료
 sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
 파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
 별도로 판정한다.
+
+
+## 정상 RowBreak의 중요 경계 회귀 보완 — 2026-10-26
+
+기존 정상 한컴 저장본 2쪽을 Native 257/fresh WASM 074로 다시 출력해 양쪽 raw 100%와
+독립 Print 쪽수 일치를 확인했다. [새 이름의 회귀](../../../tests/cases/verified_rowbreak_successor_print_frame.rs)는
+50/10행·셀 120개 보존·쪽 사이 중복 없음·뒤 문단 소속과 순서·독립 Print 외곽 및
+기준선 ±2px를 함께 보호한다. 기존의 올바른 관계 검사는 유지한다.
+[정식 증거](../assets/cell_picture_layer_qualified_20261026/README.md)의 RowBreak 항목을 따른다.
+focused nextest의 이 검사는 PASS다. 새 공통 코드의 전체 제출 게이트는 별도로 확인한다.

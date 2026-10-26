@@ -144,6 +144,11 @@ pub type NodeId = u32;
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RenderLayerInfo {
+    /// 셀의 편집 소유와 별개로 쪽 순서를 따르는 그림의 그리기 묶음이다.
+    /// 같은 그림의 bitmap·테두리·캡션을 함께 옮기며 이 ID로 정렬하지 않는다.
+    /// 레이아웃 조립 단계에서만 소비하며 공개 직렬화 계약에는 추가하지 않는다.
+    #[serde(skip)]
+    pub(crate) independent_page_paint: Option<NodeId>,
     /// Text wrapping mode that decides the coarse replay plane.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text_wrap: Option<TextWrap>,
@@ -161,6 +166,7 @@ pub struct RenderLayerInfo {
 impl RenderLayerInfo {
     pub fn new(text_wrap: Option<TextWrap>, z_order: i32, stable_index: u32) -> Self {
         Self {
+            independent_page_paint: None,
             text_wrap,
             z_order,
             stable_index,

@@ -303,61 +303,6 @@ fn rotated_frame_node_box(
 }
 
 impl LayoutEngine {
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn layout_picture(
-        &self,
-        tree: &mut PageLayoutContext,
-        parent_node: &mut RenderNode,
-        picture: &crate::model::image::Picture,
-        container: &LayoutRect,
-        bin_data_content: &[BinDataContent],
-        alignment: Alignment,
-        section_index: Option<usize>,
-        para_index: Option<usize>,
-        control_index: Option<usize>,
-        cell_ctx: Option<&crate::renderer::layout::CellContext>,
-        // [#6284] 캡션 문단 조판에 필요하다.
-        styles: &ResolvedStyleSet,
-    ) {
-        let children_before = parent_node.children.len();
-        // [Task #825] 본문 picture 경로 — header_footer_ref = None
-        self.layout_picture_full(
-            tree,
-            parent_node,
-            picture,
-            container,
-            bin_data_content,
-            alignment,
-            section_index,
-            para_index,
-            control_index,
-            None,
-            cell_ctx,
-            styles,
-        );
-        if cell_ctx.is_some_and(|ctx| !ctx.in_textbox)
-            && !picture.common.treat_as_char
-            && matches!(picture.common.text_wrap, TextWrap::BehindText)
-        {
-            let stable_index = cell_ctx
-                .and_then(|ctx| ctx.path.last())
-                .map(|entry| {
-                    Self::object_stable_index(entry.cell_para_index, control_index.unwrap_or(0))
-                })
-                .unwrap_or(0);
-            let layer = RenderLayerInfo::new(
-                Some(TextWrap::BehindText),
-                picture.common.z_order,
-                stable_index,
-            );
-            for child in parent_node.children.iter_mut().skip(children_before) {
-                child.set_layer(layer);
-                child.cell_frame_paint =
-                    crate::model::border_paint::is_cell_frame_attributes(&picture.common);
-            }
-        }
-    }
-
     /// [Task #825] 머리말/꼬리말 picture 전용 — outer Header/Footer 위치 marker 전달.
     /// `header_footer_ref` 가 `Some` 일 때 ImageNode 에 마커 설정 → rhwp-studio
     /// 머리말/꼬리말 그림 클릭 hit-test + 개체 속성 dialog dispatch 활성화.

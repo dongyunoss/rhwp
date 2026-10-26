@@ -1,98 +1,94 @@
 # PR #8061 구현·검증 기록
 
-## 범위와 고정 기준
+## 원 주장과 고정 기준
 
-[개별 리뷰](pr_8061_review.md)의 원 head `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2`와 실제 소비 경로를 따른다. `review/semanticist21-20261019`에서 고정 devel `238de6de41a208648f4ade6b494fe433a81c1fce` 위로 누적한 45개 원 PR 중 하나다. 추가 PR을 체리픽하거나 다른 HWP로 범위를 확대하지 않는다.
+원 head `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2`를 통합 대응
+`140c38ddc5c5a87504fb562c18cec052f77ac291`로 적용했다.
+브랜치는 `review/semanticist21-20261019`, 고정 devel은
+`238de6de41a208648f4ade6b494fe433a81c1fce`다. 누적 원 PR 45개 외의
+체리픽이나 실물 HWP 범위 확대는 하지 않는다.
 
-## 원 커밋과 통합 대응
-
-| 원 커밋 | 통합 후보의 대응 |
-| --- | --- |
-| `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2` | `140c38ddc5c5a87504fb562c18cec052f77ac291` |
-
-충돌 보정과 원 기능의 유지 여부는 원 커밋·현재 코드 후보·독립 기대값을 대조한다. 메인터너의 공통 renderer·편집 소유 보정과 원 contributor 변경을 혼동하지 않는다. 원 head는 직접 merge 대상이 아니다.
-
-## 실행 순서와 현재 상태
-
-1. 원 PR의 reviewer·head를 확인하고 기능 commit을 최신 devel 위에 누적 적용했다. 원격 원 head를 재작성하지 않았다.
-2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 Rust 검증을 완료했다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
-3. 개별 리뷰의 독립 Print·Native/fresh WASM·소비 경로와 전체 로컬 게이트를 완료한 뒤 최종 판정을 갱신한다. PR 직전 devel head를 재조회하고 변경됐으면 리베이스한 기능과 현재 보정 범위를 함께 검증한다.
-4. 승인된 통합 PR을 실제 템플릿에 맞춰 제출하고 정확한 code head CI를 관찰한다. 별도로 승인된 옵션 2의 self-review·오늘할일 후속 PR은 code CI 뒤에 처리한다. 원 PR별 검토 기록은 통합 PR에 유지한다.
-5. CI·merge 조건을 확인해 통합하고 merge SHA의 devel 포함을 확인한다. 이 PR에는 보정·검증 결과와 통합 링크를 남긴 뒤 원 PR을 close한다. 관련 이슈는 전체 해결 범위가 확인된 경우만 닫는다.
-6. contributor fork·branch를 보존하고 소유·실행 상태를 확인한 검토 worktree·임시 산출물만 정리한다. 공유 `target/pr-review`는 유지한다.
-
-## 제외와 복원 경계
-
-sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. 별도 이관 검사를 이 통합의 통과 증거로 다시 등록하지 않는다. 통합 전 코드 변경이 필요하면 일반 추가 commit으로 보정하고 영향 검증을 재실행한다. contributor history를 reset·amend·force-push하지 않는다.
-
-## 완료 전 남은 기록
-
-정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
+원 검사는 셀에 속한 글 뒤 그림을 쪽의 글 뒤 도형보다 항상 위에 그려야 한다고
+가정했다. 과거 전체 Rust에서 이 검사가 PASS한 사실은 독립 Print와의 일치를
+입증하지 못했다. 기하 정보가 생략된 초기 HWPX와 정상 기하 정보를 명시한 별도
+대조군을 구분하고, 속성 차이와 독립 Print로 원 가정을 검증했다.
 
 ## 독립 Print의 레이어 반례 — 2026-10-26
 
-초기 진단용 HWPX는 원 검사와 같이 사각형의 원래 크기·꼭짓점, 그림의 원본 크기를
-생략했다. RHWP는 선언된 배치 크기로 표시했지만 한컴 Print에는 두 개체가 모두
-나오지 않았다. 이 초기 입력의 raw 0.95511%를 정상 한컴 문서의 회귀로 해석하지 않는다.
-원본 바이트는 보존하고, 선언된 크기의 사각형 꼭짓점과 4×4 PNG의 원본 크기를
-명시한 별도 대조군을 만들었다. 소유·배치·색상·텍스트·BinData는 그대로 두었다.
-그림의 75 HWPUNIT/CSS px 변환은 기존 정상 삽입본의 16px/1,200 HWPUNIT 대응과
-대조했다. 보완본 통과를 초기 입력 자체의 일치로 보고하지 않는다.
+초기 입력은 사각형의 원래 크기·꼭짓점과 그림 원본 크기가 없었다. RHWP에는
+표시됐으나 한컴에는 PHOTO만 인쇄돼 raw 0.95511%였다. 이 결과는 보존하고,
+소유·배치·색상·텍스트·BinData는 유지한 별도 기하 보완본을 사용했다.
+4px PNG의 원본 크기 300 HWPUNIT은 정상 삽입본의 16px/1,200 HWPUNIT과 대조했다.
+초기 입력을 정상 한컴 저장본으로 부르거나 보완본의 점수로 덮어쓰지 않았다.
 
-같은 보완본에서 한 번에 속성 하나만 바꿔 MCP engine 2020의 한컴 11.0.0.9136으로
-Print했다. 모든 결과는 `pdf_print_method=0`,
-`pdf_output_mode=hancom2020_pdf_driver_one_up`, 입력 전처리 없음, 1쪽이다.
+같은 보완본에서 한 번에 속성 하나를 바꾸고 MCP engine 2020의 한컴
+11.0.0.9136 Print로 출력했다. `pdf_print_method=0`,
+`hancom2020_pdf_driver_one_up`, 입력 전처리 없음, 전체 1쪽이다.
+떠 있는 표에서는 쪽 도형과의 겹침을 유지하도록 원본 위치를 명시했다.
+8조건의 입력·Print·해시·관측표는 [정식 증거](../assets/cell_picture_layer_qualified_20261026/README.md)에 있다.
 
-| 조건 | 독립 Print 관측 | 현재 Native·fresh WASM 관측 |
-| --- | --- | --- |
-| 그림 `flowWithText=0, zOrder=0`, 쪽 도형 `zOrder=1` | 녹색 도형에 빨간 그림이 가려짐 | 빨간 그림이 도형 위에 보임: 불일치 |
-| 쪽 도형만 제거 | 빨간 그림이 보임 | 빨간 그림이 보임 |
-| 그림 `zOrder`만 2로 변경 | 빨간 그림이 도형 위에 보임 | 빨간 그림이 도형 위에 보임 |
-| 그림 `flowWithText`만 1로 변경 | 빨간 그림이 도형 위에 보임 | 빨간 그림이 도형 위에 보임 |
+`flowWithText=0, zOrder=0` 그림은 더 높은 쪽 도형에 가려졌고,
+flowWithText=1 또는 그림 zOrder=2에서는 보였다. 흐르는 표와 떠 있는 표 양쪽에서
+같은 구분이 확인됐다. 테두리만 추가한 대조군은 bitmap 다음에 테두리가 그려졌다.
+같은 불투명 영역은 가림 순서가 틀려도 raw 100%여서 실제 색상·순서도 판독했다.
 
-4조건의 후보/base × Native/fresh WASM은 16회 모두 raw 100%, 1쪽 일치다.
-하지만 불투명한 녹색·빨간 영역은 실루엣이 같아 첫 행의 색상·레이어 결함을 점수로
-검출하지 못한다. 고정 base에서도 같은 차이가 관측되므로 이 결과를 현재 브랜치에서
-새로 생긴 회귀라고 단정하지 않는다. 독립 Print와 실제 출력의 차이는 남아 있으므로
-원 PR의 검사가 올바른 조건을 고정하는지와 공통 레이어 소비 조건을 보정해야 한다.
-실루엣 통과나 전체 Rust PASS를 수용 판정으로 대신하지 않았다.
+## 공통 구현과 소비 경로
 
-실제 소비 경로는 `layout/picture_footnote.rs`의 셀 그림 layer 부여 →
-`layout.rs::order_cell_anchored_objects`의 BehindText 분류·상속 layer 및
-`ImageNode.text_wrap` 덮어쓰기 → `paint/replay_order.rs`의 최종 replay plane이다.
-현재 분류 조건에는 `flow_with_text` 구분이 없다. 셀의 편집 소유와 쪽/표의 그리기
-계층을 같은 상태로 간주해도 되는지 위 반례에 따라 보정·재검증한다.
+[anchored_cell_paint.rs](../../../src/renderer/layout/anchored_cell_paint.rs)로 기존
+`layout_picture` wrapper와 셀 순서 조립을 옮겼다. 측정·좌표를 문서별로 보정하지 않는다.
 
-증적 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-`pr8061-explicit-geometry-4144/provenance.json`에 보완 전후 입력 해시·변경 ZIP 항목,
-`pr8061-layer-controls-print-4147-result.json`에 세 Print 작업의 동일 job ID·출력 해시·
-실제 engine 계약, `pr8061-explicit-validation-4146-result.json` 및
-`pr8061-controls-validation-4149-result.json`에 16회 TSV·producer·페이지 수를 기록했다.
-새로운 실물 문서로 범위를 넓히거나 sample16·편람의 파생 자료를 만들지 않았다.
+1. 기존 `layout_picture_full`이 만든 bitmap·테두리·캡션에 원본 그림의 layer를 부여한다.
+2. 일반 셀의 비-TAC BehindText 그림에서 flowWithText=0이고 기존 셀 프레임 계약에
+   해당하지 않으면 내부 묶음 소속을 기록한다. 셀의 편집 주소와 절대 좌표는 유지한다.
+3. 셀 순서 조립 시 그 묶음을 같은 쪽의 도형들과 정렬한다. 흐름을 따르는 그림과
+   기존 셀 프레임 paint는 표의 그리기 계층을 유지한다. 보이지 않는 부모의 자식은 올리지 않는다.
+4. 한 그림의 부분들은 같은 원본 DocPath 정렬키와 내부 순서를 유지한다. 주소가 없는
+   테두리가 bitmap보다 앞서지 않는다. 묶음 식별용 NodeId는 정렬에 쓰지 않는다.
+5. 기존 paint replay가 조립된 순서를 소비한다. Native와 fresh WASM에 별도 보정식을
+   추가하지 않는다. RenderLayerInfo의 내부 필드는 `serde(skip)`으로 공개 JSON에서 제외한다.
 
-## 통합 후보의 실제 검사 실행 — 2026-10-26
+실제 공통 파일 네 개의 SHA-256과 생산물 해시는
+[provenance.json](../assets/cell_picture_layer_qualified_20261026/provenance.json)에 있다.
+빌드 당시 main HEAD와 검증 worktree HEAD, 실제 파일 overlay를 구분했다.
+Native 257과 표준 release·wasm-opt 완료 fresh WASM 074는 같은 런타임 소스를 소비했다.
 
-코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
-아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
-바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+## 실제 시각 검증과 새 회귀
 
-- [tests/cases/cell_behind_text_picture_above_paper_shapes.rs](../../../tests/cases/cell_behind_text_picture_above_paper_shapes.rs): SHA-256 `91529c3a53126706559223060bcfd63a02725e57c06bd3f50e17b77a8b46f6a0`.
-  - `flow_cell_behind_text_picture_paints_above_paper_behind_text_shape`: PASS, `logs/final-full-nextest-4052.log:11206` (`rhwp::regression_suite_027`).
+8조건 모두 Native/fresh WASM raw 100%·Print와 1쪽 일치이며 base 대비
+0.1%p 초과 하락 0쪽이다. 기존 정상 RowBreak 2쪽도 양쪽 raw 100%다.
+기존 114조건의 실제 tree에서 셀 그림이 있는 6조건·94쪽을 추려 재출력했다.
+선행 검증 합계는 15조건·104쪽/backend, 전쪽 90% 이상·쪽수 일치다.
+영향 6조건과 RowBreak까지의 192쪽 base 비교도 0.1%p 초과 하락 0쪽이다.
+범위 밖 HWP·sample16·편람을 추가하지 않았다.
 
-공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
-전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
-Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
-전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
-공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+잘못된 `cell_behind_text_picture_above_paper_shapes.rs`는 삭제했다.
+[새 이름의 검사](../../../tests/cases/verified_cell_picture_layer_scope.rs)는
+8조건의 소유·보존·포함·독립 PDF 좌표·SVG 순서와 Native 실제 PNG 가림을 보호한다.
+독립 쪽 그림 2조건과 테두리 1조건의 순서 검사는 수정 전 FAIL / 수정 후 PASS다.
+SVG는 구조 검사에만 쓰고 시각 검증은 Native/fresh PNG로 수행했다.
+[정상 RowBreak 검사](../../../tests/cases/verified_rowbreak_successor_print_frame.rs)도
+50/10행·셀 120개 보존·뒤 문단·독립 Print 외곽과 기준선을 함께 보호한다.
 
-이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+첫 실행의 8개 관계 실패는 동일 좌표의 약 1e-14px 부동소수점 차이였다.
+원본 정수 HWPUNIT의 동등·포함으로 바로잡았으며 독립 PDF ±2px는 유지했다.
+최종 focused nextest는 exit 0, 10 PASS·0 FAIL이다. jobs 8·test threads 12·공용
+`target/pr-review`를 사용했다. 각 쪽 양쪽 raw 100%와 직접 판독을 먼저 완료했으므로
+좌표 검사 자격을 충족하며 관계 검사도 함께 유지한다.
 
-| 원 커밋 | 현재 통합 대응 |
-| --- | --- |
-| `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2` | `140c38ddc5c5a87504fb562c18cec052f77ac291` |
+## 실행 증거와 남은 절차
 
-sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
-파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
-별도로 판정한다.
+정식 증거 폴더에는 원문 TSV·대표 PNG·독립 기대 좌표·간결한 provenance만 등록했다.
+로그·전체 inventory·중간 집계는 ignored `output/pr-review/semanticist21-20261019/`에 둔다.
+주요 영수증은 `cell-scope-focused-4175-result.json`,
+`cell-scope-negative-proof-4176.json`, `cell-scope-base-comparison-4179.json`,
+`cell-layer-refresh-validation-4166-result.json`이다.
+
+새 공통 소스의 전체 Rust·lint·Studio·최종 제출 범위 검증을 마친 뒤 통합 head를
+확정한다. 과거 후보의 전체 PASS를 새 코드에 적용하지 않는다. PR 직전 base가 바뀌면
+#8228 변경을 우선 보존하고 양쪽 기능을 재검증한다. 실제 통합 code CI 뒤 옵션 2의
+self-review·오늘할일 후속 PR을 처리하고, merge 뒤 원 PR에 실제 증적과 링크를 남긴다.
+아직 PR 생성·원격 CI·merge·close를 완료했다고 기록하지 않는다.
+
+sample16·편람의 삭제와 이전 파생 참조 부재는 검증 worktree에서도 유지한다.
+주 작업 트리의 과거 ignored generated 파일은 실행·복원·stage하지 않으며 실제 수집 소스에서
+메모리로 계산한 신규 harness와 준비한 검증 worktree를 대조한다.

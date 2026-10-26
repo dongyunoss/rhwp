@@ -192,3 +192,74 @@ harness의 삭제 대상 참조도 0개다. manifest·fixture·보관본·삭제
 그중 Native의 첫 조건과 `flowWithText=1` 조건의 review·overlay 4개를 실제로 열어
 서로 다른 그림 표시와 같은 셀 본문 순서를 직접 대조했다. 나머지 생성 이미지를 모두
 판독했다고 기록하지 않는다. source·검사·지침·Visual Sweep 도구는 바꾸지 않았다.
+
+## 셀 그림의 쪽 순서와 편집 소유 분리 보정 — 2026-10-26
+
+앞 절 이후 #8061의 필수 반례에 따라 공통 renderer를 보정 중이다. 기존 검증 코드
+후보 `61528013511c87c732524f91c6f224286a055337`와 렌더 소스
+`bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`의 결과를 이 새 소스의 완료 결과로
+재사용하지 않는다. source·검사·지침을 바꾸지 않았다는 앞 절은 그 단계 당시의 기록이다.
+
+`layout/anchored_cell_paint.rs`로 기존 그림 wrapper·셀 순서 조립을 옮겼다.
+`flow_with_text=0`의 일반 셀 그림은 셀의 편집 주소와 절대 좌표를 보존하면서 쪽
+개체들과 정렬한다. `flow_with_text=1`과 이미 증명된 셀 프레임 paint는 셀의 그리기
+소유를 유지한다. 쪽 순서를 따르는 한 그림의 bitmap·테두리·캡션은 같은 묶음으로
+이동하며 임시 NodeId를 순서 비교에 쓰지 않는다. 원본 주소가 없는 테두리가 bitmap
+앞으로 재정렬되지 않도록 원본 그림의 정렬키와 내부 부분 순서를 함께 보존한다.
+공개 JSON 계약에 내부 묶음 필드를 추가하지 않는다.
+
+같은 원 재현을 떠 있는 표로 바꾸고 겹침 영역을 명시한 Print 3조건에서도
+`flowWithText`와 z-order의 차이가 확인됐다. 별도의 2px 파란 테두리 대조군은 같은
+원 재현에서 테두리만 추가했다. 다른 실물 HWP·이관 문서·sample16·편람을 추가하거나
+이전 파생 참조를 재생성하지 않았다.
+
+| 단계 | 실제 결과와 남은 검증 |
+| --- | --- |
+| Native 256 | 초기 공통 분리 보정, release-test 빌드 exit 0·4분 39초·source 해시 고정. 8조건·9쪽의 수정 전후를 확인했다. |
+| 집계 오류 복구 | 4158 집계기는 시스템 Pillow API에서 실패했다. 완료된 PNG·producer·입력/PDF 해시를 검증하고 4159의 정본 PNG-pair TSV로 재집계했다. 재렌더하지 않았다. 후보 8조건 raw 100%, 두 레이어 반례는 수정 전 FAIL·수정 후 PASS다. |
+| Native 257 | 한 개체 내부의 bitmap·테두리 순서까지 보존한 보완본, release-test 빌드 exit 0·4분 17초. 4163의 9조건·10쪽 Native 대조는 모두 raw 100%·쪽수 일치·색상 존재 진단 통과다. |
+| fresh WASM 074 | 같은 공통 소스의 표준 release·실제 wasm-opt 빌드 exit 0·17분 33초. 아래 신규 양쪽 시각 검증과 focused 회귀를 완료했다. |
+
+기존 #8061 합성 검사는 `flowWithText=0` 그림도 무조건 쪽 도형 위에 두어야 한다고
+고정하므로 독립 Print와 맞지 않는다. 실제 원본·Print·양쪽 시각 확인을 마친 뒤
+새 이름의 관계 검사와 자격을 충족한 페이지의 중요 좌표 검사로 교체한다. 기존의
+전체 Rust·Studio PASS는 이전 코드 후보의 결과이며 새 공통 소스에서 필요한 필수
+게이트를 다시 완료해야 한다. PR은 아직 제출하지 않았다.
+
+로그·영수증은 ignored `output/pr-review/semanticist21-20261019/` 아래
+`pr8061-runtime-overlay-4156.json`, `pr8061-runtime-overlay-4161.json`,
+`rebase-native256-build-4157-result.json`, `cell-layer-boundaries-audit-4159-result.json`,
+`pr8061-floating-controls-print-4154-result.json`, `pr8061-border-control-print-4160-result.json`,
+`rebase-native257-build-4162-result.json`, `cell-layer-boundaries-validation-4163-result.json`,
+`rebase-candidate-wasm074-build-4164-result.json`에 구분했다. 임시 source overlay와
+Git head를 같은 것으로 보고하지 않으며 실제 파일별 SHA-256을 보존했다.
+
+
+## 셀 그림 보정의 양쪽 검증과 파생 참조 보존 — 2026-10-26
+
+[정식 증거](../pr/assets/cell_picture_layer_qualified_20261026/README.md)에 같은 #8061
+재현의 HWPX 8개·독립 MCP Print PDF 8개·Native/fresh WASM TSV·대표 review/overlay를
+등록했다. 8조건은 양쪽 전쪽 raw 100%이며, 정상 RowBreak 2쪽도 양쪽 100%다.
+기존 영향 문서 6조건·94쪽을 같은 새 런타임으로 재출력했다. 선행 검증 합계는
+15조건·104쪽/backend, 전쪽 90% 이상·독립 PDF 쪽수 일치다.
+base 대비 페이지별 비교 208개에서 0.1%p 초과 하락 0쪽을 확인했다.
+
+새 이름의 셀 그림 검사 9개와 RowBreak 검사 1개는 focused nextest 10 PASS·0 FAIL이다.
+첫 실행의 8개 실패는 같은 원본 좌표의 약 1e-14px f64 차이였고, 정수 HWPUNIT의
+동등·포함 관계로 수정했다. 독립 PDF ±2px 조건은 유지했다. 별도 순서 증거 3조건은
+수정 전 FAIL / 수정 후 PASS다. raw만으로 드러나지 않는 잘못된 색상 가림도 실제 PNG로
+검사했다. PHOTO의 래스터 경계와 일부 약 1.12px 원점 차이는 숨기지 않고 기록했다.
+
+삭제 이력에서 관련 검사·fixture를 추적하고 `deriveManifest(persist=false)` 및 메모리의
+harness로 두 작업공간의 소스 1,788개를 대조했다. 누락·삭제 대상 source·새로 생성될
+삭제 대상 참조는 0건이다. 준비한 검증 worktree의 실행 harness도 대상 참조 0건이다.
+주 작업 트리의 과거 ignored generated 파일에는 삭제된 `diag_1042_version_check.rs`
+참조 1건이 남아 있으나 복원·재생성·실행·stage하지 않는다. 과거 사유 주석·공용 제외
+필터·제품 catalog enum은 실제 파일을 여는 활성 검사와 구분한다. sample16·편람의
+삭제된 파생 참조를 다시 생성하는 변경은 추가하지 않았다.
+
+ignored 영수증은 `cell-scope-focused-4175-result.json`,
+`cell-scope-negative-proof-4176.json`, `retired-reference-preservation-4177.json`,
+`cell-scope-finalization-4178.json`, `cell-scope-base-comparison-4179.json`이다.
+새 코드의 전체 Rust·lint·Studio 및 최종 제출 범위 검증은 별도로 완료해야 하며,
+이전 런타임의 전체 PASS를 재사용하지 않는다. 아직 PR을 제출하지 않았다.

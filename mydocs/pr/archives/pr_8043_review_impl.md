@@ -29,6 +29,32 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
 
+## 주소 메타데이터와 조판 범위의 대조 — 2026-10-26
+
+원 commit `a0bb863a08edf4e1461fbbf18ac2baaeaaea4450`의 실제 diff와 현재
+`model/hyperlink.rs`, `document_core/hyperlink.rs`, `queries/bookmark_query.rs`,
+`wasm_api/hyperlink.rs`, Studio의 `HyperlinkInfo`를 다시 대조했다.
+
+| 소비 단계 | 실제 계약과 검증 경계 |
+| --- | --- |
+| Command 생성·조회 | `bookmark_command`는 `?` 접두어와 `;0;0;0;` 꼬리를 만들며 `\\`, `:`, `;`를 escape한다. `command_bookmark`는 표시 문자열과 별개로 대상을 읽는다. |
+| 대상 존재 확인 | `has_bookmark_named`는 점 책갈피와 블록 책갈피 필드를 모두 조회한다. 없는 대상은 문단 복제본을 commit하기 전에 거절한다. |
+| 삽입의 공통 경로 | 웹·책갈피가 같은 `insert_hyperlink_command`를 호출한다. 같은 Hyperlink 필드 종류·FieldRange·원문 축 이동·기존 서식 보관을 소비하며 주소 문자열만 달라진다. 새 target 종류에 따라 글줄 폭·원점·글꼴·표 배치를 바꾸는 분기는 추가하지 않았다. |
+| 주소 수정 | `update_hyperlink_command`는 같은 종류·같은 주소의 no-op과 잘못된 종류의 거절을 구분한다. 표시 문자열·FieldRange를 바꾸는 `replace_hyperlink_text_native`와 주소 수정은 서로 다른 연산이다. |
+| 공개·저장 경로 | WASM API는 같은 Native 함수를 호출하고 JSON에 선택적 `bookmark`를 더한다. HWP/HWPX 재열기 뒤 이름·URI·선택 범위가 보존되는 기존 실제 검사를 대조했다. Studio 변경은 정보 타입의 선택적 필드이며 클릭 이동 기능을 새로 구현한 것으로 보고하지 않는다. |
+
+이 기능에서 새로 바꾼 것은 링크 대상의 인코딩·종류·존재 검증·조회 정보다. 같은
+표시 문자열에 대한 기존 웹 링크 삽입·서식·조판 소비와 주소 종류를 분리했다.
+그 때문에 이 PR의 target 메타데이터를 확인하려고 다른 HWP 문서나 Print 코퍼스를
+추가하지 않는다. 기존 `hwpctl_Action_Table__v1.1.hwp` 검사는 실제 Command 문자열과
+블록 책갈피의 동일 대상 no-op 근거이며 그 문서 전체의 시각 검증으로 승격하지 않는다.
+
+독립 기대값은 실제 한컴 Command와 테스트의 한글·콜론·세미콜론·역슬래시 대상,
+존재하지 않는 대상·동일 대상·웹/책갈피 종류 변경 거절, 두 저장 형식의 재열기다.
+아래 실제 실행표의 네 계약 검사와 passthrough guard 실행을 재사용한다. 현재 진행 중인
+공통 renderer 보정 이후의 통합 후보 필수 검증은 별도이며, 이 분석만으로 전체 통합
+head의 새 검증이나 원격 CI를 완료 처리하지 않는다.
+
 ## 통합 후보의 실제 검사 실행 — 2026-10-26
 
 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를

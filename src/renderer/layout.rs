@@ -3534,6 +3534,7 @@ pub struct LayoutEngine {
 }
 
 mod anchor_box_flow;
+mod anchored_cell_paint;
 mod border_geometry;
 mod border_rendering;
 mod column_separators;
@@ -4161,77 +4162,6 @@ impl LayoutEngine {
         paper_images.sort_by_key(Self::paper_node_sort_key);
     }
 
-    /// Settle anchored object order inside a cell, preserving its own fill first.
-    /// BehindText is relative to cell content, not to the whole page: after local
-    /// ordering it inherits the table's replay plane along with that content.
-    /// Other anchored objects retain the existing #6121 foreground contract.
-    fn order_cell_anchored_objects(
-        node: &mut RenderNode,
-        inherited_layer: Option<RenderLayerInfo>,
-    ) {
-        let active_layer = node.layer.or(inherited_layer);
-        for child in &mut node.children {
-            Self::order_cell_anchored_objects(child, active_layer);
-        }
-        if !matches!(node.node_type, RenderNodeType::TableCell(_)) {
-            return;
-        }
-        let lifts = |child: &RenderNode| {
-            child
-                .layer
-                .is_some_and(|layer| !matches!(layer.text_wrap, Some(TextWrap::BehindText)))
-        };
-        if !node.children.iter().any(|child| child.layer.is_some()) {
-            return;
-        }
-        // Pure cell decoration has no document owner or layer; it precedes the
-        // first content node. Do not move a behind-text picture below this fill.
-        let content_start = node
-            .children
-            .iter()
-            .position(|child| {
-                child.layer.is_some()
-                    || matches!(child.node_type, RenderNodeType::TextLine(_))
-                    || crate::renderer::render_tree::doc_path_for_node(child).is_some()
-            })
-            .unwrap_or(node.children.len());
-        let content = node.children.split_off(content_start);
-        let mut kept: Vec<RenderNode> = Vec::with_capacity(node.children.len());
-        let mut lifted: Vec<RenderNode> = Vec::new();
-        let mut behind: Vec<RenderNode> = Vec::new();
-        for child in content {
-            if lifts(&child) {
-                lifted.push(child);
-            } else if child
-                .layer
-                .is_some_and(|layer| matches!(layer.text_wrap, Some(TextWrap::BehindText)))
-            {
-                behind.push(child);
-            } else {
-                kept.push(child);
-            }
-        }
-        let order = |child: &RenderNode| {
-            child
-                .layer
-                .map(|layer| (layer.z_order, layer.stable_index))
-                .unwrap_or((0, 0))
-        };
-        behind.sort_by_key(order);
-        lifted.sort_by_key(order);
-        for child in &mut behind {
-            child.layer = active_layer;
-            if let RenderNodeType::Image(image) = &mut child.node_type {
-                image.text_wrap = active_layer
-                    .and_then(|layer| layer.text_wrap)
-                    .or(Some(TextWrap::Square));
-            }
-        }
-        node.children.extend(behind);
-        kept.extend(lifted);
-        node.children.extend(kept);
-    }
-
     /// 빈 줄 감추기 문단 집합 설정
     pub fn set_hidden_empty_paras(&self, paras: &std::collections::HashSet<usize>) {
         *self.hidden_empty_paras.borrow_mut() = paras.clone();
@@ -4838,7 +4768,7 @@ impl LayoutEngine {
         tree.apply_legacy_hancom_product_display_projection();
 
         // [#6121] 셀 안 anchored 개체 ↔ 셀 본문 텍스트 페인트 순서 정합.
-        Self::order_cell_anchored_objects(&mut tree.root, None);
+        Self::settle_cell_anchored_objects(&mut tree.root);
 
         // [#4515] 최상위 표 y 겹침 자가 검증. paper/overlay 표가 root 에 모두 붙은
         // 페이지 조립 완료 시점에 검사해야 글앞/글뒤 표까지 대상에 들어간다.
