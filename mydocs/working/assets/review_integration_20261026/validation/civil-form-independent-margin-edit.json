@@ -177,5 +177,16 @@
   "source_margin_css_px": 1.88,
   "observed_second_table_shift_css_px": -1.9173000000000684,
   "old_expected_shift_css_px": 0,
-  "correction": "Keep edit countercase; second table follows the margin delta once. Preserve tolerance; do not relax oracle counts or source geometry."
+  "correction": "Keep edit countercase; second table follows the margin delta once. Preserve tolerance; do not relax oracle counts or source geometry.",
+  "original_input_sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+  "original_input_matches_committed_blob": true,
+  "visual_prerequisite": {
+    "production_source": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+    "native_pages": 2,
+    "native_raw_min": "100.00000",
+    "wasm_pages": 2,
+    "wasm_raw_min": "100.00000",
+    "initial_wasm_attempt": "Browser launch timeout, no engine output; not counted as pass.",
+    "successful_wasm_retry": "civil-form-current-wasm-retry.log"
+  }
 }

@@ -354,3 +354,17 @@
   8,854 PASS·assertion FAIL 7개·SIGINT 3개·미실행 2,757개·기존 skip 45개다.
   3개의 중단을 제품 실패로 세지 않으며 이 실행을 전체 통과로 보고하지 않는다.
   Native Skia 후속 단계는 아직 실행하지 않았고, 새 후보의 필수 검증을 다시 완료한다.
+
+### 저장 프레임 식별 보정의 Native 확인
+
+- 숫자 끝점만으로 prefix를 무효화하는 조건을 보완했다. 현재 실제 쪽에서 온전히 수용한
+  원본 문단 사이에 paint와 같은 원점 되감김이 있고 끝점도 대응할 때만 새 프레임으로 본다.
+  이미 앞쪽에서 소비한 저장 prefix는 그대로 유지한다. 문서 식별자·새 수치 문턱은 추가하지 않았다.
+- v10 Native에서 온새미로 HWP/HWPX 모두 46쪽, HWPX 2024 호환도 46쪽을 확인했다.
+  같은 실행 파일을 사용한 CLI 소유 회귀 6개가 통과했고 sungeo 전 94쪽 최저99.85165%를 유지했다.
+  초기 검사 스크립트의 stdout/stderr 혼합 JSON 읽기 오류는 수정했으며 제품 실패로 세지 않는다.
+- [실제 실행·producer](assets/review_integration_20261026/validation/v10-prefix-focused-results.json)와
+  [94쪽 TSV](assets/review_integration_20261026/validation/tsv/stage-v10/sungeo.tsv)를 연결한다.
+  이는 해당 Native 보정의 선행 확인이며 전체 Rust·새 production fresh WASM 완료는 아니다.
+- 민원 서식도 같은 원본의 Native/fresh WASM 전 2쪽100%를 실제 확인했다. 독립 편집 Print와
+  함께 기존 편집 기대값을 정정할 선행 근거로 보존했다. 이제 중첩 원점의 오프셋 소유 보정을 진행한다.
