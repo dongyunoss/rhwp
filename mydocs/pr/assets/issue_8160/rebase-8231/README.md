@@ -37,6 +37,8 @@ Native 신원은 [별도 기록](native/proof.json)에 있다. 후속 커밋의 
 14건·#8160 문단/이중 테두리 3건도 모두 통과했다. 마지막 3건 중 1건이 #8160 Native 전용 검사다.
 선택 실행에서 제외된 검사를 통과 수에 합산하지 않는다.
 
-후속 커밋은 검증 증거·문서만 추가했으며 producer의 런타임과 최종 검사 원본을 바꾸지 않았다.
+`076b19d36`까지의 후속 커밋은 검증 증거·문서만 추가했다. 이후 [Native 전용 CI 연결 보정](native-ci-registration.json)은 기존 job의 논리 case 호출과 소유 목록을 연결한다. 렌더 producer와 Rust 검사 본문·기대값·입력/PDF는 바꾸지 않았다.
+
+[게시용 Native/WASM review·standalone overlay](publication/panels.json)는 검증을 마친 같은 최종 PNG에서 만들었다. [원본·Print 75개 commit 바이트 확인](inputs-in-commit.json)과 함께 원격 검토에 사용한다.
 이 자료를 CI·원격 제출·머지 완료로 표시하지 않는다. 편람 HWP/HWPX 두 파일과 문서 정오표는
 이번 검토 범위에서 제외한다.
