@@ -7,6 +7,7 @@ use std::ops::Range;
 
 mod alignment;
 use alignment::RowEnding;
+pub(crate) mod floating_shapes;
 mod picture_rows;
 pub(crate) use picture_rows::supports_picture_rows;
 mod separator_spaces;
@@ -47,7 +48,12 @@ pub enum InlineFlowContent {
         margin_top: f64,
     },
     /// Width-neutral object anchored to the physical text row.
-    FloatingTable { control: usize },
+    FloatingTable {
+        control: usize,
+    },
+    FloatingShape {
+        control: usize,
+    },
     /// 글자처럼 그림의 줄 상자와 실제 잉크 사이 바깥 여백.
     Picture {
         control: usize,
@@ -104,6 +110,7 @@ pub struct InlineFlowPlan {
     pub(crate) square_host_placement: Option<super::float_placement::ParagraphFloatPlacement>,
     /// Host-relative object geometry; survives after the host text has ended.
     pub(crate) square_host_exclusion: Option<FrameExclusion>,
+    pub(crate) floating_shapes: Vec<floating_shapes::FloatingShapePlacement>,
     pub start: f64,
     pub end: f64,
     pub boxes: Vec<InlineFlowBox>,
@@ -124,6 +131,7 @@ impl InlineFlowPlan {
     }
 
     pub(crate) fn relative_to(&mut self, x: f64, y: f64) {
+        floating_shapes::relative_to(&mut self.floating_shapes, y);
         self.start -= y;
         self.end -= y;
         self.next_row_top -= y;
@@ -234,6 +242,7 @@ pub(crate) fn plan(
                         baseline: 0.0,
                     }));
                 }
+                Control::Shape(_) => atoms.push(Atom::Box(floating_shapes::anchor(ci))),
                 Control::Table(table) => {
                     let measured = tables
                         .iter()
@@ -413,6 +422,7 @@ pub(crate) fn plan(
         text_spacing_before: None,
         square_host_placement: None,
         square_host_exclusion: None,
+        floating_shapes: Vec::new(),
         start: frame.paragraph_y,
         end: top,
         boxes: Vec::new(),
@@ -464,7 +474,11 @@ pub(crate) fn plan(
                     .all(|v| v.is_finite())
                     || item.width < 0.0
                     || (item.height <= 0.0
-                        && !matches!(item.content, InlineFlowContent::FloatingTable { .. }))
+                        && !matches!(
+                            item.content,
+                            InlineFlowContent::FloatingTable { .. }
+                                | InlineFlowContent::FloatingShape { .. }
+                        ))
                 {
                     return None;
                 }
@@ -665,7 +679,10 @@ fn finish_row(
     let row_x = x;
     for (index, mut item) in row.drain(..).enumerate() {
         item.x = x;
-        item.y = if matches!(item.content, InlineFlowContent::FloatingTable { .. }) {
+        item.y = if matches!(
+            item.content,
+            InlineFlowContent::FloatingTable { .. } | InlineFlowContent::FloatingShape { .. }
+        ) {
             y
         } else {
             y + baseline - item.alignment_baseline()
@@ -812,6 +829,7 @@ pub(crate) fn plan_plain_text(
         text_spacing_before: None,
         square_host_placement: None,
         square_host_exclusion: None,
+        floating_shapes: Vec::new(),
     })
 }
 
@@ -985,6 +1003,7 @@ pub(crate) fn plan_square_table_host(
         text_spacing_before: Some(spacing_before),
         square_host_placement: Some(placement),
         square_host_exclusion: Some(exclusion),
+        floating_shapes: Vec::new(),
         start: 0.0,
         end,
         boxes: Vec::new(),

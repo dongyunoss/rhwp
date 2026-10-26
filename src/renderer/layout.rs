@@ -16560,6 +16560,17 @@ impl LayoutEngine {
                 height: layout.page_height,
             };
 
+            let stored_frame_origin = col_content
+                .paragraph_float_placements
+                .get(&(para_index, control_index))
+                .filter(|placement| {
+                    placement.flow == super::float_placement::ParagraphFloatFlow::AbsolutePageFrame
+                })
+                .and_then(|placement| {
+                    placement
+                        .table_left
+                        .map(|left| (left, col_area.y + placement.table_top))
+                });
             if is_table_control {
                 // InFrontOfText/BehindText 표: paper 기준 절대 위치에 렌더링
                 if let Some(Control::Table(table)) = paragraphs
@@ -16735,18 +16746,6 @@ impl LayoutEngine {
                     temp_parent.children.drain(..).collect(),
                 );
             } else if is_paper_based {
-                let stored_frame_origin = col_content
-                    .paragraph_float_placements
-                    .get(&(para_index, control_index))
-                    .filter(|placement| {
-                        placement.flow
-                            == super::float_placement::ParagraphFloatFlow::AbsolutePageFrame
-                    })
-                    .and_then(|placement| {
-                        placement
-                            .table_left
-                            .map(|left| (left, col_area.y + placement.table_top))
-                    });
                 let mut temp_parent = RenderNode::new(
                     tree.next_id(),
                     RenderNodeType::Column(0),
@@ -16821,7 +16820,7 @@ impl LayoutEngine {
                     bin_data_content,
                     &overflow_map,
                     false,
-                    None,
+                    stored_frame_origin,
                 );
             }
             // [Task #525] 비-TAC Picture/Shape Square wrap 의 어울림 문단 렌더링은

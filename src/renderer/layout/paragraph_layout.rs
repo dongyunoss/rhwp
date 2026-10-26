@@ -3293,7 +3293,7 @@ impl LayoutEngine {
             let y = col_area.y + item.y;
             match &item.content {
                 InlineFlowContent::Text { .. } => {}
-                InlineFlowContent::Picture { .. } => {}
+                InlineFlowContent::Picture { .. } | InlineFlowContent::FloatingShape { .. } => {}
                 InlineFlowContent::FloatingTable { control } => {
                     let Control::Table(table) = &para.controls[*control] else {
                         continue;

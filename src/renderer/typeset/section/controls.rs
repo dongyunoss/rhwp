@@ -103,6 +103,15 @@ impl TypesetEngine {
         let endnote_refs =
             crate::renderer::pagination::paragraph_endnote_refs(section_index, para_idx, para);
         for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+            // 확정 inline plan이 이미 등록한 도형은 같은 개체/흐름을
+            // 기존 control 경로에서 다시 등록하지 않는다.
+            if st.inline_flow_plans.get(&para_idx).is_some_and(|plan| {
+                plan.floating_shapes
+                    .iter()
+                    .any(|item| item.control == ctrl_idx)
+            }) {
+                continue;
+            }
             // [Task #836] 미주 수집 — 문서 끝에 모아서 렌더
             for (en_ref, _) in endnote_refs
                 .iter()

@@ -1012,6 +1012,20 @@ impl TypesetState {
 
     /// fit을 통과한 동일 plan을 배치 metadata와 높이에 함께 반영한다.
     pub(super) fn commit_inline_flow(&mut self, para_index: usize, plan: InlineFlowPlan) {
+        for item in &plan.floating_shapes {
+            if let Some(exclusion) = &item.exclusion {
+                self.data
+                    .side_wrap_exclusions
+                    .insert((para_index, item.control), exclusion.clone());
+            }
+            self.data
+                .paragraph_float_placements
+                .insert((para_index, item.control), item.placement);
+            self.data.current_items.push(PageItem::Shape {
+                para_index,
+                control_index: item.control,
+            });
+        }
         self.data
             .current_items
             .push(PageItem::FullParagraph { para_index });
