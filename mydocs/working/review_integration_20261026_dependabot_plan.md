@@ -1,7 +1,8 @@
 # Dependabot 21개 PR 통합 체리픽 검토 계획
 
 - 작업 브랜치: `review/integration-20261026-dependabot-updates-r2`
-- 기준: 최신 `upstream/devel` `01ced3d42724285c8f9765a453393ab6af326617`
+- 시작 기준: `upstream/devel` `01ced3d42724285c8f9765a453393ab6af326617`
+- 제출 기준: `upstream/devel` `49bc935a149c20b942d3045c2f5c733aeccf57d0`
 - 사용자 지시: Dependabot PR을 체리픽 통합한 뒤 검토한다. 봇이므로 개별 PR 문서는 만들지 않는다.
 - 개별 review 문서를 요구하는 일반 규칙 대신 이 계획과 통합 PR의 검토 기록 한 묶음으로 각 PR의
   원 head·적용 SHA·충돌·검증·판정을 추적한다. 별도 대표 이슈가 없어 날짜 기반 integration 이름을 사용한다.
@@ -40,11 +41,11 @@
    conflict 및 보정은 이 기록에 남긴다. 이미 merged된 source 변경을 되돌리지 않는다.
 2. Rust 8개, npm 8개, Actions 5개의 업데이트와 공식 변경 근거를 확인한다. read-fonts/skera의
    버전·타입 연결과 Anthropic SDK major 변경은 실제 호출부·빌드·행동 검사로 확인한다.
-3. 관련 모든 lockfile의 정합성, action pin, Cargo lint/focused/full nextest·Native 및
-   npm TypeScript·단위·extension/Studio 실제 browser 경로를 변경 범위대로 검증한다.
-4. 폰트·PDF 의존성이 실제 조판/출력을 바꾸는지 Native/fresh WASM으로 확인한다. 기존 sample16
-   세 문서 각 64쪽의 100%와 독립 Print·입력/PDF·기존 회귀 기대값을 보존한다.
-   실패를 없애기 위해 검사·공차·문서 출력 기준을 완화하지 않는다.
+3. lockfile 정합성, action pin, 세 Clippy·workspace build·전체 nextest와 npm 빌드·단위·실제 browser를 확인한다.
+4. 실제 소비 경로에 따라 폰트 검증을 정한다. `webfont_subset`은 wasm32에서 제외되는 Native SVG
+   부분 글꼴 경로다. 이 경로의 두 쪽을 브라우저에서 전체 face 출력과 대조하고 Unicode·폭·윤곽을
+   독립 파서로 확인한다. 기존 sample16 입력·Print·전쪽 TSV·기대값은 보존한다.
+   이번에 해당 384쪽을 다시 렌더했다고 주장하지 않는다. 최종 검증 수용 범위는 아래 사용자 지시를 따른다.
 5. 코드 보정과 필수 검증을 마친 후보를 통합 PR로 제출하고 정확한 최신 head CI를 확인한다.
    봇 원 PR별 문서 없이 통합 검토에서 수용/보류와 적용·보정 SHA를 구분한다.
 
@@ -134,3 +135,56 @@ E2E가 정확한 Bearer 키·기존 헤더 미전송·API 버전을 보호하도
   기본 bundle 2.27.3을 명시한다. init/analyze의 고정 SHA를 일치시키고 낡은 날짜 주석을 바로잡았다.
 - setup-python의 고정 commit action.yml은 node24, install-action은 checksum 기본 true를 확인했다.
   input·permission·fork event·archive matrix·worker timeout은 이번 통합에서 변경하지 않는다.
+
+## 최종 검증과 충돌 없는 리베이스의 공식 채택
+
+- 현재 전체 회귀는 **11,573 PASS·45 skip·exit 0**이다. 실행 단계는 4,740.241초였고,
+  이 시간은 그 전에 수행한 컴파일과 구분한다. fmt·세 Clippy·workspace build·suite 정책도 통과했다.
+- Studio는 2,572 PASS·2 skip, 네 npm package 설치/빌드와 dependency 정합성이 통과했다.
+  AI 패널 94개·설정 20개 단언, Chrome package 실행, Firefox 다운로드 3회·편집·저장이 통과했다.
+- workflow 계약 Python 195개·CI impact 관련 Node 334개·actionlint가 통과했다.
+- Native SVG 부분/전체 글꼴 대조 두 쪽은 raw100·정수 미대응 0/0이다. 독립 FontTools로
+  사용 문자 cmap·전진/좌측 여백·윤곽 좌표/플래그와 공통 수직 메트릭을 확인했다.
+  font payload/format 이외 SVG는 동일하다. RGB 차이는 p1 325px·p2 8,974px로 별도 기록하며
+  RGB 동일성이나 독립 Print와의 일치율로 표현하지 않는다. 두 쪽의 변경 영역도 확대 판독했다.
+- `read-fonts`/`skera`의 직접 사용은 `src/renderer/svg/webfont_subset.rs` 한 곳이며,
+  `src/renderer/svg.rs:58`의 cfg로 wasm32에서 제외된다. Canvas2D/CanvasKit·Skia text layout의
+  공통 구현을 수정한 작업으로 확대하지 않는다. 다른 Rust 의존성은 전체 회귀·WASM32 Clippy로 확인했다.
+
+사용자 지시: “회귀 테스트가 끝나면 upstream/devel 위로 리베이스 충돌하는곳이 없으면 현재
+회귀테스트를 공식인정. 다시 테스트 할 필요 없음.”
+
+`d612e9f1710e6bf72f8bd21538820eeb41f9529c`를 최신 `49bc935a149c20b942d3045c2f5c733aeccf57d0` 위로 리베이스했고
+결과는 `648ed728b8f0514cbf16cc7d5775b5a12787db59`다. 27개 commit 모두 자동 적용됐으며 충돌은 없었다.
+반영한 새 devel은 문서 전용 duration trigger 보정과 그 검토 문서다. Rust·Cargo·기존 test·
+Studio/extension·shared package 입력은 리베이스 전후 동일하다. 사용자 지시에 따라 현재 결과를
+공식 채택하고 같은 검사를 재실행하지 않는다. 예약된 추가 Native 전체 배치와 fresh WASM/384쪽
+재산출 배치는 시작하지 않았으며, 기존 전쪽 자료를 새 검증으로 합산하지 않는다.
+
+[실제 검증·리베이스·원 SHA/적용 SHA](../pr/assets/dependabot_20261026/validation.json),
+[SVG 소비 경로 증거](../pr/assets/dependabot_20261026/svg-control.json)를 보존한다.
+임시 실행 스크립트·로그·내장 font payload는 커밋하지 않는다. 원 PR 21개 별도 review 문서는 만들지 않는다.
+
+| 원 PR | 제출 기준 재적용 commit |
+| --- | --- |
+| #8241 | `6e2ac46c931aa8d41acd6ef20a28d324db730b41` |
+| #8242 | `fa78c37fb4dbb2271a75fe7791717ed3088f86c5` |
+| #8243 | `a1dcc0b0ba89770bbdcc501217685c456aa098e9` |
+| #8244 | `fe91ac495bcbbc51012224accf6a07fbdb12c758` |
+| #8245 | `851ade02e7e4ae08363ffe8a2a00f7f0dbd8905f` |
+| #8246 | `4ecd612ac73bc7dc36be523dd0b20ff23fe33ec9` |
+| #8247 | `2d41ae8026b329d531fa918266cd44144c630bbc` |
+| #8248 | `7c5c68e210ae6f292997bd332e3c12bcb0630289` |
+| #8249 | `24890c79118e53e3f9b31f538bbef43fd22421b3` |
+| #8250 | `3999ce9b0de124a04415d274cc4993f52f4b2528` |
+| #8251 | `f697ea7332acdacc6f58bc60ac2535e6ad73d6ad` |
+| #8252 | `db54f241468d6dc119bf9ea7db7d723bd9f00af0` |
+| #8253 | `aaa3592c9f85a97ad7bd325d831f5bbd467afed7` |
+| #8254 | `36e972c8a17fb7cafd94b3cf80da83f081a1aad6` |
+| #8255 | `1bbd1b65e003a0949fc029392c43e6c6fa4365c2` |
+| #8256 | `776a07c714730982bd1998545696c856d6d18fba` |
+| #8257 | `304e096053f0a4d52920c5269eba8aa8c2ae7cd2` |
+| #8258 | `06eb3deb8dd198fe6e2643f23152b2f3e478950e` |
+| #8259 | `59fb6167a7bcc79fbe5cef05e5ca438f8a967fb4` |
+| #8260 | `9ae83f9ea45d1b30aadc4806440641c11d5d7db7` |
+| #8261 | `5776f13ff812c877bae63b30aed4c3751e258449` |
