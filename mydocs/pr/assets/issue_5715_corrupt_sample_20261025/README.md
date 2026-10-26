@@ -10,9 +10,11 @@
 
 정확한 파일은 `samples/issue5715/float_chart_ghost_ladder_gap.hwp`였으며,
 Windows 사본은 `C:\temp\rhwp-review-5715-522a9bc4-20261025\float_chart_ghost_ladder_gap.hwp`다.
-[보존 HWP](float_chart_ghost_ladder_gap.hwp)는 21504바이트이며 SHA-256은
+삭제한 HWP는 21504바이트이며 SHA-256은
 `fe6570871a907d8cff07f9a672286c26ff15a42c665c315ee634a44e39ac8282`다.
-손상 입력을 덮어쓰거나 정상 입력으로 바꾸지 않고 `samples/` 밖의 이 경로에 보존한다.
+처음에는 `samples/` 밖의 이 경로에 보존했으나, 2026-10-26 작업지시자의
+“손상된 파일 삭제” 지시에 따라 보관본도 삭제했다. 손상 바이트를 별도로 복사하거나
+정상 입력으로 바꾸지 않는다. 아래 해시와 Git 이력은 삭제 대상을 식별하는 기록이며,
 이 폴더를 정상 렌더링 corpus에 새로 등록하지 않는다.
 
 ## 원 해결 이력과 유지한 구현
@@ -31,7 +33,7 @@ merge `0f9ceeb19a7f36efebe77f03a4c7d39fb3f8c83f`로 반영됐다.
 | `default_column_rebuild_preserves_content_and_object_geometry` | 손상 HWP 한 개의 배열 항목만 제거; 나머지 입력·모든 assertion 유지 |
 | 같은 공유 모듈의 다른 함수 | 그대로 유지 |
 | IR field sweep | 해당 입력의 6행만 [제거 행 TSV](removed-ir-field-baseline.tsv)에 보존하고 활성 baseline에서 제거; 다른 행·허용치 유지 |
-| `samples/issue5715/float_chart_ghost_ladder_gap.hwp` | 바이트를 유지해 이 보존 경로로 이동; samples 자동 corpus에서 제외 |
+| `samples/issue5715/float_chart_ghost_ladder_gap.hwp` | 활성 corpus에서 제외한 뒤 증적 폴더에 남아 있던 손상 HWP 보관본도 삭제 |
 | 원 renderer·정상 원본·다른 fixture·기준 PDF | 변경하지 않음 |
 
 제외 전 공유 모듈 전체도 [`.rs.txt`](issue_7490_edited_paragraph_indent.rs.txt)로 보존했다.
@@ -41,7 +43,7 @@ merge `0f9ceeb19a7f36efebe77f03a4c7d39fb3f8c83f`로 반영됐다.
 ## 복원 조건과 실제 검증
 
 정상 한컴에서 열리는 원본 또는 독립적으로 재생성한 유효 입력과 변경 내역·같은 입력의
-독립 Print PDF를 확보한다. 이전 손상 바이트와 새 입력을 구분하고 관련 전체 페이지의
+독립 Print PDF를 확보한다. 삭제한 손상 입력과 새 입력을 구분하고 관련 전체 페이지의
 Native/fresh WASM raw 90% 이상 및 확대 판독을 완료한 뒤 새 이름의 관계형 회귀를
 등록한다. 이전 690~710px 핀을 새 입력의 정답으로 재사용하지 않는다. 98% 완료 페이지의
 px 검사는 현재 정본의 별도 조건을 충족할 때만 추가한다.

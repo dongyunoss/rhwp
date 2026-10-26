@@ -377,3 +377,19 @@ LineSeg를 함께 가져오는 구조다. 수동 이동 뒤 저장 좌표가 유
 `failed-tree-comparison-4221-result.json`과 독립 문자 원점의
 `pr7833-base-candidate-diagnosis-4219.json`은 ignored output에 있다.
 잔여 판정과 필요한 변경을 모은 뒤 한 번에 보정·빌드·재검증한다.
+
+## 손상된 #5715 HWP 보관본 삭제 — 2026-10-26
+
+작업지시자의 “손상된 파일 삭제” 지시에 따라
+`mydocs/pr/assets/issue_5715_corrupt_sample_20261025/float_chart_ghost_ladder_gap.hwp`
+보관본도 삭제했다. 삭제 전 21,504바이트와 SHA-256
+`fe6570871a907d8cff07f9a672286c26ff15a42c665c315ee634a44e39ac8282`를 확인했다.
+별도 보관본이나 대체 입력을 만들지 않았다. 기존 `before.hwp`·`after.hwp` 삭제도 유지한다.
+이 단계에서는 활성 검사나 제품 코드를 변경하지 않았으며 #5715의 해결을 주장하지 않는다.
+
+검증: Git 추적 대상 코드·검사·스크립트·baseline 4,664개 파일에서 삭제 대상의
+활성 참조 0건을 확인했다. 변경한 README의 내부 링크 3개와 `git diff --check`도
+통과했다. 로그는 ignored `output/pr-review/semanticist21-20261019/logs/`의
+`corrupt-file-deletion-references-4238.log`와 `corrupt-file-deletion-links-4238.log`다.
+기본 링크 검사기의 전체 탐색은 파일 I/O 지연으로 중단하고 해당 README의 링크만
+한정 검사했다. 코드 변경이 없어 이 삭제 단계에서 Rust 재빌드를 실행하지 않았다.
