@@ -204,7 +204,8 @@ class PackageNativeHostContracts(unittest.TestCase):
                 result = self.launch(moved, mode, "--input", "source.hwp", "--output", "new.hwpx")
                 self.assertEqual(result.returncode, 0, result.stderr)
                 response = json.loads(result.stdout)
-                self.assertEqual(Path(response["library"]).parent, moved / "lib")
+                expected = moved / "lib" / packager.LIBRARY_NAMES[packager.platform.system()]
+                self.assertTrue(Path(response["library"]).samefile(expected))
                 self.assertEqual(response["input"], "source.hwp")
                 self.assertEqual(response["output"], "new.hwpx")
         override = self.launch(moved, "headless", "--output", "new.hwpx", "--lib", "other.so")
