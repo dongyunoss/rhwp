@@ -1575,6 +1575,8 @@ pub struct MeasuredCell {
     pub padding_top: f64,
     /// 하단 패딩 (px)
     pub padding_bottom: f64,
+    /// 측정한 셀의 열 폭과 좌우 패딩으로 확정한 본문 폭(px).
+    pub content_width: f64,
     /// 전체 줄별 높이 (모든 문단의 줄을 평탄화, px).
     /// 각 값 = line_height + line_spacing. 마지막 줄은 line_spacing 제외.
     pub line_heights: Vec<f64>,
@@ -2908,14 +2910,17 @@ impl HeightMeasurer {
         cell: &crate::model::table::Cell,
         styles: &ResolvedStyleSet,
         depth: usize,
+        inner_width: f64,
     ) -> Option<crate::renderer::float_placement::ReflowBlockCellFlow> {
         if depth >= Self::MAX_NESTED_DEPTH || cell.text_direction != 0 || self.is_hwp3_variant {
             return None;
         }
-        crate::renderer::float_placement::reflow_block_cell_flow(
+        crate::renderer::float_placement::reflow_block_cell_flow_in_width(
             &cell.paragraphs,
             styles,
             self.dpi,
+            inner_width,
+            self.stored_geometry_policy,
             |child| {
                 let stretch = self.render_normalization.nested_table_width_scale(child);
                 let measured = self.measure_table_impl(child, 0, 0, styles, depth + 1, stretch);
@@ -5426,6 +5431,7 @@ impl HeightMeasurer {
                         row_span: cell.row_span as usize,
                         padding_top: pad_top,
                         padding_bottom: pad_bottom,
+                        content_width: inner_width,
                         line_heights,
                         total_content_height: line_sum + reflow_block_extra_height,
                         para_line_counts,

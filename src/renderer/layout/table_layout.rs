@@ -6064,7 +6064,8 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> f64 {
-        if let Some(flow) = self.reflow_block_cell_flow(paragraphs, styles) {
+        if let Some(flow) = self.reflow_block_cell_flow_composed(paragraphs, composed_paras, styles)
+        {
             return flow.bottom;
         }
         if let Some(flow) = self.stored_single_column_cell_flow(paragraphs) {
@@ -10373,7 +10374,7 @@ impl LayoutEngine {
             let closed_reflow_frame = row_filter.is_none()
                 && !single_row_fragment
                 && self
-                    .reflow_block_cell_flow(&cell.paragraphs, styles)
+                    .reflow_block_cell_flow_in_cell(cell, table, styles)
                     .is_some();
             let cell_id = tree.next_id();
             let mut cell_node = RenderNode::new(
@@ -11254,7 +11255,8 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
     ) -> Option<SequentialNestedCellLayout> {
-        if let Some(flow) = self.reflow_block_cell_flow(paragraphs, styles) {
+        if let Some(flow) = self.reflow_block_cell_flow_composed(paragraphs, composed_paras, styles)
+        {
             return Some(SequentialNestedCellLayout {
                 origins: flow
                     .origins

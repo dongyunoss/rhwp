@@ -14,9 +14,9 @@
 | 고정 원 head | `255413cdbc74d34f7c1d1be09fb7ad640eac6feb` |
 | 원격 확인 | 2026-10-26 KST: head 일치, reviewer jangster77 지정 확인; 당시 draft=true |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 현재 통합 후보 | `d6ea10837218e7e490b166ed76af221490b61ba2` |
+| 이전 검증 후보(과거) | `d6ea10837218e7e490b166ed76af221490b61ba2` |
 | 초기 렌더 소스·증거 등록(과거) | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
-| 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
+| 이전 고정 devel(과거) | `238de6de41a208648f4ade6b494fe433a81c1fce` |
 
 ## 변경과 원 커밋 적용
 
@@ -73,7 +73,7 @@ cell boundary cut은 문자열만 지우지 않고 첫/끝 문단의 개체 슬�
 
 sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
 
-## 현재 후보의 실제 검사 실행 — 2026-10-26
+## 이전 후보의 실제 검사 실행 — 2026-10-26
 
 현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
 `a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
@@ -133,3 +133,23 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
 [Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 실제 통합 PR·merge SHA·CI 결과와 이 PR의 보정 범위를 존댓말로 설명한다. 시각 검증에 사용한 대표 review·overlay는 위 안정 경로에서 실제 merge SHA로 고정한 raw URL로 함께 표시한다. 아직 확정하지 않은 수치·이미지 URL이나 미실행 경로를 만들지 않는다.
 
 실제 asset의 devel 반영을 확인한 뒤 `--body-file`로 게시하고 API로 본문·이미지를 재조회한다. contributor branch·fork를 삭제하거나 원 history를 rewrite하지 않는다. [개별 구현·후속 절차](pr_7833_review_impl.md)를 따른다.
+
+## NO_LS·인라인 프레임 보정의 제한된 재검증 — 2026-10-26
+
+이 단계의 제품 후보는 시작 head `35fa0d12960059d2a982347717bdeb408962cc01`에
+추가한 공통 줄 프레임 변경이다. 실제 Native264 빌드 source별 SHA는 ignored
+`reflow-visible-host-native-build-4340-result.json`에 고정했다. 바이트별 전체 source가
+이전 후보와 같다는 뜻은 아니다. 새 가시 NO_LS 호스트는 실제 셀 폭에서 구성한
+줄 점유를 측정·전체/부분 배치가 공유하며, 단일 토큰 fallback은 기측정 폭을 쓴다.
+인라인 그림·수식도 새 원시 줄 경계를 발행해 가시 글자 경계로 소속을 추측하지 않는다.
+
+같은 wrapper 8조건·기존 주석 대조군 8조건의 Native 비교는 12통과/4미달이다.
+중첩 그림은 94.13019%/97.26027%, flat 그림과 주석 10조건은 100%다. 인라인 표
+4조건의 미달은 유지하며 통합 승인으로 판정하지 않는다. 기존 셀 경계 편집 17건,
+#8188 상속 88건, 쪽 번호 4건은 실제 자동 수집에서 **109 PASS/0 FAIL**이었다.
+로그는 `output/pr-review/semanticist21-20261019/logs/reflow-inherited-contracts-nextest-4339.log`다.
+
+작은 TAC 표는 한컴 진단 저장본의 공통 폭이 1200→2606 HU로 커져도 셀 선언 600 HU는
+유지됐다. 현재 닫힌 그리드의 합의만으로 실제 물리 폭을 확정하는 가정을 계속 보정해야 한다.
+기준은 기존 독립 Print이며 진단 저장본이나 폭 변형을 원본의 통과로 대체하지 않는다.
+fresh WASM·전체 시각 검증·전체 Rust/lint와 최종 원격 CI는 아직 완료하지 않았다.

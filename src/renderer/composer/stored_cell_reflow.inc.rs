@@ -207,7 +207,25 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             }
             let mut reconciled = composed.clone();
             reconciled.lines = reflowed.lines;
-            if rejoinable_word_tail || !measured_inline_table_heights.is_empty() {
+            let uncached_inline_frame = inline_frame_admission::supports_uncached_inline_host(para);
+            if rejoinable_word_tail
+                || !measured_inline_table_heights.is_empty()
+                || uncached_inline_frame
+            {
+                // 가시 글자 경계는 그 앞의 개체 슬롯과 같은 줄 경계가 아닐 수 있다.
+                // 새 원시 프레임의 소유를 게시하여 배치가 줄을 다시 추측하지 않게 한다.
+                for control in &mut reconciled.inline_controls {
+                    if let Some(line) = control_slot_line_index_with_starts(
+                        para,
+                        control.control_index,
+                        reflowed_para
+                            .line_segs
+                            .iter()
+                            .map(|segment| segment.text_start),
+                    ) {
+                        control.line_index = line;
+                    }
+                }
                 reconciled.frame_geometry =
                     Some(std::sync::Arc::new(frame_geometry::FrameGeometry {
                         line_segs: reflowed_para.line_segs,

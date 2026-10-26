@@ -29,6 +29,10 @@ pub(crate) use stored_cell_flow_picture::{
     stored_cell_flow_picture_extent_hu, stored_cell_flow_picture_frame,
 };
 mod reflow_block_cell;
+mod reflow_block_lines;
+pub(crate) use reflow_block_lines::{
+    reflow_block_cell_flow_in_width, reflow_block_cell_flow_with_composed,
+};
 mod stored_closed_cell_frame;
 pub(crate) use reflow_block_cell::{
     has_reflow_block_cell_host, reflow_block_cell_flow, reflow_external_table_flow,

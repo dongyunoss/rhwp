@@ -692,3 +692,84 @@ manifest --prepare 후 새 두 검사 실행·exit0을 확인했다. 로그4322�
 검사 도구의 동일 helper로 변경 Markdown 4개와 등록부를 검사해 오류0을 확인했다.
 기본 CLI는 redirect 인자가 없어도 전체 추적 바이너리를 읽는 비효율 때문에
 중단했으며, 이를 통과 기록으로 쓰지 않았다. 로그는 `logs/page-number-cell-links-focused-4328.log`다.
+
+### #7833 가시 NO_LS prefix의 공통 줄 프레임 계획
+
+기준 head35fa0d1296의 위반은 제한 없는 Para/TopAndBottom 자식의 본체가
+부모 글줄·행의 점유와 혼합되는 것이다. 기존 Print4300과 직접 판독4302는
+부모 행·가시 prefix·행 밖 자식의 별도 소유를 보여 준다. 원 PR의 cut 계약과
+기존 공통 reflow 경로는 유지하며 조건을 문구·문서 ID로 제한하지 않는다.
+
+생산은 `measure_table_impl`의 실제 column/grid·padding으로 구한 inner_width,
+`compose_paragraph_in_context` → `recompose_cell_lines_in_frame`의 줄 결과다.
+측정의 `reflow_cell_frame_rows`와 `measured_reflow_external_flow`, 배치의
+`measured_reflow_block_table` → 전체/부분 `reflow_block_cell_flow` 소비 지점이
+같은 폭·줄 기반 host 점유를 쓰게 한다. 이미 구성된 문단은 재추측하지 않고
+그 ComposedParagraph를 같은 공통 함수에 전달한다. 셀 폭을 전달받지 못한
+기존 호출은 가시 NO_LS 문단을 임의 높이로 수용하지 않는다.
+
+먼저 기존8개 wrapper/control의 Native와 직접 PNG로 방향을 확인한다. 개선
+확인 뒤 fresh WASM·기존 note 정상 대조군·#8188 보존을 재검증한다. 지금 단계의
+코드 후보와 이후 실행은 이전 c2513250 증거로 통과 처리하지 않는다.
+
+Native262를 같은8 wrapper·8 note 입력으로 실제 비교했다. wrapper는
+38.10614→79.76226, cut은38.33084→95.88601, 표형은43.96520→70.06839 /
+45.10169→77.91698로 개선됐다. flat 그림2조건과 note8조건은 raw100을
+유지했다. flat TAC 표81.99184/87.13986은 변화가 없다. 합계11통과/5미달이며
+새 head 전체 승인으로 판정하지 않는다. `reflow-visible-host-validation-4330-result.json`과
+직접 review·overlay4332에 같은 입력·Print와 실제 producer SHA를 보존했다.
+
+잔여 차이의 실제 width39.52px 셀에서 `가🦦나다라`, 인라인 그림2개를 읽었다.
+각각의 슬롯·UTF-16 갭·스타일을 유지한 진단4334/4336에서 첫줄 `가+그림+🦦`가
+나온다. 가12.96px·그림16px·🦦18.293333px의 합은47.253333px로 상자보다 크다.
+Font trace4335도 실제 fallback Segoe UI Emoji의 advance1372HU를 확인했다.
+Print의 🦦 원점은 다음 줄이다. 문제는 `fill_one_interval`이 토큰을 거절한 뒤
+`base_char_widths` 없는 단일 문자 fallback에서 이미 측정한 base_width를 버리고
+CJK/em 또는 그 밖/0.5em으로 다시 추측하는 것이다. 같은 기호가 약6.67px로
+줄어 거절이 뒤집힌다. 같은 단일 토큰의 기측정 폭을 재사용하고, 커닝의 경계
+보정·다문자 토큰의 상세 폭 계약은 유지한다. 새 숫자 허용치는 추가하지 않는다.
+
+단일 토큰 폭을 보존한 Native263의 첫 같은 입력은92.48023%, cut은95.39459%다.
+별도 원시 줄 경계의 소비 누락도 확인했다. `recompose_cell_lines_in_frame`은
+표 실측 높이 또는 낱말 꼬리 재결합 때만 FrameGeometry를 게시하고, 일반
+NO_LS 그림·수식은 새 텍스트 줄만 반환했다. 배치의 `control_line_indices`는
+이 프레임이 없으면 NO_LS에서 None이 되어 폭을 임의 줄에 채우는 폴백을 썼다.
+
+새 프레임이 소유한 원시 LineSeg 시작을 인라인 개체의 줄 질의와 InlineControl에
+함께 게시한다. 예를 들어 그림 슬롯raw1과 뒤 🦦 raw9는 가시 문자 경계1로
+합치면 안 된다. FrameGeometry의 raw 시작을 직접 읽으며 기존 source 또는
+호출자가 투영한 paragraph의 축을 다시 추정하지 않는다. 측정의 셀 본문 폭도
+기존 공통 `ParagraphBox::content_for_style`로 문단 좌우 여백을 적용한다. 이는
+새 함수를 넣은 경로가 기존 실제 셀 조판기와 같은 상자를 사용하게 하는 보정이다.
+Native263의 실행 중 비교는 고정 실행 파일의 이전 후보 결과로 보존하고 이 추가
+수정의 검증으로 사용하지 않는다. 다음 Native/fresh 출력에서 따로 판정한다.
+
+Native264의 실제 16조건은 12 PASS / 4 미달이다. 중첩 그림 before 94.13019%,
+cut 97.26027%, flat 그림 2조건과 주석 8조건은 100%다. TAC 표 네 조건은
+70.06839/77.91698/81.99184/87.13986으로 남았다. #8188의 88건과 기존 셀
+경계 편집 17건·쪽 번호 4건은 정식 자동 수집에서 **109 PASS / 0 FAIL**, exit0을
+확인했다. 로그는 `logs/reflow-inherited-contracts-nextest-4339.log`다.
+Native264 SHA-256은 `9ac0c73cf03e713d0b76040a70ad3f5bbf897beb88502a986f66fde8b350c8ec`다.
+빌드·실행 source별 해시는 4340/4339 receipt에 고정했다. 이후 include 파일의
+if/iterator 줄 접기만 변경했으며 4347에서 공백 외 동일성을 확인했다.
+이 결과는 전체 Rust·fresh WASM·전체 시각 검증 완료를 의미하지 않는다.
+
+인라인 표 잔여 원인은 더 좁혀졌다. 동일 원본 HWPX를 진단용으로만 MCP 2020에서
+HWP로 저장했다(job `473bb1f0-d204-459b-81ac-9fefb896deee`). 기준은 기존 Print 4300을 유지하며
+새 저장본을 원본의 통과 대체 자료로 쓰지 않는다. HWP5 Section0의 CTRL_HEADER를
+CFB/해제 스트림에서 직접 읽으면 작은 표 4개의 common.width는 1200→2606 HU지만
+각 셀의 선언 600 HU는 유지된다. 저장본 SHA-256은
+`646bc950ad590de040e49f4ec084f5525088dde195c95285f338752b276b6533`이다.
+추가 진단은 같은 원본의 outer0·font20·padding700900 세 변형뿐이다. 바깥 여백 0과
+기본 글자 20pt에서도 2606, 안 여백 700/900에서는 3766이다. 각각
+2×(510+510+283), 2×(700+900+283)이며 최소 내용 폭 1mm(283 HU)와 일치한다.
+변형 과정·원본/산출 SHA는 4345 plan·개별 MCP receipt에 있다. 공식 도움말 검색은
+이 최소 폭의 근거를 찾지 못했으므로 사양에 기재됐다고 주장하지 않는다.
+
+정상화 HWP의 common.width가 2606이어도 현재 Native는 실제 작은 표를 16px로
+그린다(진단 4346). `Table::closed_inline_grid_width_hu`가 600+600을 완결된 물리
+폭으로 받아 source common 폭보다 우선하기 때문이다. 원인은 점수나 PDF 좌표가
+아니라 셀 안 여백보다 작은 선언 폭을 실제 물리 경계로 승인하는 가정이다. 다음
+단계는 모델의 폭 생산 → paragraph_frame_owner_widths 측정 → column/row 셀 배치와
+최종 보조 경계 덮어쓰기를 함께 추적해 최소 물리 폭을 공통 결과로 전달하는 것이다.
+아직 이 최소 폭 보정은 구현하지 않았으며 기존 기대값도 변경하지 않았다.

@@ -22,7 +22,7 @@ impl LayoutEngine {
             table,
             self.dpi,
             parent_height,
-            |cell| self.reflow_block_cell_flow(&cell.paragraphs, styles),
+            |cell| self.reflow_block_cell_flow_in_cell(cell, table, styles),
         )
     }
 }

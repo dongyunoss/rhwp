@@ -93,7 +93,7 @@ impl LayoutEngine {
             })
         {
             return Some(if start == 0 {
-                self.reflow_block_cell_flow(&cell.paragraphs, styles)?
+                self.reflow_block_cell_flow_in_cell(cell, table, styles)?
                     .bottom
             } else {
                 0.0
@@ -150,7 +150,7 @@ impl LayoutEngine {
         if cell.text_direction != 0 {
             return None;
         }
-        let flow = self.reflow_block_cell_flow(&cell.paragraphs, styles)?;
+        let flow = self.reflow_block_cell_flow_in_cell(cell, table, styles)?;
         if flow
             .origins
             .iter()

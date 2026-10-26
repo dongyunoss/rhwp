@@ -69,7 +69,7 @@ impl LayoutEngine {
             if cell.row_span != 1 {
                 return None;
             }
-            let flow = self.reflow_block_cell_flow(&cell.paragraphs, styles)?;
+            let flow = self.reflow_block_cell_flow_in_cell(cell, table, styles)?;
             // 제한 없는 자식의 독립 스트림은 이 부모 프레임의 원자 단위가 아니다.
             if flow
                 .origins
@@ -120,7 +120,7 @@ impl LayoutEngine {
             if cell.row_span != 1 {
                 return None;
             }
-            self.reflow_block_cell_flow(&cell.paragraphs, styles)?;
+            self.reflow_block_cell_flow_in_cell(cell, table, styles)?;
             end_cut.push(self.cell_units(cell, table, styles).len().min(1));
         }
         Some(self.row_cut_content_height(table, row, &[], &end_cut, styles))
@@ -153,6 +153,67 @@ impl LayoutEngine {
         }
         crate::renderer::float_placement::reflow_block_cell_flow(
             paragraphs,
+            styles,
+            self.dpi,
+            |child| {
+                self.reflow_unrestricted_table_flow(child, styles)
+                    .map_or_else(
+                        || self.nested_table_body_height(child, styles),
+                        |flow| flow.effective_height,
+                    )
+            },
+        )
+    }
+
+    /// 전체/부분 배치는 측정기가 실제 열·패딩으로 확정한 같은 본문 폭을 소비한다.
+    pub(in crate::renderer::layout) fn reflow_block_cell_flow_in_cell(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &Table,
+        styles: &ResolvedStyleSet,
+    ) -> Option<ReflowBlockCellFlow> {
+        if !cell.paragraphs.iter().any(|para| {
+            crate::renderer::para_has_no_stored_line_segs(para) && !para.text.is_empty()
+        }) {
+            return self.reflow_block_cell_flow(&cell.paragraphs, styles);
+        }
+        let measured = self.measured_reflow_block_table(table, styles)?;
+        let width = measured
+            .cells
+            .iter()
+            .find(|measured| {
+                measured.row == usize::from(cell.row) && measured.col == usize::from(cell.col)
+            })?
+            .content_width;
+        crate::renderer::float_placement::reflow_block_cell_flow_in_width(
+            &cell.paragraphs,
+            styles,
+            self.dpi,
+            width,
+            self.profile.get().stored_geometry_policy(),
+            |child| {
+                self.reflow_unrestricted_table_flow(child, styles)
+                    .map_or_else(
+                        || self.nested_table_body_height(child, styles),
+                        |flow| flow.effective_height,
+                    )
+            },
+        )
+    }
+
+    /// 이미 조판한 문단은 공통 줄 점유 계산에 그 결과를 직접 넘긴다.
+    pub(in crate::renderer::layout) fn reflow_block_cell_flow_composed(
+        &self,
+        paragraphs: &[Paragraph],
+        composed: &[crate::renderer::composer::ComposedParagraph],
+        styles: &ResolvedStyleSet,
+    ) -> Option<ReflowBlockCellFlow> {
+        if self.profile.get().hwp3_layout() {
+            return None;
+        }
+        crate::renderer::float_placement::reflow_block_cell_flow_with_composed(
+            paragraphs,
+            composed,
             styles,
             self.dpi,
             |child| {

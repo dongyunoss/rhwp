@@ -35,7 +35,7 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
 
-## 현재 후보의 실제 검사 실행 — 2026-10-26
+## 이전 후보의 실제 검사 실행 — 2026-10-26
 
 현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
 `a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
@@ -89,3 +89,23 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
   - `transparency_test_sample_text_line_boundaries_keep_visual_affinity`: PASS, `logs/current-full-nextest-4184.log:10468` (`rhwp::regression_suite_024`).
 
 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+
+## NO_LS·인라인 프레임 보정의 제한된 재검증 — 2026-10-26
+
+이 단계의 제품 후보는 시작 head `35fa0d12960059d2a982347717bdeb408962cc01`에
+추가한 공통 줄 프레임 변경이다. 실제 Native264 빌드 source별 SHA는 ignored
+`reflow-visible-host-native-build-4340-result.json`에 고정했다. 바이트별 전체 source가
+이전 후보와 같다는 뜻은 아니다. 새 가시 NO_LS 호스트는 실제 셀 폭에서 구성한
+줄 점유를 측정·전체/부분 배치가 공유하며, 단일 토큰 fallback은 기측정 폭을 쓴다.
+인라인 그림·수식도 새 원시 줄 경계를 발행해 가시 글자 경계로 소속을 추측하지 않는다.
+
+같은 wrapper 8조건·기존 주석 대조군 8조건의 Native 비교는 12통과/4미달이다.
+중첩 그림은 94.13019%/97.26027%, flat 그림과 주석 10조건은 100%다. 인라인 표
+4조건의 미달은 유지하며 통합 승인으로 판정하지 않는다. 기존 셀 경계 편집 17건,
+#8188 상속 88건, 쪽 번호 4건은 실제 자동 수집에서 **109 PASS/0 FAIL**이었다.
+로그는 `output/pr-review/semanticist21-20261019/logs/reflow-inherited-contracts-nextest-4339.log`다.
+
+작은 TAC 표는 한컴 진단 저장본의 공통 폭이 1200→2606 HU로 커져도 셀 선언 600 HU는
+유지됐다. 현재 닫힌 그리드의 합의만으로 실제 물리 폭을 확정하는 가정을 계속 보정해야 한다.
+기준은 기존 독립 Print이며 진단 저장본이나 폭 변형을 원본의 통과로 대체하지 않는다.
+fresh WASM·전체 시각 검증·전체 Rust/lint와 최종 원격 CI는 아직 완료하지 않았다.

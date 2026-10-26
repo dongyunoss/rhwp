@@ -23,13 +23,19 @@ impl ComposedParagraph {
 
     /// 저장 줄과 현재 프레임은 같은 원시 제어문 슬롯 축을 소비한다.
     pub(crate) fn control_line_indices(&self, para: &Paragraph) -> Option<Vec<usize>> {
-        if self
+        if let Some(frame) = self
             .frame_geometry
             .as_ref()
-            .is_some_and(|frame| !frame.stored_partition && !frame.inline_table_heights.is_empty())
+            .filter(|frame| !frame.stored_partition)
         {
             (0..para.controls.len())
-                .map(|index| super::control_slot_line_index(para, index))
+                .map(|index| {
+                    super::control_slot_line_index_with_starts(
+                        para,
+                        index,
+                        frame.line_segs.iter().map(|segment| segment.text_start),
+                    )
+                })
                 .collect()
         } else {
             crate::renderer::float_placement::stored_control_line_indices(para)

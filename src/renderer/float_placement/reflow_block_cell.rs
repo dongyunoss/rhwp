@@ -92,10 +92,6 @@ pub(crate) fn has_reflow_block_cell_host(paragraphs: &[Paragraph]) -> bool {
             return false;
         }
         if no_ls {
-            // 가시 텍스트의 줄 나눔은 실제 가용 폭에서 구성한 결과가 소유한다.
-            if !para.text.is_empty() {
-                return false;
-            }
             reflow_started = true;
         } else if reflow_started
             || para.stored_text_partition_is_dirty()
@@ -137,6 +133,17 @@ pub(crate) fn reflow_block_cell_flow(
     paragraphs: &[Paragraph],
     styles: &ResolvedStyleSet,
     dpi: f64,
+    table_body_height: impl FnMut(&Table) -> f64,
+) -> Option<ReflowBlockCellFlow> {
+    reflow_block_cell_flow_with_heights(paragraphs, styles, dpi, None, table_body_height)
+}
+
+/// 가시 NO_LS 문단은 실제 셀 폭에서 구성한 글줄의 점유를 받아야 한다.
+pub(super) fn reflow_block_cell_flow_with_heights(
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    text_heights: Option<&[f64]>,
     mut table_body_height: impl FnMut(&Table) -> f64,
 ) -> Option<ReflowBlockCellFlow> {
     if !has_reflow_block_cell_host(paragraphs) {
@@ -212,7 +219,15 @@ pub(crate) fn reflow_block_cell_flow(
             }
         } else {
             flow.paragraph_origins.push(cursor);
-            let line_height = reflow_host_line_height(para, styles, dpi, last)?;
+            let line_height = if para.text.is_empty() {
+                reflow_host_line_height(para, styles, dpi, last)?
+            } else {
+                let height = *text_heights?.get(pi)?;
+                if !height.is_finite() || height <= 0.0 {
+                    return None;
+                }
+                height
+            };
             let mut block_height = 0.0_f64;
             for group in super::nested_table_groups(para, false) {
                 let mut group_height = 0.0_f64;

@@ -2258,7 +2258,12 @@ fn fill_one_interval(
                         let rel_idx = ci - *start_idx;
                         let char_w = base_char_widths
                             .get(rel_idx)
-                            .map(|width| to_hwp(*width))
+                            // 한 글자 토큰의 폭은 이미 같은 글리프·속성으로 측정됐다.
+                            // 빈 세부 배열을 반각 추정으로 바꾸면 앞선 fit 거절을
+                            // 뒤집어 넓은 기호나 보충 평면 문자를 넘치는 줄에 남긴다.
+                            .copied()
+                            .or_else(|| (*end_idx == *start_idx + 1).then_some(*base_width))
+                            .map(to_hwp)
                             .unwrap_or_else(|| {
                                 let ch = text_chars[ci];
                                 let char_w_px = if is_cjk_char(ch) {

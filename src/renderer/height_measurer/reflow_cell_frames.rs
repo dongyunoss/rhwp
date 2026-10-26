@@ -34,7 +34,13 @@ impl HeightMeasurer {
             let known_frames: Option<Vec<_>> = cells
                 .into_iter()
                 .map(|cell| {
-                    if let Some(flow) = self.cell_reflow_block_flow(cell, styles, depth) {
+                    let measured = measured_cells.iter().find(|measured| {
+                        measured.row == usize::from(cell.row)
+                            && measured.col == usize::from(cell.col)
+                    })?;
+                    if let Some(flow) =
+                        self.cell_reflow_block_flow(cell, styles, depth, measured.content_width)
+                    {
                         has_reflow_host = true;
                         return flow.parent_frame_height(cell, table, self.dpi);
                     }
@@ -48,10 +54,6 @@ impl HeightMeasurer {
                     {
                         return None;
                     }
-                    let measured = measured_cells.iter().find(|measured| {
-                        measured.row == usize::from(cell.row)
-                            && measured.col == usize::from(cell.col)
-                    })?;
                     Some(
                         hwpunit_to_px(i32::try_from(cell.height).ok()?, self.dpi).max(
                             measured.total_content_height
@@ -85,7 +87,17 @@ impl HeightMeasurer {
             table,
             self.dpi,
             parent_height,
-            |cell| self.cell_reflow_block_flow(cell, styles, depth),
+            |cell| {
+                let width = measured
+                    .cells
+                    .iter()
+                    .find(|measured| {
+                        measured.row == usize::from(cell.row)
+                            && measured.col == usize::from(cell.col)
+                    })?
+                    .content_width;
+                self.cell_reflow_block_flow(cell, styles, depth, width)
+            },
         )
     }
 }

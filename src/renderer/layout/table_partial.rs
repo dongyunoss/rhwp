@@ -2735,7 +2735,7 @@ impl LayoutEngine {
                 ),
                 (None, None) => (0, cell.paragraphs.len()),
             };
-            let reflow_block_flow = self.reflow_block_cell_flow(&cell.paragraphs, styles);
+            let reflow_block_flow = self.reflow_block_cell_flow_in_cell(cell, table, styles);
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
                 if empty_paragraphs[cp_idx] && !owns_empty_paragraph(cp_idx) {
