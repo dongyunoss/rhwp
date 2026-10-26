@@ -164,9 +164,9 @@ impl LayoutEngine {
             return Some(flow.bottom);
         }
         let selected = units.get(start..end)?;
-        let Some(last_selected) = selected.last() else {
+        if selected.is_empty() {
             return Some(0.0);
-        };
+        }
         // 문단마다 전체 유닛을 다시 훑지 않고 원본 소유 범위를 한 번만 색인한다.
         let mut bounds = vec![None; cell.paragraphs.len()];
         for (index, unit) in units.iter().enumerate() {
@@ -183,18 +183,8 @@ impl LayoutEngine {
                 &units[lo..hi]
             });
             if own.is_empty() {
-                // 자식을 다음 쪽으로 보낸 첫 호스트도 자신의 빈 줄 상자를 소유한다.
-                if pi == last_selected.para_idx + 1
-                    && flow.origins[pi].iter().any(Option::is_some)
-                    && end == bounds[last_selected.para_idx]?.1
-                {
-                    height += crate::renderer::float_placement::reflow_host_line_height(
-                        para,
-                        styles,
-                        self.dpi,
-                        pi + 1 == cell.paragraphs.len(),
-                    )?;
-                }
+                // 현재 컷이 소비하지 않은 다음 호스트의 줄은 예약하지 않는다.
+                // 그 줄은 호스트의 첫 소유 유닛과 함께 다음 조각에서 한 번 소비한다.
                 continue;
             }
             let children: Vec<_> = para
