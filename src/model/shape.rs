@@ -103,8 +103,8 @@ pub struct CommonObjAttr {
     pub description: String,
     /// HWPX `numberingType` (캡션 번호 범주) 보존 (#1379).
     ///
-    /// HWP5 파서는 설정하지 않는다 (기본 None). HWPX 그리기 개체의
-    /// `numberingType="PICTURE"` 등을 라운드트립 보존하기 위한 필드.
+    /// HWP5 공통 속성 bits26-28과 HWPX `numberingType`을 같은 범주로 읽는다.
+    /// `None`은 번호를 세지 않는 명시적 범주이며, 표시 번호와 저장 왕복에 사용한다.
     pub numbering_type: ObjectNumberingType,
     /// HWPX `dropcapstyle` (개체를 감싼 단락의 드롭캡 표시 방식) 보존.
     ///
@@ -320,6 +320,25 @@ impl Default for ShapeComponentAttr {
     }
 }
 
+impl ShapeComponentAttr {
+    /// 명시적으로 저장된 유효한 변환인지 확인한다.
+    /// 기본 identity 블록은 current/original 크기의 저장 경로이므로 별도 기하가 아니다.
+    pub(crate) fn has_saved_affine_geometry(&self) -> bool {
+        let matrix = [
+            self.render_sx,
+            self.render_b,
+            self.render_tx,
+            self.render_c,
+            self.render_sy,
+            self.render_ty,
+        ];
+        !self.raw_rendering.is_empty()
+            && matrix.iter().all(|v| v.is_finite())
+            && self.render_sx * self.render_sy - self.render_b * self.render_c != 0.0
+            && matrix != [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+    }
+}
+
 /// 그리기 개체 공통 속성
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct DrawingObjAttr {
@@ -346,6 +365,24 @@ pub struct DrawingObjAttr {
     pub text_box: Option<TextBox>,
     /// 캡션
     pub caption: Option<Caption>,
+}
+
+impl DrawingObjAttr {
+    /// SHAPE_COMPONENT 저장 워드(`flip`)의 글상자 비트.
+    pub const TEXT_BOX_STORAGE_BIT: u32 = 0x0100_0000;
+
+    /// 글상자 비트를 `text_box` 유무에 맞춘다 (#8172).
+    ///
+    /// 한컴은 글상자가 있는 도형에 이 비트가 없으면 HWP를 손상 문서로 거부하고,
+    /// 글상자 없는 도형에 세워도 거부한다(`hwpx_to_hwp`의 같은 계약). 편집으로
+    /// 글상자를 만들거나 붙이거나 떼는 경로는 이 함수로 비트를 맞춘다.
+    pub fn sync_text_box_storage_bit(&mut self) {
+        if self.text_box.is_some() {
+            self.shape_attr.flip |= Self::TEXT_BOX_STORAGE_BIT;
+        } else {
+            self.shape_attr.flip &= !Self::TEXT_BOX_STORAGE_BIT;
+        }
+    }
 }
 
 /// 글상자 (그리기 개체 내 텍스트)
@@ -700,6 +737,17 @@ pub struct ArcShape {
     pub axis2: Point,
 }
 
+/// 다각형 편집의 기준 기하. 파일에는 현재 합성 행렬만 저장한다.
+#[derive(Debug, Clone)]
+pub struct PolygonAffineEditReference {
+    pub width: u32,
+    pub height: u32,
+    pub rotation: i16,
+    pub horz_flip: bool,
+    pub vert_flip: bool,
+    pub matrix: [f64; 6],
+}
+
 /// 다각형 개체 (HWPTAG_SHAPE_COMPONENT_POLYGON)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct PolygonShape {
@@ -709,6 +757,9 @@ pub struct PolygonShape {
     pub drawing: DrawingObjAttr,
     /// 꼭짓점 좌표 목록
     pub points: Vec<Point>,
+    /// 복수 속성 변경과 되돌리기를 같은 기준 행렬에서 계산한다.
+    #[serde(skip)]
+    pub affine_edit_reference: Option<PolygonAffineEditReference>,
     /// SHAPE_POLYGON 끝 패딩/추가 바이트 (라운드트립 보존)
     pub raw_trailing: Vec<u8>,
 }

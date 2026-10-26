@@ -6,7 +6,7 @@ use crate::model::{
     shape::{CommonObjAttr, HorzRelTo, TextWrap, VertAlign, VertRelTo},
     table::Table,
 };
-use crate::renderer::{hwpunit_to_px, px_to_hwpunit, stored_float_anchor};
+use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 
 use super::{is_para_topbottom_float, signed_hwpunit, ParagraphFloatFlow, ParagraphFloatPlacement};
 
@@ -232,6 +232,50 @@ pub(super) fn from_stored_ladder(
     measured_table_height: f64,
     dpi: f64,
 ) -> Option<ParagraphFloatPlacement> {
+    from_ladder(
+        para,
+        next,
+        table,
+        origin,
+        spacing_before,
+        measured_table_height,
+        dpi,
+        false,
+    )
+}
+
+/// 원본 사다리가 증명한 간격 소유는 보존하되 본체는 현재 재조판 높이를 쓴다.
+pub(super) fn from_reflowed_ladder(
+    para: &Paragraph,
+    next: &Paragraph,
+    table: &Table,
+    origin: f64,
+    spacing_before: f64,
+    measured_table_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    from_ladder(
+        para,
+        next,
+        table,
+        origin,
+        spacing_before,
+        measured_table_height,
+        dpi,
+        true,
+    )
+}
+
+fn from_ladder(
+    para: &Paragraph,
+    next: &Paragraph,
+    table: &Table,
+    origin: f64,
+    spacing_before: f64,
+    measured_table_height: f64,
+    dpi: f64,
+    reflowed: bool,
+) -> Option<ParagraphFloatPlacement> {
     let paragraph_square = !table.common.treat_as_char
         && table.common.text_wrap == TextWrap::Square
         && table.common.vert_rel_to == VertRelTo::Para;
@@ -249,11 +293,12 @@ pub(super) fn from_stored_ladder(
         || !spacing_before.is_finite()
         || spacing_before < 0.0
         || !measured_table_height.is_finite()
+        || measured_table_height < 0.0
     {
         return None;
     }
     let declared = hwpunit_to_px(table.common.height.min(i32::MAX as u32) as i32, dpi);
-    if (measured_table_height - declared).abs() > 1.0 {
+    if !reflowed && (measured_table_height - declared).abs() > 1.0 {
         return None;
     }
     let host_vpos = stored_line(para)?;
@@ -268,13 +313,22 @@ pub(super) fn from_stored_ladder(
         return None;
     }
     // 점유 하단은 그림 원점이 아니라 다음 저장 줄이 닫는 전체 프레임이다.
-    // 비대칭 여백의 본체 원점도 기존 저장 앵커와 같은 규칙으로 읽는다.
+    // 닫힌 등식과 동일한 저장 출처를 사용해 실제 본체 윗변을 정한다.
+    // HWP5 앵커의 원점을 HWPX object frame의 위 여백으로 바꾸지 않는다.
+    // 저장 등식이 없는 기존 앵커는 이 경로에 들어오지 않는다.
     let table_top = origin
         + (i64::from(signed_hwpunit(table.common.vertical_offset))
-            + stored_float_anchor::stored_outer_box_table_top_hu(table)) as f64
+            + crate::renderer::stored_float_anchor::stored_outer_box_table_top_hu(table))
+            as f64
             * dpi
             / 7200.0;
-    let occupied_bottom = origin + physical_hu as f64 * dpi / 7200.0;
+    let occupied_bottom = origin
+        + physical_hu as f64 * dpi / 7200.0
+        + if reflowed {
+            measured_table_height - declared
+        } else {
+            0.0
+        };
     Some(ParagraphFloatPlacement {
         flow: ParagraphFloatFlow::Exclusion,
         anchor_y: origin,

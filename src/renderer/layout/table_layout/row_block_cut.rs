@@ -113,6 +113,13 @@ impl<'a> CellCutFrame<'a> {
     }
 
     pub(super) fn height(&self, end: usize, content_advance: f64) -> f64 {
+        let physical = self.height_without_mixed_opening(end, content_advance);
+        self.engine
+            .stored_mixed_opening_frame(self.table, self.cell, self.styles, self.start, end)
+            .map_or(physical, |frame| frame.physical_height)
+    }
+
+    pub(super) fn height_without_mixed_opening(&self, end: usize, content_advance: f64) -> f64 {
         let content = self
             .stored_content_height(end, content_advance)
             .unwrap_or_else(|| self.content_height(end, content_advance));
@@ -137,7 +144,13 @@ impl<'a> CellCutFrame<'a> {
     /// 실제 글줄 상자까지 수용하면 뒤 줄간격은 다음 소유자로 넘길 수 있다.
     /// 빈 줄·개체 등 분리한 간격이 없는 유닛은 종전의 전체 슬롯을 예약한다.
     pub(super) fn fitting_height(&self, end: usize, content_advance: f64) -> f64 {
-        let physical = self.height(end, content_advance);
+        let physical = self.height(end, content_advance).max(
+            self.engine
+                .stored_complete_cell_slot_capacity(
+                    self.cell, self.table, self.units, self.start, end,
+                )
+                .unwrap_or(0.0),
+        );
         if self.preserves_line_slots && end > self.start && end < self.units.len() {
             let following_advance = self.engine.stored_span_cut_closing_advance(
                 self.table,
@@ -241,11 +254,25 @@ impl LayoutEngine {
             while j < units.len() {
                 let u = &units[j];
                 let next_physical_height = frame.fitting_height(j + 1, h + u.height);
+                // 같은 닫힌 상자도 prefix를 뺀 예산과 유닛을 더한 점유는
+                // 합산 순서에 따른 끝자리 오차가 생긴다. HU/px 여유를 더하지
+                // 않고, 이 walk의 누적 연산 규모 안에 있는 roundoff만 구분한다.
+                let roundoff = f64::EPSILON
+                    * (avail_height.abs()
+                        + row_offset.abs()
+                        + next_physical_height.abs()
+                        + (h + u.height).abs())
+                    .max(1.0)
+                    * (j - start + cell_row.saturating_sub(b_start) + 2) as f64;
+                let exceeds_budget = next_physical_height > cell_budget
+                    && !(next_physical_height.is_finite()
+                        && cell_budget.is_finite()
+                        && next_physical_height - cell_budget <= roundoff);
                 if j > start
                     && u.hard_break_before
                     && (!cell_relaxed
                         || (!u.empty_spacer
-                            && (next_physical_height > cell_budget
+                            && (exceeds_budget
                                 || cell_budget - frame.height(j, h)
                                     <= HARD_BREAK_REMAINING_TOLERANCE_PX)))
                 {
@@ -268,7 +295,7 @@ impl LayoutEngine {
                     hit_hard_break = true;
                     break;
                 }
-                if j > start && next_physical_height > cell_budget {
+                if j > start && exceeds_budget {
                     if Self::rewind_rowbreak_mixed_nested_table_tail_for_fresh_page(
                         table,
                         &units,
@@ -292,7 +319,7 @@ impl LayoutEngine {
                     }
                     break;
                 }
-                if j == start && !allow_force_progress && next_physical_height > cell_budget {
+                if j == start && !allow_force_progress && exceeds_budget {
                     break;
                 }
                 if self.should_defer_overflowing_top_and_bottom_entry(

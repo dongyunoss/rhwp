@@ -27,6 +27,17 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
     measured_inline_table_heights: &[(usize, u32)],
 ) -> Option<ComposedParagraph> {
     let stored_geometry_policy = stored_geometry_policy.into();
+    // loader가 만든 합성 줄은 원본 저장 캐시가 아니다. 독립 개체가 없는
+    // 본문은 현재 프레임에서 다시 구성하며 원본 IR은 보존한다.
+    let fresh_body = (!para.line_segs.is_empty()
+        && para.controls.is_empty()
+        && crate::renderer::para_has_no_stored_line_segs(para))
+    .then(|| {
+        let mut body = para.clone();
+        body.replace_line_segs(Vec::new());
+        body
+    });
+    let para = fresh_body.as_ref().unwrap_or(para);
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
     // owner to hand it to.
@@ -115,6 +126,10 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
         );
     // 캐시 수용 실패 정책이나 줄 수 감소만으로 원본을 무효화하지 않는다.
     // 본문과 같은 마커 기하 갱신과 실제 공백 메트릭 변경만 공통 프레임에 요청한다.
+    // 일반 geometry miss와 원문 밖 목록 마커의 기하 갱신은 별개다.
+    // 같은 가로 상자·현재 마커와 실제 어절 흡수는 아래 공통 인증이 확인한다.
+    // 명시적 물리 경계·외부 어울림·원문 축은 can_rejoin/project 경로에서
+    // 보존하며, 저장 세대나 셀의 일반 miss 정책만으로 이 계약을 끄지 않는다.
     let refreshes_marker_metrics =
         stored_word_tail::projects_current_marker_geometry(para, &paragraph_box, styles);
     let rejoinable_word_tail = !stored_geometry_policy.preserve_hwp3_origins

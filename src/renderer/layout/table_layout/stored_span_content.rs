@@ -338,6 +338,31 @@ impl LayoutEngine {
             && self.stored_plain_text_span_frame(table, cell)
     }
 
+    /// 현재 글꼴 프로그램으로 다시 구성한 순수 글줄은 실제 수용한 조각에서
+    /// 명시한 valign을 유지한다. 낡은 LineSeg 프레임을 되살리는 인증이 아니다.
+    /// 내용 컷과 그 물리 상자는 호출자가 이미 공통 유닛으로 결정했다.
+    pub(in crate::renderer::layout) fn current_program_span_owns_alignment(
+        &self,
+        table: &Table,
+        cell: &Cell,
+    ) -> bool {
+        let profile = self.profile.get();
+        cell.row_span > 1
+            && cell.vertical_align != crate::model::table::VerticalAlign::Top
+            && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            && !profile.session_edited()
+            && !cell.dirty_flag
+            && self
+                .render_normalization
+                .borrow()
+                .cell_has_current_render_partition(table, cell)
+            && cell.paragraphs.iter().all(|para| {
+                para.controls.is_empty()
+                    && !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+            })
+    }
+
     /// 슬롯 수용과 정렬 프레임은 별도 계약이다. 원본 문단 안의 실제 쪽
     /// 재시작이 있으면 그 앞 프레임을 다 소비한 컷만 해당 정렬을 소유한다.
     /// 문단별 로컬 원점이나 실제 페이지 경계가 없는 일반 슬롯 컷은 기존 계약을 쓴다.
@@ -379,13 +404,23 @@ impl LayoutEngine {
     /// 저장 줄의 유효성은 같은 계약으로 확인하되, 기존 순수 글줄 소비자는 위의
     /// 더 엄격한 컨트롤 없음 조건을 유지한다.
     pub(super) fn stored_body_text_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
+        self.stored_cell_content_frame(table, cell, false)
+    }
+
+    /// 글줄 안의 개체도 같은 저장 슬롯과 조판 유닛으로 완결을 확인한다.
+    /// 중첩 표는 별도의 재귀 컷 영역이므로 이 인증으로 포함하지 않는다.
+    pub(super) fn stored_inline_content_cell_frame(&self, table: &Table, cell: &Cell) -> bool {
+        self.stored_cell_content_frame(table, cell, true)
+    }
+
+    fn stored_cell_content_frame(&self, table: &Table, cell: &Cell, inline_objects: bool) -> bool {
         let profile = self.profile.get();
         (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
             && !profile.session_edited()
             && !self
                 .render_normalization
                 .borrow()
-                .table_text_reflowed(table)
+                .cell_frame_reflowed(table, cell)
             && !table.common.treat_as_char
             && table.page_break == TablePageBreak::RowBreak
             && !cell.dirty_flag
@@ -398,7 +433,9 @@ impl LayoutEngine {
                             control,
                             crate::model::control::Control::Header(_)
                                 | crate::model::control::Control::Footer(_)
-                        )
+                        ) || (inline_objects
+                            && control.is_treat_as_char_object()
+                            && !matches!(control, crate::model::control::Control::Table(_)))
                     })
                     && !para.line_segs.is_empty()
                     && para.line_segs.iter().all(|line| {

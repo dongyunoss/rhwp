@@ -111,9 +111,6 @@ samples/hwp3-sample13-hwp5.hwpx	3	3
 samples/hwp3-sample14-hwp5.hwp	11	11
 samples/hwp3-sample14-hwp5.hwpx	11	11
 samples/hwp3-sample14.hwp	11	11
-samples/hwp3-sample16-hwp5-2018.hwp	64	64
-samples/hwp3-sample16-hwp5-2024.hwp	64	64
-samples/hwp3-sample16.hwp	64	64
 samples/hwp3-sample19-hwp5.hwp	2	2
 samples/hwp3-sample4-hwp5.hwp	36	36
 samples/hwp3-sample4.hwp	36	36
@@ -211,7 +208,7 @@ samples/issue3587/d-pi2-import.hwp	1	1
 samples/issue3587/d-pi2-import.hwpx	1	1
 samples/issue3587/d-pi4-import.hwp	1	1
 samples/issue3587/d-pi4-import.hwpx	1	1
-samples/issue3637/press_release_split_cell_nested_table.hwpx	12	13
+samples/issue3637/press_release_split_cell_nested_table.hwpx	12	12
 samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
@@ -338,6 +335,7 @@ samples/issue6037/원형대원형-계열추가-데이터추가.hwpx	1	1
 samples/issue6037/원형대원형-계열추가.hwp	1	1
 samples/issue6037/원형대원형-계열추가.hwpx	1	1
 samples/issue6111/56345_regulatory_impact_analysis.hwp	21	20
+samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	204	204
 samples/issue6929/148776468_search_ad_terms_press_release.hwp	17	18
 samples/issue6936/bold-faces.hwp	1	1
 samples/issue6946/44529-logistics-policy-rule-amendment.hwp	13	13
@@ -537,3 +535,17 @@ samples/issue7593/repro-dyad-min-no-script.hwpx	1	1
 samples/issue7593/repro-equation-issue7593.hwpx	1	1
 # 독립 한컴2024 Print 합성 대조군: samples 밖이므로 명시 등록.
 pdf/issue7642-bitmap-crop-palette-print-20261019/bitmap-crop-palette-controls.hwpx	1	1
+
+# Stage24: 공개 API 작성 캡션10조건, 독립 Hancom2020 Print 각1쪽. fixture README의 SHA/출처 참조.
+tests/fixtures/issue1470_authored_caption_numbering/tables-all.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-all.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-removed.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-removed.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-all.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-all.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/pictures-caption-removed.hwp	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwpx	1	1
+tests/fixtures/issue1470_authored_caption_numbering/tables-caption-left.hwp	1	1
+samples/issue4599/1790387_policy_progress.hwpx	64	64
+samples/issue8141/1342000_math_textbook_field_review.hwp	49	49
