@@ -290,3 +290,31 @@
   `output/pr-review/planet6897-20261026/v9-focused-results.json`,
   `legacy-v9-producer.json`에 기록했다. 다음 단계는 같은 production source의
   fresh WASM·전체 대상 전쪽 검증이며, 시각 선행 조건 뒤 회귀 검사를 정정·보강한다.
+
+### 전쪽 검증 완료와 원본 소유 회귀 보강
+
+- production `3ae26ef0a1a20a8810813a085179220f56d2561a`의 fresh WASM 최적화·최종 exit 0·
+  `WebAssembly.compile`·pkg/public 해시 일치를 확인했다. WASM SHA는
+  `987a000459ddec38d0095348d425016c30e2b0b173c39c31c212a6e15e814bee`다.
+  빌드가 갱신한 기존 공개 JS 바인딩도 같은 산출물로 동기화한다. 생성 바인딩을 수작업으로
+  수정하지 않았으며, 1000줄 원칙의 일반 구현 파일이 아닌 기존 자동 생성 공개 파일이다.
+- 최종 Native·fresh WASM 각각 44개 조합·813쪽 비교가 모두 90% 이상이다.
+  전체 최저는 Native 90.81277%·WASM 91.32974%다. 이는 여러 입력·모드의 비교 횟수이며
+  하나의 문서 쪽수가 아니다. 같은 글꼴 경로·새 Print로 기준 Native 41개 조합도 다시 수집했다.
+- 중첩 표 17쪽은 Native 최저 94.38594%·WASM 94.22950%,
+  11쪽은 각각 98.82287%·98.83280%다. 이 선행 조건 뒤 기존 잘못된 Top 핀을 제거했다.
+  실제 부모 clip 대조군과 함께 정렬·내용 포함 검사 5개가 통과했다.
+- 신규 `source_frame_control_ownership` 6개는 같은 컴파일된 검사 실행 파일에서
+  보정 전 CLI에 대해 6개 모두 배치 assertion으로 실패했고 현재 Native에서 모두 통과했다.
+  직전 v8의 전체 TAC 표 높이도 337.7px 대 원본 345.2667px로 별도 실패를 확인했다.
+  초기 검사 코드의 컴파일 오류·수집 오류는 재현 통과로 세지 않는다.
+- 브라우저 실제 WASM의 PDF 3종 × 2모드와 비 PDF 대조군, fresh WASM AI 제공자 E2E,
+  Visual Sweep Python 192건, actionlint가 통과했다. WOFF2 검사에 필요한 Brotli 1.1.0을
+  기존 CI Python 설치 단계에 추가하며 별도 테스트 중복 호출은 추가하지 않는다.
+- CanvasKit의 sungeo 전체 문서 전환은 bounded preflight 상한·shaping 제약에 따른 정책이다.
+  전체 문서 CanvasKit 통과로 세지 않고 실제 34쪽 선 연산의 두 모드 × 두 배율을 검사했다.
+  Skia 실제 최소 굵기 1 장치 화소와 기존 Native·독립 Print의 점선 내용 화소 기준을 충족했다.
+- 완료한 시각·focused 증거는
+  [정식 검증 경로](assets/review_integration_20261026/validation/README.md)에 반영했다.
+  기준과의 십진수 하락 비교·전체 Rust 필수 검사·개별 원 PR 검토 문서·통합 PR 제출은 남았다.
+  최신 upstream은 여전히 고정 base이며 본인 계정의 열린 PR은 없음을 API로 확인했다.
