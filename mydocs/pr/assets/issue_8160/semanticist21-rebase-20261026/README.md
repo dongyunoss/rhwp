@@ -140,3 +140,57 @@ CARGO_BUILD_JOBS=8 cargo nextest run \
 ```bash
 /home/tsjang/rhwp/venv/bin/python /home/tsjang/rhwp/scripts/visual_sweep.py --silhouette-only --file-target 8188-hwp2022-wasm-current /home/tsjang/rhwp/samples/hwp3-sample16-hwp5-2022.hwp /home/tsjang/rhwp/pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf --rhwp-bin /home/tsjang/rhwp/output/pr-review/semanticist21-20261019/producers/rhwp-native-current-261 --compat 2022 --dpi 96 --page-workers 4 --out /home/tsjang/rhwp/output/pr-review/semanticist21-20261019/8188-priority-4282/wasm/hwp2022 --font-environment /home/tsjang/rhwp/output/pr-review/semanticist21-20261019/8188-original-fonts/original-hft-programs-2020-pua.json --font-path /home/tsjang/rhwp/output/pr-review/semanticist21-20261019/8188-original-fonts --font-path /usr/local/share/fonts/hancom-office-2020 --font-path /usr/local/share/fonts/hwp-convert-mcp-kopub --wasm-pkg /home/tsjang/rhwp/output/pr-review/semanticist21-20261019/fresh-wasm-package-candidate-077
 ```
+
+## 상속된 탭 소유 검사의 원문·논리 주소 대조
+
+기존 #8188의 `issue_8160_font_program_ownership`가 실제 읽는 원본은
+[hwp3-sample16-hwp5.hwp](../../../../../samples/hwp3-sample16-hwp5.hwp)이며, 위 세 목표 파일과 별개의 기존 HWP5 변환본이다.
+새 HWP를 수집하거나 삭제된 회귀·corpus 참조를 복원하지 않고, 실패한 상속 검사 자체의 입력만 대조했다.
+
+동일 원본 SHA-256: `6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45`.
+독립 [Print PDF](../../../../../pdf/hwp3-sample16-hwp5-hwp-2024.pdf) SHA-256:
+`ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381`.
+
+| 경로 | 쪽수(출력/Print) | 전쪽 최저 raw | 전체 TSV |
+| --- | --- | --- | --- |
+| native | 64/64 | 100% | [TSV 원문](tsv/native/inherited-tab-source.tsv) |
+| wasm | 64/64 | 100% | [TSV 원문](tsv/wasm/inherited-tab-source.tsv) |
+
+원문 문단 27의 `추진목적` 행에는 인라인 개체가 원문 탭 앞에 한 칸 있다.
+원문 탭은 scalar 12, 공개 논리 캐럿은 13이다. 탭을 포함하는 조각의 논리 시작 12에
+조각 내부 위치 1을 더한 13을 그대로 `Paragraph.text.chars().nth(13)`에 넣으면
+원문 공백을 읽는다. 이 두 주소를 같게 취급했던 기존 검사 가정이 잘못됐다.
+
+원 PR의 TAC 캐럿 수정 `efec7825d325beb5f2eff65ac921f148818367a5`와
+[주소 소비 기록](../../../../working/task_semanticist21_20261022_inline_source_axes.md)에 따라
+공개 `HwpDocument.logical_to_text_offset`로 같은 원본의 scalar에 대응시킨다.
+원본 탭 여부뿐 아니라 해당 소유 조각의 전체 문자열이 같은 원문 범위와 일치하는지 추가 확인한다.
+기존 리더 개수·단일 소유·텍스트 순서/보존·쪽 번호 앞 종료와 독립 px 기대값은 유지한다.
+실제 렌더 좌표·형상·캐럿 계약을 바꾸지 않으며 제품 소스는 c2513250과 같다.
+
+Native/fresh의 2쪽 review·standalone overlay에서 목차 점선의 단일 표시·뒤 쪽 번호와
+본문 순서를 직접 판독했다. 아래 이미지는 후속 PR 본문과 contributor comment의
+주소계 정정 증거로 사용할 계획이며 게시 head/merge SHA에 URL을 고정한다.
+
+![상속 검사 원본 2쪽 native review](native-inherited-tab-p002-review.png)
+
+![상속 검사 원본 2쪽 native overlay](native-inherited-tab-p002-overlay.png)
+
+![상속 검사 원본 2쪽 wasm review](wasm-inherited-tab-p002-review.png)
+
+![상속 검사 원본 2쪽 wasm overlay](wasm-inherited-tab-p002-overlay.png)
+
+전쪽 산출 명령은 위 세 문서와 같은 Native261/fresh077·2024 compat·인쇄 프로필·
+217개 원본 글꼴 환경에서 입력/PDF만 상속 검사의 실제 경로로 지정했다.
+실제 명령과 실행 결과는 로컬 `8188-existing-tab-input-4308-result.json`에 보존한다.
+검사-only 변경 뒤에도 제품 소스 동일성을 확인하고 원 실행 source를 함께 기록한다.
+
+### 정식 전체 재검증 결과
+
+주소계 가정을 정정한 동일 source로 자동 수집 21 target·42 모듈의 #8160 검사
+**88 PASS / 0 FAIL / 5,711개 필터 제외**, exit 0을 확인했다.
+기존 검사에서 87 PASS / 1 FAIL이었던 실패 목록과 대조했다. 제품·Print·px 좌표를
+바꾸지 않고 원문과 논리 주소를 구분했으며, 일반 탭과 원본 HFT 굵은 제목 대조군도 유지했다.
+검사 source SHA-256: `580eb38d593dc6ae5caba2e4f6dbe32782fbdc4b810ee83213bd26ad0fd9dc4c`.
+
+현재 브랜치의 전체 Rust/lint·45개 PR 통합 검증 완료를 뜻하지 않는다.

@@ -598,3 +598,67 @@ PrintInformation의 여백·중앙 정렬·LayoutForPrinter·ScaleType은 서로
 바꾸고 실제 sub-issue 연결에서도 해제했다. API 재조회로 상태·본문·연결을 확인했다.
 현재 연결은95개(OPEN82/CLOSED13)다. 부모7445와 다른 미완료 이슈는 열어 둔다.
 이 후속 처리는 현 브랜치의 통합 PR 제출·머지 완료를 뜻하지 않는다.
+
+### 두 사양 기반 가설의 실제 분리 결과
+
+부모 셀의 내용 폭에 맞춰 common 폭·셀 격자를 정합하게 만든 #7833 대조군8개를
+새 MCP2020 Print로 출력했다. 실제 method0·hancom2020_pdf_driver_one_up 성공을
+확인했다. 양쪽16실행 중4개만90% 이상이며, 깊은 wrapper와 작은 TAC 표의 배치는
+여전히 다르다. 기하 변경만으로 원본 생성기나 제품의 해결을 선언하지 않는다.
+표69의 고유 ID 조건에 따라 표·그림 ID만 고유하게 바꾼 별도8조건도 출력했지만,
+96dpi 전쪽 Print raster는8/8 모두 전 버전과 바이트 동일했다. 중복ID는 해당 차이의
+원인으로 확인되지 않았으며, 이 값으로 제품 분기를 추가하지 않았다.
+결과는 `cell-parent-frame-validation-4301-result.json`과
+`cell-unique-identity-effect-4306-result.json`이다. 정식 helper·fixture·회귀 기대값은
+변경하지 않았다.
+
+직접 review·overlay에서 깊은 wrapper의 한컴 Print는 부모 행의 물리 frame과
+그 밖의 부동 자식을 구분하지만 현재 fallback은 자식 높이까지 부모에 합산한다.
+`float_placement/reflow_block_cell.rs::has_reflow_block_cell_host`는 NO_LS 가시 텍스트가
+한 문단이라도 있으면 false로 끝난다. 빈 prefix인 주석8대조군은 양쪽100%지만,
+`중간` prefix가 있는 같은3단계 wrapper는 이 조건에서 공통 계획을 사용하지 못한다.
+`HeightMeasurer::cell_reflow_block_flow` → `reflow_cell_frame_rows`와
+Layout의 `reflow_block_cell_flow` → `sequential_nested_cell_layout`·
+`closed_reflow_frame`·외부 자식 원점 소비를 함께 확인했다. fallback의
+`text_height + nested_sum + outgrown`과 동일한 내용의 실제 배치를 먼저 대조한다.
+수정한다면 실제 셀 가용 폭에서 구성한 텍스트 줄 결과를 공유해야 하며, 가시 텍스트
+조건만 풀거나 문구별 높이를 더하는 방식은 사용하지 않는다. 아직 구현하지 않았다.
+
+#8032는 PDF RGB XObject의 bbox를 개체의 명목 bbox와 직접 비교해서는 안 된다.
+PDF의16×16 RGB와3200×1280 1bit soft mask는 별도의 source 창이다. 실제 잉크만
+비교한 진단에서 RHWP/PDF 중심은375.7788/361.1644px였고, 이미지를 오른쪽14px로
+옮기면 오히려 차이가 커진다. 앞선 원점 차이만으로 가로 정렬 결함이나 보정 방향을
+확정하지 않는다. 진단 배열 이동은 metric gate나 제출PNG에 적용하지 않았다.
+원본 PNG의 투명도를 기존 `print_jpeg_payload`가 거절하는 경로와 Print의 RGB/soft
+mask 전달·표본 위상을 함께 추적한다. `pr8032-image-frame-diagnosis-4298.json`은
+가설 구분용일 뿐 원점 보정이나 개선 증거가 아니다.
+
+### #8188 상속 검사88건과 원문/논리 주소 판정
+
+현재 정식 자동 수집21target·42모듈의88검사를 실행해87 PASS/1 FAIL을 확인했다.
+실패는 `issue_8160_sample16_inline_object_fragments_keep_each_leader_with_its_source_tab`다.
+기존 검사는 TextRun의 공개 논리 시작과 조각 내 위치를 더한 값을 원문 scalar
+인덱스로 바로 사용했다. 실제 문단27의 탭은 원문12, 인라인 개체 한 칸을 포함한
+논리13이다. 원 PR efec7825/통합3c4d044의 의도와 기존 주소계 보정 기록을 대조해,
+점선 배치나 원본 탭 소유의 실제 후퇴가 아니라 검사 가정 오류로 판정했다.
+처음 stderr만 보고 소유 주소 회귀로 설명했던 판단을 이 근거로 정정한다.
+
+이 상속 검사가 실제 사용하는 기존 HWP5 원본6a3cdf2c·독립 Print를 그대로 읽어
+전64쪽 Native/fresh를 별도 대조했다. 둘 다64/64쪽·최저raw100%이며 2쪽의 목차,
+단일 점선과 뒤 번호를 review·standalone overlay로 직접 판독했다. 새로운 실제
+HWP를 수집하거나 삭제된 corpus 참조를 복구하지 않았다. 입력·PDF 해시·전체TSV·
+대표PNG는 기존 정식 증적README의「상속된 탭 소유 검사」절에 추가했다.
+
+검사는 같은 원본의 공개 `HwpDocument.logical_to_text_offset`로 원문 scalar에
+대응시켜 탭 여부를 확인하며, 해당 조각의 전체 문자열이 같은 원문 범위와 일치하는지
+추가 검증한다. 리더 수·단일 소유·앞뒤 텍스트 순서·쪽 번호 앞 종료와 독립 px
+기대값은 유지했다. 실제 캐럿·제품 출력은 바꾸지 않는다. 정식 관련3개 검사는
+모두 PASS다(`logs/8188-tab-source-axes-nextest-4311.log`). 동일88건을 다시 실행해
+전체 보존을 확인한 뒤 이 단계의 커밋에 terminal 결과를 기록한다.
+
+동일88건의 최종 재실행은 **88 PASS/0 FAIL/5711 필터 제외**, exit0이다.
+로그는 `logs/rebase-8188-all-contracts-nextest-4313.log`, 실행 신원·검사 SHA는
+`rebase-8188-all-contracts-4313-result.json`에 보존했다. formatter·내부 링크와
+제품 source 동일성도 확인했다. 검증한 엔진은 c2513250의 Native261/fresh077이며
+이번 단계는 검사·증적만 수정했다. 전체 통합의 잔여 시각 미달·전체 Rust/lint는
+다음 보정 후 최종 head에서 계속 확인한다.
