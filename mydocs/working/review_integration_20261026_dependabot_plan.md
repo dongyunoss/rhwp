@@ -116,3 +116,21 @@ E2E가 정확한 Bearer 키·기존 헤더 미전송·API 버전을 보호하도
 대역이 Bearer 키로 성공/실패를 분기하게 고치고, 잘못된 키와 올바른 키 양쪽의 전송값·기존 헤더
 미전송·API 버전을 검사하도록 보강했다. 초기 Firefox 실행은 Snap의 /tmp 격리로 프로필을 읽지 못했으며,
 공유 가능한 검토 output 아래 TMPDIR를 지정한 재실행은 다운로드 3회와 편집 보존을 통과했다.
+
+## 공식 변경 근거와 action pin 보정
+
+- read-fonts 0.46.0과 skera 0.9.0의 배포 `.cargo_vcs_info.json`은 모두
+  [fontations 47a3016](https://github.com/googlefonts/fontations/commit/47a301615fd95acf0da9fb7dbcd0ea7c7df36943)을 가리킨다.
+  실제 직접 소비 지점은 `src/renderer/svg/webfont_subset.rs`다. 같은 release의 타입 연결을 유지한다.
+- proptest 1.12.0은 rand 0.10과 BitSet 변경·MSRV 1.88을 포함한다. sha2 0.11.1도 MSRV 1.88이다.
+  저장소 1.93.1 toolchain에서 잠긴 의존성으로 integration target까지 컴파일하고 실행한다.
+- ml-kem 0.3.3은 sha3/shake 갱신과 secret-dependent CBD 조회 제거를 포함한다.
+  zip 9.0.5는 raw copy AES extra field·플랫폼 mode 처리 보정 등을 포함한다.
+  배포 crate changelog와 checksum으로 식별했으며 full Rust 검사로 실제 소비 경로를 검증한다.
+- [rust-cache c8037a8](https://github.com/Swatinem/rust-cache/commit/c8037a86dde8214a8310e9f54a8fc61ab362aa31)는
+  virtual workspace root Cargo.toml/lockfile을 cache key에 포함한다. 그 commit의 package version은 2.9.3이다.
+  bot가 남긴 v2.9.1 주석을 실제 commit 의미로 바로잡았고, 기존 restore/save 신뢰 경계는 유지했다.
+- [CodeQL 4.39.1 changelog](https://github.com/github/codeql-action/blob/9b3254085494b55a0f7c4c2b3d2d52cc712ce370/CHANGELOG.md)는
+  기본 bundle 2.27.3을 명시한다. init/analyze의 고정 SHA를 일치시키고 낡은 날짜 주석을 바로잡았다.
+- setup-python의 고정 commit action.yml은 node24, install-action은 checksum 기본 true를 확인했다.
+  input·permission·fork event·archive matrix·worker timeout은 이번 통합에서 변경하지 않는다.
