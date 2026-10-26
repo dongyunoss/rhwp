@@ -45,3 +45,26 @@ Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 �
   - `text_typed_before_wide_tac_picture_breaks_before_picture`: PASS, `logs/current-full-nextest-4184.log:5066` (`rhwp::regression_suite_004`).
 
 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+
+
+## 연속 알파 Print 보정 — 2026-10-27
+
+`5a12bf20e2` 위 공통 paint 보정의 Native266·표준 최적화 fresh079로 원래 공개 API 입력을
+다시 검증했다. 넓은 입력은 Native 90.69451→98.78322%, fresh WASM 89.93941→98.78261%,
+좁은 입력은 양쪽 100%다. 13개 조건이 양쪽 90% 이상이며 #8188 상속 512쪽도 raw 100·PNG
+해시 불변이다. 독립 Print의 600 DPI 원본 픽셀 격자·연속 알파 마스크를 공통 paint payload로
+소비한다. 저장 IR·줄 구성에 문서별 위치 보정을 넣지 않았다.
+
+[입력·PDF·전쪽 TSV·대표 review/overlay와 독립 프레임](../assets/pr_8032_print_alpha/README.md),
+[소비 경로·적용 경계·실행 및 남은 항목](../../working/task_semanticist21_20261027_frame_bitmap.md)을
+대조했다. 새 검사는 기존 contributor 검사와 다른 `print_alpha_source_grid`에 추가했으며,
+동일 검사 소스가 수정 전 FAIL·수정 후 PASS임을 확인했다. 최종 자동 suite 결과와 통합 전체
+검증은 완료 뒤 연결한다. 이 개별 시각 보정을 전체 통합 PR의 승인으로 확대하지 않는다.
+
+
+정식 자동 수집 검사 `regression_suite_005::print_alpha_source_grid`는 1 PASS·0 FAIL,
+275 filter-skipped·exit0이다. 동일 최종 검사 소스의 수정 전 FAIL(exit101)·수정 후
+PASS(exit0)를 확인했다. 실행 로그는 ignored
+`output/pr-review/semanticist21-20261019/logs/print-alpha-auto-regression-4426.log`이며
+동일 디렉터리의 `print-alpha-red-4425.log`·`print-alpha-green-4425.log`와 대조했다.
+전체 통합 검증·CI·merge는 별도로 남아 있다.

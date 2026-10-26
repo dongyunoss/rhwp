@@ -23,8 +23,7 @@ pub(crate) struct DeviceRaster {
     pub height: u32,
 }
 
-#[cfg(target_arch = "wasm32")]
-fn weight(distance: f64) -> f64 {
+pub(crate) fn weight(distance: f64) -> f64 {
     let d = distance.abs();
     if d < 1.0 {
         ((1.5 * d - 2.5) * d) * d + 1.0

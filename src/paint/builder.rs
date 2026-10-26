@@ -314,7 +314,7 @@ impl LayerBuilder {
             }
             RenderNodeType::Path(path) => Some(vec![PaintOp::path(node.bbox, path.clone())]),
             RenderNodeType::Image(image) => {
-                let frame = self
+                let mut frame = self
                     .page_context
                     .map_or(node.bbox, |context| context.image_frame(node, image));
                 let mut ops = if let Some(path) = crate::renderer::pdf_stroke::project(image, frame)
@@ -373,6 +373,26 @@ impl LayerBuilder {
                             self.layout_dpi,
                         ) {
                             frame.attach(&mut payload.data);
+                        }
+                    }
+                    if self.profile == RenderProfile::Print {
+                        if let Some((alpha_frame, payload)) =
+                            crate::renderer::print_raster::PrintRasterFrame::new(
+                                self.image_page_size,
+                                self.image_reference_origin,
+                                node.bbox,
+                                self.layout_dpi,
+                            )
+                            .and_then(|source| {
+                                crate::renderer::image_resolver::print_alpha_payload(
+                                    &image,
+                                    source,
+                                    self.layout_dpi,
+                                )
+                            })
+                        {
+                            frame = alpha_frame;
+                            resolved = Some(payload);
                         }
                     }
                     vec![PaintOp::image(frame, image, resolved)]

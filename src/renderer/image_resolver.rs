@@ -1,9 +1,11 @@
 use std::cell::RefCell;
 use std::io::Cursor;
 
+mod print_alpha;
 mod print_crop;
 mod print_jpeg;
 mod print_tone;
+pub(crate) use print_alpha::print_alpha_payload;
 pub(crate) use print_crop::{publish_print_jpeg_crop, resolve_print_jpeg_window};
 pub(crate) use print_jpeg::{encode_print_jpeg, print_jpeg_payload};
 pub(crate) use print_tone::print_bitmap_payload;
@@ -136,6 +138,9 @@ enum Conversion {
     },
     PrintJpegWindow {
         bounds: [u32; 4],
+    },
+    PrintAlpha {
+        frame: [u64; 8],
     },
     Hancom2024BitmapPalette {
         bounds: [u32; 4],
