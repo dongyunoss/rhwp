@@ -258,3 +258,19 @@
   선행 `81777a6a99b63d320d10b7103905f676d40ba445`의 프레임 꼬리 분해 조건을 대조했다.
   기존 `owns_saved_object_line`로 전체 상자 소유를 재사용해 이 불필요한 분해만 막는다.
   실제 여러 쪽인 자식·내부 source reset의 분해 조건은 유지하며 다음 후보에서 검증한다.
+
+### WASM 검증 공급 글꼴의 컨테이너 보정
+
+- 수정 전 WASM의 sungeo 전쪽 검증은 `invalid native PUA SFNT face`로 중단됐다.
+  계측 API에 전달된 함초롬돋움은 765,892바이트의 `wOF2` 컨테이너였다.
+  Canvas FontFace는 이를 읽지만 공통 PUA 계측기는 SFNT를 요구한다. 엔진 결과를
+  숨기거나 글꼴을 바꾸지 않고, 공급 카탈로그에서 같은 프로그램을 SFNT로 풀어 전달한다.
+- 기존 테이블 복사기를 재사용하며 원본 글꼴 파일은 보존한다. 원본·공급본 SHA와
+  `woff-to-sfnt` 또는 `woff2-to-sfnt` 변환을 카탈로그·검증된 캐시에 기록한다.
+  신규 검사는 WOFF·WOFF2 모두 수정 전 컨테이너 계약 위반으로 실패했고,
+  수정 후 SFNT·글꼴 테이블 동일성·원본 보존·캐시 재사용 검사를 통과했다.
+- `venv/bin/python -m unittest scripts.tests.test_visual_sweep_png`: 29건 통과.
+  로그는 `output/pr-review/planet6897-20261026/woff-sfnt-before.log`,
+  `woff-sfnt-after.log`, `pua-sungeo-diagnostic.log`다. 바뀐 공급 절차로 base/head가
+  같은 실제 글꼴 프로그램을 사용하도록 전쪽 비교를 다시 산출한다. 이전 실패를
+  통과로 간주하지 않으며, 이 검사는 픽셀 좌표 기대값을 추가하지 않는다.

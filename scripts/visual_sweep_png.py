@@ -218,7 +218,8 @@ def font_source_files(directory: Path):
 
 def valid_font_repairs(repairs) -> bool:
     """공급본에 허용한 수정만 캐시에서 수용한다. 다른 손상은 숨기지 않는다."""
-    allowed = {'cmap-format4-terminal-notdef', 'drop-embedded-bitmap-strikes'} | {f'empty-vtt-source-table:TSI{i}' for i in range(6)}
+    allowed = {'cmap-format4-terminal-notdef', 'drop-embedded-bitmap-strikes',
+               'woff-to-sfnt', 'woff2-to-sfnt'} | {f'empty-vtt-source-table:TSI{i}' for i in range(6)}
     return (isinstance(repairs, list) and all(isinstance(value, str) for value in repairs)
             and len(repairs) == len(set(repairs)) and set(repairs) <= allowed)
 
@@ -277,11 +278,16 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     repairs += [f'empty-vtt-source-table:{tag}' for tag in vtt_tables]
                     if dropped:
                         repairs.append('drop-embedded-bitmap-strikes')
+                    # Canvas와 PUA 계측에 같은 프로그램을 전달한다. 브라우저는
+                    # WOFF를 읽지만 SFNT 계측기는 압축 컨테이너를 읽지 않는다.
+                    web_font = font.flavor in {'woff', 'woff2'}
+                    if web_font:
+                        repairs.append(f'{font.flavor}-to-sfnt')
                     # Preserve original SFNT payloads while aligning browser tables.
                     misaligned_sfnt = font.flavor is None and any(
                         table.offset % 4 for table in font.reader.tables.values())
                     repairs += ['sfnt-table-alignment'] if misaligned_sfnt else []
-                    if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None:
+                    if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None or web_font:
                         resource_dir.mkdir(parents=True, exist_ok=True)
                         path = resource_dir / f'{digest}-{index}.ttf'
                         temporary = resource_dir / f'.{digest}-{index}-{os.getpid()}-{uuid.uuid4().hex}.ttf'
@@ -299,7 +305,7 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                                     'nameRecordErrors': name_errors,
                                     'repairs': repairs}
                     records.append(face)
-                    cached_records.append({**face, 'cacheKind': 'derived' if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None else 'source'})
+                    cached_records.append({**face, 'cacheKind': 'derived' if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None or web_font else 'source'})
                 resource_dir.mkdir(parents=True, exist_ok=True)
                 vs.write_json_atomic(resource_dir / f'{digest}.json',
                                      {'schemaVersion': 1, 'sourceSha256': digest,

@@ -68,6 +68,43 @@ class LegacyProfileHeaderTests(unittest.TestCase):
             self.assertIn('maxp-zone-count', record['repairs'])
 
 
+class WebFontProgrammeTests(unittest.TestCase):
+    def test_webfont_container_is_unpacked_without_changing_font_tables(self):
+        from fontTools.ttLib import TTFont
+        fixture = Path(__file__).parents[2] / 'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf'
+        for flavor in ['woff', 'woff2']:
+            with self.subTest(flavor=flavor), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder)
+                sources = root / 'sources'
+                sources.mkdir()
+                source = sources / f'fixture.{flavor}'
+                with TTFont(fixture) as font:
+                    font.flavor = flavor
+                    font.save(source)
+                original = source.read_bytes()
+                adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
+                    sha256_file=sweep.sha256_file, write_json_atomic=sweep.write_json_atomic)
+                catalogue = png.font_catalog(adapter, root, [sources], root)
+                face = json.loads(catalogue.read_text())['faces'][0]
+                with TTFont(source, lazy=True) as before, TTFont(face['path'], lazy=True) as after:
+                    self.assertIsNone(after.flavor, 'PUA 계측 API도 읽을 수 있는 SFNT를 공급해야 한다')
+                    self.assertEqual(set(after.reader.keys()), set(before.reader.keys()))
+                    for tag in before.reader.keys():
+                        expected, actual = before.reader[tag], after.reader[tag]
+                        if tag == 'head':
+                            expected = expected[:8] + expected[12:]
+                            actual = actual[:8] + actual[12:]
+                        self.assertEqual(actual, expected, tag)
+                self.assertEqual(source.read_bytes(), original)
+                self.assertEqual(face['sourceSha256'], sweep.sha256_file(source))
+                self.assertEqual(face['sha256'], sweep.sha256_file(Path(face['path'])))
+                self.assertIn(f'{flavor}-to-sfnt', face['repairs'])
+                first = catalogue.read_text()
+                with patch('fontTools.ttLib.TTFont', side_effect=AssertionError('검증한 원본을 다시 파싱함')):
+                    cached = png.font_catalog(adapter, root, [sources], root).read_text()
+                self.assertEqual(cached, first, '검증된 공급 프로그램은 캐시에서 그대로 재사용한다')
+
+
 class FontNameCatalogueTests(unittest.TestCase):
     def test_invalid_legacy_name_preserves_valid_face_and_records_provenance(self):
         from fontTools.ttLib.tables._n_a_m_e import NameRecord
