@@ -44,3 +44,9 @@
 - Python 구조 검사가 옛 B/C/D 전용 오류 문구를 요구해 잘못된 중복 검사를 고정하고 있었다.
   공통 함수 위임 연결로 정정하고 실제 허용/거부 동작은 CLI 회귀로 보호했다.
 - 임시 report·실행 로그·음성 대조 스크립트는 ignored output에 두며 PR에 포함하지 않는다.
+
+## 최종 CI와 병합 후 결과
+
+- 최종 head `fc77cd99add15a9b4aa8383c46433bc608ad3770`의 [PR #8273](https://github.com/edwardkim/rhwp/pull/8273)은 CI·CodeQL·CI Impact Policy가 통과했고 기본 archive 11,379개 실행/통과가 예상 수와 일치했다.
+- `61ec35daa499b375b1dc6b66a4f5f6d6cc6ad0aa`로 일반 merge했다. Metadata run 40298571437도 성공했고, B/C/D/E 실측은 `222ae0a6a578efb3ddad1fe8ea7186cbc060f713`으로 실제 발행됐다.
+- 발행 JSON의 네 label·원 head/run 및 46 target·1,730 source case·7,578 testcase를 다시 확인했다. 검토·오늘할일은 사용자 지정 옵션 2의 별도 문서 PR #8274에 반영한다.
