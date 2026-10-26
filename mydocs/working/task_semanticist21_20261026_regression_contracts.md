@@ -292,3 +292,29 @@ ignored 영수증은 `cell-scope-focused-4175-result.json`,
 실브라우저·production build·오류 표시 검증은 4186에서 모두 exit 0이다. 이 결과를 삭제 후
 변경한 두 검사 source의 실행으로 바꾸어 기록하지 않는다. 변경된 검사와 필수 lint는
 `logs/current-*-4205.log`에서 별도로 검증하고 terminal 결과를 추가 기록한다.
+
+## 생산 코드의 최종 실행과 정리 후 검사 — 2026-10-26
+
+| 범위 | 실제 terminal 결과 | ignored 로그 (`output/pr-review/semanticist21-20261019/`) |
+| --- | --- | --- |
+| `a90a2057a7` 전체 Rust nextest | 11,716 PASS·0 FAIL·45 skipped, exit 0 | `logs/current-full-nextest-4184.log` |
+| 같은 생산 코드 Native Skia lib | 3,858 + 15 + 165 + 2 = 4,040 PASS·0 FAIL, exit 0 | `logs/current-native-skia-lib-4184.log` |
+| Native placeholder / direct PDF | 2 PASS / 14 PASS, 각각 exit 0 | `logs/current-native-skia-{placeholder,direct-pdf}-4184.log` |
+| 문서 테스트 | 8 PASS·0 FAIL·3 ignored, exit 0 | `logs/current-doctests-4184.log` |
+| Native font trace | 12 PASS·0 FAIL, exit 0 | `logs/current-native-trace-4191.log` |
+| Studio TypeScript·Node·실브라우저·production build | Node 2,597 PASS·0 FAIL, 5단계 모두 exit 0 | `logs/current-studio-*-4186.log` |
+| `116735e8df` 삭제·분리 뒤 이동 계약 | 19 PASS·0 FAIL, exit 0·source 불변 | `logs/move-cleanup-focused-4207.log` |
+| 같은 정리 뒤 전체 필수 lint | fmt·Native/WASM/workspace Clippy·workspace build·정책 모두 exit 0 | `logs/current-*-4205.log` |
+
+전체 실행 뒤 바뀐 것은 손상 표본 삭제와 이동 계약 검사 정리다. 생산 Rust 코드는
+`a90a2057a7`과 동일함을 확인했고, 변경된 검사 19개는 새 source로 다시 실행했다.
+전체 회귀 결과와 새 focused 결과를 서로 다른 source 경계로 기록한다.
+
+[최종 전쪽 TSV와 대표 review·overlay](../pr/assets/semanticist21_final_20261026/README.md)에
+129조건·각 344쪽을 등록했다. 전쪽 최저는 Native 92.04708%, fresh WASM 91.53306%이며
+90% 미만·누락·독립 PDF 쪽수 불일치는 0쪽이다. 수치 대응 684행에서 base 대비 0.1%p
+초과 하락 0행이며 #6133의 1→2쪽 복원은 내용·쪽 소속의 구조 개선으로 따로 기록했다.
+나머지 108조건의 새 Native 캡처는 이전 직접 판독 대상과 전쪽 픽셀이 같음을 확인했다.
+새로 출력한 것을 이전 캡처의 재사용으로 대신하지 않았다. HWPX 차트 네 경로도 별도로
+출력했으며 판독한 HWP 차트와 RHWP/PDF 픽셀이 각각 동일함을 확인했다.
+Print 증거·입력·원문 TSV를 보존하고 font 목록만 동일 해시별 한 번 저장했다.
