@@ -56,3 +56,5 @@ Issue: [#8160](https://github.com/edwardkim/rhwp/issues/8160), [#8267](https://g
 - 코드 PR 뒤 기본 검증 CI는 재실행하지 않는다. 자동 metadata refresh와 문서 PR의 fast-pass만 확인한다.
 
 - 실제 metadata refresh 40290628059에서 CLI의 B/C/D 전용 최종 검사가 남아 E를 거부했다. [#8272](https://github.com/edwardkim/rhwp/issues/8272)·[PR #8273](https://github.com/edwardkim/rhwp/pull/8273)의 별도 CI 보정에서 실제 CLI 네 입력을 보호하고 갱신 성공을 확인한다. 문서 PR에는 이 코드 보정을 섞지 않는다.
+
+- CLI 보정 PR #8273은 `61ec35daa`로 머지됐고 run 40298571437에서 B/C/D/E의 46 target·1,730 case·7,578 testcase를 실제 정책 브랜치에 발행했다. [보정 검토](pr_8273_review.md)에 정확한 CI·발행 commit을 연결한다.
