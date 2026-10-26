@@ -897,12 +897,14 @@ pub(super) fn prepare(
                 if !same_frame && inherited_origin.is_none() {
                     return None;
                 }
-                // 상대 간격은 앞 내용이 요구하는 하한이다. 압축한 텍스트
-                // 흐름 끝이 더 위라는 이유로 독립된 저장 개체 원점을 지우지
-                // 않는다. 원본의 새 단 재시작은 앞에서 별도로 확정했다.
-                if let Some(inherited_origin) = inherited_origin {
-                    // 같은 축 판정은 좌표 재사용의 허용 조건이다. 앞 글줄이 실제로
-                    // 소유한 끝과 진입 간격의 하한까지 면제하지 않는다.
+                if !same_frame {
+                    // 현재 단과 일치하지 않는 저장 원점은 상대 간격의 하한이 아니다.
+                    // 로드 재구성 축과 물리 축이 다르면, 앞 글줄이 인증한 내용 하단과
+                    // 같은 저장 사다리의 간격으로 원점을 새로 확립한다.
+                    saved_origin = inherited_origin?;
+                } else if let Some(inherited_origin) = inherited_origin {
+                    // 같은 축으로 인증된 독립 개체 원점과 실제 앞 내용의 하한은
+                    // 함께 지킨다. 서로 다른 좌표축의 숫자끼리는 최댓값을 취하지 않는다.
                     saved_origin = saved_origin.max(inherited_origin);
                 }
             }
