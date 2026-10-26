@@ -29,6 +29,47 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
 
+## 독립 Print의 레이어 반례 — 2026-10-26
+
+초기 진단용 HWPX는 원 검사와 같이 사각형의 원래 크기·꼭짓점, 그림의 원본 크기를
+생략했다. RHWP는 선언된 배치 크기로 표시했지만 한컴 Print에는 두 개체가 모두
+나오지 않았다. 이 초기 입력의 raw 0.95511%를 정상 한컴 문서의 회귀로 해석하지 않는다.
+원본 바이트는 보존하고, 선언된 크기의 사각형 꼭짓점과 4×4 PNG의 원본 크기를
+명시한 별도 대조군을 만들었다. 소유·배치·색상·텍스트·BinData는 그대로 두었다.
+그림의 75 HWPUNIT/CSS px 변환은 기존 정상 삽입본의 16px/1,200 HWPUNIT 대응과
+대조했다. 보완본 통과를 초기 입력 자체의 일치로 보고하지 않는다.
+
+같은 보완본에서 한 번에 속성 하나만 바꿔 MCP engine 2020의 한컴 11.0.0.9136으로
+Print했다. 모든 결과는 `pdf_print_method=0`,
+`pdf_output_mode=hancom2020_pdf_driver_one_up`, 입력 전처리 없음, 1쪽이다.
+
+| 조건 | 독립 Print 관측 | 현재 Native·fresh WASM 관측 |
+| --- | --- | --- |
+| 그림 `flowWithText=0, zOrder=0`, 쪽 도형 `zOrder=1` | 녹색 도형에 빨간 그림이 가려짐 | 빨간 그림이 도형 위에 보임: 불일치 |
+| 쪽 도형만 제거 | 빨간 그림이 보임 | 빨간 그림이 보임 |
+| 그림 `zOrder`만 2로 변경 | 빨간 그림이 도형 위에 보임 | 빨간 그림이 도형 위에 보임 |
+| 그림 `flowWithText`만 1로 변경 | 빨간 그림이 도형 위에 보임 | 빨간 그림이 도형 위에 보임 |
+
+4조건의 후보/base × Native/fresh WASM은 16회 모두 raw 100%, 1쪽 일치다.
+하지만 불투명한 녹색·빨간 영역은 실루엣이 같아 첫 행의 색상·레이어 결함을 점수로
+검출하지 못한다. 고정 base에서도 같은 차이가 관측되므로 이 결과를 현재 브랜치에서
+새로 생긴 회귀라고 단정하지 않는다. 독립 Print와 실제 출력의 차이는 남아 있으므로
+원 PR의 검사가 올바른 조건을 고정하는지와 공통 레이어 소비 조건을 보정해야 한다.
+실루엣 통과나 전체 Rust PASS를 수용 판정으로 대신하지 않았다.
+
+실제 소비 경로는 `layout/picture_footnote.rs`의 셀 그림 layer 부여 →
+`layout.rs::order_cell_anchored_objects`의 BehindText 분류·상속 layer 및
+`ImageNode.text_wrap` 덮어쓰기 → `paint/replay_order.rs`의 최종 replay plane이다.
+현재 분류 조건에는 `flow_with_text` 구분이 없다. 셀의 편집 소유와 쪽/표의 그리기
+계층을 같은 상태로 간주해도 되는지 위 반례에 따라 보정·재검증한다.
+
+증적 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+`pr8061-explicit-geometry-4144/provenance.json`에 보완 전후 입력 해시·변경 ZIP 항목,
+`pr8061-layer-controls-print-4147-result.json`에 세 Print 작업의 동일 job ID·출력 해시·
+실제 engine 계약, `pr8061-explicit-validation-4146-result.json` 및
+`pr8061-controls-validation-4149-result.json`에 16회 TSV·producer·페이지 수를 기록했다.
+새로운 실물 문서로 범위를 넓히거나 sample16·편람의 파생 자료를 만들지 않았다.
+
 ## 통합 후보의 실제 검사 실행 — 2026-10-26
 
 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를

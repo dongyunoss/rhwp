@@ -169,3 +169,26 @@ review·standalone overlay 46쌍은 기존 캡처의 입력/PDF·producer·실�
 harness의 삭제 대상 참조도 0개다. manifest·fixture·보관본·삭제된 파생 파일을
 재생성하지 않았다. 텍스트 검색의 과거 사유 주석과 제외 필터는 실제 원본을 여는
 활성 참조와 구분해 유지했다. 검사 대상과 실제 실행 코드는 변경하지 않았다.
+
+## 삭제된 파생 참조의 재생성 금지 재확인 — 2026-10-26
+
+사용자 지시에 따라 sample16·편람의 삭제를 유지한다. HEAD
+`588130c50b2e5a5a6f14cded810f68198880c988`에서 `deriveManifest`의
+`persist=false` 경로로 수집한 소스 1,787개와 현재 generated harness를 읽고,
+새 harness 문자열도 메모리 안에서만 대조했다. 누락·삭제 대상 소스·현재 파생 참조·
+재생성 예정 참조가 모두 0건이다. `--prepare`나 fixture·보관본 생성은 실행하지 않았다.
+결과는 ignored `output/pr-review/semanticist21-20261019/retired-reference-preservation-4148.json`이다.
+텍스트 검색의 과거 근거 주석·정상 합성 계약과 실제 파일을 여는 활성 참조는 구분했다.
+
+같은 범위의 [#8061 개별 검토](../pr/archives/pr_8061_review_impl.md#독립-print의-레이어-반례--2026-10-26)에서
+불완전한 초기 기하 정보와 레이어 의미의 반례를 분리했다. 같은 재현의 기하 보완본·
+단일 속성 대조 4조건은 후보/base × Native/fresh WASM 16회 모두 raw 100%·1쪽이지만,
+`flowWithText=0, zOrder=0` 그림은 Print와 달리 쪽 도형 위에 보였다.
+같은 불투명 영역의 색상 차이는 실루엣만으로 판정하지 않는다. 해당 PR의 수용 판정은
+보류를 유지하고 공통 레이어 소비 조건의 보정 대상으로 기록했다.
+
+`pr8061-controls-panels-4150-result.json`의 compare·standalone overlay·review 8쌍은
+현재 source와 sweep·입력/PDF·원 PNG 해시를 확인해 기존 캡처에서 정본 함수로 합성했다.
+그중 Native의 첫 조건과 `flowWithText=1` 조건의 review·overlay 4개를 실제로 열어
+서로 다른 그림 표시와 같은 셀 본문 순서를 직접 대조했다. 나머지 생성 이미지를 모두
+판독했다고 기록하지 않는다. source·검사·지침·Visual Sweep 도구는 바꾸지 않았다.

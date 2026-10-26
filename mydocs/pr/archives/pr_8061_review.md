@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 고정한 통합 코드 후보의 전체 로컬 검증과 이 PR의 필수 증거를 대조 중이다.**
+**머지 보류 — 독립 한컴 Print에서 확인한 `flowWithText=0` 그림의 레이어 순서와 현재 출력이 다르다.**
 
 최신 원격 CI·통합·후속 처리는 아직 완료되지 않았다. 원 contributor head의 직접 merge가 아니라 메인터너 보정한 통합 후보를 검토한다. 실제 완료 결과를 수집한 뒤 판정을 갱신한다.
 
@@ -26,7 +26,7 @@
 
 ### 실제 소비 경로와 반례
 
-셀 뒤 그림은 쪽 단위 behind-text shape보다 위, 같은 셀의 텍스트보다 아래에 그린다. 실제 SVG의 paper rectangle < image < P 출력 순서를 검사하여 bbox 존재만으로 순서 정확성을 판단하지 않는다. 문서 전체 z-order를 뒤집는 수정 대신 셀 owner와 paper decoration의 소유 계층을 구분한다.
+원 PR은 셀 뒤 그림을 쪽 단위 behind-text shape보다 위, 같은 셀의 텍스트보다 아래에 그린다는 가정을 검사한다. 그러나 독립 한컴 Print 대조에서 `flowWithText=0, zOrder=0`인 셀 그림은 `zOrder=1` 쪽 도형에 가려졌고, `flowWithText=1` 또는 그림의 `zOrder=2`에서는 보였다. 셀에 속한다는 사실만으로 쪽 도형보다 위로 올리는 조건은 재검토해야 한다. SVG의 paper rectangle < image < P 순서 검사 통과만으로 이 가정을 입증할 수 없다. [개별 구현 기록](pr_8061_review_impl.md#독립-print의-레이어-반례--2026-10-26)에 입력의 기하 정보 보완과 단일 속성 대조를 구분했다.
 
 
 
