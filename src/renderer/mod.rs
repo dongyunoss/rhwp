@@ -103,7 +103,6 @@ pub(crate) mod text_italic;
 // layout/publication callers remain closed until their own approved slices.
 pub(crate) mod anisotropic_sampling;
 pub(crate) mod contextual_text;
-#[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
 pub(crate) mod cubic_sampling;
 pub mod native_pua_fonts;
 pub(crate) mod pdf_stroke;

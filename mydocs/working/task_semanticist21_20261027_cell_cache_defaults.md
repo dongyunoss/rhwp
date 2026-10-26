@@ -147,3 +147,17 @@ Native271·표준 최적화 fresh081에서 기존 24조건을 모두 다시 통�
 런타임은 고정한 채 테스트·증거만 추가했다. base49bc의 Native272와 fresh082를 별도 소스에서
 공용 target을 순차 사용해 준비하며, 기존129조건의 양쪽 후보·base 전쪽 대조를 계속한다.
 사용자 지정 하락 허용폭은0.1%p다. base의 기존 쪽수 차이를 임의 수치로 바꾸지 않는다.
+
+
+## 새 base 리베이스와 기본 feature 컴파일 경계
+
+새 base `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c` 위로374개 commit을 충돌 없이
+리베이스했다. 결과 head는 `089a6d21e95ebae02f37caa40bb25c017d0a7e8c`다. 리베이스 전후
+`src/`·`crates/`·`tests/` diff는0이며 의존성과 기존 SDK 1.x 테스트 변경은 따로 검증한다.
+
+4497에서 suite 자동 수집과 fmt는 exit0이었다. 기본 feature의 실제 테스트 컴파일은
+`print_alpha::samples`가 참조하는 공통 Catmull–Rom 가중치 모듈의 cfg 때문에 E0433으로
+실패했다. Native Skia/fresh WASM 경로에서 이미 통과한 사실로 이 실패를 면제하지 않는다.
+가중치는 공통 Print 경로에서도 사용하므로 모듈을 모든 backend에 열고, 감소 판정 함수의
+기존 Native Skia/WASM 전용 조건을 함수에 유지한다. 식·좌표·필터·기준값은 바꾸지 않았다.
+기본 feature의 새 정식 회귀를 재실행하고 이후 전체 lint·Rust와 새 base의 제품 빌드로 확인한다.
