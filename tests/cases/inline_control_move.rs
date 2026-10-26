@@ -17,35 +17,10 @@ use rhwp::{
     },
 };
 
-fn body(para: usize) -> InlineControlOwner {
-    InlineControlOwner::Body {
-        section_index: 0,
-        paragraph_index: para,
-        cell_path: vec![],
-    }
-}
-fn source(owner: InlineControlOwner, ci: usize) -> InlineControlAddress {
-    InlineControlAddress {
-        owner,
-        control_index: ci,
-    }
-}
-fn caret(owner: InlineControlOwner, offset: usize) -> InlineControlCaret {
-    InlineControlCaret {
-        owner,
-        char_offset: offset,
-    }
-}
-fn chart_content(core: &DocumentCore) -> serde_json::Value {
-    let mut data: serde_json::Value =
-        serde_json::from_str(&core.get_chart_data_by_index_native(0).unwrap()).unwrap();
-    assert_eq!(data["ok"].as_bool(), Some(true));
-    // 저장 형식마다 달라지는 위치 정보 대신 차트 내용을 비교한다.
-    let object = data.as_object_mut().unwrap();
-    object.remove("source");
-    object.remove("representations");
-    data
-}
+#[path = "../support/inline_control_move_contract.rs"]
+mod fixture_support;
+use fixture_support::{body, caret, chart_content, source};
+
 fn equation(id: u32) -> Control {
     Control::Equation(Box::new(Equation {
         common: CommonObjAttr {
@@ -1004,78 +979,5 @@ fn malformed_source_or_destination_coordinates_reject_without_changes() {
         core.document_mut().sections[0].paragraphs[index].ctrl_data_records =
             vec![Some(vec![3, 7]), Some(vec![9, 2])];
         unchanged(&mut core, &source(body(0), 0), &caret(body(1), 1));
-    }
-}
-
-#[test]
-fn committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets() {
-    let root =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/inline-control-move");
-    let expected_chart = chart_content(
-        &DocumentCore::from_bytes(&std::fs::read(root.join("chart-before.hwpx")).unwrap()).unwrap(),
-    );
-    for ext in ["hwp", "hwpx"] {
-        let mut core =
-            DocumentCore::from_bytes(&std::fs::read(root.join(format!("before.{ext}"))).unwrap())
-                .unwrap();
-        let after =
-            DocumentCore::from_bytes(&std::fs::read(root.join(format!("after.{ext}"))).unwrap())
-                .unwrap();
-        let before_text: Vec<_> = core.document().sections[0]
-            .paragraphs
-            .iter()
-            .map(|p| p.text.clone())
-            .collect();
-        for (offset, pi) in (1..=5).enumerate() {
-            let ci = core.document().sections[0].paragraphs[pi]
-                .controls
-                .iter()
-                .position(|c| c.is_treat_as_char_object())
-                .unwrap();
-            core.move_inline_control_native(&source(body(pi), ci), &caret(body(6), 7 + offset))
-                .unwrap();
-        }
-        assert_eq!(
-            core.document().sections[0]
-                .paragraphs
-                .iter()
-                .map(|p| p.text.clone())
-                .collect::<Vec<_>>(),
-            before_text
-        );
-        assert_eq!(
-            after.document().sections[0]
-                .paragraphs
-                .iter()
-                .map(|p| p.text.clone())
-                .collect::<Vec<_>>(),
-            before_text
-        );
-        for p in &after.document().sections[0].paragraphs[1..6] {
-            assert!(!p.controls.iter().any(|c| c.is_treat_as_char_object()));
-        }
-        for document in [&core, &after] {
-            let p = &document.document().sections[0].paragraphs[6];
-            assert_eq!(p.controls.len(), 5);
-            assert_eq!(p.control_text_positions(), vec![7; 5]);
-            assert_eq!(document.page_count(), 1);
-        }
-        for name in ["chart-before", "chart-after"] {
-            let chart = DocumentCore::from_bytes(
-                &std::fs::read(root.join(format!("{name}.{ext}"))).unwrap(),
-            )
-            .unwrap();
-            assert_eq!(chart.page_count(), 1);
-            assert_eq!(chart_content(&chart), expected_chart);
-            assert_eq!(
-                chart.document().sections[0]
-                    .paragraphs
-                    .iter()
-                    .flat_map(|p| &p.controls)
-                    .filter(|c| c.is_treat_as_char_object())
-                    .count(),
-                1
-            );
-        }
     }
 }

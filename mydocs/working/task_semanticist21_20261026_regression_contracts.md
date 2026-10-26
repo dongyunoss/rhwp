@@ -263,3 +263,16 @@ ignored 영수증은 `cell-scope-focused-4175-result.json`,
 `cell-scope-finalization-4178.json`, `cell-scope-base-comparison-4179.json`이다.
 새 코드의 전체 Rust·lint·Studio 및 최종 제출 범위 검증은 별도로 완료해야 하며,
 이전 런타임의 전체 PASS를 재사용하지 않는다. 아직 PR을 제출하지 않았다.
+
+
+## 사용자 지시에 따른 손상된 이동 HWP 삭제 — 2026-10-26
+
+기존 일반 이동 `before.hwp`·`after.hwp`의 한컴 2020 손상 경고를 확인한 뒤 삭제했다.
+두 파일의 SHA 목록과 재열기 경로도 정리했다. HWPX 두 파일 및 차트 HWP/HWPX 네 파일의
+모델·저장 계약은 별도 `valid_inline_move_fixture_contract`에 유지하고, 공용 helper를
+분리해 기존 원본은 983줄로 줄였다. 새 HWP로 대체하거나 삭제 파일을 재생성하지 않는다.
+
+현재 실행 중인 전체 nextest·Native/Studio 후속 작업은 삭제 전 고정 source의 결과로
+구분한다. 종료 뒤 검증 worktree에도 삭제를 반영하고 변경한 검사의 집중 회귀·lint를
+완료한다. 새 source에 과거 PASS를 적용하지 않는다. 실제 삭제와 근거는 #7694 개별
+구현 기록 및 ignored `damaged-move-removal-4195.json`에 연결한다.

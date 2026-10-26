@@ -95,3 +95,24 @@ Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료
 sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
 파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
 별도로 판정한다.
+
+
+## 손상된 일반 HWP 표본 삭제 — 2026-10-26
+
+독립 Hancom 2020 Print 요청에서 일반 이동 표본 두 파일은
+`HANCOM_DOCUMENT_OPEN_REJECTED` 손상 경고로 거절됐다. 사용자 지시에 따라
+`tests/fixtures/inline-control-move/before.hwp`와 `after.hwp`를 삭제했다.
+별도 보관본이나 대체 HWP를 활성 fixture에 추가하지 않는다.
+실패한 job은 각각 `56ddb08f-9bec-4a9d-834f-92e0088db40b`,
+`2cb98cd1-923a-42ea-a11b-dad564d4018c`이며 ignored
+`output/pr-review/semanticist21-20261019/existing-move-print-4193-result.json`에 있다.
+
+원 검사에서 일반 `before/after`의 확장자를 순회하던 경로를 없애고
+[유효한 저장본 계약](../../../tests/cases/valid_inline_move_fixture_contract.rs)에서
+HWPX 두 파일을 명시적으로 읽는다. 차트 HWP/HWPX 네 파일의 내용·개체 보존 검사는
+유지한다. 공용 주소·차트 조회 helper를 분리해 기존 파일은 983줄로 유지했다.
+원본의 정확한 내용·논리 캐럿·개체 수 assertion을 완화하거나 fixture를 숨기지 않았다.
+
+삭제 지시 이전에 시작한 전체 Rust 실행은 고정한 이전 검증 worktree의 결과다.
+이 삭제·검사 분리를 반영한 집중 회귀와 필수 lint는 별도로 재실행하며, 이전 결과를
+이번 검사 source의 PASS로 표시하지 않는다. sample16·편람의 삭제도 유지한다.
