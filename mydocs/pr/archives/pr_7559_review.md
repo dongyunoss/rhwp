@@ -2,18 +2,58 @@
 kind: snapshot
 status: active
 canonical: mydocs/pr/archives/pr_7559_review.md
-last_verified: 2026-10-21
+last_verified: 2026-10-26
 ---
 
 # PR #7559 리뷰 — 새 표의 저장 전후 원점
 
 ## 최종 판정
 
-**머지 보류 — 메인터너 보정의 집중 검사는 통과했으며 통합 후보의 필수 검증을 계속한다.**
-원 PR은 실패 재현만 담은 Draft다. 보정 없이 원 head를 병합 가능한 수정으로 판정하지 않는다.
-현재 기록은 로컬 검토이며 원격 review·push·PR 생성·merge는 실행하지 않았다.
+**메인터너 보정 후 수용 가능 — 공개 API 표의 저장 전후 원점·빈 호스트 점유 범위의 로컬 검증 완료.**
+
+원 contributor head가 아니라 메인터너 보정한 통합 후보의 판정이다. 아래 현재 증거와
+실제 검사 실행을 대조했다. 통합 PR의 정확한 code head CI·merge·후속 처리는
+앞으로 수행할 조건이며 로컬 통과로 대신하지 않는다.
+
+## 최종 로컬 판정 근거 — 2026-10-26
+
+원 head `5f1f1057bd1b7981b3801b815aa28b98860932a2`가 원격과 같음을 재확인했다. 검증 코드는
+`61528013511c87c732524f91c6f224286a055337`, 실제 렌더 source는
+`bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`, 고정 devel은
+`238de6de41a208648f4ade6b494fe433a81c1fce`다. 제출 전 fetch에서도 같은 base를
+확인했으므로 추가 리베이스하지 않았다. 이후 문서·증거 커밋은 코드·검사를 바꾸지 않았다.
+
+| 필수 근거 | 최종 확인 결과 |
+| --- | --- |
+| 원 PR의 현재 검사 | 아래 모듈·함수별 실제 PASS와 로그 행을 확인했다. 소스 존재를 실행 결과로 대신하지 않았다. |
+| 전쪽 Native/fresh WASM | 18조건·각 1쪽(전체 18쪽/backend)에서 최저 100.00000% / 100.00000%, 독립 Print 쪽수 일치·90% 미만/누락 0쪽 |
+| 고정 devel 보존 | 동일 입력·Print·글꼴·backend의 페이지별 비교에서 0.1%p 초과 하락 0쪽 |
+| 직접 판독 | 표 원점·행 높이와 뒤 본문 순서를 확인했다. 원점 불변의 0.2px는 저장 전후 관계 검사이며 독립 PDF의 절대 좌표 핀이 아니다. |
+| 전체 로컬 게이트 | fmt·수집/단위 정책·Release build/lib·전체 nextest·Skia 3종·Native/WASM/workspace Clippy·workspace build·doctest 완료. 실제 종료 근거는 아래 공통 기록 참조 |
+| 원격 절차 | 통합 PR의 정확한 code head CI·실제 merge·후속 comment는 앞으로 수행할 조건이다. 원 contributor head를 직접 승인·merge한 기록이 아니다. |
+
+조건 번호 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 054, 055, 059, 060, 061, 062. [전쪽 TSV·원본/Print·producer·해시와 판독](../assets/source_pr_qualified_20261026/README.md)을
+이 PR의 직접 근거로 연결한다. raw는 색상 경계 보정 전 2px 실루엣이며 RGB 완전 일치나
+과거 별도 지표의 통과를 뜻하지 않는다. Native255·표준 release/wasm-opt를 마친 fresh073을
+사용했다. 측정 뒤 코드 변경은 없으며, 과거 제품의 표는 당시 결과로 구분한다.
+
+| 출력 경로 | 현재 대표 review | 현재 standalone overlay |
+| --- | --- | --- |
+| Native | [review](../assets/source_pr_qualified_20261026/png/native/046/review_001.png) | [overlay](../assets/source_pr_qualified_20261026/png/native/046/overlay_001.png) |
+| fresh WASM | [review](../assets/source_pr_qualified_20261026/png/fresh-wasm/046/review_001.png) | [overlay](../assets/source_pr_qualified_20261026/png/fresh-wasm/046/overlay_001.png) |
+
+Merge 후에는 이 대표 파일을
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/source_pr_qualified_20261026/`
+위 표의 실제 상대 경로로 고정해 contributor comment에 두 이미지를 함께 표시한다.
+같은 merge의 devel 포함·asset 존재·CI 결과를 먼저 확인하고 한국어 존댓말의
+`--body-file` 본문을 게시한 뒤 API에서 한글·링크·실제 Markdown을 다시 확인한다.
+
 
 ## 접수 정보
+
+이하 최초 접수와 중간 검토의 제품·기준 SHA 및 당시 진행 상태를 보존한다.
+현재 판정은 위 「최종 로컬 판정 근거」와 아래 「통합 후보의 실제 검사 실행」이 정본이다.
+과거의 진행 중·미완료 표현을 현재 로컬 게이트 상태로 사용하지 않는다.
 
 | 항목 | 값 |
 | --- | --- |
