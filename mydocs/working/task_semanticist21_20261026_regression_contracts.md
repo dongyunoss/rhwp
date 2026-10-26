@@ -529,3 +529,24 @@ frame resampling 관련 export를 포함한다. 이후 검사·문서·증적 �
 `8188-terminal-formal-red-green-4289-result.json`, 전쪽 판정은
 `8188-priority-{native,wasm}-4282-result.json`이다. 모두 같은 검토 output 아래에 있다.
 이 완료는 #8188 보존과 새 회귀 검사에 한정하며 통합 PR 전체 검증 완료를 뜻하지 않는다.
+
+### CI 운영 후속 12커밋 반영과 기능 보존 — 2026-10-26
+
+기준 devel이 `2546c8b2ab7041399fb15fe82e0f50c1ade21724`에서
+`49bc935a149c20b942d3045c2f5c733aeccf57d0`으로 바뀌어 리베이스했다.
+#8273·#8274·#8278·#8280의 duration 갱신 CLI·문서 전용 판정·후속 기록
+12커밋이며 새로운 외부 contributor PR은 체리픽하지 않았다.
+364개 커밋을 충돌 없이 재적용한 head는 `21af47c759`다. 기존 삭제는 유지한다.
+
+리베이스 전 `3b13d8c65d`와 새 head의 `src`·`crates`·Cargo 설정·build.rs·
+Studio source·Visual Sweep 두 구현 파일에 차이가 없다. c2513250에서 빌드한
+Native261/fresh077의 제품 검증은 이 소스 동일성으로 연결하고, 새로 빌드했다고
+기록하지 않는다. 새 base의 duration 정책·CLI 계약 17개 Node 검사와 workflow
+계약 22개 Python 검사를 현재 head에서 실제 실행해 모두 통과했다.
+
+리베이스 로그는 `logs/rebase-49bc-4293.log`, 기능 보존 근거는
+`rebase-49bc-4295-result.json`, 정책 로그는 `logs/rebase-duration-policy-4295.log`와
+`logs/rebase-duration-workflow-4295.log`다. ignored 검토 output에 보존한다.
+기존 #8032·#8036의 같은 입력 4개와 #7833 소유 무효화 대조군 8개는
+현재 제품의 양쪽 출력으로 재측정 중이다. 기존 미달의 해소나 통합 PR 준비 완료를
+실행 결과보다 먼저 선언하지 않는다. 새 HWP 원본으로 범위를 넓히지 않는다.
