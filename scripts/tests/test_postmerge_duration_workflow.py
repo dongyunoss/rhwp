@@ -11,21 +11,35 @@ class PostmergeDurationWorkflowTests(unittest.TestCase):
         text = (WORKFLOWS / 'refresh-nextest-duration.yml').read_text(encoding='utf-8')
         push = re.search(r'^  push:(.*?)(?=^  [a-z_]+:|^\S|\Z)', text, re.M | re.S)[1]
         self.assertIn('branches: [devel]', push)
-        self.assertNotRegex(push, re.compile(r'^    paths:', re.M),
-                            '제외 목록으로 알 수 없는 변경의 실행을 보존한다')
-        ignored = re.search(r'^    paths-ignore:\n((?:^      .*\n)+)', push, re.M)
-        self.assertIsNotNone(ignored)
-        patterns = re.findall(r"^      - '([^']+)'$", ignored[1], re.M)
+        self.assertNotIn('paths-ignore:', push)
+        paths_filter = re.search(r'^    paths:\n((?:^      .*\n)+)', push, re.M)
+        self.assertIsNotNone(paths_filter)
+        patterns = re.findall(r"^      - '([^']+)'$", paths_filter[1], re.M)
+        self.assertEqual(patterns[0], '**')
 
-        def ignored_path(path):
+        # PR CI의 trigger 생략 경로와 문서 분류가 달라지면 함께 재검토한다.
+        ci = (WORKFLOWS / 'ci.yml').read_text(encoding='utf-8')
+        pr_ignored = re.search(r'^    paths-ignore:\n((?:^      .*\n)+)', ci, re.M)[1]
+        ci_patterns = re.findall(r"^      - '([^']+)'$", pr_ignored, re.M)
+        self.assertEqual({p[1:] for p in patterns if p.startswith('!')},
+                         set(ci_patterns) | {'AGENTS.md', 'CLAUDE.md', 'llms.txt', 'mydocs/**'})
+        self.assertEqual([p for p in patterns if not p.startswith('!')][1:], [
+            'mydocs/tech/canvaskit-parity-implementation.md',
+            'mydocs/tech/text-ir-v2.md',
+        ])
+
+        def included_path(path):
+            included = False
             for pattern in patterns:
+                negative = pattern.startswith('!')
+                pattern = pattern.removeprefix('!')
                 glob = re.escape(pattern).replace(r'\*\*', '.*').replace(r'\*', '[^/]*')
                 if re.fullmatch(glob, path):
-                    return True
-            return False
+                    included = not negative
+            return included
 
         def runs(paths):
-            return any(not ignored_path(path) for path in paths)
+            return any(included_path(path) for path in paths)
 
         # 추가·수정·삭제된 문서, 문서 경로 간 이동 및 문서 증적 묶음.
         for paths in [
@@ -33,6 +47,7 @@ class PostmergeDurationWorkflowTests(unittest.TestCase):
             ['mydocs/manual/mcp_hwp2024Convert_usage.md'],
             ['mydocs/pr/assets/issue_8277/native.tsv', 'mydocs/pr/assets/issue_8277/review.png'],
             ['mydocs/old.md', 'mydocs/archive/new.md'],
+            ci_patterns,
         ]:
             with self.subTest(skipped=paths):
                 self.assertFalse(runs(paths))
@@ -40,7 +55,9 @@ class PostmergeDurationWorkflowTests(unittest.TestCase):
         for path in ['src/lib.rs', 'Cargo.toml', 'Cargo.lock', 'tests/cases/example.rs',
                      '.github/workflows/refresh-nextest-duration.yml',
                      'scripts/collect-postmerge-duration-data.mjs', 'unknown/file',
-                     'samples/example.hwpx', 'src/README.md']:
+                     'samples/example.hwpx', 'src/README.md', 'unknown.md',
+                     'mydocs/tech/canvaskit-parity-implementation.md',
+                     'mydocs/tech/text-ir-v2.md']:
             with self.subTest(runs=path):
                 self.assertTrue(runs([path]))
                 self.assertTrue(runs(['mydocs/manual/example.md', path]))
