@@ -48,3 +48,37 @@ idempotence·표 소유 번호 이동·지역 주소 보존·입력과 두 저�
 [검증 출처와 입력](../assets/active_field_group_owner_20261021/README.md)에 소스·제품 해시와
 실제 결과를 연결했다. 현재 Rust lint/build4단계는 모두 성공했다. 새 전쪽 fresh와
 전체 Rust 실패·차트 등 통합 필수 항목은 계속 검증하며, 최종 판정은 **머지 보류**다.
+
+## 통합 후보의 실제 검사 실행 — 2026-10-26
+
+코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
+아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
+바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+
+- [tests/cases/active_field_group_root_owner.rs](../../../tests/cases/active_field_group_root_owner.rs): SHA-256 `bd095b50f8d4110db554606333b975aa6525b91249d40d1a3faf989aae3489f1`.
+  - `group_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/final-full-nextest-4052.log:8781` (`rhwp::regression_suite_018`).
+  - `group_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/final-full-nextest-4052.log:8782` (`rhwp::regression_suite_018`).
+  - `ungroup_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/final-full-nextest-4052.log:8783` (`rhwp::regression_suite_018`).
+  - `ungroup_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/final-full-nextest-4052.log:8784` (`rhwp::regression_suite_018`).
+- [tests/cases/group_shapes_child_geometry.rs](../../../tests/cases/group_shapes_child_geometry.rs): SHA-256 `4974f0e3b4cb13396948c4fa66b3019f8666031bf2fc4d1b95ea88f763376dfb`.
+  - `grouping_keeps_scaled_and_rotated_children_drawn_in_place`: PASS, `logs/final-full-nextest-4052.log:5792` (`rhwp::regression_suite_007`).
+  - `grouping_keeps_stacking_order_regardless_of_target_order`: PASS, `logs/final-full-nextest-4052.log:5791` (`rhwp::regression_suite_007`).
+  - `grouping_keeps_children_positioned_against_different_bases`: PASS, `logs/final-full-nextest-4052.log:5789` (`rhwp::regression_suite_007`).
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
+전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
+Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
+전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
+공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+
+이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+
+| 원 커밋 | 현재 통합 대응 |
+| --- | --- |
+| `1e22bc7d12c8587d8fc2def693bffeb848c6ff4d` | `0b87bbe13502b8b801f49b4326b102f5a0f48089` |
+
+sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
+파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
+별도로 판정한다.

@@ -92,3 +92,80 @@ sample16·편람의 삭제된 회귀·fixture·보관본·파생 참조는 생�
 수집 소스의 누락은 0개다. OLE 원본의
 [현재 Native·WASM 증거](../pr/assets/legacy_chart_physical_layout_20261020/current-20261026/README.md)는
 기존 HWP·추적 중인 동일 Print PDF를 재사용했으며 제외 문서의 복원과 무관하다.
+
+
+## 원 PR별 실제 실행 대조와 삭제 유지 재확인 — 2026-10-26
+
+[기존 재현본 62조건의 최종 증거](../pr/assets/source_pr_qualified_20261026/README.md)를
+보존했다. 전쪽 Native·fresh WASM 후보 각각 62쪽의 최저 raw는 99.98107%이고,
+독립 Print 쪽수가 같으며 base 대비 0.1%p 초과 하락은 0쪽이다. 대표 23조건의
+review·standalone overlay 46쌍은 기존 캡처의 입력/PDF·producer·실제 PNG 해시를
+확인한 뒤 합성했다. 원본 RGB가 같은 경우의 판독 재사용과 새 캡처를 구분했다.
+원문 TSV 248개·비교표 2개·PNG 92개의 해시를 재확인했다.
+
+원 PR 45개의 현재 검사 함수 196개를 실제 PASS 행과 연결했다. 이는 PR 간 공용
+함수의 중복을 포함한 연결 수이며 서로 다른 검사 196개를 새로 만들었다는 뜻이 아니다.
+기본 nextest에서 조건부로 빠진 Native font trace 두 함수는 별도 native-skia 모듈
+실행의 12 PASS·0 FAIL·exit 0으로 확인했다. Studio 네 소스는 전체 Node 명령에
+명시된 실제 검사 파일과 그 파일이 import한 runner를 구분했다.
+
+| 원 PR | 실제 PASS와 연결한 Rust 함수 수 | Studio 검사/runner 소스 수 |
+| --- | ---: | ---: |
+| [#7559](../pr/archives/pr_7559_review.md) | 2 | 0 |
+| [#7572](../pr/archives/pr_7572_review.md) | 3 | 0 |
+| [#7573](../pr/archives/pr_7573_review.md) | 3 | 0 |
+| [#7588](../pr/archives/pr_7588_review.md) | 11 | 0 |
+| [#7589](../pr/archives/pr_7589_review.md) | 2 | 0 |
+| [#7662](../pr/archives/pr_7662_review.md) | 6 | 0 |
+| [#7694](../pr/archives/pr_7694_review.md) | 19 | 0 |
+| [#7819](../pr/archives/pr_7819_review.md) | 14 | 0 |
+| [#7833](../pr/archives/pr_7833_review.md) | 38 | 0 |
+| [#7904](../pr/archives/pr_7904_review.md) | 0 | 4 |
+| [#8014](../pr/archives/pr_8014_review.md) | 1 | 0 |
+| [#8025](../pr/archives/pr_8025_review.md) | 1 | 0 |
+| [#8027](../pr/archives/pr_8027_review.md) | 4 | 0 |
+| [#8029](../pr/archives/pr_8029_review.md) | 1 | 0 |
+| [#8030](../pr/archives/pr_8030_review.md) | 1 | 0 |
+| [#8031](../pr/archives/pr_8031_review.md) | 2 | 0 |
+| [#8032](../pr/archives/pr_8032_review.md) | 2 | 0 |
+| [#8033](../pr/archives/pr_8033_review.md) | 2 | 0 |
+| [#8035](../pr/archives/pr_8035_review.md) | 3 | 0 |
+| [#8036](../pr/archives/pr_8036_review.md) | 2 | 0 |
+| [#8037](../pr/archives/pr_8037_review.md) | 2 | 0 |
+| [#8038](../pr/archives/pr_8038_review.md) | 2 | 0 |
+| [#8039](../pr/archives/pr_8039_review.md) | 1 | 0 |
+| [#8041](../pr/archives/pr_8041_review.md) | 7 | 0 |
+| [#8042](../pr/archives/pr_8042_review.md) | 11 | 0 |
+| [#8043](../pr/archives/pr_8043_review.md) | 9 | 0 |
+| [#8045](../pr/archives/pr_8045_review.md) | 1 | 0 |
+| [#8049](../pr/archives/pr_8049_review.md) | 2 | 0 |
+| [#8050](../pr/archives/pr_8050_review.md) | 1 | 0 |
+| [#8051](../pr/archives/pr_8051_review.md) | 1 | 0 |
+| [#8052](../pr/archives/pr_8052_review.md) | 2 | 0 |
+| [#8053](../pr/archives/pr_8053_review.md) | 1 | 0 |
+| [#8054](../pr/archives/pr_8054_review.md) | 1 | 0 |
+| [#8055](../pr/archives/pr_8055_review.md) | 1 | 0 |
+| [#8056](../pr/archives/pr_8056_review.md) | 1 | 0 |
+| [#8057](../pr/archives/pr_8057_review.md) | 3 | 0 |
+| [#8058](../pr/archives/pr_8058_review.md) | 4 | 0 |
+| [#8061](../pr/archives/pr_8061_review.md) | 1 | 0 |
+| [#8062](../pr/archives/pr_8062_review.md) | 1 | 0 |
+| [#8065](../pr/archives/pr_8065_review.md) | 9 | 0 |
+| [#8066](../pr/archives/pr_8066_review.md) | 1 | 0 |
+| [#8090](../pr/archives/pr_8090_review.md) | 1 | 0 |
+| [#8093](../pr/archives/pr_8093_review.md) | 4 | 0 |
+| [#8094](../pr/archives/pr_8094_review.md) | 11 | 0 |
+| [#8096](../pr/archives/pr_8096_review.md) | 1 | 0 |
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+`individual-pr-execution-bindings-4125.json`에는 현재 검사 파일 SHA-256, 모듈·함수의
+실제 PASS 행과 로그 SHA-256을 기록했다. `native-trace-contracts-4119-result.json`과
+`logs/native-trace-contracts-4119.log`는 Native 조건부 검사 12건의 실제 종료 근거다.
+개별 리뷰의 검사 통과는 독립 Print 일치나 PR의 전체 수용 판정을 대신하지 않는다.
+아직 게시하지 않은 통합 PR의 CI·merge·후속 처리를 완료했다고 기록하지 않았다.
+
+`retired-reference-preservation-4123.json`은 `deriveManifest`의 persist=false 경로로
+현재 수집 소스 1,787개를 읽었다. 누락 0개·삭제 대상 참조 0개이며 현재 generated
+harness의 삭제 대상 참조도 0개다. manifest·fixture·보관본·삭제된 파생 파일을
+재생성하지 않았다. 텍스트 검색의 과거 사유 주석과 제외 필터는 실제 원본을 여는
+활성 참조와 구분해 유지했다. 검사 대상과 실제 실행 코드는 변경하지 않았다.

@@ -17,7 +17,7 @@
 ## 실행 순서와 현재 상태
 
 1. 원 PR의 reviewer·head를 확인하고 기능 commit을 최신 devel 위에 누적 적용했다. 원격 원 head를 재작성하지 않았다.
-2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 검증을 실행 중이다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
+2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 Rust 검증을 완료했다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
 3. 개별 리뷰의 독립 Print·Native/fresh WASM·소비 경로와 전체 로컬 게이트를 완료한 뒤 최종 판정을 갱신한다. PR 직전 devel head를 재조회하고 변경됐으면 리베이스한 기능과 현재 보정 범위를 함께 검증한다.
 4. 승인된 통합 PR을 실제 템플릿에 맞춰 제출하고 정확한 code head CI를 관찰한다. 별도로 승인된 옵션 2의 self-review·오늘할일 후속 PR은 code CI 뒤에 처리한다. 원 PR별 검토 기록은 통합 PR에 유지한다.
 5. CI·merge 조건을 확인해 통합하고 merge SHA의 devel 포함을 확인한다. 이 PR에는 보정·검증 결과와 통합 링크를 남긴 뒤 원 PR을 close한다. 관련 이슈는 전체 해결 범위가 확인된 경우만 닫는다.
@@ -30,3 +30,46 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 ## 완료 전 남은 기록
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
+
+## 통합 후보의 실제 검사 실행 — 2026-10-26
+
+코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
+아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
+바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+
+- [tests/cases/char_overlap_caret_axis.rs](../../../tests/cases/char_overlap_caret_axis.rs): SHA-256 `9a680fef8d58f03c6492f58e25f9f57c0195006f1f49b2265b3181c7fdb53c89`.
+  - `mixed_overlap_note_uses_one_axis_in_public_getters_and_both_formats`: PASS, `logs/final-full-nextest-4052.log:10110` (`rhwp::regression_suite_023`).
+  - `public_caret_and_selection_use_the_rendered_overlap_and_note_boundaries`: PASS, `logs/final-full-nextest-4052.log:10112` (`rhwp::regression_suite_023`).
+  - `input_before_and_after_overlap_and_note_preserves_source_slots`: PASS, `logs/final-full-nextest-4052.log:10107` (`rhwp::regression_suite_023`).
+  - `logical_copy_excludes_or_includes_the_overlap_slot_without_neighbor_text`: PASS, `logs/final-full-nextest-4052.log:10109` (`rhwp::regression_suite_023`).
+  - `split_merge_and_snapshot_restore_keep_the_logical_seam_after_overlap`: PASS, `logs/final-full-nextest-4052.log:10114` (`rhwp::regression_suite_023`).
+  - `empty_overlap_and_same_anchor_slots_are_counted_without_claiming_middle_input`: PASS, `logs/final-full-nextest-4052.log:10105` (`rhwp::regression_suite_023`).
+  - `floating_and_auto_number_keep_their_existing_caret_contract`: PASS, `logs/final-full-nextest-4052.log:10106` (`rhwp::regression_suite_023`).
+  - `non_bmp_text_and_note_keep_source_order_complete_caret_and_hit_boundaries`: PASS, `logs/final-full-nextest-4052.log:10111` (`rhwp::regression_suite_023`).
+  - `same_anchor_notes_keep_control_order_and_terminal_overlap_geometry`: PASS, `logs/final-full-nextest-4052.log:10113` (`rhwp::regression_suite_023`).
+  - `issue_7819_print_qualified_overlap_note_caret_boundaries_stay_within_two_pixels`: PASS, `logs/final-full-nextest-4052.log:10108` (`rhwp::regression_suite_023`).
+- [tests/cases/issue_7408_stored_row_key_folded_origin.rs](../../../tests/cases/issue_7408_stored_row_key_folded_origin.rs): SHA-256 `5916b148a6b41d49de4b4d14ba626a6c079cb274b88afec4cba224c442963f65`.
+  - `footnote_sample_keeps_every_stored_cut`: PASS, `logs/final-full-nextest-4052.log:5616` (`rhwp::regression_suite_006`).
+  - `endnote_sample_keeps_every_stored_cut`: PASS, `logs/final-full-nextest-4052.log:5615` (`rhwp::regression_suite_006`).
+  - `tac_picture_sample_keeps_its_stored_cuts`: PASS, `logs/final-full-nextest-4052.log:5641` (`rhwp::regression_suite_006`).
+  - `edited_paragraph_is_rewrapped`: PASS, `logs/final-full-nextest-4052.log:5614` (`rhwp::regression_suite_006`).
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
+전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
+Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
+전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
+공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+
+이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+
+| 원 커밋 | 현재 통합 대응 |
+| --- | --- |
+| `7ded7ca1d468326844ede2e934b10c4add9c7d81` | `1269479a2a0f5dfac5a6ce9ca43346d987ea2f35` |
+| `a3f80b14adcbec5974debb537a02eb84aa061603` | `c9334ddea87c9472c7b3a964e8cde6916d337fa0` |
+| `36f9d3ac4091cc5c85cd74dee030c93b62c80964` | `aa90bdb2c5b1e34e7e341803cb66b9314c0e5c52` |
+
+sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
+파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
+별도로 판정한다.

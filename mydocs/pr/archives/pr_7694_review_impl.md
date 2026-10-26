@@ -26,7 +26,7 @@
 ## 실행 순서와 현재 상태
 
 1. 원 PR의 reviewer·head를 확인하고 기능 commit을 최신 devel 위에 누적 적용했다. 원격 원 head를 재작성하지 않았다.
-2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 검증을 실행 중이다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
+2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 Rust 검증을 완료했다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
 3. 개별 리뷰의 독립 Print·Native/fresh WASM·소비 경로와 전체 로컬 게이트를 완료한 뒤 최종 판정을 갱신한다. PR 직전 devel head를 재조회하고 변경됐으면 리베이스한 기능과 현재 보정 범위를 함께 검증한다.
 4. 승인된 통합 PR을 실제 템플릿에 맞춰 제출하고 정확한 code head CI를 관찰한다. 별도로 승인된 옵션 2의 self-review·오늘할일 후속 PR은 code CI 뒤에 처리한다. 원 PR별 검토 기록은 통합 PR에 유지한다.
 5. CI·merge 조건을 확인해 통합하고 merge SHA의 devel 포함을 확인한다. 이 PR에는 보정·검증 결과와 통합 링크를 남긴 뒤 원 PR을 close한다. 관련 이슈는 전체 해결 범위가 확인된 경우만 닫는다.
@@ -39,3 +39,59 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 ## 완료 전 남은 기록
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
+
+## 통합 후보의 실제 검사 실행 — 2026-10-26
+
+코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
+아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
+바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+
+- [tests/cases/inline_control_move.rs](../../../tests/cases/inline_control_move.rs): SHA-256 `d76cd31037ae4ba897601230b0499e4b6d152491ea251a403a8404bcb0f777f8`.
+  - `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`: PASS, `logs/final-full-nextest-4052.log:9364` (`rhwp::regression_suite_020`).
+  - `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`: PASS, `logs/final-full-nextest-4052.log:9350` (`rhwp::regression_suite_020`).
+  - `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`: PASS, `logs/final-full-nextest-4052.log:9352` (`rhwp::regression_suite_020`).
+  - `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`: PASS, `logs/final-full-nextest-4052.log:9359` (`rhwp::regression_suite_020`).
+  - `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`: PASS, `logs/final-full-nextest-4052.log:9368` (`rhwp::regression_suite_020`).
+  - `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`: PASS, `logs/final-full-nextest-4052.log:9366` (`rhwp::regression_suite_020`).
+  - `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`: PASS, `logs/final-full-nextest-4052.log:9363` (`rhwp::regression_suite_020`).
+  - `header_and_note_destinations_return_existing_owner_forms`: PASS, `logs/final-full-nextest-4052.log:9353` (`rhwp::regression_suite_020`).
+  - `picture_binary_identity_and_control_metadata_survive_cross_owner_move`: PASS, `logs/final-full-nextest-4052.log:9362` (`rhwp::regression_suite_020`).
+  - `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`: PASS, `logs/final-full-nextest-4052.log:9358` (`rhwp::regression_suite_020`).
+  - `locked_object_and_locked_parent_reject_without_mutation`: PASS, `logs/final-full-nextest-4052.log:9354` (`rhwp::regression_suite_020`).
+  - `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`: PASS, `logs/final-full-nextest-4052.log:9357` (`rhwp::regression_suite_020`).
+  - `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`: PASS, `logs/final-full-nextest-4052.log:9361` (`rhwp::regression_suite_020`).
+  - `nested_markpen_colors_keep_outer_inner_order_when_moved`: PASS, `logs/final-full-nextest-4052.log:9360` (`rhwp::regression_suite_020`).
+  - `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`: PASS, `logs/final-full-nextest-4052.log:9365` (`rhwp::regression_suite_020`).
+  - `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`: PASS, `logs/final-full-nextest-4052.log:9349` (`rhwp::regression_suite_020`).
+  - `public_hwp_export_preserves_inline_chart_with_and_without_move`: PASS, `logs/final-full-nextest-4052.log:9367` (`rhwp::regression_suite_020`).
+  - `malformed_source_or_destination_coordinates_reject_without_changes`: PASS, `logs/final-full-nextest-4052.log:9356` (`rhwp::regression_suite_020`).
+  - `committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets`: PASS, `logs/final-full-nextest-4052.log:9351` (`rhwp::regression_suite_020`).
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
+전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
+Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
+전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
+공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+
+이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+
+| 원 커밋 | 현재 통합 대응 |
+| --- | --- |
+| `f7c0acb2c9580cae3ebc14e09bb503dba261ffaa` | `cca5817c81a6679b2fadc957997dc2ef95286450` |
+| `3e2a9dc1c6597e357634835208e0efcfca5288c0` | `f7be47cbf4abdfb0f849faf3d980df4c673d80cb` |
+| `9dab2711be1156aefc5318a1adb4e98fb0a309fe` | `e854311d59c6faf5824dfe4d3df8fc24b0d9d7ea` |
+| `30a29eaf5481b6ca8b1c283c10b695a735eadc35` | `f21c4a7da8481e65ca324449b3c2b9051919a4ed` |
+| `5f7a4fca71f816c2fb72154639c31e3826423a28` | `44903a1025a656b46beb7b579f26e9385ebe70e6` |
+| `3e68f620a9c2643bb52a78d305b2f7e95f06a631` | `19969825ec2779f74b8b6673d258eac66e0d5742` |
+| `55f06f5505d6f6ddd449a3f7b1cb4acd84c29ac2` | `cc29ccf21e930832d06756e4210ce6efe3419866` |
+| `09f91ff16986b6f64db4a3b46d1a63ca0f6e8de5` | `ce062af329914df8564bed3f525eb01a0e9c6585` |
+| `9052f0bde427f93bf3cefe5de09875065a49bfbb` | 원 devel merge; 기능 체리픽에서 제외 |
+| `133e09e154d0d496850d64deb7e823b2599cceba` | `4fa3c6d58382f40dd586fccc5742a752c47156b6` |
+| `680f44ae667ba16b8ecc1073ce815286788d138b` | `46a476abbbffad8f085cb701fca049aa6be458bb` |
+| `0e7383d03753ac2546b0be74f19a244fe81747ff` | `f0e526e3e33dd6b29d221b719035fe94e4b6dbe1` |
+
+sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
+파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
+별도로 판정한다.

@@ -77,3 +77,33 @@ fit과 실제 표 배치가 같은 표 원점·점유 끝을 소비한다. 뒤 �
 필수 통합 검증을 완료한 뒤 최종 판정을 갱신한다. 전체 Rust1085의 별도 실패를 집중
 검사 통과로 해소했다고 보고하지 않는다. 실제 통합 승인·merge 뒤에는 원 재현 기여와
 보정 범위, 실제 merge SHA 및 대표 review·overlay를 원 PR에 연결하는 후속 처리를 한다.
+
+## 통합 후보의 실제 검사 실행 — 2026-10-26
+
+코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
+아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
+바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+
+- [tests/cases/table_hwpx_save_origin_contract.rs](../../../tests/cases/table_hwpx_save_origin_contract.rs): SHA-256 `e5ef237b0abe215694b4c3ec0e6492d576ef18474d58aa11d8c42ae8e8f2bb2d`.
+  - `generated_table_padding_origin_survives_hwpx_save`: PASS, `logs/final-full-nextest-4052.log:8774` (`rhwp::regression_suite_017`).
+  - `generated_table_offset_origin_survives_hwpx_save`: PASS, `logs/final-full-nextest-4052.log:8773` (`rhwp::regression_suite_017`).
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
+전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
+Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
+전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
+공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+
+이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+
+| 원 커밋 | 현재 통합 대응 |
+| --- | --- |
+| `ebba2950fe97e00d38715e05236f6182f1a74da8` | `d206926acd8f493623bf199a9fe8d2e542ab97c6` |
+| `2ee1ad24b403d384262d499db071bca10f6be5d5` | `b76531a100b4a5f796e10659cd5617515e428d4d` |
+| `5f1f1057bd1b7981b3801b815aa28b98860932a2` | 원 devel merge; 기능 체리픽에서 제외 |
+
+sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
+파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
+별도로 판정한다.

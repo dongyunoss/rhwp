@@ -75,3 +75,31 @@ strict build는 모두 exit0이다. 이 비교는 테스트의 원문/표시 소
 전체 통합의 필수 실패를 해결한 뒤 최종 판정을 갱신한다. 원 작성자의 전체 통과 주장과
 현재 누적 후보의 전체 테스트 결과를 합치지 않는다. 승인된 통합의 실제 merge SHA를
 확인한 뒤 원 PR별 기여 기록·대표 PNG·후속 조치를 연결한다.
+
+## 통합 후보의 실제 검사 실행 — 2026-10-26
+
+코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
+아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
+바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+
+- [tests/cases/caption_auto_number_position.rs](../../../tests/cases/caption_auto_number_position.rs): SHA-256 `e60e6d59a95326c2af875fe47ca4bb07528ea0896936c4b5ce67feab5350c736`.
+  - `caption_number_replaces_its_placeholder`: PASS, `logs/final-full-nextest-4052.log:10389` (`rhwp::regression_suite_024`).
+  - `caption_number_without_surrounding_spaces_is_drawn`: PASS, `logs/final-full-nextest-4052.log:10390` (`rhwp::regression_suite_024`).
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
+전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
+Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
+전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
+공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+
+이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+
+| 원 커밋 | 현재 통합 대응 |
+| --- | --- |
+| `285f86c92c27eda03616491a1d1f0c8210c9b80a` | `0aced7f0e0adb11e6163a1036a98b60bc6080b5e` |
+
+sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
+파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
+별도로 판정한다.

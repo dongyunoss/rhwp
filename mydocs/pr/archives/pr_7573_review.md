@@ -93,3 +93,33 @@ API 생성 HWPX의 `pr7573-before`, `pr7573-after-interior`, `pr7573-after-start
 옛019·1328의 결과와 구분한다. 각 원장에 실제 명령과 입력·PDF·TSV·producer 해시가 있다.
 대표 PNG 직접 판독·최신 devel 대조·제출 경로 보존과 통합 후보의 나머지 필수 게이트를
 완료한 뒤 최종 판정을 갱신한다. 현재 판정은 머지 보류다.
+
+## 통합 후보의 실제 검사 실행 — 2026-10-26
+
+코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
+아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
+바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+
+- [tests/cases/issue_7444_cut_boundary_object.rs](../../../tests/cases/issue_7444_cut_boundary_object.rs): SHA-256 `41337da29e671877401935322a39efff28c0a1e00b7440a2ecf66c1d28973040`.
+  - `cut_with_table_in_selection_interior_moves_one_table`: PASS, `logs/final-full-nextest-4052.log:10791` (`rhwp::regression_suite_025`).
+  - `cut_ending_at_table_paragraph_start_does_not_duplicate_table`: PASS, `logs/final-full-nextest-4052.log:10788` (`rhwp::regression_suite_025`).
+  - `cut_starting_at_table_paragraph_start_does_not_duplicate_table`: PASS, `logs/final-full-nextest-4052.log:10790` (`rhwp::regression_suite_025`).
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
+전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
+Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
+전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
+공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+
+이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+
+| 원 커밋 | 현재 통합 대응 |
+| --- | --- |
+| `006884716b10166dbc1f31b4541b0277f520cbd5` | `415772049558c46e1600e7daa1dfb93217726383` |
+| `84e80b5d82455254bdbdaca0a2b19dff92f1be12` | 원 devel merge; 기능 체리픽에서 제외 |
+
+sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
+파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
+별도로 판정한다.

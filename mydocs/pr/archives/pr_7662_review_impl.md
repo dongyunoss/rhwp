@@ -16,7 +16,7 @@
 ## 실행 순서와 현재 상태
 
 1. 원 PR의 reviewer·head를 확인하고 기능 commit을 최신 devel 위에 누적 적용했다. 원격 원 head를 재작성하지 않았다.
-2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 검증을 실행 중이다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
+2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 Rust 검증을 완료했다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
 3. 개별 리뷰의 독립 Print·Native/fresh WASM·소비 경로와 전체 로컬 게이트를 완료한 뒤 최종 판정을 갱신한다. PR 직전 devel head를 재조회하고 변경됐으면 리베이스한 기능과 현재 보정 범위를 함께 검증한다.
 4. 승인된 통합 PR을 실제 템플릿에 맞춰 제출하고 정확한 code head CI를 관찰한다. 별도로 승인된 옵션 2의 self-review·오늘할일 후속 PR은 code CI 뒤에 처리한다. 원 PR별 검토 기록은 통합 PR에 유지한다.
 5. CI·merge 조건을 확인해 통합하고 merge SHA의 devel 포함을 확인한다. 이 PR에는 보정·검증 결과와 통합 링크를 남긴 뒤 원 PR을 close한다. 관련 이슈는 전체 해결 범위가 확인된 경우만 닫는다.
@@ -29,3 +29,36 @@ sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. �
 ## 완료 전 남은 기록
 
 정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
+
+## 통합 후보의 실제 검사 실행 — 2026-10-26
+
+코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 실행 결과를
+아래 현재 소스와 모듈·함수 이름으로 대조했다. 이후 증거·문서 커밋은 코드와 검사를
+바꾸지 않았다. 아래 결과는 실행한 계약 검사의 통과이며 별도 입력의 독립 Print 일치나
+원격 CI·merge 완료를 뜻하지 않는다. 과거 제품의 집중 검사는 당시 결과로 구분한다.
+
+- [tests/cases/split_before_control.rs](../../../tests/cases/split_before_control.rs): SHA-256 `26f04d233cdb223cf53b236a27f48a7431716bbfef783991d991e8bcf2a016a7`.
+  - `enter_right_before_object_starts_new_paragraph_with_it`: PASS, `logs/final-full-nextest-4052.log:5706` (`rhwp::regression_suite_006`).
+  - `enter_right_after_inline_object_keeps_it_in_first_paragraph`: PASS, `logs/final-full-nextest-4052.log:5704` (`rhwp::regression_suite_006`).
+  - `merge_undo_restores_paragraph_that_starts_with_object`: PASS, `logs/final-full-nextest-4052.log:5705` (`rhwp::regression_suite_006`).
+  - `copy_starting_at_object_pastes_it_first`: PASS, `logs/final-full-nextest-4052.log:5703` (`rhwp::regression_suite_006`).
+  - `split_leaves_auto_number_on_its_placeholder_character`: PASS, `logs/final-full-nextest-4052.log:5707` (`rhwp::regression_suite_006`).
+  - `split_moves_title_mark_slot_with_its_character`: PASS, `logs/final-full-nextest-4052.log:5708` (`rhwp::regression_suite_006`).
+
+공통 로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+[전체 Rust 종료 결과·실행 경계](../../working/task_semanticist21_20261026_regression_contracts.md#후속-보정과-최종-rust-검증--2026-10-26)의
+전체 nextest 11,708 PASS·0 FAIL, Native Skia 라이브러리 4,040 PASS·0 FAIL,
+Native/WASM/workspace Clippy·workspace build·문서 테스트의 실제 완료 근거를 재사용했다.
+전체 nextest 바깥 driver의 SIGTERM과 명시적 child terminal summary를 구분했다.
+공유 `target/pr-review`를 사용했고 검사·기대값을 통과 목적으로 바꾸지 않았다.
+
+이 원 PR의 기능 커밋과 현재 통합 대응은 다음과 같다. 과거 rebase 이전 SHA와 구분한다.
+
+| 원 커밋 | 현재 통합 대응 |
+| --- | --- |
+| `f902422226983aa4f6ddd282db329791f9b84a32` | `974819918922bbfe99a8e6a52c7aefd2e32cf6e4` |
+| `377bcb71e7404a741105a28303a3fae8b671fc9d` | `386a40deed01573157259600a269fe8991d22c10` |
+
+sample16·편람의 삭제를 유지했다. 현재 수집 소스를 읽기만 했으며 이전 fixture·보관본·
+파생 참조는 만들지 않았다. 필수 독립 시각 근거와 실제 통합 head CI는 이 실행표와
+별도로 판정한다.
