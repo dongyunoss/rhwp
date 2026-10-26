@@ -28,7 +28,7 @@
   생성하며, untracked 목록에서 숨기려고 `output/`으로 옮기거나 ignore하지 않는다.
   [임시 산출물과 기준 PDF의 저장 위치](mydocs/manual/codex/docs_and_git_workflow.md#임시-산출물과-기준-pdf의-저장-위치)를 따른다.
 - 검토·후속 처리 종료 시 저장소 루트의 `output/` 전체와 기본 작업공간의
-  `target/pr-review/debug`를 정리한다. 유휴 셸의 cwd 참조만으로 output 삭제를 보류하지 않는다.
+  `target/pr-review/debug`를 정리한다. 유휴 셸의 cwd 참조만으로 정리를 보류하지 않는다.
   별도 정리 지시나 재승인 없이 자동 삭제하며 추가 백업·압축·이관을 하지 않는다. debug는 빌드·테스트 사용 종료 후
   삭제하며, 상세 범위·실제 사용 판정·완료 검증은 [종료 정리](mydocs/manual/pr_review/post_merge.md#77-branch-worktree-검토-전용-target-정리)를 따른다.
 
