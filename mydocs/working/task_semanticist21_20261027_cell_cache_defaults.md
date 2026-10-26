@@ -291,3 +291,24 @@ output에만 준비했다. fresh WASM도 98% 이상이고 직접 판독을 완�
 원격 원 PR45개의 head·상태·reviewer를 다시 조회했고 모두 고정한 source head와
 `jangster77` reviewer가 유지됐다(4567). 본인 계정의 열린 PR은 없었으며 원격 devel도
 같은 SHA였다. 이 조회는 원 PR의 직접 merge나 새 PR 생성·원격 CI 완료를 뜻하지 않는다.
+
+### 올바른 의존성으로 재출력한 결과와 새 차트 회귀의 시각 선행 조건
+
+Native276의 기존 169조건·384쪽 측정은 전부 통과했고 최저 raw는 92.05207%다.
+같은 입력·PDF의 이전 정상 Native273과 새 후보 PNG 384쌍이 모두 바이트 단위로
+일치했다(4566). #8188의 기존 네 입력도 각각 64쪽, 합계 256쪽에서 정수 미대응
+0/0·raw100을 다시 확인했다(4561). 해당 dep-info에 현재 차트 배치 모듈들이 포함됨도
+확인했다(4573). 이 완료는 fresh WASM 전쪽·전체 Rust 완료와 구분한다.
+
+표준 release·실제 `wasm-opt -O`를 마친 fresh086의 차트 네 입력도 99.66483~99.73289%다.
+Native/fresh WASM의 이동 전후 review·standalone overlay를 직접 열었다. 각 형식의
+원본을 따로 측정했으며 HWP와 HWPX의 후보/기준 PNG 쌍이 같음도 확인했다(4565).
+이 시각 선행 증거 뒤에 [새 검사](../../tests/cases/ooxml_chart_print_frame.rs)와
+[독립 Print 기준·양쪽 TSV·대표 그림](../pr/assets/ooxml_chart_print_frame/README.md)을
+등록했다. 기존 이동 API 검사를 교체하거나 기대값을 완화하지 않는다.
+
+네 PDF는 차트를 이미지 띠로 인쇄하므로 벡터 drawing이나 축약 RenderTree만으로 좌표를
+판정하지 않았다. 독립 Print의 96dpi raster에서 외곽·값축·플롯 위아래를 읽고 ±2px로
+보호하며 차트·항목·범례·막대의 개수, 포함·순서·기준선 관계도 함께 검사한다. CLI 사전
+대조에서는 같은 네 입력 모두 과거 Native275 FAIL·현재 Native276 PASS였다(4571).
+이는 정식 Rust 실행을 대신하지 않으며 해당 실행과 전체 lint·Rust는 이어서 확인한다.
