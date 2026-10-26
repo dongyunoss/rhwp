@@ -368,3 +368,19 @@
   이는 해당 Native 보정의 선행 확인이며 전체 Rust·새 production fresh WASM 완료는 아니다.
 - 민원 서식도 같은 원본의 Native/fresh WASM 전 2쪽100%를 실제 확인했다. 독립 편집 Print와
   함께 기존 편집 기대값을 정정할 선행 근거로 보존했다. 이제 중첩 원점의 오프셋 소유 보정을 진행한다.
+
+
+### 중첩 표 원점의 오프셋 중복 보정
+
+- 전체 Rust 검사에서 드러난 가정통신문의 중첩 표 위치·마지막 프레임 실패를 기존 #6712 검사와 대조했다.
+  `stored_square_table_anchor_offset`가 이미 소비한 세로 오프셋을 중첩 표 배치에서 다시 더한 것이 원인이다.
+- 문단 원점과 이미 확정된 표 원점을 `NestedTableOrigin`으로 구분해 전체·분할 배치가 같은 결과를 소비한다.
+  문단 원점은 자신의 시작을 소유할 때 원본 오프셋을 한 번 적용하며 확정 표 원점에는 재적용하지 않는다.
+  문서 식별자·임의 높이 분기를 추가하거나 기존 검사 기대값을 바꾸지 않았다.
+- 기존 `issue_6712_cell_visual_row_units` 18개가 Native Skia에서 모두 통과했다. 앞서 실패한 두 검사도 포함한다.
+  [실행 기록](assets/review_integration_20261026/validation/v11-nested-origin-focused-results.json)을 남겼다.
+- 온새미로 두 원본·가정통신문 두 원본은 마지막 저장 제품을 확인한 뒤 해당 2020/2024 MCP Print로 직접 출력했다.
+  [입력·출력 근거](assets/review_integration_20261026/validation/safety-reference-prints.json)에 해시·제품·Print mode를 기록했다.
+- 추가 대조의 중국어 원본은 새 2024 기준 PDF에서 1쪽 81.20203%이며 고정한 devel도 같은 값이다.
+  현재 수정의 하락과 구분하고 기존 오류까지 보정하는 승인 범위에서 해결을 계속한다.
+  원본·기준을 교체하거나 미달을 회귀 기대값으로 등록하지 않는다. 최종 전쪽 Native/fresh 최적화 WASM 검증은 미완료다.

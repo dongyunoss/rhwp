@@ -3547,6 +3547,7 @@ mod fixed_textbox_flow;
 mod floating_equation;
 mod header_footer_layout;
 mod hidden_paragraph_marker;
+mod nested_table_origin;
 mod note_reference;
 mod paragraph_border;
 mod paragraph_layout;

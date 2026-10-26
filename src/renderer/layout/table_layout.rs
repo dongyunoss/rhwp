@@ -64,6 +64,7 @@ use super::super::height_measurer::{
     MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
+use super::nested_table_origin::NestedTableOrigin;
 mod capacity_tolerance;
 mod rowspan_fragment_height;
 
@@ -9273,28 +9274,32 @@ impl LayoutEngine {
                                     self.dpi,
                                 )
                             });
-                        let nested_y = if let Some(frame) = stored_float_frame {
-                            frame.table_top
-                                - hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi)
+                        let nested_origin = if let Some(frame) = stored_float_frame {
+                            NestedTableOrigin::Table(
+                                frame.table_top
+                                    - hwpunit_to_px(nested_table.outer_margin_top as i32, self.dpi),
+                            )
                         } else if let Some(frame) = &overlay_frame {
-                            frame.start
+                            NestedTableOrigin::Table(frame.start)
                         } else if hwpx_nested_behind_text_overlay {
                             // 배경은 앞 흐름 표가 전진한 커서가 아닌 같은 호스트 문단을 참조한다.
-                            overlay_paragraph_origin
+                            NestedTableOrigin::Paragraph(overlay_paragraph_origin)
                         } else if let Some(offset) = stored_square_offset {
-                            para_y_before_compose + hwpunit_to_px(offset, self.dpi)
+                            NestedTableOrigin::Table(
+                                para_y_before_compose + hwpunit_to_px(offset, self.dpi),
+                            )
                         } else if let Some(origin) = sequential_control_origin {
                             // 빈 줄에도 점유 높이가 있다. 가시 글자 유무로 원점을 다시
                             // 선택하지 않고 정렬용 높이와 같은 계획의 원점을 사용한다.
-                            origin
+                            NestedTableOrigin::Paragraph(origin)
                         } else if has_preceding_text {
-                            para_y
+                            NestedTableOrigin::Paragraph(para_y)
                         } else {
                             // 빈 선행 문단도 줄 상자를 점유한다. 유효한 저장 앵커를
                             // 적용하거나 앞 줄을 배치한 문단 원점을 셀 상단으로
                             // 되돌리면, reset이 없는 정상 저장본에서도 그 공간이
                             // 사라진다. 호스트의 문단 원점을 그대로 소비한다.
-                            para_y_before_compose
+                            NestedTableOrigin::Paragraph(para_y_before_compose)
                         };
                         // [#3637] 중첩 표는 부모 셀 안에서 시작해야 한다. 앞 텍스트가 셀
                         // 밖으로 밀린 `para_y` 를 그대로 쓰면 컨테이너가 통째로 셀 아래에
@@ -9326,12 +9331,7 @@ impl LayoutEngine {
                         // [#6697] 문단 기준 자리차지 중첩 표는 문서가 지시한 `vertOffset`
                         // 만큼 호스트 문단 아래로 내려가야 한다. 셀 경로는 그 값을 한 번도
                         // 읽지 않아 표가 호스트 줄과 같은 y 에 놓였다.
-                        let nested_y = nested_y
-                            + if stored_float_frame.is_some() {
-                                0.0
-                            } else {
-                                para_relative_float_table_lead(nested_table, self.dpi)
-                            };
+                        let nested_y = nested_origin.resolve(nested_table, self.dpi, true);
                         // [#6787] 칸 안 문단-기준 자리차지 중첩 표의 **가로 오프셋**.
                         //
                         // 16774617 1쪽 후보자 카드 2장은 `horz=Para(1547)` / `Para(23743)`
