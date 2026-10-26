@@ -248,7 +248,7 @@ async function runWorkflow(t, workflowFile = "ci.yml", options = {}) {
     path: `.github/workflows/${workflowFile}`, pull_requests: [],
   }));
   const headers = [candidateSha, f.sourceSha, bridgeSha, f.headSha].map(sha => ({ sha }));
-  const artifacts = ["b", "c", "d"].map((label, index) => ({
+  const artifacts = ["b", "c", "d", "e"].map((label, index) => ({
     name: `nextest-target-durations-${fullRunId}${options.fork ? "-attempt-1" : ""}-${label}`, expired: false,
     id: index + 100, size_in_bytes: 1024, created_at: "2026-09-06T11:20:00Z",
   }));
@@ -346,7 +346,7 @@ for (const workflowFile of ["ci.yml", "codeql.yml", "adapter-diff.yml", "proptes
       reason: "current-base-review-bridge-green-pr-workflow-reused", source_run_id: String(fullRunId),
       refresh_duration_data: workflowFile === "ci.yml" ? "true" : "false" });
     if (workflowFile === "ci.yml") {
-      assert.equal(result.apiCalls.filter(([method]) => method === "downloadArtifact").length, 3);
+      assert.equal(result.apiCalls.filter(([method]) => method === "downloadArtifact").length, 4);
       assert.equal(JSON.parse(readFileSync(path.join(durationPath, "target-durations-b.json"))).run_id, String(fullRunId));
     } else assert.equal(durationPath, undefined);
     assert.ok(result.apiCalls.some(([method, ref]) => method === "getCommit" && ref === result.candidateSha));

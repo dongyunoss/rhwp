@@ -107,10 +107,12 @@ const CI_RUST_JOBS = [
   'build-test-archive-b',
   'build-test-archive-c',
   'build-test-archive-d',
+  'build-test-archive-e',
   'test-archive-a-shard-1',
   'test-archive-b-shard-1',
   'test-archive-c-shard-1',
   'test-archive-d-shard-1',
+  'test-archive-e-shard-1',
 ];
 // Reusable workflow calls have two observed REST job names: a skipped call keeps only
 // its caller job id, while an executed call is reported as "caller / called job name".
@@ -133,6 +135,10 @@ const CI_JOB_ALIASES = {
     'build-test-archive-d',
     'build-test-archive-d / Build test archive (d)',
   ],
+  'build-test-archive-e': [
+    'build-test-archive-e',
+    'build-test-archive-e / Build test archive (e)',
+  ],
   'test-archive-a-shard-1': [
     'test-archive-a-shard-1',
     'test-archive-a-shard-1 / Default-feature tests (Archive A)',
@@ -149,6 +155,10 @@ const CI_JOB_ALIASES = {
     'test-archive-d-shard-1',
     'test-archive-d-shard-1 / Default-feature tests (Archive D)',
   ],
+  'test-archive-e-shard-1': [
+    'test-archive-e-shard-1',
+    'test-archive-e-shard-1 / Default-feature tests (Archive E)',
+  ],
 };
 const CI_NATIVE_JOB = 'Native Skia tests';
 const CI_FRONTEND_JOBS = ['Frontend unit gates', 'Frontend package gates'];
@@ -160,11 +170,13 @@ const CI_AUDITED_JOB_IDS = {
   'build-test-archive-b': 'build-test-archive-b',
   'build-test-archive-c': 'build-test-archive-c',
   'build-test-archive-d': 'build-test-archive-d',
+  'build-test-archive-e': 'build-test-archive-e',
   'resolve-nextest-duration-policy': 'resolve-nextest-duration-policy',
   'test-archive-a-shard-1': 'test-archive-a-shard-1',
   'test-archive-b-shard-1': 'test-archive-b-shard-1',
   'test-archive-c-shard-1': 'test-archive-c-shard-1',
   'test-archive-d-shard-1': 'test-archive-d-shard-1',
+  'test-archive-e-shard-1': 'test-archive-e-shard-1',
   lint: 'Lint (fmt, clippy, WASM check)',
   'native-skia-tests': CI_NATIVE_JOB,
   'frontend-unit-gates': CI_FRONTEND_JOBS[0],
