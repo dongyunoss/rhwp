@@ -1,3 +1,8 @@
+> 보정 전 WASM 67입력·956쪽 비교는 Chromium 기동 시간초과 1건을 같은 조건에서
+> 재실행해 완성했다. 기존 TSV 대비 0.1%p 이상 하락은 18쪽이며 실패한 시각
+> 게이트도 포함한다. [중간 결과](original-prior-os-wasm-checkpoint.json).
+> 글꼴·실행 환경과 실제 코드 변경의 원인 분리는 진행 중이다.
+
 > 과거 OS 글꼴 선택을 복원한 보정 전 후보의 Native 67입력·956쪽 비교 결과,
 > 기존 TSV보다 0.1%p 이상 하락한 쪽은 6쪽이다. 시각 게이트 실패로 exit 1인
 > 사양 문서의 완성된 TSV도 집계했다. [중간 결과](original-prior-os-native-checkpoint.json).
