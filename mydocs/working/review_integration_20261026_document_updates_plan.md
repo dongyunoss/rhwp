@@ -589,3 +589,21 @@
 
 임시 실행 로그는 `output/pr-review/planet6897-20261026/rebase-8319/issue2007-old-origin-build.log`,
 `issue2007-old-origin.log`, `issue2007-old-alignment.log`, `issue2007-new-alignment.log`다.
+
+### 하이픈 선분과 한컴 Print 추가 대조
+
+중첩 표 3쪽의 큰 픽셀 차이는 한양신명조의 연속 하이픈을 겹치지 않게 짧은 선분으로
+출력하는 기존 공통 경로에서 발생한다. SVG에는 선분과 검색용 투명 텍스트가 함께 있어
+투명 텍스트의 기준선만으로 인쇄 잉크 위치를 판정할 수 없다.
+
+독립 한컴 Print PDF를 96dpi로 래스터화해 같은 14pt 연속 하이픈을 확인했다.
+#3308의 8쪽은 PDF 기준선 358.97px, 검정 선분 행 352px이고, issue2007의
+3쪽은 기준선 812.39px, 검정 선분 행 805px이다. 두 PDF의 글꼴 크기는 약
+18.70px이다. 현재 SVG 선분을 변환한 위치는 각각 약 350.98px, 804.31px다.
+두 입력은 같은 방향으로 선분이 높다. PDF 잉크 행의 중심과 대조해 공통 인쇄
+선분을 보정하는 후보를 검증하되, #3308 전쪽 및 관련 Native/fresh WASM 하락
+검사와 기존 회귀를 함께 통과해야 한다. 아직 수정이나 통과 판정은 하지 않았다.
+
+진단 로그는 `output/pr-review/planet6897-20261026/rebase-8319/print-dash-baseline-evidence.log`,
+`dash3307-current.log`, `issue2007-current-svg.log`이고 확대 판독 자료는 같은 폴더의
+`issue2007-lines-comparison.png`다.
