@@ -1,0 +1,15 @@
+
+running 1 test
+test source_frame_control_ownership::horizontal_fragments_share_one_centered_source_frame ... 
+thread 'source_frame_control_ownership::horizontal_fragments_share_one_centered_source_frame' (1268224) panicked at tests/generated/../cases/source_frame_control_ownership.rs:127:5:
+선택한 원본 프레임의 위·아래 여유는 같다: -0.02000000000000135 vs 8.733333333333462
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    source_frame_control_ownership::horizontal_fragments_share_one_centered_source_frame
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 298 filtered out; finished in 1.12s
+

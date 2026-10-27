@@ -188,5 +188,21 @@
     "wasm_raw_min": "100.00000",
     "initial_wasm_attempt": "Browser launch timeout, no engine output; not counted as pass.",
     "successful_wasm_retry": "civil-form-current-wasm-retry.log"
+  },
+  "latest_visual_prerequisite": {
+    "production_head": "56a638b9960e8bad9c3f73185a17665d7f7c94b1",
+    "native_all_pages": 2,
+    "native_min_raw": "100.00000",
+    "fresh_wasm_all_pages": 2,
+    "fresh_wasm_min_raw": "100.00000",
+    "wasm_mode": "release no-opt diagnostic; final optimized all-document validation pending",
+    "evidence": "v12-diagnostic-wasm-review.json"
+  },
+  "corrected_existing_contract": {
+    "file": "tests/cases/issue_4068_column_top_table_outer_margin.rs",
+    "function": "issue_4068_column_top_margin_edit_advances_the_following_table_once",
+    "retained_tolerance_px": 0.3,
+    "expected_second_table_delta": "minus original outer_margin_top",
+    "result": "Native focused all3 pass; source original-frame and following-table non-overlap checks retained."
   }
 }

@@ -1,0 +1,7 @@
+== newsletter-korean ==
++ /home/tsjang/rhwp/output/pr-review/planet6897-20261026/candidate-v12-visual-row-rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp
++ node /home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12-diagnostic-wasm --input /home/tsjang/rhwp/samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp --out /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12/diagnostic-wasm/newsletter-korean --fonts /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12/diagnostic-wasm/newsletter-korean/font-catalog.json --options /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12/diagnostic-wasm/newsletter-korean/canvas-options.json
+PNG export pages: 2
++ /home/tsjang/rhwp/venv/bin/python /home/tsjang/rhwp/scripts/visual_sweep_pdf.py --pdf /home/tsjang/rhwp/pdf/review-integration-20261026/newsletter-korean-2020.pdf --dpi 96 --prefix /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12/diagnostic-wasm/newsletter-korean/pdf_png/pdf
+실루엣 보조값 2쪽: /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12/diagnostic-wasm/newsletter-korean/silhouette.tsv
+summary: /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v12/diagnostic-wasm/summary.json

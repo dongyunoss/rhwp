@@ -184,14 +184,14 @@ fn issue_4068_table_carried_to_next_page_drops_vertical_offset_keeps_outer_margi
 }
 
 #[test]
-fn issue_4068_only_the_column_top_table_receives_outer_margin() {
+fn issue_4068_column_top_margin_edit_advances_the_following_table_once() {
     // 2쪽: 단 맨 위 표(`pi=3`, outMargin 141HU) 와 그 아래 표(`pi=4`).
     // 정본(`pdf/2912695_civil_petition_form-2020.pdf`): 첫 표 110.40..877.08, 둘째 표 888.92.
     let mut doc = core("samples/issue6032/2912695_civil_petition_form.hwp");
     let tree = page_tree(&doc, 1);
     let top = body_top(&tree);
     let tables = top_level_tables(&tree);
-    assert!(tables.len() >= 2, "2쪽 표 두 개: {tables:?}");
+    assert_eq!(tables.len(), 2, "2쪽 표 두 개: {tables:?}");
     let (first, second) = (&tables[0], &tables[1]);
 
     let om = hu_to_px(f64::from(source_table(&doc, 3).outer_margin_top));
@@ -205,7 +205,9 @@ fn issue_4068_only_the_column_top_table_receives_outer_margin() {
         second.y >= first.y + first.h,
         "둘째 표는 첫 표와 겹치지 않아야 한다"
     );
-    // 저장 흐름을 보존하면 첫 표의 paint 여백 변경이 같은 쪽 둘째 표를 밀지 않는다.
+    // 원본의 저장 흐름은 그대로 읽지만, 여백을 편집한 뒤에는 후속 흐름도
+    // 그 차이를 한 번 소비한다. 독립 한컴 Print 쌍에서 141HU를 제거하면
+    // 둘째 표도 같은 여백만큼 올라간다. 그림용 여백만 바뀐다는 옛 전제는 틀렸다.
     let mut source = doc.document().clone();
     for control in &mut source.sections[0].paragraphs[3].controls {
         if let Control::Table(table) = control {
@@ -214,12 +216,14 @@ fn issue_4068_only_the_column_top_table_receives_outer_margin() {
     }
     doc.set_document(source);
     let without_margin = top_level_tables(&page_tree(&doc, 1));
+    assert_eq!(without_margin.len(), tables.len(), "편집 뒤 표 소유 보존");
     assert!(
         (without_margin[0].y - top).abs() < 0.3,
         "여백0이면 첫 표는 본문 윗변에 놓인다"
     );
     assert!(
-        (without_margin[1].y - second.y).abs() < 0.3,
-        "첫 표 paint 여백은 둘째 표의 저장 흐름을 바꾸지 않는다"
+        (without_margin[1].y - second.y + om).abs() < 0.3,
+        "후속 표는 제거한 원본 여백({om:.2}px)을 한 번 소비한다: 변화 {:.2}px",
+        without_margin[1].y - second.y
     );
 }

@@ -51,13 +51,17 @@ fn open(name: &str) -> DocumentCore {
 }
 
 fn page(name: &str, index: u32) -> Value {
+    page_for_compat(name, index, "2022")
+}
+
+fn page_for_compat(name: &str, index: u32, compat: &str) -> Value {
     let tmp = ExportDir::new();
     let binary =
         std::env::var_os("CARGO_BIN_EXE_rhwp").unwrap_or_else(|| env!("CARGO_BIN_EXE_rhwp").into());
     let output = Command::new(binary)
         .arg("export-render-tree")
         .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(name))
-        .args(["--compat", "2022", "-p"])
+        .args(["--compat", compat, "-p"])
         .arg(index.to_string())
         .arg("-o")
         .arg(&tmp.0)
@@ -386,5 +390,69 @@ fn table_split_policy_does_not_duplicate_the_heading_gap() {
         bbox(a, "y") - bbox(a_heading, "y"),
         bbox(b, "y") - bbox(b_heading, "y"),
         "독립 Print에서 동일한 표제·표 앞 간격은 분할 정책과 무관하게 한 번 소비한다",
+    );
+}
+
+#[test]
+fn horizontal_fragments_share_one_centered_source_frame() {
+    const NAME: &str =
+        "samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp";
+    const BODY: &str = "在炎热的夏季";
+    let core = open(NAME);
+    let outer = core.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Table(table) => Some(table),
+            _ => None,
+        })
+        .unwrap();
+    let source = outer
+        .cells
+        .iter()
+        .find(|cell| cell.paragraphs.iter().any(|para| para.text.contains(BODY)))
+        .unwrap();
+    assert_eq!(source.vertical_align, VerticalAlign::Center);
+    let reset = source
+        .paragraphs
+        .windows(2)
+        .position(|pair| {
+            pair[1].line_segs.first().unwrap().vertical_pos == 0
+                && pair[0].line_segs.last().unwrap().vertical_pos > 0
+        })
+        .expect("독립 Print의 다음 쪽으로 이어지는 저장 프레임")
+        + 1;
+    let last = &source.paragraphs[reset - 1].line_segs;
+    assert!(last.windows(2).any(|pair| {
+        pair[0].vertical_pos == pair[1].vertical_pos && pair[0].column_start != pair[1].column_start
+    }));
+    // 마지막 빈 좌우 조각도 한 줄 상자를 소유한다. 원본의 줄 끝을
+    // 쓰며 조각 수만큼 더한 구현 높이나 현재 출력 좌표를 기대값으로 쓰지 않는다.
+    let closing = last.last().unwrap();
+    let source_height = px(closing.vertical_pos + closing.line_height);
+    let first_body = source
+        .paragraphs
+        .iter()
+        .find(|para| para.text.contains(BODY))
+        .unwrap();
+    let padding = source.effective_padding(&outer.padding);
+    let tree = page_for_compat(NAME, 0, "2024");
+    let cells: Vec<_> = nodes(&tree, "Cell")
+        .into_iter()
+        .filter(|cell| text(cell).contains(BODY))
+        .collect();
+    assert_eq!(cells.len(), 1, "본문은 한 셀 조각이 소유한다");
+    let cell = cells[0];
+    let origin = bbox(line(cell, BODY), "y") - px(first_body.line_segs[0].vertical_pos);
+    let top_gap = origin - bbox(cell, "y") - px(padding.top);
+    let bottom_gap = bottom(cell) - px(padding.bottom) - origin - source_height;
+    assert!(
+        top_gap >= -0.25 && bottom_gap >= -0.25,
+        "원본 프레임의 셀 내부 포함"
+    );
+    close(
+        top_gap,
+        bottom_gap,
+        "선택한 원본 프레임의 위·아래 여유는 같다",
     );
 }
