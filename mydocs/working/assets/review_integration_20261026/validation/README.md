@@ -1,5 +1,9 @@
 # 통합 후보의 검증 증거
 
+최종 검증은 진행 중이다. 아래 3ae/44개·813쪽 수치는 이전 단계의 기록이며,
+최신 보정·재실행은 [통합 계획](../../../review_integration_20261026_document_updates_plan.md)과
+단계별 v13/v14 증거를 따른다. 전체 Rust·최종 최적화 WASM이 완료되기 전에는 제출 완료로 판정하지 않는다.
+
 production source는 `3ae26ef0a1a20a8810813a085179220f56d2561a`이며,
 기준 devel은 `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`다.
 아직 전체 Rust 검사와 최종 통합 검토가 남았다. 이 문서는 해당 검사를 완료했다고 판정하지 않는다.

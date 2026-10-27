@@ -458,3 +458,31 @@
 - 이 단계의 source와 집중 검사·실패 이력을 일반 커밋으로 고정한 뒤, 같은 source의 최종
   최적화 WASM을 빌드한다. 전체 Native 63개·fresh WASM 63개와 최종 Rust 게이트는 아직
   완료되지 않았으며 모두 실제 완료한 뒤 검토 문서와 PR을 작성한다.
+
+- #6312의 전체 댓글 5개와 원 해결 경로도 재확인했다. 원 PR #6445의 source
+  `222c81ef2fbc244087bfe0791959124f95a2930b`는 #6485의 `cd9412d7e`로 반영됐고,
+  통합 merge는 `fccec08dd`다. 이전 병행 해결 #6473(`2ca9aa90`)의 기록과 구분한다.
+  [#6485 기록](../pr/archives/pr_6485_planet6897_visual_sweep.md)의 줄 전진 축과
+  #7382의 후속 머리 표·빈 줄 간격 보정을 함께 보존한다. 이번 오류는 그 기대값을
+  변경할 근거가 아니라 합성 그림 줄의 수용 경로가 소비한 물리 끝을 보정할 근거다.
+
+### 그림 줄 수용 보정의 물리 소유 범위 재검토
+
+- 코드 검토에서 `occupied_end()`에 추가한 모든 부동 도형 외곽의 합산을 제거한다.
+  BehindText·InFrontOfText 장식은 보이는 것과 본문 흐름을 점유하는 것이 다르다.
+  이 합산은 기존 행 하단 계약을 재사용하는 데 필요하지 않으며, 현재 정상 문서 통과를
+  근거로 장식의 외곽을 줄 수용 예산으로 바꾸지 않는다. 실제 실행 실패를 새로 검출했다고
+  보고하는 항목은 아니며 검토상 소유 범위 보정이다.
+- 원래 helper의 행 하단을 그대로 소비하고, 별도 text_rows 소유자는 기존 측정 끝을 유지한다.
+  실제 TopAndBottom 배제는 기존 row_geometry·배치 metadata가 처리한다.
+  일반 fit 3곳의 공통 하단 소비와 기존 flow end 전진은 유지한다.
+- 제 v13 WASM optimizer만 SIGTERM으로 종료했다. 컴파일은 통과했지만 최적화가 완료된
+  패키지로 세지 않는다. [종료 이유](assets/review_integration_20261026/validation/v13-wasm-corrective-stop.json)를 보존한다.
+  source 변경 뒤 Native·관련 회귀·최종 최적화 WASM과 필수 검증을 다시 실행한다.
+
+- v14 Native 빌드는 exit 0, 9분 05초에 완료됐다. 원본 재정동향의 전 4쪽 render tree가
+  바로 앞의 독립 Print 검증을 마친 v13 결과와 바이트 단위로 동일하다.
+  [현재 CLI의 4쪽 소유 확인](assets/review_integration_20261026/validation/v14-fiscal-geometry-proof.json)을 보존한다.
+- 같은 고정 CLI로 Native 63개·941쪽 비교를 새로 시작했다. 테스트 소스와 독립 기대값은
+  변경하지 않았으며 관련 17개는 이후 현재 source의 전체 nextest에 포함해 실행한다.
+  앞 단계의 17개 통과를 현재 전체 회귀 완료로 바꾸어 기록하지 않는다.
