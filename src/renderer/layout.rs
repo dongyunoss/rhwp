@@ -11213,7 +11213,7 @@ impl LayoutEngine {
                         let metrics = crate::renderer::unstored_overlay_table_host_line_metrics(
                             para, styles, para_style,
                         );
-                        if let Some((lh, ls)) = metrics {
+                        if let Some((lh, ls, _)) = metrics {
                             // 앞 Shape 항목이 기록한 시작점은 앞 문단 자리차지 표의 배제
                             // 구간을 건너뛰기 전 값이다 — 이 줄이 실제로 놓이는 y 로 덮는다.
                             para_start_y.insert(*para_index, y_offset);

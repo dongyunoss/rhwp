@@ -20,6 +20,11 @@ pub(crate) fn neutral_anchor_metrics(
     hwp3_legacy_caps: bool,
     dpi: f64,
 ) -> Option<(f64, f64, f64)> {
+    // NoLS 표 host의 줄과 글꼴 선택은 새 base의 공통 결과를 그대로 소비한다.
+    // 일반 부동 앵커의 첫 글자 모양으로 재계산하면 layout의 최대 글꼴 선택과 달라진다.
+    if super::para_is_unstored_empty_overlay_table_host(para) {
+        return super::unstored_overlay_table_host_line_metrics(para, styles, para_style);
+    }
     if !para.text.trim().is_empty()
         || para.controls.is_empty()
         || !super::empty_host_controls_are_flow_neutral(para)

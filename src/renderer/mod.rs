@@ -2113,18 +2113,18 @@ pub(crate) fn para_is_unstored_overlay_table_host(p: &crate::model::paragraph::P
         })
 }
 
-/// [`para_is_unstored_empty_overlay_table_host`] 문단의 em 줄 `(줄높이, 줄간격)` px.
+/// [`para_is_unstored_empty_overlay_table_host`] 문단의 em 줄 `(줄높이, 줄간격, 글꼴 크기)` px.
 /// typeset(빈 문단 줄박스)과 본문 layout(흐름 전진)이 같은 값을 쓴다.
 pub(crate) fn unstored_overlay_table_host_line_metrics(
     p: &crate::model::paragraph::Paragraph,
     styles: &style_resolver::ResolvedStyleSet,
     para_style: Option<&style_resolver::ResolvedParaStyle>,
-) -> Option<(f64, f64)> {
+) -> Option<(f64, f64, f64)> {
     let font_size = section_head_overlay_host_font_size(p, styles)?;
     if font_size <= 0.0 {
         return None;
     }
-    Some(corrected_line_metrics(
+    let (height, leading) = corrected_line_metrics(
         0.0,
         0.0,
         font_size,
@@ -2132,7 +2132,8 @@ pub(crate) fn unstored_overlay_table_host_line_metrics(
             s.line_spacing_type
         }),
         para_style.map_or(160.0, |s| s.line_spacing),
-    ))
+    );
+    Some((height, leading, font_size))
 }
 
 /// 저장 줄 없는 host 의 글줄이 같은 문단의 자리차지 표 **아래**에서 시작하는지.
