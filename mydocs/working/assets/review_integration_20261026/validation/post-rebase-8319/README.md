@@ -53,3 +53,11 @@ suite·unit-tier 정책은 새 기준을 고정해 통과했다. 기대값·fixt
 본문 종료 처리에 남은 중복 가변 borrow 1곳(E0499/E0502)을 확인했다. 세대를 추적하는
 기존 `data` borrow를 계산된 빈 host 분기도 함께 사용하도록 맞췄다. 본문 전진과
 `ladder_band_floor`의 기존 분기·계산식은 변경하지 않았다. 이후 검사를 다시 실행한다.
+
+## 컴파일 재검사 결과
+
+`9e5e419196355c51dc5ddc5f4308bb13a235f290`의 Native Clippy가 exit 0으로 완료됐다.
+suite·unit-tier 정책과 변경 문서 세 개의 상대 링크도 통과했다. 전체 fmt 완료 후 바뀐 유일한
+Rust 파일은 `state/commands.rs`이며 해당 파일의 최종 rustfmt 검사도 통과했다.
+[실행 결과](checkpoint-validation.json)에 실패한 두 컴파일과 현재 성공을 구분했다.
+전체 회귀·전쪽 시각 검증은 아직 미완료다.
