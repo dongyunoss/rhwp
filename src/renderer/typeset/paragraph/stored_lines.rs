@@ -164,7 +164,7 @@ fn stored_frame_prefix(
             st.layout.dpi,
         )
     {
-        return false;
+        return None;
     }
     // 완전한 TAC 줄이 새 단의 원점에서 수용되고 뒤 저장 줄까지 같은
     // 전진 끝으로 이어지면 새 저장 프레임이 이미 확립됐다. 옛 host의

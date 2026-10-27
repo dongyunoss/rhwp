@@ -41,7 +41,7 @@ impl TypesetState {
                 0
             } else {
                 crate::renderer::float_placement::stored_table_column_origin(
-                    para, false, None, dpi,
+                    para, next, false, None, dpi,
                 )?
             };
         Some(StoredColumnFrame {
