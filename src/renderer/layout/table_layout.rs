@@ -27375,13 +27375,13 @@ impl LayoutEngine {
         {
             if let Some(height) = self
                 .indexed_stored_plain_object_row_frame_heights(table)
-                    .or_else(|| {
-                        self.render_normalization
-                            .borrow()
-                            .stored_opening_row_frame(table)
-                            .map(|frame| frame.row_heights)
-                    })
-                    .and_then(|rows| rows.get(row).copied())
+                .or_else(|| {
+                    self.render_normalization
+                        .borrow()
+                        .stored_opening_row_frame(table)
+                        .map(|frame| frame.row_heights)
+                })
+                .and_then(|rows| rows.get(row).copied())
             {
                 return hwpunit_to_px(height, self.dpi);
             }
