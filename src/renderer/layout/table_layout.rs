@@ -4180,6 +4180,10 @@ impl LayoutEngine {
         // 않으며, 다음 조각은 부모 RowBreak viewport가 다시 호출해 소유한다.
         let inferred_viewport_split = if nested_split.is_none()
             && depth > 0
+            // 글앞·글뒤 표는 호스트의 남은 흐름 높이로 내용을 분할하지 않는다.
+            // 측정한 자기 행 상자를 그대로 배치하고 실제 부모 clip은 별도로
+            // 소비한다. 남은 높이를 컷으로 바꾸면 마지막 행만 줄어 글줄이 샌다.
+            && !self.nested_table_is_overlay(table)
             && col_area.height > 0.0
             && row_y.last().copied().unwrap_or(0.0) > col_area.height + 0.5
         {

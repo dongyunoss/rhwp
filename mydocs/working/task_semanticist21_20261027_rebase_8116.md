@@ -74,3 +74,28 @@ NoLS overlay 표 호스트만 새 base의 결과를 직접 소비하도록 통�
 현재 재출력으로 표시하지 않는다. Cargo는 공용 `target/pr-review`에서 8 jobs로
 한 작업씩 실행하고 테스트 12 threads를 사용한다. 새 base·후보의 실제 검증, 전체
 Rust·Skia·문서·Studio와 개별 리뷰 갱신이 끝나야 PR 준비 완료로 판정한다.
+
+## 선행 검사에서 확인한 두 원인
+
+현재 Native282에서 #8116의 15개 중 14개가 통과하고 중첩 표 글줄 포함 검사가 실패했다.
+같은 원본의 실제 render tree를 새 base와 비교하면 중첩 표의 측정 행 합은 둘 다
+118.0px인데 후보만 부모의 남은 높이 105.7px를 `inferred_viewport_split`으로 재해석한다.
+마지막 행을 35.8px에서 23.5px로 줄인 뒤 두 번째 글줄은 원래 원점에 남아 10.4px 넘친다.
+원본에는 이 표를 나눈 저장 줄이나 source cut이 없으며 독립 웹한글 Print도 온전한 표다.
+
+생산자는 `resolve_row_heights`의 실제 행 벡터이고, 실제 소비는 `layout_table`의 누적
+행 경계다. 중간의 부모 잔여 높이 기반 추론이 그 결과를 덮어썼다. 글앞/글뒤 표는 흐름을
+전진시키지 않으므로 잔여 흐름 높이로 소속을 나누지 않게 공통 overlay 판정으로 배제한다.
+명시적인 source cut, 일반 흐름 표의 기하 fallback과 부모 셀 clip 계약은 그대로 소비한다.
+확인은 기존 #8116의 글줄 포함·장식 host·뒤 본문 검사와 기존 혼합 원본에서 수행한다.
+
+차트 4건의 89.00396~89.38709%는 별도 문제다. 이전 정상 Native280으로 같은 입력을
+현재 다시 실행하면 통과하지만 Native282에는 현재 차트 제목의 `dominant-baseline`
+형식과 분리한 Cartesian 모듈이 없다. base worktree 빌드 뒤 root path 의존성의 예전
+mtime을 재사용한 공유 target 신선도 문제다. 내용 SHA를 바꾸거나 target을 삭제하지
+않고 실제로 달라진 의존성 source의 mtime을 갱신한 뒤 재컴파일과 차트 소비를 확인한다.
+이전 Native282의 결과는 보정 전 실제 관측으로 보존하며 최종 통과 근거로 쓰지 않는다.
+
+중복 base worktree에만 있던 samples/PDF/fixture/PR 이미지 체크아웃을 기존 base와 같은
+sparse pattern으로 제외했다. 기본 작업공간 원본·Git 객체·모든 빌드 source SHA는
+불변이며 이 정리와 종료된 임시 Chromium 프로필 정리 후 여유 공간은 약 8.2GB다.
