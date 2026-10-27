@@ -135,3 +135,61 @@ fresh089는 실제 `wasm-opt -O`를 끝냈고 두 원본을 모두8쪽으로 출
 문서별 조건은 추가하지 않았다. 새 Native의 두 원본과169조건에서90%·0.1%p를 먼저
 대조하고, 통과한 뒤 비용이 큰 fresh WASM·전체 회귀를 진행한다. 아직 보정 후 통과
 판정은 없으며 최종 PR 제출·개별 판정 확정도 남아 있다.
+
+## Native280 전쪽 검증과 정적 검사 완료
+
+실제 코드 source는 `4ab8b438f8d244e1d341c527ed9b5bf8b9d8acb1`이다.
+두 기존 혼합 원본은 새 독립 한컴 Print와 각각 8쪽이 일치하며, Native 최저 raw는
+`valid_orientation` 99.96132%, `valid_generated` 99.74063%다. 두 입력의 모든 쪽이
+고정 base 대비 0.1%p 하락 제한도 통과했다. 원본과 Print PDF를 변경하지 않았다.
+
+기존 169조건·384쪽의 Native 재출력도 모두 통과했다. 최저 raw는 92.05207%이며,
+384쪽의 후보·기준 PNG 쌍은 앞서 판독한 `4558` 회차의 정상 Native276 출력과 바이트까지 같다.
+같은 입력·PDF·글꼴 공급·DPI로 실제 base가 가진 383쪽을 비교해 0.1%p 초과 하락은
+0쪽이다. #6133의 후보 둘째 쪽은 독립 Print의 빈 페이지를 보존한 구조 개선이며,
+실제 base에 없는 둘째 쪽 점수를 만들어 넣지 않았다. 기존 직접 판독한 두 쪽과 새
+PNG의 해시 일치로 구조 보존도 확인했다. 완료 페이지의 98% 자격 검사도 통과했다.
+
+#8188의 명시적 네 입력은 Native 전체 256쪽 모두 raw 100%이며, 양쪽 정수 미일치
+픽셀 수가 각각 0이다. 입력·독립 PDF·217개 글꼴 프로그램의 해시와 96dpi 조건을
+유지했다. 일반 sample16 제외를 되돌리거나 새로운 문서를 추가한 것이 아니다.
+
+정적 검사 8종도 실제 종료 코드 0이다. suite 준비, 포맷 검사, Native Clippy,
+WASM32 Clippy, workspace build, workspace all-target Clippy, suite 정책,
+unit-tier 정책을 공유 `target/pr-review`에서 Cargo 8 jobs로 순차 실행했다.
+이 결과를 전체 Rust 회귀의 통과로 대신하지 않는다. 앞선 전체 실행의 실패 6건에
+대한 실제 재실행, release lib·Skia·문서 검사와 Studio 검증은 아직 남아 있다.
+
+새 Native의 두 원본 첫 두 쪽 및 혼합 유닛이 있는 4쪽·마지막 8쪽의 review와
+standalone overlay를 직접 열었다. 이전의 1.88px 위쪽 이동과 6쪽 압축은 사라졌다.
+4쪽의 `UNIT 000~017` 순서·셀 소유와 마지막 쪽의 본문·표 종료가 보존된다.
+raw 100%는 2px 이웃 실루엣의 일치이며 엄격 RGB 동일을 뜻하지 않는다. 선의 진하기와
+안티앨리어싱 차이는 남아 있다. `valid_generated` 첫 쪽 하단은 기존 base와 현재가
+모두 독립 Print보다 약 2.9 CSSpx 아래에 있어, 그 하단을 독립 ±2px 기대 좌표로
+등록하지 않는다. 실제 보정한 첫 원점·이어받기 소유와 완료된 4·8쪽 경계를 보호한다.
+
+최적화 fresh WASM은 같은 source에서 표준 locked release와 실제 `wasm-opt -O`로
+빌드 중이다. 이후 동일한 169조건·384쪽, 두 혼합 원본, #8188 네 입력, base 대비
+0.1%p 제한과 직접 판독을 확인한다. 새 회귀 검사 두 함수는 아직 ignored output의
+초안이다. Native/fresh WASM 양쪽의 전쪽 자격과 직접 판독을 완료한 뒤 정식 등록하고,
+독립 Print 좌표와 원본 여백·쪽/셀 소유 관계를 함께 검사한다. 아직 PR 준비 완료나
+전체 회귀 통과로 판정하지 않는다.
+
+## fresh WASM 경계 통과와 새 회귀 등록
+
+같은 production source의 fresh090은 실제 표준 release·`wasm-opt -O`를 완료했다.
+두 혼합 원본 모두 8쪽이며 최저 raw는 99.95693% / 99.77021%다. 모든 대응 쪽이
+base 대비 0.1%p 제한을 통과했고, 기존 차트 네 조건도 99.66483~99.73289%를 유지했다.
+Native/fresh WASM의 첫 원점·이어받기·혼합 유닛 컷·마지막 종료를 review와 standalone overlay로
+각각 직접 확인했다. 이 두 원본의 전체 32쪽이 회귀 추가 자격을 충족한다.
+
+이에 [독립 Print 프레임 oracle](../pr/assets/pr7518_mixed_cut_20261027/independent-frame-oracle.json),
+Native/fresh TSV 원문 및 실제 판독한 대표 PNG를 정식 경로에 보존하고, 새 이름의
+`issue_7518_mixed_print_frame` 모듈에 두 함수를 등록했다. 기존 정확한 검사·기대값은
+유지한다. 실제 Rust 실행 결과는 아직 없으며 정적 등록을 PASS로 세지 않는다.
+
+현재 다른 169조건의 fresh WASM 전쪽 검증은 봉인한 Native280/fresh090을 사용한다.
+새 Rust 검사와 증적만 추가했고 기존 production·기존 검사 소스의 바이트는 그대로다.
+따라서 그 시각 검증과 Studio 검증을 이어 가며, 새 검사까지 포함한 Rust 검증을 병행한다.
+Cargo 계열은 한 작업만 실행하고 8 jobs·테스트 12 threads를 유지한다. 실제 전쪽 gate와
+전체 Rust·Skia·문서·Studio가 끝나기 전에는 PR 준비 완료로 판정하지 않는다.
