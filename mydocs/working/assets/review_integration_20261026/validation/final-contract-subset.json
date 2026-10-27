@@ -1,0 +1,35 @@
+{
+  "validation_head": "1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559",
+  "production_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+  "execution": "Actual members of the completed final whole nextest run, not an additional focused invocation.",
+  "whole_nextest_log": "mydocs/working/assets/review_integration_20261026/validation/logs/v14-final-nextest-all.log",
+  "whole_nextest_log_sha256": "288ee9bc612d52b3c8f16c8d48c44febfc9708d9d0691e3a31bd316329b40c9a",
+  "contracts": {
+    "issue_6312_float_anchor_line_uses_source_vpos": [
+      "PASS [   0.288s] (10764/11622) rhwp::regression_suite_026 issue_6312_float_anchor_line_uses_source_vpos::anchor_ownership_follows_the_cell_after_serialization_order_changes",
+      "PASS [   0.161s] (10765/11622) rhwp::regression_suite_026 issue_6312_float_anchor_line_uses_source_vpos::anchor_paragraph_line_advances_the_flow",
+      "PASS [   0.178s] (10766/11622) rhwp::regression_suite_026 issue_6312_float_anchor_line_uses_source_vpos::blank_line_spent_spacing_is_not_added_again_to_the_lazy_origin",
+      "PASS [   0.242s] (10770/11622) rhwp::regression_suite_026 issue_6312_float_anchor_line_uses_source_vpos::object_anchor_line_is_not_stacked_when_a_sibling_cell_expands_the_row",
+      "PASS [   0.240s] (10774/11622) rhwp::regression_suite_026 issue_6312_float_anchor_line_uses_source_vpos::paragraph_advance_matches_its_actual_table_band",
+      "PASS [   3.246s] (10793/11622) rhwp::regression_suite_026 issue_6312_float_anchor_line_uses_source_vpos::liver_picture_row_and_caption_keep_the_independent_pdf_frame"
+    ],
+    "issue_7642_missing_lineseg_picture_flow": [
+      "PASS [   0.034s] (10336/11622) rhwp::regression_suite_024 issue_7642_missing_lineseg_picture_flow::center_row_uses_one_alignment_point_for_text_and_pictures",
+      "PASS [   0.193s] (10337/11622) rhwp::regression_suite_024 issue_7642_missing_lineseg_picture_flow::no_lineseg_picture_rows_preserve_ownership_and_content_order",
+      "PASS [   0.059s] (10338/11622) rhwp::regression_suite_024 issue_7642_missing_lineseg_picture_flow::picture_line_spacing_affects_following_gap_and_preserves_picture",
+      "PASS [   0.041s] (10339/11622) rhwp::regression_suite_024 issue_7642_missing_lineseg_picture_flow::relative_display_size_preserves_declared_line_box"
+    ],
+    "source_frame_control_ownership": [
+      "PASS [   2.279s] ( 6907/11622) rhwp::regression_suite_011 source_frame_control_ownership::horizontal_fragments_share_one_centered_source_frame",
+      "PASS [   0.080s] ( 6908/11622) rhwp::regression_suite_011 source_frame_control_ownership::multiline_float_keeps_its_control_row_before_exclusion",
+      "PASS [   0.099s] ( 6909/11622) rhwp::regression_suite_011 source_frame_control_ownership::page_relative_float_preserves_source_margins_and_single_ownership",
+      "PASS [   4.577s] ( 6910/11622) rhwp::regression_suite_011 source_frame_control_ownership::coanchored_host_keeps_both_tables_on_the_same_source_page",
+      "PASS [   5.197s] ( 6911/11622) rhwp::regression_suite_011 source_frame_control_ownership::restarted_heading_and_its_body_keep_their_source_page",
+      "PASS [   5.731s] ( 6912/11622) rhwp::regression_suite_011 source_frame_control_ownership::table_split_policy_does_not_duplicate_the_heading_gap",
+      "PASS [   3.215s] ( 6921/11622) rhwp::regression_suite_011 source_frame_control_ownership::whole_tac_line_keeps_declared_cell_frame_and_all_source_text"
+    ]
+  },
+  "passed": 17,
+  "failed": 0,
+  "separate_native_v13_history": "v13-focused.json records the prior17 Native focused pass before the final narrow ownership correction."
+}

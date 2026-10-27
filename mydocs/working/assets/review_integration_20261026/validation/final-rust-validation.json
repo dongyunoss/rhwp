@@ -1,12 +1,12 @@
 {
-  "head": "59c7fef1674658c138625cc9348becbef5cbcd04",
+  "head": "1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559",
   "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
-  "started_at": "2026-10-27T00:03:54.621980+00:00",
+  "started_at": "2026-10-27T03:16:53.957605+00:00",
   "target": "/home/tsjang/rhwp/target/pr-review",
   "build_jobs": 4,
   "steps": [
     {
-      "name": "v12-final-fmt-check",
+      "name": "v14-final-fmt-check",
       "command": [
         "cargo",
         "fmt",
@@ -15,11 +15,15 @@
         "--check"
       ],
       "exit": 0,
-      "seconds": 49.135042313020676,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-fmt-check.log"
+      "seconds": 58.8091222679941,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-fmt-check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "observed_test_summary": [],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     },
     {
-      "name": "v12-final-clippy-host",
+      "name": "v14-final-clippy-host",
       "command": [
         "cargo",
         "clippy",
@@ -31,11 +35,15 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 123.12460566801019,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-host.log"
+      "seconds": 120.47023034491576,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-clippy-host.log",
+      "log_sha256": "9c8bc5ed68d4de8993b097768860e2d1bc93e653ec168ec6d04d8b4210c28ed6",
+      "log_bytes": 118,
+      "observed_test_summary": [],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     },
     {
-      "name": "v12-final-clippy-wasm",
+      "name": "v14-final-clippy-wasm",
       "command": [
         "cargo",
         "clippy",
@@ -52,11 +60,15 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 112.20978474500589,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-wasm.log"
+      "seconds": 108.04714820394292,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-clippy-wasm.log",
+      "log_sha256": "f0d12cc1fa01dee27f2d3c5d2dc8075ceec8dfd834ac684f83fe97c400c43fb7",
+      "log_bytes": 118,
+      "observed_test_summary": [],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     },
     {
-      "name": "v12-final-workspace-build",
+      "name": "v14-final-workspace-build",
       "command": [
         "cargo",
         "build",
@@ -66,11 +78,15 @@
         "/home/tsjang/rhwp/target/pr-review"
       ],
       "exit": 0,
-      "seconds": 144.96655440004542,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-workspace-build.log"
+      "seconds": 125.58855921099894,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-workspace-build.log",
+      "log_sha256": "32a202556c391edce0a60d19492de06b115d75e80a9c33465fb0cd1ced3760cd",
+      "log_bytes": 266,
+      "observed_test_summary": [],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     },
     {
-      "name": "v12-final-clippy-workspace",
+      "name": "v14-final-clippy-workspace",
       "command": [
         "cargo",
         "clippy",
@@ -84,11 +100,15 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 181.45655460306443,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-workspace.log"
+      "seconds": 165.86408127495088,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-clippy-workspace.log",
+      "log_sha256": "8e32a14574b35044f2dbdf239ff24abaac3c1531589a2322e6d99095c2907bf7",
+      "log_bytes": 266,
+      "observed_test_summary": [],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     },
     {
-      "name": "v12-final-suite-policy",
+      "name": "v14-final-suite-policy",
       "command": [
         "node",
         "scripts/rust-test-suite-manifest.mjs",
@@ -97,11 +117,15 @@
         "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
       ],
       "exit": 0,
-      "seconds": 3.9537111161043867,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-suite-policy.log"
+      "seconds": 4.4808686709729955,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-suite-policy.log",
+      "log_sha256": "9b5ec10d9a13258ca7c264c8da7291bb92c0336f6410874b3a8fb7a842d186f0",
+      "log_bytes": 179,
+      "observed_test_summary": [],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     },
     {
-      "name": "v12-final-unit-tier-policy",
+      "name": "v14-final-unit-tier-policy",
       "command": [
         "node",
         "scripts/rust-unit-test-tiers.mjs",
@@ -110,11 +134,15 @@
         "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
       ],
       "exit": 0,
-      "seconds": 33.9771661660634,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-unit-tier-policy.log"
+      "seconds": 31.55554954498075,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-unit-tier-policy.log",
+      "log_sha256": "d8ea078dd615474da03f5bd8e22900752ea88c198fc4f7afd3bc1f60be4290bc",
+      "log_bytes": 118,
+      "observed_test_summary": [],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     },
     {
-      "name": "v12-final-nextest-all",
+      "name": "v14-final-nextest-all",
       "command": [
         "cargo",
         "nextest",
@@ -129,11 +157,143 @@
         "12",
         "--no-fail-fast"
       ],
-      "exit": 100,
-      "seconds": 3985.142648159992,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-nextest-all.log"
+      "exit": 0,
+      "seconds": 3805.030049634981,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-nextest-all.log",
+      "log_sha256": "288ee9bc612d52b3c8f16c8d48c44febfc9708d9d0691e3a31bd316329b40c9a",
+      "log_bytes": 1630140,
+      "observed_test_summary": [
+        "     Summary [2498.634s] 11622 tests run: 11622 passed (50 slow), 45 skipped"
+      ],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+    },
+    {
+      "name": "v14-final-native-skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "12"
+      ],
+      "exit": 0,
+      "seconds": 597.1880331769353,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-skia-lib.log",
+      "log_sha256": "30c2eadda4103f5b5ca8069e281674821173cef1317de65d42290280bd2b06a2",
+      "log_bytes": 344197,
+      "observed_test_summary": [
+        "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 59.02s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+    },
+    {
+      "name": "v14-final-native-issue_2225_missing_picture_placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 566.5944255270297,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-issue_2225_missing_picture_placeholder.log",
+      "log_sha256": "d02119d58a50b7b78bba3d698c378936fa5344ac62a0371dcb08c08da53699e0",
+      "log_bytes": 1030,
+      "observed_test_summary": [
+        "     Summary [   1.936s] 2 tests run: 2 passed, 275 skipped"
+      ],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+    },
+    {
+      "name": "v14-final-native-render_p37_direct_pdf_export",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 32.90232081001159,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-render_p37_direct_pdf_export.log",
+      "log_sha256": "f05269e4903a68868fc1740e3b5c245de6be524ddc4eb0a0f259710d7505f39f",
+      "log_bytes": 3162,
+      "observed_test_summary": [
+        "     Summary [   0.941s] 14 tests run: 14 passed, 246 skipped"
+      ],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+    },
+    {
+      "name": "v14-final-native-native_fractional_glyph_origin",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "native_fractional_glyph_origin",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 31.592160071944818,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-native_fractional_glyph_origin.log",
+      "log_sha256": "a09a3627ec71f7d1bcd1b3f224e7b8df19c26ecca3a961f0515a880e6e5b7b2e",
+      "log_bytes": 1333,
+      "observed_test_summary": [
+        "     Summary [   1.684s] 4 tests run: 4 passed, 278 skipped"
+      ],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+    },
+    {
+      "name": "v14-final-native-issue_7445_biotoxin_source_ownership",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7445_biotoxin_source_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 42.172764812014066,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-issue_7445_biotoxin_source_ownership.log",
+      "log_sha256": "0dddabeb0e847147a8b1bd5ac4565f31cec93780e1449c746230df4b9406d31a",
+      "log_bytes": 2160,
+      "observed_test_summary": [
+        "     Summary [  13.513s] 9 tests run: 9 passed, 265 skipped"
+      ],
+      "log_storage": "temporary; excluded from final PR tree and removed at review end"
     }
   ],
-  "status": "failed",
-  "active_step": "v12-final-nextest-all"
+  "status": "passed",
+  "completed_at": "2026-10-27T04:51:45.995678+00:00"
 }

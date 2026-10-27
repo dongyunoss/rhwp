@@ -2413,6 +2413,6 @@
     "drops_ge_2pp": 0,
     "max_drop_pp": "0.00000",
     "source_head": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
-    "optimized_fresh_wasm_and_full_rust": "pending"
+    "optimized_fresh_wasm_and_full_rust": "passed; see final visual-validation.json and final-rust-validation.json"
   }
 }

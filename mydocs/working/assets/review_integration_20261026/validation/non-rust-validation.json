@@ -1,0 +1,85 @@
+{
+  "reused_existing_completed_executions": true,
+  "frontend_source_continuity": "Final frontend source is byte-identical to verified3ae; current WASM browser executions are separately recorded in browser-validation.json.",
+  "runs": [
+    {
+      "temporary_log_basename": "ai-provider-focused.log",
+      "log_sha256": "9ff587e8911c02d8993e0a77ad78cffc409e21ca96cc33f714671fae1e17a124",
+      "log_bytes": 2458,
+      "observed_summary": [
+        "ℹ tests 22",
+        "ℹ pass 22",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "studio-unit-after-canvaskit.log",
+      "log_sha256": "f5526ff6463df416d6b83638911addc3cf2dcf4904f7a2022a50317bcc16b1a6",
+      "log_bytes": 255877,
+      "observed_summary": [
+        "ℹ tests 2609",
+        "ℹ pass 2607",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 2",
+        "ℹ todo 0"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "visual-sweep-contracts.log",
+      "log_sha256": "329cee4537aef6174a0ab9f13d688b5b50c3aa871081aa2b210bf2929ffa5933",
+      "log_bytes": 1815,
+      "observed_summary": [
+        "Ran 192 tests in 100.697s",
+        "OK"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "final-workflow-contracts.log",
+      "log_sha256": "d14115311b21692a0c1f7361e7d9a501f56a4905a34b981c6f7c6de58d8b8606",
+      "log_bytes": 297,
+      "observed_summary": [
+        "Ran 196 tests in 22.563s",
+        "OK"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "canvaskit-tsc.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "observed_summary": [],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": true
+    },
+    {
+      "temporary_log_basename": "final-e2e-manifest-after.log",
+      "log_sha256": "12e744bb3b2ba0dbfc26e9f69c86c0f387edd85754a927831f803d60a6c88b9a",
+      "log_bytes": 79,
+      "observed_summary": [
+        "e2e 파일(tracked): 172개 / MANIFEST 행: 172개",
+        "e2e manifest: 이상 없음"
+      ],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": false
+    },
+    {
+      "temporary_log_basename": "woff-ci-actionlint.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "observed_summary": [],
+      "completed_exit": 0,
+      "empty_stdout_when_passed": true
+    }
+  ]
+}

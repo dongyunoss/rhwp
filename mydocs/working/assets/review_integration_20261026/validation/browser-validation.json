@@ -1,0 +1,59 @@
+{
+  "recorded_at": "2026-10-27T03:27:12.999703+00:00",
+  "production_source": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
+  "wasm_build_head": "e03784afc4978e211488c7f8ac0bf2e4a06cfb1e",
+  "wasm_sha256": "d21c6200b8a120ff3dc079f9cf4b46997368fdc983ca2c9c6e2def778c9c3567",
+  "runs": [
+    {
+      "command": "npm run e2e:ai-providers",
+      "cwd": "rhwp-studio",
+      "actual_driver_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026",
+      "scope": "actual UI; mocked OpenAI/Gemini transport; no real key",
+      "exit": 0,
+      "pass_assertions": 34,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-studio-ai-providers-fresh-wasm.log",
+      "log_sha256": "f17c18de1eb1f14f17c16d151095dc94d188dd1ca7cab98409ad81e36544fe0f",
+      "log_bytes": 2736,
+      "committed_test": "rhwp-studio/e2e/ai-providers.test.mjs"
+    },
+    {
+      "command": "node e2e/run-with-vite.mjs -- node /home/tsjang/rhwp/output/pr-review/planet6897-20261026/review-v14-pdf-layout-ui.mjs --mode=headless",
+      "cwd": "rhwp-studio",
+      "actual_driver_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026",
+      "scope": "three PDF versions times two modes; actual body ownership; non-PDF control",
+      "exit": 0,
+      "pass_assertions": 24,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-pdf-layout-ui.log",
+      "log_sha256": "b2a16b2af07fcb7f513f402c2fcc4b78a48298be0370792ed426221debf177e0",
+      "log_bytes": 1645,
+      "temporary_driver_sha256": "e9e6998c8b838312474e9300b01ad7c5e35ddcb64c415e304da8eafe92398044",
+      "validation_recipe": [
+        "Open actual OptionsDialog File tab; select fidelity/editable; save and reload.",
+        "Upload each committed samples/21_언어_기출_편집가능본{-2010,-2020,}.pdf through the actual file input.",
+        "Read actual getPdfImportDiagnostics(), getSourceFormat(), pageCount; require16/15/15pages and editable sections with255/256/267body paragraphs.",
+        "Export actual imported document with exportHwpx(); compare every exported page independently to its source PDF.",
+        "In editable setting upload committed non-PDF HWP; require source hwp, one page, and null PDF diagnostics."
+      ]
+    },
+    {
+      "command": "node e2e/run-with-vite.mjs -- node /home/tsjang/rhwp/output/pr-review/planet6897-20261026/review-canvaskit-lines-v14.mjs --mode=headless",
+      "cwd": "rhwp-studio",
+      "actual_driver_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026",
+      "scope": "original page34 line operations only; two CanvasKit modes times two scales",
+      "exit": 0,
+      "pass_assertions": 16,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-canvaskit-lines.log",
+      "log_sha256": "c248a5c621f5b4a322b7ae4af48e564af57cf6804b524d6d49aaef7a37d95350",
+      "log_bytes": 1220,
+      "temporary_driver_sha256": "d3747a6a0bdc227e249253008ef928f097190ad1916dbd9b5fa2af2c5253af4a",
+      "validation_recipe": [
+        "Read original sungeo page34 print layer tree; preserve hierarchy and clips; retain line and pageBackground operations.",
+        "Run actual software CanvasKit compat/default modes at1.0/0.5scale.",
+        "Capture actual SkPaint stroke widths and CTM normal scale; require at least1device pixel.",
+        "For four original dotted borders, inspect three along-line windows; minimum composited RGB channel must be below232, matching the independent Native dotted-ink contract.",
+        "Require completed render with no unexpected unsupported operations."
+      ]
+    }
+  ],
+  "raw_logs_policy": "Temporary execution logs are excluded from the final PR tree and removed with output at review end; commands, outcomes, source and log hashes remain here."
+}

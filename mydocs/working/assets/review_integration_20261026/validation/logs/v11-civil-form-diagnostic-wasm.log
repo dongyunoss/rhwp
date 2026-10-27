@@ -1,7 +1,0 @@
-== civil-form ==
-+ output/pr-review/planet6897-20261026/candidate-v11-origin-rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6032/2912695_civil_petition_form.hwp
-+ node /home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v11-diagnostic-wasm --input /home/tsjang/rhwp/samples/issue6032/2912695_civil_petition_form.hwp --out /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v11/diagnostic-wasm/civil-form --fonts /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v11/diagnostic-wasm/civil-form/font-catalog.json --options /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v11/diagnostic-wasm/civil-form/canvas-options.json
-PNG export pages: 2
-+ /home/tsjang/rhwp/venv/bin/python /home/tsjang/rhwp/scripts/visual_sweep_pdf.py --pdf /home/tsjang/rhwp/pdf/2912695_civil_petition_form-2020.pdf --dpi 96 --prefix /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v11/diagnostic-wasm/civil-form/pdf_png/pdf
-실루엣 보조값 2쪽: /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v11/diagnostic-wasm/civil-form/silhouette.tsv
-summary: /home/tsjang/rhwp/output/pr-review/planet6897-20261026/v11/diagnostic-wasm/summary.json

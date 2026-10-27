@@ -429,7 +429,7 @@
 
 - `59c7fef16`의 실제 전체 nextest는 11,622개 실행, 11,619 PASS·3 FAIL·기존 skip 45개로 끝났다.
   중단·미실행은 없다. [실제 실패 기록](assets/review_integration_20261026/validation/rust-before-inline-picture-fit-correction.json)과
-  [전체 로그](assets/review_integration_20261026/validation/logs/v12-final-nextest-all.log)를 보존한다.
+  [해당 실행 결과](assets/review_integration_20261026/validation/rust-before-inline-picture-fit-correction.json)를 보존한다. 원시 로그는 임시 자료로 최종 PR에 포함하지 않는다.
 - 실패는 #6312 공개 슬라이스의 기준 4쪽이 5쪽으로 늘어난 결과다. 첫 본문 원점·머리 표 높이는
   유지되며, 저장 LineSeg가 없는 14번 그림 문단만 첫 쪽 꼬리에서 별도 쪽으로 넘어간다.
   원본 XML의 해당 문단은 빈 글자가 아니라 글자처럼 그림 높이 3805HU를 소유한다.
@@ -498,3 +498,10 @@
 - 생성 binding과 Native 증거를 커밋한 뒤 그 clean head에서 전체 Rust lint·회귀·Native
   공식 검사를 순차 실행한다. 실제 fresh WASM UI·63개 전쪽 비교도 남아 있으며
   모두 완료하기 전에는 PR을 제출하지 않는다.
+
+- 검토 중 잘못 추적된 원시 로그 15개는 최종 PR 트리에서 제거했다. 임시 원시 로그 사본도 제거하며, 실제 명령·종료 코드·요약·SHA는 정식 실행 영수증에 보존한다. 기존 단계 커밋은 재작성하지 않는다.
+
+## 검증 종료 후 새 devel 확인
+
+- 전체 필수 로컬 검증을 완료한 뒤 fetch한 devel은 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`다. #8116의 저장 줄 없는 표·빈 host 배치가 새로 반영됐다.
+- 기존 검증 head `1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559`와 0bb 기준의 Native/WASM 전쪽·전체 회귀 결과를 먼저 고정한다. 새 base 위 리베이스와 양쪽 기능 보존 검증은 아직 남았으며 PR 제출 완료로 처리하지 않는다.

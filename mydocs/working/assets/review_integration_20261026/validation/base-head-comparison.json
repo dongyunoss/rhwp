@@ -1,7 +1,7 @@
 {
-  "recorded_at": "2026-10-26T21:07:57.778677+00:00",
+  "recorded_at": "2026-10-27T03:43:55.972140+00:00",
   "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
-  "production_head": "3ae26ef0a1a20a8810813a085179220f56d2561a",
+  "production_head": "f272b81c28b2525c5f6e520ef1e5d499b16672d3",
   "metric": "silhouette_raw_match_percent",
   "decimal_threshold_pp": "2",
   "font_path": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/installed-document-fonts:ttfs/opensource:ttfs/redistributable:rhwp-studio/public/fonts",
@@ -85,12 +85,326 @@
   ],
   "backends": {
     "native": {
-      "cases": 41,
-      "paired_reference_pages": 767,
+      "cases": 60,
+      "paired_reference_pages": 895,
       "max_drop_pp": "0.00000",
       "drops_ge_2pp": 0,
       "any_drop": 0,
       "records": [
+        {
+          "key": "fiscal-anchor",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 4,
+          "input": "/home/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+          "input_sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+          "pdf": "/home/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+          "pdf_sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/fiscal-anchor.tsv",
+          "baseline_tsv_sha256": "91dc8330a3036569afbe5b99bee8c98e3fd2b12e2131ac418fcbe00f1199f1d7",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/fiscal-anchor.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-false",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false.hwp",
+          "input_sha256": "8647f8ca68776fd1a2e640e69a5a8e428c6cb287ba17b2cb883fcce5efae20a8",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false-print-2020.pdf",
+          "pdf_sha256": "0ea824cccc05c0dbab4edbddbf5df407481cb554e85d6e909d21d59702b5d7c9",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-true",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true.hwp",
+          "input_sha256": "a7188cf5dd388df0c930224178a3cba44715cd07ccdccde5c8ebcde7cbfa0c3f",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true-print-2020.pdf",
+          "pdf_sha256": "ee84d81a4b3889da9658b5ee0936c8f726f30897ea9a63c9564408a2c427e6b4",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-authored-break-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls.hwp",
+          "input_sha256": "c7d856b48d19cabb51e50b0befdf2fbc67a903a633038b7084dc6c2113177b93",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls-print-2020.pdf",
+          "pdf_sha256": "9b8037d88922205acf7459e6e4a44a8535894923c3e75aed06b672bb0bb6ed1c",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-center-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls.hwp",
+          "input_sha256": "48f55c0d01011d3580f2f1fdef2d565077ffa1e66c7aaddfca10761dd43dd297",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "0e8536e76112d9439cb9c50418ad5918ba88310ab0630c2745b64a677dfd159f",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-column-transition-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls.hwp",
+          "input_sha256": "29745472fdb513c8d4d1a7a6f1a22a56580acd9b06b6620ed7bed7d0b3000c32",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls-print-2020.pdf",
+          "pdf_sha256": "d9dcf28fe3b5ee63ff05880f44e2d5eda3200c40f008981aa2d702acd1059e23",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls.hwp",
+          "input_sha256": "8db7c5325b0e1676c29190d55110465453203be310de435492a29d6522835ad6",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "a2a1178aea825b6e2e734a43b18b35cd83f53d650ef28491a9ba03ddf146ea4f",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls.hwp",
+          "input_sha256": "8478f28ec6bfbeb85f4d5ed3947b3063380549ec956a5fbe7fc5559aabd0dd7e",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls-print-2020.pdf",
+          "pdf_sha256": "1a37e74b889946e8ceeff9fd3cf7200d356fe2af6401c93634879a9208f3bb3e",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls.hwp",
+          "input_sha256": "16a916b8c79e055f26d2033f7104c2cb39487bf21993356b805ad8616ac7cebb",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "6fab8b80a40cf81355adc11a923b777f7515977a25a7963b3296a00ba6118f50",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls.hwp",
+          "input_sha256": "6e0073478832e25398466ad001c1566b626ca0c49634184135857d88ef0f8870",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "109ed14cbc38ee7e9604e64066d84261bd34806077d9f5ebee1510c1936834be",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-same-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls.hwp",
+          "input_sha256": "aeee538f8d361f81bb7b356ab662c453f13f67a4e2be4c2af911eabd16ea1d12",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "1ad87bdcb0265492849d495f7a539c37aec00b42e61940023ade8b88c164dad9",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls.hwp",
+          "input_sha256": "07ebb414f77d99c4b1a609e31f79904e95cedf4fe21f315cf6760007a8aa3c38",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls-print-2020.pdf",
+          "pdf_sha256": "10eab539ec29e8efd87d993e820fcc5335974aad5075042709fe733f2b922b96",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls.hwp",
+          "input_sha256": "4faca24711f2dcd84dc22b3047dfb56911d70c952789978071a8b898facc2747",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls-print-2020.pdf",
+          "pdf_sha256": "71728ac7e179fd1f850a348d951b5fd1c227ee4a8c74219a26646b5bdfa1d155",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls.hwp",
+          "input_sha256": "52af34ce881875d302b604010f4a67ca51b2f85386a40e4f68e4714836064f1c",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "880e9aef5665b4a46c0418009a246f8a095bed2151ceaaeddfce1eb960ac39cb",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "newsletter-korean",
+          "source_prs": [
+            8213
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+          "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/newsletter-korean-2020.pdf",
+          "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/newsletter-korean.tsv",
+          "baseline_tsv_sha256": "a788fd92792bb470b86cb8ed76b0ca6c67bc1fb112fc4708817df5cd0e702968",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/newsletter-korean.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "newsletter-chinese",
+          "source_prs": [
+            8213
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+          "input_sha256": "34a5964fa791ae662052cba8482efae682f13b45a0c0cd6ce633425566a2d5a9",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/newsletter-chinese-2024.pdf",
+          "pdf_sha256": "93cd11ba2e4c256a9bc22da58942afd551f28cfe6ace16ca13c76d650cb3e360",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/newsletter-chinese.tsv",
+          "baseline_tsv_sha256": "acd0464dc3d69a8583d6723084c3a312139ed078f9c65e7bc6c05d81ece9caf4",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/newsletter-chinese.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwp",
+          "source_prs": [
+            8133
+          ],
+          "pages": 46,
+          "input": "/home/tsjang/rhwp/samples/[2027] 온새미로 1 본교재.hwp",
+          "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/onsemiro-hwp-2020.pdf",
+          "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/onsemiro-hwp.tsv",
+          "baseline_tsv_sha256": "890ab5f4eb0a629eb23eae98619242f2c7456c847e55a9c47cfeb06b098b66b9",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/onsemiro-hwp.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwpx",
+          "source_prs": [
+            8133
+          ],
+          "pages": 46,
+          "input": "/home/tsjang/rhwp/samples/[2027] 온새미로 1 본교재.hwpx",
+          "input_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/onsemiro-hwpx-2024.pdf",
+          "pdf_sha256": "015ac8396395652ffce81167d017adea4b3284a660a59f46bbbf5e261443af5b",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/onsemiro-hwpx.tsv",
+          "baseline_tsv_sha256": "56f59714493ceccaf02e74ea8b6bd55ec227e234d41191b01a7b9c64f75853d6",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/onsemiro-hwpx.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "civil-form",
+          "source_prs": [
+            8184
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/samples/issue6032/2912695_civil_petition_form.hwp",
+          "input_sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+          "pdf": "/home/tsjang/rhwp/pdf/2912695_civil_petition_form-2020.pdf",
+          "pdf_sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/civil-form.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/civil-form.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "nested-height-cache",
+          "source_prs": [
+            8213
+          ],
+          "pages": 17,
+          "input": "/home/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+          "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+          "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/nested-height-cache.tsv",
+          "baseline_tsv_sha256": "e93e646bcc749ea885d13ee9223f7d6c4f33ff0ddefe8a79fd969fe151478655",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/nested-height-cache.tsv",
+          "baseline_page_count_mismatch": false
+        },
         {
           "key": "cellnotes_plain_N2_L7",
           "source_prs": [
@@ -104,10 +418,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cellnotes_plain_N2_L7.tsv",
           "baseline_tsv_sha256": "367b78dc2a107e1fddc8eec03c5c4947e98f9e78c1eaf58cf787bb89955cbe99",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cellnotes_plain_N2_L7.tsv",
-          "baseline_page_count_mismatch": true,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": true
         },
         {
           "key": "cellnotes_span_N2",
@@ -122,10 +433,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cellnotes_span_N2.tsv",
           "baseline_tsv_sha256": "c3012be45fb93a46cc9835c01f714ee477e92f787f8599626c7f32347979df76",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cellnotes_span_N2.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "r110_cellnotes_span_N2",
@@ -140,10 +448,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/r110_cellnotes_span_N2.tsv",
           "baseline_tsv_sha256": "f43dfab31900d29f4531ce33ec77b3636103a87e109e15c363263aa5c65bb879",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/r110_cellnotes_span_N2.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_F02",
@@ -158,10 +463,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_F02.tsv",
           "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_F02.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_h6630_F02",
@@ -176,10 +478,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_h6630_F02.tsv",
           "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_h6630_F02.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_h6660_F02",
@@ -194,10 +493,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_h6660_F02.tsv",
           "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_h6660_F02.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_l1_big_h6500_F01",
@@ -212,10 +508,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n0_l1_big_h6500_F01.tsv",
           "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n0_l1_big_h6500_F01.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n1_F01",
@@ -230,10 +523,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n1_F01.tsv",
           "baseline_tsv_sha256": "fcc99e32c6102060c061c14da7e4d3ff67eccfe63c554340989b2f61a4400a0d",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n1_F01.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n1_F04",
@@ -248,10 +538,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/trim_n1_F04.tsv",
           "baseline_tsv_sha256": "7b7101c70df6eca8afedadf261069d13303f3c004822395645937957077060de",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/trim_n1_F04.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "cont_reset_F20_L70_N0",
@@ -266,10 +553,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cont_reset_F20_L70_N0.tsv",
           "baseline_tsv_sha256": "9e83e432d3f2300ef54a44fa7d98ebd345b4830e43bb1ebefd13e639b05b27a9",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cont_reset_F20_L70_N0.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "cont_reset_F20_L70_N4",
@@ -284,10 +568,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cont_reset_F20_L70_N4.tsv",
           "baseline_tsv_sha256": "a992d2671a7f2a14f129adfed5a275074fc8df3388ab81607546ed40ea7adb03",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cont_reset_F20_L70_N4.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "cont_reset_F20_L70_N6",
@@ -302,10 +583,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/cont_reset_F20_L70_N6.tsv",
           "baseline_tsv_sha256": "6507d5ecca9b94d2f44fec68c79ddf65f9313d8135f1c9910422811129b73af9",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/cont_reset_F20_L70_N6.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "caption-negative-offset",
@@ -320,10 +598,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/caption-negative-offset.tsv",
           "baseline_tsv_sha256": "e6ac3aacfb01cc2a853b6e04ae16c7423fa342b458a99bcf4b3cfc169f4bb1c4",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/caption-negative-offset.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "rowspan-band-fit",
@@ -338,10 +613,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rowspan-band-fit.tsv",
           "baseline_tsv_sha256": "907d2b2bfc3e802003b6095195850f809f2f94ef8fb04ea0ecae60a0235decff",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rowspan-band-fit.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "captioned-host-2020",
@@ -356,10 +628,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/captioned-host-2020.tsv",
           "baseline_tsv_sha256": "d0e72ff63d57b8fd45903adf053aefb8477dc7517ad03efd0f8b29095c638288",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/captioned-host-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "headerrow-2020",
@@ -374,10 +643,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/headerrow-2020.tsv",
           "baseline_tsv_sha256": "27d2c186b5812c529ed68d92ff2dfd4766039c446dcaac640c644b9c6bacf988",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/headerrow-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "reservefit-2020",
@@ -392,10 +658,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/reservefit-2020.tsv",
           "baseline_tsv_sha256": "3a275cdec033ac8f47901f79e2d76d0d091bd02f91218dcc2bde28c829f6a786",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/reservefit-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "rowfit-2020",
@@ -410,10 +673,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rowfit-2020.tsv",
           "baseline_tsv_sha256": "0370947d4b82de77b4024a36d0c868925334d3a95935008c29808b8e15333f6b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rowfit-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
@@ -430,10 +690,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
           "baseline_tsv_sha256": "13bc289c14069b3d53786c72ba58c54b9180b9f741a3c0e44993c3f63e4a6b55",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
@@ -450,10 +707,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
           "baseline_tsv_sha256": "97debe51176d375fb1be2732b0f6c3b052586e85c7101b0371f9cbac4c28a43b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8167-tac_rectangle_inline",
@@ -470,10 +724,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8167-tac_rectangle_inline.tsv",
           "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8167-tac_rectangle_inline.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8167-tac_textbox_inline",
@@ -490,10 +741,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8167-tac_textbox_inline.tsv",
           "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8167-tac_textbox_inline.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
@@ -510,10 +758,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
           "baseline_tsv_sha256": "8e32242ad31e4c47bb2c71e431f5b2cc5051c1d2e079befabb7d5e8410d747ed",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
@@ -530,10 +775,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
           "baseline_tsv_sha256": "833007df0e628fb32e89efb0db4878b41f718bcf6d650259fad89bd69f837af0",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
@@ -550,10 +792,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
           "baseline_tsv_sha256": "46a7078fc75e3aa799a0c027569af305c2c7e617f4834e8995baeef2556f2395",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
@@ -570,10 +809,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
           "baseline_tsv_sha256": "6e11aa4bc9c7c2da95d3ccbae768a39772d4727244bed408790be4ccfe3b4c60",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "issue1937",
@@ -588,10 +824,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/issue1937.tsv",
           "baseline_tsv_sha256": "94c368b81689cf81477409961f49f1b78736da81a06bc771fb3601eeb8e64516",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/issue1937.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "hwp5-spec-official",
@@ -606,10 +839,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hwp5-spec-official.tsv",
           "baseline_tsv_sha256": "c35a875296e95d542ee32aae1cfdc1733e782ba0578277455a338c7438bbc047",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwp5-spec-official.tsv",
-          "baseline_page_count_mismatch": true,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": true
         },
         {
           "key": "hwpml-spec-2020",
@@ -624,10 +854,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hwpml-spec-2020.tsv",
           "baseline_tsv_sha256": "d4ed7c0b3644d3b263274f8d6eac563edb3b11ec947bd33d9612ea137abb96cb",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hwpml-spec-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "tac-shape-source",
@@ -642,10 +869,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/tac-shape-source.tsv",
           "baseline_tsv_sha256": "2ac02bc542d0798fa683aa4768aad125d9ee5faacde90dbbcbfb6c2fefe24063",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/tac-shape-source.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "equation-lim",
@@ -660,10 +884,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/equation-lim.tsv",
           "baseline_tsv_sha256": "a9e912190b270cbe38adb15e5e80c5bdc689f7b31a51b53bccc741b15122da07",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/equation-lim.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "endnotes-november",
@@ -681,10 +902,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/endnotes-november.tsv",
           "baseline_tsv_sha256": "fec9c147d81617279d8bc83964eb8b0838862d1e6ded849cc40a5f380d69ecd7",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/endnotes-november.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "endnotes-september",
@@ -702,10 +920,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/endnotes-september.tsv",
           "baseline_tsv_sha256": "0aede5c24072066deaf7dfe2d22a685cbcbcbaf044aaa8e95480a3e7ba5ae1ea",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/endnotes-september.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "hairline-calendar",
@@ -720,10 +935,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hairline-calendar.tsv",
           "baseline_tsv_sha256": "b82ce6718e136619d40a4fc7f81b81fa6a420a88bf44ae61cfc2b7aef25fa1ac",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hairline-calendar.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "hairline-sungeo",
@@ -738,10 +950,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/hairline-sungeo.tsv",
           "baseline_tsv_sha256": "e4dab5e286869294fa74cf29ec396790fc0198e30d527e5dfa074a0ad573ed96",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/hairline-sungeo.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "topbottom-original",
@@ -757,10 +966,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/topbottom-original.tsv",
           "baseline_tsv_sha256": "77564a9040197b1a5c3939b32dd0f415f278ea7206166db6379f1fa311ad1ce0",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/topbottom-original.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "rowspan-header-original",
@@ -775,28 +981,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/rowspan-header-original.tsv",
           "baseline_tsv_sha256": "1aa5543296f684007af19fe0aa9bedf82796e039a88bf90d45b4f96a237064d7",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/rowspan-header-original.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
-        },
-        {
-          "key": "nested-height-cache",
-          "source_prs": [
-            8213
-          ],
-          "pages": 17,
-          "input": "/home/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp",
-          "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
-          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
-          "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
-          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/nested-height-cache.tsv",
-          "baseline_tsv_sha256": "e93e646bcc749ea885d13ee9223f7d6c4f33ff0ddefe8a79fd969fe151478655",
-          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/nested-height-cache.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "pdf-2010-fidelity",
@@ -807,17 +992,14 @@
             8237
           ],
           "pages": 16,
-          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/final-pdf-import/pdf-2010-fidelity.hwpx",
+          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v14-pdf-import/pdf-2010-fidelity.hwpx",
           "input_sha256": "851144435ef1102cd4727f0635819973915d5718c130812c288cbc3e85fbe2dc",
           "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2010.pdf",
           "pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/pdf-2010-fidelity.tsv",
           "baseline_tsv_sha256": "9d0fb5f1eacddc6b3b514debe7af2e35543bce5d9603f634546a0d28a297a248",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2010-fidelity.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "pdf-2020-fidelity",
@@ -828,17 +1010,14 @@
             8237
           ],
           "pages": 15,
-          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/final-pdf-import/pdf-2020-fidelity.hwpx",
+          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v14-pdf-import/pdf-2020-fidelity.hwpx",
           "input_sha256": "621ed0ce5dc918e5246a0e0f4ed853812bfe36009560a4b81fc4a25b64b58d8f",
           "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2020.pdf",
           "pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/pdf-2020-fidelity.tsv",
           "baseline_tsv_sha256": "c7076cee8135ed0b31417d8559d052fd1327b66078acf7e63a06d8c327240884",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2020-fidelity.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "pdf-mac-fidelity",
@@ -849,27 +1028,99 @@
             8237
           ],
           "pages": 15,
-          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/final-pdf-import/pdf-mac-fidelity.hwpx",
+          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v14-pdf-import/pdf-mac-fidelity.hwpx",
           "input_sha256": "0b24eb722daed8821fd688fa7af1064172572cde0a79e21c729834465ee0929b",
           "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본.pdf",
           "pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/native/pdf-mac-fidelity.tsv",
           "baseline_tsv_sha256": "2eb81e6ca5f40204bc545d260f5034793e97deff12d3a9142b34a95a3a8c5f19",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-mac-fidelity.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true,
-          "baseline_binary_sha256": "2a267972479d2c0041b1ed6d99570dcf43179e82b9ec76b2ee6bf65fa437722b"
+          "baseline_page_count_mismatch": false
         }
       ]
     },
     "wasm": {
-      "cases": 41,
-      "paired_reference_pages": 767,
+      "cases": 60,
+      "paired_reference_pages": 895,
       "max_drop_pp": "0.00000",
       "drops_ge_2pp": 0,
       "any_drop": 0,
       "records": [
+        {
+          "key": "newsletter-chinese",
+          "source_prs": [
+            8213
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+          "input_sha256": "34a5964fa791ae662052cba8482efae682f13b45a0c0cd6ce633425566a2d5a9",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/newsletter-chinese-2024.pdf",
+          "pdf_sha256": "93cd11ba2e4c256a9bc22da58942afd551f28cfe6ace16ca13c76d650cb3e360",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/newsletter-chinese.tsv",
+          "baseline_tsv_sha256": "fda8f4ad0adfe52cdb0715d71a64d41ad0a0ee462aa71f4d383dbe838e290f43",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-chinese.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "civil-form",
+          "source_prs": [
+            8184
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/samples/issue6032/2912695_civil_petition_form.hwp",
+          "input_sha256": "1c6569dc69b1fe99de058de2760249d322b393b7eb6b4f2a2fe60f2489c25e04",
+          "pdf": "/home/tsjang/rhwp/pdf/2912695_civil_petition_form-2020.pdf",
+          "pdf_sha256": "2e85455f13d0e911b495a7a152f1c799ffb2fc37dd2051312cafa4359c810f89",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/civil-form.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/civil-form.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwp",
+          "source_prs": [
+            8133
+          ],
+          "pages": 46,
+          "input": "/home/tsjang/rhwp/samples/[2027] 온새미로 1 본교재.hwp",
+          "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/onsemiro-hwp-2020.pdf",
+          "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/onsemiro-hwp.tsv",
+          "baseline_tsv_sha256": "d4e0464e24a4e6d78520192a1b01b3421cd85573650c810a9b32c45a9860dedb",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwp.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "onsemiro-hwpx",
+          "source_prs": [
+            8133
+          ],
+          "pages": 46,
+          "input": "/home/tsjang/rhwp/samples/[2027] 온새미로 1 본교재.hwpx",
+          "input_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/onsemiro-hwpx-2024.pdf",
+          "pdf_sha256": "015ac8396395652ffce81167d017adea4b3284a660a59f46bbbf5e261443af5b",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/onsemiro-hwpx.tsv",
+          "baseline_tsv_sha256": "8788e04e85061bcb52bfe6973f7d95522e4799d83e9c85f5e9180c248f168635",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/onsemiro-hwpx.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "newsletter-korean",
+          "source_prs": [
+            8213
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/samples/issue6712/한국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp",
+          "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+          "pdf": "/home/tsjang/rhwp/pdf/review-integration-20261026/newsletter-korean-2020.pdf",
+          "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/newsletter-korean.tsv",
+          "baseline_tsv_sha256": "c8eaac97e19aab727f9048f5b7203a1008a7b899231aa0cb172e69a43a1b1b43",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-korean.tsv",
+          "baseline_page_count_mismatch": false
+        },
         {
           "key": "nested-height-cache",
           "source_prs": [
@@ -883,9 +1134,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/nested-height-cache.tsv",
           "baseline_tsv_sha256": "13c12d8e8b4a78a34ea92cd2994a6f414703faac0e0be68e33dfd2f76755fde1",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/nested-height-cache.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
@@ -902,9 +1151,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
           "baseline_tsv_sha256": "04c784feff98ff035da5dfee317b2961acea81bee54524615fc5abac5048a8be",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8271-tac_picture_topandbottom_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
@@ -921,9 +1168,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
           "baseline_tsv_sha256": "32f8399593cf576d8b7a7f6f941c392fd4cfaf78e4a4599eb7b5068516d095e5",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8271-tac_picture_behindtext_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8167-tac_rectangle_inline",
@@ -940,9 +1185,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8167-tac_rectangle_inline.tsv",
           "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8167-tac_rectangle_inline.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8167-tac_textbox_inline",
@@ -959,9 +1202,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8167-tac_textbox_inline.tsv",
           "baseline_tsv_sha256": "76292db165fc1a04b17dbbd1b6444ba8cf19f40aeff5fc42900007225280ac3b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8167-tac_textbox_inline.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
@@ -978,9 +1219,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
           "baseline_tsv_sha256": "097401b5d9f41f6bc3453c9221a807f7132ba85d7d4c7a3c497c56e61ae633fc",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
@@ -997,9 +1236,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
           "baseline_tsv_sha256": "9b5f73b9cb0ac3d728465649ba70d58bd55e56fc5bae210b844d96eccf0d54ed",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
@@ -1016,9 +1253,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
           "baseline_tsv_sha256": "f116305f0eaba3206ee33294c4a059ffc4e6d64d4be29924639591e3f8fd47c6",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
@@ -1035,9 +1270,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
           "baseline_tsv_sha256": "de3f91ea5fb5cdda049ceab9ee5667f8a0ede58524fc0249706c23dea14c7e5d",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/mcp2020-issue8168-tac_picture_with_topandbottom_textbox.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "hairline-sungeo",
@@ -1052,9 +1285,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hairline-sungeo.tsv",
           "baseline_tsv_sha256": "08f3bb9dc811f80766737ddc28c0f5ed234c96a298bef8bc46ca976d8d8ad3bf",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hairline-sungeo.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "hwpml-spec-2020",
@@ -1069,9 +1300,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hwpml-spec-2020.tsv",
           "baseline_tsv_sha256": "4262236578725bffdbcfb3884d18a251e03e89c5f045e8193c3120a96d7bdeec",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwpml-spec-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "hwp5-spec-official",
@@ -1086,9 +1315,231 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hwp5-spec-official.tsv",
           "baseline_tsv_sha256": "f1c8994056afd4272c5b70c0cb28e00d80a5559bb75ef2a045e96b7bd5a23611",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hwp5-spec-official.tsv",
-          "baseline_page_count_mismatch": true,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": true
+        },
+        {
+          "key": "fiscal-anchor",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 4,
+          "input": "/home/tsjang/rhwp/samples/issue6312/fiscal_trend_float_table_anchor.hwpx",
+          "input_sha256": "aa804ca85dba392fad80dd78e3b61e668771984720a0a321a0c0ed694233a918",
+          "pdf": "/home/tsjang/rhwp/pdf/issue6312/fiscal-trend-float-table-anchor-2020.pdf",
+          "pdf_sha256": "f99cf3992af5c3ae67e8c55b763ac9aa1cef95d164d60eeb73db190cc8120f3f",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/fiscal-anchor.tsv",
+          "baseline_tsv_sha256": "39ca4913a0b316925381a7d2a99865193f3d655ae1725638ce701d016419cfcc",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/fiscal-anchor.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-false",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false.hwp",
+          "input_sha256": "8647f8ca68776fd1a2e640e69a5a8e428c6cb287ba17b2cb883fcce5efae20a8",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-false-print-2020.pdf",
+          "pdf_sha256": "0ea824cccc05c0dbab4edbddbf5df407481cb554e85d6e909d21d59702b5d7c9",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-normalized-quarter-reflow-false.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-normalized-quarter-reflow-true",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true.hwp",
+          "input_sha256": "a7188cf5dd388df0c930224178a3cba44715cd07ccdccde5c8ebcde7cbfa0c3f",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/normalized-quarter-reflow-true-print-2020.pdf",
+          "pdf_sha256": "ee84d81a4b3889da9658b5ee0936c8f726f30897ea9a63c9564408a2c427e6b4",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_tsv_sha256": "d7a9050bedbc4bc983dc60939c17690640f084a45a49873be522c829dd631f68",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-normalized-quarter-reflow-true.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-authored-break-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls.hwp",
+          "input_sha256": "c7d856b48d19cabb51e50b0befdf2fbc67a903a633038b7084dc6c2113177b93",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-authored-break-no-ls-print-2020.pdf",
+          "pdf_sha256": "9b8037d88922205acf7459e6e4a44a8535894923c3e75aed06b672bb0bb6ed1c",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-authored-break-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-center-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls.hwp",
+          "input_sha256": "48f55c0d01011d3580f2f1fdef2d565077ffa1e66c7aaddfca10761dd43dd297",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-center-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "0e8536e76112d9439cb9c50418ad5918ba88310ab0630c2745b64a677dfd159f",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-column-transition-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls.hwp",
+          "input_sha256": "29745472fdb513c8d4d1a7a6f1a22a56580acd9b06b6620ed7bed7d0b3000c32",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-column-transition-no-ls-print-2020.pdf",
+          "pdf_sha256": "d9dcf28fe3b5ee63ff05880f44e2d5eda3200c40f008981aa2d702acd1059e23",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-column-transition-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls.hwp",
+          "input_sha256": "8db7c5325b0e1676c29190d55110465453203be310de435492a29d6522835ad6",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-center-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "a2a1178aea825b6e2e734a43b18b35cd83f53d650ef28491a9ba03ddf146ea4f",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-mixed-center-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls.hwp",
+          "input_sha256": "8478f28ec6bfbeb85f4d5ed3947b3063380549ec956a5fbe7fc5559aabd0dd7e",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-mixed-end-picture-no-ls-print-2020.pdf",
+          "pdf_sha256": "1a37e74b889946e8ceeff9fd3cf7200d356fe2af6401c93634879a9208f3bb3e",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-mixed-end-picture-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls.hwp",
+          "input_sha256": "16a916b8c79e055f26d2033f7104c2cb39487bf21993356b805ad8616ac7cebb",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-outer-margin-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "6fab8b80a40cf81355adc11a923b777f7515977a25a7963b3296a00ba6118f50",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-outer-margin-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls.hwp",
+          "input_sha256": "6e0073478832e25398466ad001c1566b626ca0c49634184135857d88ef0f8870",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-relative-font-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "109ed14cbc38ee7e9604e64066d84261bd34806077d9f5ebee1510c1936834be",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-relative-font-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-same-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls.hwp",
+          "input_sha256": "aeee538f8d361f81bb7b356ab662c453f13f67a4e2be4c2af911eabd16ea1d12",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-same-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "1ad87bdcb0265492849d495f7a539c37aec00b42e61940023ade8b88c164dad9",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-same-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls.hwp",
+          "input_sha256": "07ebb414f77d99c4b1a609e31f79904e95cedf4fe21f315cf6760007a8aa3c38",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-boundary-no-ls-print-2020.pdf",
+          "pdf_sha256": "10eab539ec29e8efd87d993e820fcc5335974aad5075042709fe733f2b922b96",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-tail-gap-boundary-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls.hwp",
+          "input_sha256": "4faca24711f2dcd84dc22b3047dfb56911d70c952789978071a8b898facc2747",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-tail-gap-only-fit-no-ls-print-2020.pdf",
+          "pdf_sha256": "71728ac7e179fd1f850a348d951b5fd1c227ee4a8c74219a26646b5bdfa1d155",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-tail-gap-only-fit-no-ls.tsv",
+          "baseline_page_count_mismatch": false
+        },
+        {
+          "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+          "source_prs": [
+            8206,
+            8283
+          ],
+          "pages": 2,
+          "input": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls.hwp",
+          "input_sha256": "52af34ce881875d302b604010f4a67ca51b2f85386a40e4f68e4714836064f1c",
+          "pdf": "/home/tsjang/rhwp/tests/fixtures/issue_7642/no-ls/picture-flow-wrapped-row-no-ls-print-2020.pdf",
+          "pdf_sha256": "880e9aef5665b4a46c0418009a246f8a095bed2151ceaaeddfce1eb960ac39cb",
+          "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_tsv_sha256": "888e36110d95d3e030cb550c68ce509614b6865ab466222d207b01234183ba5c",
+          "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/picture-countercase-picture-flow-wrapped-row-no-ls.tsv",
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "cellnotes_plain_N2_L7",
@@ -1103,9 +1554,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cellnotes_plain_N2_L7.tsv",
           "baseline_tsv_sha256": "2c85cc8e5e5a75b7a1551861d9fda34dcb335e9b3968fa49e4efe7bffff63262",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cellnotes_plain_N2_L7.tsv",
-          "baseline_page_count_mismatch": true,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": true
         },
         {
           "key": "cellnotes_span_N2",
@@ -1120,9 +1569,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cellnotes_span_N2.tsv",
           "baseline_tsv_sha256": "d05cc0f3e3c342f8eed3b2ccd10cbc2fb99c8a0833255d63db38ba0cca311fd9",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cellnotes_span_N2.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "r110_cellnotes_span_N2",
@@ -1137,9 +1584,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/r110_cellnotes_span_N2.tsv",
           "baseline_tsv_sha256": "759ab6cfe75c80d65c765cb34cda9501523869d65c098226f044589ac58d8655",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/r110_cellnotes_span_N2.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_F02",
@@ -1154,9 +1599,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_F02.tsv",
           "baseline_tsv_sha256": "78e02f698076384c24fc0c45deb8f22ba4fc5f1be5c6631b11640589d6e9eb91",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_F02.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_h6630_F02",
@@ -1171,9 +1614,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_h6630_F02.tsv",
           "baseline_tsv_sha256": "50142dc1b222c163c34dd78a98c0f3d3053945af413f555351f335a8d4db994f",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_h6630_F02.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_h6660_F02",
@@ -1188,9 +1629,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_h6660_F02.tsv",
           "baseline_tsv_sha256": "6247add40fe4e5c951214582509cdd488b1bd72a8ae840bc541540daf6422833",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_h6660_F02.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n0_l1_big_h6500_F01",
@@ -1205,9 +1644,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n0_l1_big_h6500_F01.tsv",
           "baseline_tsv_sha256": "6c816ba8fef7b57d88db55b73b51c536b24a46d56cc1bce6a7e5bda868b44a6c",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n0_l1_big_h6500_F01.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n1_F01",
@@ -1222,9 +1659,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n1_F01.tsv",
           "baseline_tsv_sha256": "bb976cd629e000ac3564b6734ccaec850a1b54fe765b4836c2e296d69fcd0da2",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n1_F01.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "trim_n1_F04",
@@ -1239,9 +1674,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/trim_n1_F04.tsv",
           "baseline_tsv_sha256": "3e68583d9db2d920dcfa37fad5630e9fa4d9ec33be1b2f94b4575a8617da7886",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/trim_n1_F04.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "cont_reset_F20_L70_N0",
@@ -1256,9 +1689,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cont_reset_F20_L70_N0.tsv",
           "baseline_tsv_sha256": "cbed64b20fd2fc9cfdbfc049794d90b6052a60077b7dbab0c43611d2760273b8",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cont_reset_F20_L70_N0.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "cont_reset_F20_L70_N4",
@@ -1273,9 +1704,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cont_reset_F20_L70_N4.tsv",
           "baseline_tsv_sha256": "9f91d18f391f7427c04dff4dd0167b37655f05d49cfd87518339af75194343cf",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cont_reset_F20_L70_N4.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "cont_reset_F20_L70_N6",
@@ -1290,9 +1719,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/cont_reset_F20_L70_N6.tsv",
           "baseline_tsv_sha256": "3b14531112927ceea8b01946bf09e1f3feaba5ab11dfa4686641f3bb598837d5",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/cont_reset_F20_L70_N6.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "caption-negative-offset",
@@ -1307,9 +1734,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/caption-negative-offset.tsv",
           "baseline_tsv_sha256": "a92176bccc4ff166e6fdb4cc944a8e8299d2fb8842c5fc4cb5a261c441f27a4c",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/caption-negative-offset.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "rowspan-band-fit",
@@ -1324,9 +1749,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rowspan-band-fit.tsv",
           "baseline_tsv_sha256": "df875b925f920096cee87be4783869465fd885b6781c87233637915fa15e6386",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rowspan-band-fit.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "captioned-host-2020",
@@ -1341,9 +1764,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/captioned-host-2020.tsv",
           "baseline_tsv_sha256": "0a4cd38bc03bc637f4d7dc283610f7acbfa9469d2c826a1bf363104e157dd73a",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/captioned-host-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "headerrow-2020",
@@ -1358,9 +1779,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/headerrow-2020.tsv",
           "baseline_tsv_sha256": "27d2c186b5812c529ed68d92ff2dfd4766039c446dcaac640c644b9c6bacf988",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/headerrow-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "reservefit-2020",
@@ -1375,9 +1794,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/reservefit-2020.tsv",
           "baseline_tsv_sha256": "3a275cdec033ac8f47901f79e2d76d0d091bd02f91218dcc2bde28c829f6a786",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/reservefit-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "rowfit-2020",
@@ -1392,9 +1809,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rowfit-2020.tsv",
           "baseline_tsv_sha256": "0370947d4b82de77b4024a36d0c868925334d3a95935008c29808b8e15333f6b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rowfit-2020.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "issue1937",
@@ -1409,9 +1824,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/issue1937.tsv",
           "baseline_tsv_sha256": "7bf0d059fc68bae6ec977c84a782dfc163cb41f83e156e1d698c482300cd86c3",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/issue1937.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "tac-shape-source",
@@ -1426,9 +1839,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/tac-shape-source.tsv",
           "baseline_tsv_sha256": "b39231bb405a089a53e67a6b06b788a781533d5671d2d2243ea7be086373cefd",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/tac-shape-source.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "equation-lim",
@@ -1443,9 +1854,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/equation-lim.tsv",
           "baseline_tsv_sha256": "c8bfdc6c4e3aa3493e5f14ca67361191066c37dd8807275c1765793f1727d8ad",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/equation-lim.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "endnotes-november",
@@ -1463,9 +1872,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/endnotes-november.tsv",
           "baseline_tsv_sha256": "6521e8149690a3474eedf904a01a07321731b0e478357a7ff789556bd5c5df60",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-november.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "endnotes-september",
@@ -1483,9 +1890,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/endnotes-september.tsv",
           "baseline_tsv_sha256": "ecd5a8d65953259d64e31be2e300de99f20cfb7b5eb81a464c01e8707727f75b",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-september.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "hairline-calendar",
@@ -1500,9 +1905,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/hairline-calendar.tsv",
           "baseline_tsv_sha256": "58b538d15014e6689de8178d3e84bd0307326425b550ec1e78ac1b8589392e3a",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/hairline-calendar.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "topbottom-original",
@@ -1518,9 +1921,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/topbottom-original.tsv",
           "baseline_tsv_sha256": "77564a9040197b1a5c3939b32dd0f415f278ea7206166db6379f1fa311ad1ce0",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/topbottom-original.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "rowspan-header-original",
@@ -1535,9 +1936,7 @@
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/rowspan-header-original.tsv",
           "baseline_tsv_sha256": "ccb13a6c09fe8d7794b919f6d8bf2b1381b5242573e0a510ccc31ad7b072c47f",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/rowspan-header-original.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "pdf-2010-fidelity",
@@ -1548,16 +1947,14 @@
             8237
           ],
           "pages": 16,
-          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/wasm-pdf-import/pdf-2010-fidelity.hwpx",
+          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v14-ui/wasm-pdf-import/pdf-2010-fidelity.hwpx",
           "input_sha256": "851144435ef1102cd4727f0635819973915d5718c130812c288cbc3e85fbe2dc",
           "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2010.pdf",
           "pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/pdf-2010-fidelity.tsv",
           "baseline_tsv_sha256": "c3bbbb768613603238dc14277c88030a5d99dc62bace3f1ff7d66d9b4ae0301a",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2010-fidelity.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "pdf-2020-fidelity",
@@ -1568,16 +1965,14 @@
             8237
           ],
           "pages": 15,
-          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/wasm-pdf-import/pdf-2020-fidelity.hwpx",
+          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v14-ui/wasm-pdf-import/pdf-2020-fidelity.hwpx",
           "input_sha256": "621ed0ce5dc918e5246a0e0f4ed853812bfe36009560a4b81fc4a25b64b58d8f",
           "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본-2020.pdf",
           "pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/pdf-2020-fidelity.tsv",
           "baseline_tsv_sha256": "4c0997133ecebdab427e0e39deee33af738b47338eb35b12ac16fb9202944224",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2020-fidelity.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         },
         {
           "key": "pdf-mac-fidelity",
@@ -1588,23 +1983,743 @@
             8237
           ],
           "pages": 15,
-          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/wasm-pdf-import/pdf-mac-fidelity.hwpx",
+          "input": "/home/tsjang/rhwp/output/pr-review/planet6897-20261026/v14-ui/wasm-pdf-import/pdf-mac-fidelity.hwpx",
           "input_sha256": "0b24eb722daed8821fd688fa7af1064172572cde0a79e21c729834465ee0929b",
           "pdf": "/home/tsjang/rhwp/samples/21_언어_기출_편집가능본.pdf",
           "pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
           "baseline_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/base/wasm/pdf-mac-fidelity.tsv",
           "baseline_tsv_sha256": "f73b98ea893a1e5c71ff2530e6d78742c49b4777c415e91a91b3dddfa9dfdb4d",
           "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-mac-fidelity.tsv",
-          "baseline_page_count_mismatch": false,
-          "actual_font_supply_equal": true,
-          "reference_pdf_equal": true
+          "baseline_page_count_mismatch": false
         }
       ]
     }
   },
   "page_delta_tsv": "mydocs/working/assets/review_integration_20261026/validation/base-head-page-deltas.tsv",
-  "page_delta_tsv_sha256": "abd7d5de37cecf08a36a6795230fe12e75885b84901339d3360982325c511c1f",
+  "page_delta_tsv_sha256": "4ccd19b9d85049a2405cc15eb6d52f4e072ac0cc35fb57fbf3b7bf8fa7603dc9",
   "result": "pass",
-  "all_82_base_head_font_supply_lists_equal": true,
-  "all_82_base_head_reference_pdf_hashes_equal": true
+  "paired_conditions_verified": [
+    {
+      "backend": "native",
+      "key": "fiscal-anchor",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-normalized-quarter-reflow-false",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-normalized-quarter-reflow-true",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-authored-break-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-column-transition-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-same-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "newsletter-korean",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "newsletter-chinese",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "onsemiro-hwp",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "onsemiro-hwpx",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "civil-form",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "nested-height-cache",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cellnotes_plain_N2_L7",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "r110_cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_h6630_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_h6660_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n0_l1_big_h6500_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n1_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "trim_n1_F04",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cont_reset_F20_L70_N0",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cont_reset_F20_L70_N4",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "cont_reset_F20_L70_N6",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "caption-negative-offset",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rowspan-band-fit",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "captioned-host-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "headerrow-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "reservefit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rowfit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8167-tac_rectangle_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8167-tac_textbox_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "issue1937",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hwp5-spec-official",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hwpml-spec-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "tac-shape-source",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "equation-lim",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "endnotes-november",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "endnotes-september",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hairline-calendar",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "hairline-sungeo",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "topbottom-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "rowspan-header-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "pdf-2010-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "pdf-2020-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "native",
+      "key": "pdf-mac-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "newsletter-chinese",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "civil-form",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "onsemiro-hwp",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "onsemiro-hwpx",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "newsletter-korean",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "nested-height-cache",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8271-tac_picture_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8271-tac_picture_behindtext_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8167-tac_rectangle_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8167-tac_textbox_inline",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_above",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-multiline_tac_picture_para_topandbottom_offset_below",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-tac_picture_with_page_relative_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mcp2020-issue8168-tac_picture_with_topandbottom_textbox",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hairline-sungeo",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hwpml-spec-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hwp5-spec-official",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "fiscal-anchor",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-normalized-quarter-reflow-false",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-normalized-quarter-reflow-true",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-authored-break-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-column-transition-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-mixed-center-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-mixed-end-picture-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-outer-margin-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-relative-font-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-same-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-tail-gap-boundary-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-tail-gap-only-fit-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "picture-countercase-picture-flow-wrapped-row-no-ls",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cellnotes_plain_N2_L7",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "r110_cellnotes_span_N2",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_h6630_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_h6660_F02",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n0_l1_big_h6500_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n1_F01",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "trim_n1_F04",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cont_reset_F20_L70_N0",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cont_reset_F20_L70_N4",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cont_reset_F20_L70_N6",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "caption-negative-offset",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rowspan-band-fit",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "captioned-host-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "headerrow-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "reservefit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rowfit-2020",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "issue1937",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "tac-shape-source",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "equation-lim",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "endnotes-november",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "endnotes-september",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "hairline-calendar",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "topbottom-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "rowspan-header-original",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "pdf-2010-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "pdf-2020-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    },
+    {
+      "backend": "wasm",
+      "key": "pdf-mac-fidelity",
+      "font_supply_equal": true,
+      "reference_pdf_equal": true
+    }
+  ],
+  "all_120_base_head_font_supply_lists_equal": true,
+  "all_120_base_head_reference_pdf_hashes_equal": true
 }
