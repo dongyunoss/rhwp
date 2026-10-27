@@ -514,3 +514,9 @@
 - 기존 63개 조합에 incoming #8116의 공개 HWP 4개·15쪽을 추가해 Native/fresh WASM 각각 67개·956쪽을 확인한다. 새 baseline은 editable 3모드를 제외한 64개·910쪽이며 같은 PDF·글꼴로 대조한다.
 - #8116의 4개 기준 PDF는 원 기여자가 같은 HWP를 한컴 웹한글기안기에서 인쇄한 원본이며 PDFium 메타데이터를 가진다. 새 MCP Office Print로 부르거나 원 출처를 바꾸지 않는다. 새 base 원본과 PDF는 그대로 보존한다.
 - 기본 작업공간의 현재 개선을 유지하면서 다른 source의 producer를 고정하기 위해 ignored `output/pr-review/planet6897-20261026/base-8116`에 detached baseline worktree를 사용한다. 공용 Cargo target은 기본 작업공간의 `target/pr-review` 하나이며 모든 Cargo 호출은 순차다.
+
+### 리베이스 후 Native 보존 확인
+
+- 현재 Native 67개·956쪽이 전부90% 이상이다. 새 base 64개·910쪽의 같은 PDF·글꼴을 대조해 2%p 이상 하락은 0쪽, 양의 하락 0쪽이다.
+- 기존63개·941쪽 중 941쪽의 실제 화소가 리베이스 전과 같다. 새4문서의 표·제목 경계는 독립 Print와 직접 읽었다. [Native 비교](assets/review_integration_20261026/validation/post-rebase-8116/native-comparison.json)와 [판독](assets/review_integration_20261026/validation/post-rebase-8116/native-direct-reading.json)을 연결한다.
+- fresh WASM과 리베이스 후 전체 Rust 검증은 아직 남아 있다.
