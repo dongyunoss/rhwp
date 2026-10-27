@@ -1,3 +1,8 @@
+> #8319 기준과 후보 `1c885d311`을 같은 글꼴 조건에서 비교한 Native 중간 결과는
+> 197입력·256쪽, 쪽 누락 0, 0.1%p 이상 하락 0이다.
+> [중간 결과](incoming-matched-native-checkpoint.json). 이후 소스 변경에 대한
+> 최종 보존 검증은 별도로 필요하다.
+
 > 보정 전 WASM 67입력·956쪽 비교는 Chromium 기동 시간초과 1건을 같은 조건에서
 > 재실행해 완성했다. 기존 TSV 대비 0.1%p 이상 하락은 18쪽이며 실패한 시각
 > 게이트도 포함한다. [중간 결과](original-prior-os-wasm-checkpoint.json).
