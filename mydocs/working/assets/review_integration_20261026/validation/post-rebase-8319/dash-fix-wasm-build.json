@@ -1,5 +1,5 @@
 {
-  "status": "pending_dependency_audit",
+  "status": "invalid_stale_chart_dependency",
   "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
   "source_unchanged_to_head": true,
   "command": [
@@ -16,5 +16,5 @@
   "js_sha256": "a48acb46a157950724859baea436fda8d5d3b7c9a0fd10665455c952bf4c2434",
   "webassembly_compile": "pass",
   "note": "최적화 산출물. 과거 빌드의 codegen-units=16 조건과 구분하며 전쪽 검증은 진행 중.",
-  "invalidation_note": "공유 target에서 이전 worktree 산출물을 재사용했을 가능성이 있어 차트 대조로 실제 WASM 의존성을 확인 중이다."
+  "invalidation_note": "현재 WASM의 차트 출력은 87.98250%이고 #8319 기준은 99.66483%다. 빌드 target의 차트 의존성 기록이 이전 worktree 소스에 해당함을 확인했으므로 현재 소스의 통과 증거로 인정하지 않는다."
 }
