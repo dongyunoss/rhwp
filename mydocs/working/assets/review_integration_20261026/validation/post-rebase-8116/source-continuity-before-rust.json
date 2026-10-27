@@ -1,0 +1,9 @@
+{
+  "production_native_head": "ae8c413f84a01a4cc4591357056183709f21b150",
+  "wasm_build_head": "de9602f1b3db4df2c0fd953f33b5af1e3f9a6466",
+  "source_paths": 1828,
+  "native_and_wasm_source_hashes_match": true,
+  "new_base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "full_rust_status": "pending",
+  "actual_fresh_wasm_browser_and_all_page_comparison": "pending"
+}

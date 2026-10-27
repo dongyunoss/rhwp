@@ -520,3 +520,8 @@
 - 현재 Native 67개·956쪽이 전부90% 이상이다. 새 base 64개·910쪽의 같은 PDF·글꼴을 대조해 2%p 이상 하락은 0쪽, 양의 하락 0쪽이다.
 - 기존63개·941쪽 중 941쪽의 실제 화소가 리베이스 전과 같다. 새4문서의 표·제목 경계는 독립 Print와 직접 읽었다. [Native 비교](assets/review_integration_20261026/validation/post-rebase-8116/native-comparison.json)와 [판독](assets/review_integration_20261026/validation/post-rebase-8116/native-direct-reading.json)을 연결한다.
 - fresh WASM과 리베이스 후 전체 Rust 검증은 아직 남아 있다.
+
+### 리베이스 뒤 최적화 WASM 빌드 고정
+
+- 현재 source의 locked release WASM·wasm-opt가 완료됐고 Native와 source snapshot이 같다. pkg/public 해시와 WebAssembly.compile을 확인했다.
+- 이 증거를 커밋한 clean head에서 lint·새 base/충돌 경로 focused·전체 nextest·Native 필수 검사를 순차 수행한다. 실제 fresh WASM 브라우저와67개 전쪽도 별도로 확인한다. 모두 완료 전 PR을 제출하지 않는다.
