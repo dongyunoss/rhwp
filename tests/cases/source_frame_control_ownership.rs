@@ -456,3 +456,76 @@ fn horizontal_fragments_share_one_centered_source_frame() {
         "선택한 원본 프레임의 위·아래 여유는 같다",
     );
 }
+
+#[test]
+fn repeated_hyphen_ink_matches_independent_print_rows() {
+    // Hancom 2020 Print를 96dpi로 래스터화했을 때 검정 선분이 차지한 행의 중심.
+    // #3308 8쪽: pdf/task3307/issue3307_outline_number-2020.pdf, y=352.5px.
+    // issue2007 3쪽: pdf/review-integration-20261026/
+    // issue2007_nested_cell_pagination_42065-2020.pdf, y=805.5px.
+    for (input, page, x, print_ink_y) in [
+        (
+            "samples/task3307/issue3307_outline_number.hwpx",
+            7,
+            423.04,
+            352.5,
+        ),
+        (
+            "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+            2,
+            427.92,
+            805.5,
+        ),
+    ] {
+        let tmp = ExportDir::new();
+        let binary = std::env::var_os("CARGO_BIN_EXE_rhwp")
+            .unwrap_or_else(|| env!("CARGO_BIN_EXE_rhwp").into());
+        let output = Command::new(binary)
+            .arg("export-svg")
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(input))
+            .args(["--profile", "print", "--compat", "2022", "-p"])
+            .arg(page.to_string())
+            .arg("-o")
+            .arg(&tmp.0)
+            .output()
+            .unwrap();
+        assert!(output.status.success(), "SVG 출력 실패: {output:?}");
+        let svg_path = std::fs::read_dir(&tmp.0)
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .find(|path| path.extension().is_some_and(|extension| extension == "svg"))
+            .expect("선택한 인쇄 쪽 SVG");
+        let svg = std::fs::read_to_string(svg_path).unwrap();
+        let doc = roxmltree::Document::parse(&svg).unwrap();
+        let lines: Vec<_> = doc
+            .descendants()
+            .filter(|node| node.is_element() && node.tag_name().name() == "line")
+            .filter_map(|node| {
+                let x1 = node.attribute("x1")?.parse::<f64>().ok()?;
+                let x2 = node.attribute("x2")?.parse::<f64>().ok()?;
+                let y = node.attribute("y1")?.parse::<f64>().ok()?;
+                if (x1 - x).abs() > 1.0
+                    || !(6.0..=8.0).contains(&(x2 - x1))
+                    || (y - print_ink_y).abs() > 5.0
+                {
+                    return None;
+                }
+                let transform = node.parent()?.attribute("transform")?;
+                let matrix = transform.strip_prefix("matrix(")?.strip_suffix(')')?;
+                let values: Vec<f64> = matrix
+                    .split(|c: char| c.is_ascii_whitespace() || c == ',')
+                    .filter(|value| !value.is_empty())
+                    .map(str::parse)
+                    .collect::<Result<_, _>>()
+                    .ok()?;
+                (values.len() == 6).then(|| values[1] * x1 + values[3] * y + values[5])
+            })
+            .collect();
+        assert_eq!(lines.len(), 1, "인쇄된 연속 하이픈의 첫 선분: {input}");
+        assert!(
+            (lines[0] - print_ink_y).abs() <= 0.8,
+            "한컴 Print의 선분 행과 다름: {input}: {} vs {print_ink_y}",
+            lines[0]
+        );
+    }
+}
