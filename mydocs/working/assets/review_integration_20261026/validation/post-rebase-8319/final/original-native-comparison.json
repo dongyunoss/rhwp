@@ -1,5 +1,5 @@
 {
-  "status": "pass",
+  "status": "invalid_stale_chart_dependency",
   "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
   "native_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
   "font_condition": "51 ordered historical font programs and prior OS fallback selection",
@@ -881,5 +881,6 @@
     }
   ],
   "source_receipt_sha256": "89a9754e03bfd992eb8751272a8c47323cf617c9501251849a5091fa2530e669",
-  "note": "Native 전체 결과만 통과. WASM과 전체 테스트는 별도 완료 필요."
+  "note": "Native 전체 결과만 통과. WASM과 전체 테스트는 별도 완료 필요.",
+  "invalidation_note": "Native 실행 파일이 공유 target의 이전 worktree 차트 라이브러리를 재사용한 것이 확인되어 현재 소스 최종 검증으로 인정하지 않는다. 67건을 재빌드 후 재검증한다."
 }

@@ -76,5 +76,7 @@
       "candidate_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final-issue2007-native-interim.tsv",
       "candidate_sha256": "2d60f6233f0166f1873b1ff15f3ca38e04d452964be78e708fc390cff98552d2"
     }
-  ]
+  ],
+  "producer_status": "invalid_stale_chart_dependency",
+  "invalidation_note": "Native 실행 파일의 이전 worktree 차트 의존성 확인. 이 쪽별 측정도 현재 소스의 최종 증거로 쓰지 않는다."
 }

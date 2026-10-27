@@ -1,5 +1,5 @@
 {
-  "status": "pass",
+  "status": "invalid_native_producer",
   "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
   "native_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
   "wasm_binary_sha256": "3c9fb1cd813e74638fc4e23051879a75622e51f83be3dd6f2d9fad1dc0c6ecdc",
@@ -4828,5 +4828,6 @@
       "reference_unmatched": 0,
       "raw100": true
     }
-  ]
+  ],
+  "invalidation_note": "기록된 384쪽 실제 출력은 100%이나 Native 실행 파일에 이전 worktree 차트 라이브러리가 포함됐다. 현재 소스의 최종 검증으로 인정하지 않고 재빌드 후 Native/WASM 모두 재검증한다."
 }

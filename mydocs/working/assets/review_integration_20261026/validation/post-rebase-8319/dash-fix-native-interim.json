@@ -1,5 +1,5 @@
 {
-  "status": "native_interim_pass",
+  "status": "invalid_stale_chart_dependency",
   "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
   "native_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
   "font_condition": "이전 시스템 대체 선택과 동일한 51개 글꼴",
@@ -27,5 +27,6 @@
       "after_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/issue2007-all-after-native.tsv",
       "after_sha256": "be160b3609aeaa27552bc0416e7f852300c16b7dfa625a77d1c332a57813ffc6"
     }
-  ]
+  ],
+  "invalidation_note": "이 Native 실행 파일은 이전 차트 라이브러리를 포함하므로 현재 소스의 최종 결과가 아니다."
 }
