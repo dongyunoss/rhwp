@@ -937,8 +937,7 @@ impl TypesetState {
                     crate::renderer::float_placement::ParagraphFloatFlow::ComputedEmptyHost { .. }
                 )
             {
-                self.data.current_height =
-                    placement.paragraph_end(self.data.current_height, spacing_after);
+                data.current_height = placement.paragraph_end(data.current_height, spacing_after);
             }
             if owner == para_idx
                 && matches!(
