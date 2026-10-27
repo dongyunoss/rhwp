@@ -6025,13 +6025,10 @@ impl LayoutEngine {
         } else {
             None
         };
-        let recursive_overlay_frame = self.reflow_recursive_overlay_opens_outer_frame(
-            table,
-            styles,
-            start_row,
-            start_cut,
-            start_cut_is_block,
-        );
+        // 표 조각의 바깥 상자는 현재 행의 저장/재조판 여부와 독립적으로
+        // 문단을 따라가는 overlay의 물리 프레임에 속한다. 예산과 같은 계약이다.
+        let recursive_overlay_frame =
+            crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table);
         // [#8105] 쪽 위에서 시작하는 첫 조각이 문단 기준 양수 오프셋을 그대로 쓰면, 표 위끝은 문단
         // 윗변 + 오프셋 + 바깥 위 여백이다. 예산은 첫 조각 host_before 로 그 여백을 이미 예약한다
         // (`host_spacing.rs` 자리차지 표 before = outer_top). 표 여럿을 담은 빈 앵커(1342000 48쪽

@@ -144,15 +144,10 @@ impl TypesetEngine {
         } else {
             (host_before_overhead, fragment_outer_bottom_overhead)
         };
-        let recursive_overlay_frame = prepared
-            .layout_engine
-            .reflow_recursive_overlay_opens_outer_frame(
-                table,
-                input.source.styles,
-                cursor_row,
-                start_cut,
-                input.start.start_cut_is_block,
-            );
+        // 물리 조각의 바깥 여백은 내용 유닛의 주소 형식으로 다시 판정하지 않는다.
+        // 실제 배치와 같은 문단-following overlay 프레임 계약을 소비한다.
+        let recursive_overlay_frame =
+            crate::renderer::float_placement::paragraph_following_overlay_rowbreak_frame(table);
         let (host_before_overhead, fragment_outer_bottom_overhead) = if recursive_overlay_frame {
             (
                 host_before_overhead + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
