@@ -193,3 +193,11 @@ Native/fresh TSV 원문 및 실제 판독한 대표 PNG를 정식 경로에 보�
 따라서 그 시각 검증과 Studio 검증을 이어 가며, 새 검사까지 포함한 Rust 검증을 병행한다.
 Cargo 계열은 한 작업만 실행하고 8 jobs·테스트 12 threads를 유지한다. 실제 전쪽 gate와
 전체 Rust·Skia·문서·Studio가 끝나기 전에는 PR 준비 완료로 판정하지 않는다.
+
+### 새 검사 컴파일 오류 보정
+
+`b6b927fc8a`의 workspace Clippy는 새 검사에서 사용한 SHA-256의 `LowerHex` 변환이
+`sha2 0.11`의 반환 타입에 구현되지 않아 exit 101로 끝났다. 실제 Rust 두 함수는
+아직 실행되지 않았다. 기존 `ooxml_chart_print_frame`과 같은 바이트별 두 자리 16진수
+변환으로 수정했다. 원본·PDF·좌표·허용치와 production은 변경하지 않았다. 이 실패를
+보존하고 수정한 검사로 lint 및 필수 회귀를 다시 실행한다.

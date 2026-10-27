@@ -86,10 +86,11 @@ fn oracle(root: &Path, family: &str) -> Value {
     for kind in ["input", "pdf"] {
         let bytes = std::fs::read(root.join(case[kind].as_str().unwrap())).unwrap();
         let key = format!("{kind}_sha256");
-        assert_eq!(
-            format!("{:x}", Sha256::digest(bytes)),
-            case[key.as_str()].as_str().unwrap()
-        );
+        let digest: String = Sha256::digest(bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        assert_eq!(digest, case[key.as_str()].as_str().unwrap());
     }
     for backend in ["native", "wasm"] {
         assert!(case["qualification"][backend]["raw_min"].as_f64().unwrap() >= 98.0);
