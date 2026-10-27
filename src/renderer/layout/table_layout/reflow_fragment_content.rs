@@ -150,6 +150,17 @@ impl LayoutEngine {
         if cell.text_direction != 0 {
             return None;
         }
+        // 자식의 행/유닛 커서가 없는 혼합 스트림은 자체 물리 예약을 이미
+        // 발행한다. 그 스트림은 기존 공통 컷 장부가 점유와 수용량을 함께
+        // 소비하게 한다. 행 컷으로 재구성하거나 paint용 표시 높이만으로
+        // 대신하면 시작 띠의 예약이 사라져 다음 쪽의 소스 줄까지 수용한다.
+        if units
+            .get(start..end)?
+            .iter()
+            .any(|unit| unit.mixed_nested_fragment && !unit.mixed_nested_recursive)
+        {
+            return None;
+        }
         let flow = self.reflow_block_cell_flow_in_cell(cell, table, styles)?;
         if flow
             .origins
@@ -185,22 +196,6 @@ impl LayoutEngine {
             if own.is_empty() {
                 // 현재 컷이 소비하지 않은 다음 호스트의 줄은 예약하지 않는다.
                 // 그 줄은 호스트의 첫 소유 유닛과 함께 다음 조각에서 한 번 소비한다.
-                continue;
-            }
-            // 혼합 자식의 유닛도 실제 배치가 소비하는 같은 소스 컷으로 잰다.
-            // nested_row가 없는 혼합 투영을 통째 표로 해석하면 한 줄 컷에
-            // 전체 자식 높이를 예약해 정상 분할을 과대 크기 강제 배치로 바꾼다.
-            if own.iter().any(|unit| unit.mixed_nested_fragment) {
-                let split =
-                    self.mixed_nested_split_from_cut(cell, table, styles, start, end, pi)?;
-                height += match purpose {
-                    CutHeight::Capacity => split.flow_height,
-                    CutHeight::Occupied => split.visible_height,
-                } + own
-                    .iter()
-                    .filter(|unit| !unit.mixed_nested_fragment)
-                    .map(|unit| unit.height)
-                    .sum::<f64>();
                 continue;
             }
             let children: Vec<_> = para
