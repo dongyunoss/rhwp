@@ -525,3 +525,15 @@
 
 - 현재 source의 locked release WASM·wasm-opt가 완료됐고 Native와 source snapshot이 같다. pkg/public 해시와 WebAssembly.compile을 확인했다.
 - 이 증거를 커밋한 clean head에서 lint·새 base/충돌 경로 focused·전체 nextest·Native 필수 검사를 순차 수행한다. 실제 fresh WASM 브라우저와67개 전쪽도 별도로 확인한다. 모두 완료 전 PR을 제출하지 않는다.
+
+### 공유 target의 잘못된 WASM 재사용 발견과 재검증
+
+- 첫 리베이스 후 후보 WASM은 cargo 단계가 0.61초에 끝났고 새 기준과 바이너리 SHA가 같았다. 실제 중국어 원본 첫 쪽도 82.98138%로 보정 전 출력이어서, 이 후보 producer와 브라우저·전쪽 결과를 무효로 분리했다. 앞의 빌드 종료 기록은 현재 소스의 유효한 WASM 검증으로 사용하지 않는다.
+- 기준 worktree 빌드 뒤 현재 checkout의 이전 파일 시각 때문에 공유 target의 기준 산출물이 재사용된 문제다. 소스 내용과 target을 삭제하지 않고 현재 Rust 소스의 mtime을 갱신했다. `/home/tsjang/rhwp`의 본체·내부 crate가 실제로 재컴파일되는 것을 확인했다.
+- 잘못된 후보의 출력과 부분 검사 원장은 임시 경로에 분리했다. 전체 nextest 시작 전 후속 controller를 중단했고 실행 중이던 Cargo 작업은 종료까지 기다렸다. 실제 빌드·검사 실패와 의도적 무효화를 구분한다.
+- 새 최적화 WASM이 기준 바이너리와 다르고, 실제 중국어 출력이 90% 이상으로 복원되는지 확인한 뒤 clean head에서 필수 Rust 검사를 다시 진행한다. Native의 고정 producer·67개/956쪽 결과와 올바른 기준 producer는 유지한다. 최종 전쪽 WASM·브라우저 결과는 재빌드한 패키지로 새로 산출한다.
+
+### 리베이스 뒤 최적화 WASM 빌드 고정
+
+- 현재 source의 locked release WASM·wasm-opt가 완료됐고 Native와 source snapshot이 같다. pkg/public 해시와 WebAssembly.compile을 확인했다.
+- 이 증거를 커밋한 clean head에서 lint·새 base/충돌 경로 focused·전체 nextest·Native 필수 검사를 순차 수행한다. 실제 fresh WASM 브라우저와67개 전쪽도 별도로 확인한다. 모두 완료 전 PR을 제출하지 않는다.
