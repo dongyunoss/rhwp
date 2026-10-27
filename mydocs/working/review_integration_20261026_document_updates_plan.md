@@ -674,3 +674,5 @@ WASM 차트 대조에서도 같은 문제가 확인됐다. `incoming-124`의 새
 ### #8188 새 Native·WASM 전쪽 픽셀 확인
 
 차트 의존성을 재빌드한 Native 및 WASM으로 sample16 3개 문서를 각각 64쪽씩 다시 렌더링했다. 독립 Print PNG와의 양방향 반경 2px 정수 비교에서 384/384쪽의 미대응 픽셀이 0이다. 실제 PNG별 SHA-256과 입력·실행 신원은 [픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8319/final/sample16-pixel-contract.json)에 기록했다. 이는 #8188 범위의 확인이며 다른 기존 문서의 WASM 하락을 해결했다는 뜻은 아니다.
+
+중첩 셀 1쪽을 브라우저 글꼴 추적으로 확인한 결과 일반 환경에서는 시스템 HCR Dotum을 실제로 사용한다. 독립 PDF의 HCR Dotum CID 글꼴에서 확인한 256개 문자의 윤곽과 시스템·한컴 설치 글꼴의 윤곽은 모두 일치하고 힌팅 프로그램도 같다. 시스템 글꼴을 임의 제한하면 Noto Sans KR ExtraLight가 선택돼 점수가 올라가지만 같은 PDF 글꼴의 윤곽과 일치하지 않으므로 정답이나 최종 통과 근거로 사용하지 않는다. 이전 소스와 이전 글꼴 등록 도구를 함께 사용해도 98.35047%였으며 Chromium 155와 156에서 PNG가 같았다. 동일 글꼴의 과거 출력 차이는 계속 조사한다. [시스템 글꼴 조사](assets/review_integration_20261026/validation/post-rebase-8319/corrected-wasm-system-font-investigation.json)
