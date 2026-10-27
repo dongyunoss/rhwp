@@ -505,3 +505,12 @@
 
 - 전체 필수 로컬 검증을 완료한 뒤 fetch한 devel은 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`다. #8116의 저장 줄 없는 표·빈 host 배치가 새로 반영됐다.
 - 기존 검증 head `1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559`와 0bb 기준의 Native/WASM 전쪽·전체 회귀 결과를 먼저 고정한다. 새 base 위 리베이스와 양쪽 기능 보존 검증은 아직 남았으며 PR 제출 완료로 처리하지 않는다.
+
+## #8116 리베이스 뒤 기능 보존 검증
+
+- 새 base `faa885e8b54ffc7cdf4196cd43a3103f362499a2` 위로 118개 커밋을 리베이스했다. 이전 head는 `refs/codex/integration-20261026/pre-8116`에 보존했다.
+- `line_breaking.rs` 두 진입점의 한 충돌에서 새 글앞/글뒤 표·도형 수용과 기존 no-LineSeg 인라인 그림 수용을 모두 유지했다. [커밋별 대조](assets/review_integration_20261026/validation/rebase-8116-commit-map.json)에서 117개 patch 동일·1개 결합과 원 저자 보존을 확인했다.
+- 충돌이 있었으므로 이전 전체 회귀를 새 후보의 전체 성공으로 바꾸지 않는다. 공통 경로·새 base 기능을 함께 확인하고 새 후보의 필수 검증을 완료한다.
+- 기존 63개 조합에 incoming #8116의 공개 HWP 4개·15쪽을 추가해 Native/fresh WASM 각각 67개·956쪽을 확인한다. 새 baseline은 editable 3모드를 제외한 64개·910쪽이며 같은 PDF·글꼴로 대조한다.
+- #8116의 4개 기준 PDF는 원 기여자가 같은 HWP를 한컴 웹한글기안기에서 인쇄한 원본이며 PDFium 메타데이터를 가진다. 새 MCP Office Print로 부르거나 원 출처를 바꾸지 않는다. 새 base 원본과 PDF는 그대로 보존한다.
+- 기본 작업공간의 현재 개선을 유지하면서 다른 source의 producer를 고정하기 위해 ignored `output/pr-review/planet6897-20261026/base-8116`에 detached baseline worktree를 사용한다. 공용 Cargo target은 기본 작업공간의 `target/pr-review` 하나이며 모든 Cargo 호출은 순차다.
