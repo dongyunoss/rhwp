@@ -37,7 +37,16 @@ impl LayoutEngine {
             }
             let start = lo.max(run_start);
             let end = hi.min(run_end);
+            // 원본의 마지막 호스트 줄이 자식 종료를 인증하면 그 줄의 원점은
+            // 종료 자식 상자와 위·아래 바깥여백을 이미 소유한다. 이어받기라는
+            // 이유로 위 여백을 다시 예약하면 부모 끝과 뒤 본문만 아래로 밀린다.
+            // 별도 후행 공백 줄은 같은 종료 프레임 인증이 아니다.
+            let closes_stored_host_frame = end == run_end
+                && para_index + 1 == cell.paragraphs.len()
+                && units[run_end - 1].nested_host_closing_line_height > 0.0
+                && !units[run_end - 1].host_trailing_spacing_charged;
             if start < end
+                && !closes_stored_host_frame
                 && !cell.dirty_flag
                 && units[run_start..run_end]
                     .iter()
