@@ -124,9 +124,19 @@ pub struct InlineFlowPlan {
 impl InlineFlowPlan {
     /// 확정한 행의 물리 하단. 다음 줄 전진과 문단 뒤 여백을 구분한다.
     pub(crate) fn occupied_end(&self) -> f64 {
+        // 별도 text_rows 소유자는 기존 측정 끝을 유지한다. 공통 inline
+        // 행이 있을 때만 그 행 상자와 부동 개체의 실제 점유를 소비한다.
+        if self.rows.is_empty() {
+            return self.end;
+        }
         self.rows
             .iter()
             .map(|row| row.y + row.height)
+            .chain(
+                self.floating_shapes
+                    .iter()
+                    .map(|shape| shape.placement.occupied_bottom),
+            )
             .fold(self.start, f64::max)
     }
 

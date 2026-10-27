@@ -424,3 +424,37 @@
   [수정 전 실패·수정 후 통과와 실제 명령](assets/review_integration_20261026/validation/v12-focused-proofs.json)을 보존한다.
 - 다음은 이 code/test head의 필수 Rust lint·전체 nextest·Native 공식 검사다. 최종 최적화 WASM
   전쪽·실제 UI와 모든 로컬 필수 게이트를 완료한 뒤 원 PR별 검토 문서와 통합 PR을 작성한다.
+
+### 전체 검사 후반의 그림 줄 마지막 간격 수용 오류 조사
+
+- `59c7fef16`의 실제 전체 nextest는 11,622개 실행, 11,619 PASS·3 FAIL·기존 skip 45개로 끝났다.
+  중단·미실행은 없다. [실제 실패 기록](assets/review_integration_20261026/validation/rust-before-inline-picture-fit-correction.json)과
+  [전체 로그](assets/review_integration_20261026/validation/logs/v12-final-nextest-all.log)를 보존한다.
+- 실패는 #6312 공개 슬라이스의 기준 4쪽이 5쪽으로 늘어난 결과다. 첫 본문 원점·머리 표 높이는
+  유지되며, 저장 LineSeg가 없는 14번 그림 문단만 첫 쪽 꼬리에서 별도 쪽으로 넘어간다.
+  원본 XML의 해당 문단은 빈 글자가 아니라 글자처럼 그림 높이 3805HU를 소유한다.
+- 원 #6312, 저장 축 보정 `cd9412d7e`, #7382의 `c685efb11`·`e12d99b91`과 독립 2020 Print 4쪽을
+  대조했다. 고정 base CLI는 4쪽이며 보정 v7·v9·v10·v12는 모두 5쪽이다.
+- 저장 줄 없는 그림의 원 도입 `946007823`과 이번 `a2129e3f7`의 합성 줄 재조판 연결을 추적했다.
+  `inline_flow::plan → finish_row의 물리 row 끝 / next_row_top → typeset_inline_flow의 fit →
+  commit_inline_flow의 흐름 끝 → layout inline paint`를 대조했다. 일반 경로는 마지막 줄 간격과
+  문단 뒤 간격을 포함한 `plan.end`로 fit을 판단하지만 표 경로는 이미 `plan.occupied_end()`를
+  소비한다. 마지막 줄 상자가 들어가도 다음 줄 전진 때문에 그림을 새 쪽으로 옮기는 불일치다.
+- 같은 공통 plan의 물리 점유 끝을 일반 fit에도 연결한다. 흐름 전진 `end`는 유지하고,
+  실제 부동 도형 점유와 별도 text_rows 소유 경로를 빠뜨리지 않는다. 문서별 조건·좌표 clamp·
+  4쪽 기대값이나 허용치 변경은 추가하지 않는다. 기존 #6312와 no-LS 그림의 마지막 간격/이월
+  대조군, 독립 전쪽 Native·fresh WASM과 필수 게이트를 다시 확인한다. 아직 보정 완료가 아니다.
+
+- 보정 후 실제 CLI가 기준과 같은 4쪽을 내보냈다. #6312 원본 6개, 기존 no-LS 그림 관계
+  4개, 공통 프레임 7개가 모두 PASS다. [실제 17개 집중 검사](assets/review_integration_20261026/validation/v13-focused.json)를 연결한다.
+  기존 4쪽·좌표·간격 관계의 기대값과 허용치는 변경하지 않았다.
+- 재정동향 Native 전쪽 raw는 99.99813/99.94031/99.87901/99.97917%다. 1–3쪽의
+  [직접 비교](assets/review_integration_20261026/validation/images/stage-v13/fiscal-p003-native-compare.png)에서
+  첫 쪽 끝 그림, 후속 표와 본문 소유, 빈 줄 뒤의 채무·국고채 문단이 복원됐음을 확인했다.
+- 추가 정상 대조 13개는 독립 Print 26쪽이며 Native·WASM 기준 실행이 모두 통과했다.
+  [14개 입력·30쪽씩의 기준](assets/review_integration_20261026/validation/v13-additional-base-review.json)과
+  [기존 독립 PDF의 바이트 출처](assets/review_integration_20261026/validation/v13-additional-reference-provenance.json)를 보존한다.
+  새 후보의 추가 14개 Native도 통과했고 기존 조합의 전쪽 재검증을 계속한다.
+- 이 단계의 source와 집중 검사·실패 이력을 일반 커밋으로 고정한 뒤, 같은 source의 최종
+  최적화 WASM을 빌드한다. 전체 Native 63개·fresh WASM 63개와 최종 Rust 게이트는 아직
+  완료되지 않았으며 모두 실제 완료한 뒤 검토 문서와 PR을 작성한다.

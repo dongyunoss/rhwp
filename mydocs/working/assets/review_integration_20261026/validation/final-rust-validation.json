@@ -1,12 +1,12 @@
 {
-  "head": "f34157026afad07c423e58a9b3018b9c46593325",
+  "head": "59c7fef1674658c138625cc9348becbef5cbcd04",
   "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
-  "started_at": "2026-10-26T21:06:25.483434+00:00",
+  "started_at": "2026-10-27T00:03:54.621980+00:00",
   "target": "/home/tsjang/rhwp/target/pr-review",
   "build_jobs": 4,
   "steps": [
     {
-      "name": "final-fmt-check",
+      "name": "v12-final-fmt-check",
       "command": [
         "cargo",
         "fmt",
@@ -15,11 +15,11 @@
         "--check"
       ],
       "exit": 0,
-      "seconds": 47.91222020192072,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-fmt-check.log"
+      "seconds": 49.135042313020676,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-fmt-check.log"
     },
     {
-      "name": "final-clippy-host",
+      "name": "v12-final-clippy-host",
       "command": [
         "cargo",
         "clippy",
@@ -31,11 +31,11 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 1.2660244739381596,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-clippy-host.log"
+      "seconds": 123.12460566801019,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-host.log"
     },
     {
-      "name": "final-clippy-wasm",
+      "name": "v12-final-clippy-wasm",
       "command": [
         "cargo",
         "clippy",
@@ -52,11 +52,11 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 146.80479840596672,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-clippy-wasm.log"
+      "seconds": 112.20978474500589,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-wasm.log"
     },
     {
-      "name": "final-workspace-build",
+      "name": "v12-final-workspace-build",
       "command": [
         "cargo",
         "build",
@@ -66,11 +66,11 @@
         "/home/tsjang/rhwp/target/pr-review"
       ],
       "exit": 0,
-      "seconds": 192.91985949396621,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-workspace-build.log"
+      "seconds": 144.96655440004542,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-workspace-build.log"
     },
     {
-      "name": "final-clippy-workspace",
+      "name": "v12-final-clippy-workspace",
       "command": [
         "cargo",
         "clippy",
@@ -84,11 +84,11 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 219.04907886800356,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-clippy-workspace.log"
+      "seconds": 181.45655460306443,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-clippy-workspace.log"
     },
     {
-      "name": "final-suite-policy",
+      "name": "v12-final-suite-policy",
       "command": [
         "node",
         "scripts/rust-test-suite-manifest.mjs",
@@ -97,11 +97,11 @@
         "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
       ],
       "exit": 0,
-      "seconds": 3.3368445279775187,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-suite-policy.log"
+      "seconds": 3.9537111161043867,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-suite-policy.log"
     },
     {
-      "name": "final-unit-tier-policy",
+      "name": "v12-final-unit-tier-policy",
       "command": [
         "node",
         "scripts/rust-unit-test-tiers.mjs",
@@ -110,11 +110,11 @@
         "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
       ],
       "exit": 0,
-      "seconds": 39.92438497301191,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-unit-tier-policy.log"
+      "seconds": 33.9771661660634,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-unit-tier-policy.log"
     },
     {
-      "name": "final-nextest-all",
+      "name": "v12-final-nextest-all",
       "command": [
         "cargo",
         "nextest",
@@ -130,10 +130,10 @@
         "--no-fail-fast"
       ],
       "exit": 100,
-      "seconds": 4107.247965661925,
-      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/final-nextest-all.log"
+      "seconds": 3985.142648159992,
+      "log": "mydocs/working/assets/review_integration_20261026/validation/logs/v12-final-nextest-all.log"
     }
   ],
   "status": "failed",
-  "active_step": "final-nextest-all"
+  "active_step": "v12-final-nextest-all"
 }
