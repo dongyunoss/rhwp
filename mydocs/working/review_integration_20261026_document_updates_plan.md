@@ -666,3 +666,7 @@ WASM 차트 대조에서도 같은 문제가 확인됐다. `incoming-124`의 새
 ### 현재 소스로 다시 빌드한 Native 중간 검증
 
 차트 의존성을 현재 소스로 재빌드한 Native 실행 파일 SHA-256은 `3a7b0c02eb624c38e75ef18240abe2c6c39c2aabb24f43d38be4dc0757444b0a`다. 실제 차트 SVG의 테두리 색·두께는 `#868686`/1이며 해당 쪽 점수는 99.80761%다. sample16 세 문서의 Native 192쪽 PNG를 독립 Print PNG와 양방향 반경 2px로 직접 비교해 미대응 픽셀 0을 확인했다. 기존 범위 완료분 56건·693쪽에서 90% 미만과 0.1%p 이상 하락은 없었다. 이는 중간 결과다. WASM 전쪽, 나머지 비교, 전체 Rust 및 브라우저 검사는 완료 전이다. [중간 기록](assets/review_integration_20261026/validation/post-rebase-8319/corrected-native-interim.json)
+
+### 현재 소스로 재빌드한 WASM 하락 조사
+
+`release` codegen-units 16으로 새 빌드한 WASM SHA-256은 `dc7dd9a1a9a725a486064356ad583032d02394ad75cb64de8f1809ccfe87248b`다. 차트 검증 쪽은 #8319 기준과 동일한 99.66483%지만 과거 통합 TSV와 비교한 여러 쪽에서 0.1%p 이상 하락했다. 중첩 셀 1쪽은 98.57262%에서 98.35045%로 떨어졌다. 같은 51개 글꼴 프로그램을 같은 순서로 공급했으며 힌팅을 끄거나 최대로 바꾸고 ExtraLight family를 제외한 별도 진단은 해당 PNG를 바꾸지 않았다. 과거 WASM 바이트는 남아 있지 않아 원인을 단정하지 않는다. 기준을 낮추지 않고 조사·보정한다. 새 WASM의 AI 제공자 브라우저 검사 34항목과 PDF 가져오기 UI 검사 24항목은 통과했다. [하락 진단](assets/review_integration_20261026/validation/post-rebase-8319/corrected-wasm-decline-diagnostic.json)
