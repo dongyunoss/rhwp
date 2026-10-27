@@ -203,6 +203,143 @@ fn headerrow_split_keeps_header_only_fragment_and_moves_unfit_table() {
 const SPEC: &str = "samples/한글문서파일형식_5.0_revision1.3.hwp";
 const SPEC_SECTION: usize = 3;
 
+#[test]
+fn spec_coanchored_following_table_stays_at_print_origin() {
+    let core = open(SPEC);
+    let tree = core.build_page_render_tree(19).expect("Print 20쪽");
+    let mut stack = vec![&tree.root];
+    let mut top = None;
+    let mut following = None;
+    let mut title = None;
+    while let Some(node) = stack.pop() {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.section_index == Some(SPEC_SECTION) && table.para_index == Some(133) {
+                match table.control_index {
+                    Some(2) => top = Some(node.bbox.y),
+                    Some(3) => following = Some(node.bbox),
+                    _ => {}
+                }
+            }
+        }
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.para_index == Some(133) && run.display_or_text() == "참고문헌" {
+                title = Some((node.bbox.y, node.bbox.y + run.baseline));
+            }
+        }
+        stack.extend(node.children.iter());
+    }
+    // 독립 한컴 Print 20쪽의 파란 표 상단은 96dpi 502px에 있다.
+    let top = top.expect("공동 앵커 뒤 첫 표");
+    assert!((top - 502.5).abs() <= 2.0, "표 상단 {top:.2}px");
+    // 다음 표 외곽선과 제목 baseline도 독립 Print에서 직접 확인한다.
+    let following = following.expect("두 번째 공동 앵커 표");
+    assert!(
+        (following.y - 681.49).abs() <= 2.0,
+        "두 번째 표 상단 {:.2}px",
+        following.y
+    );
+    let (title_top, title_baseline) = title.expect("표 뒤 제목");
+    assert!(
+        title_top >= following.y + following.height,
+        "제목은 두 표 뒤에 있어야 한다"
+    );
+    assert!(
+        (title_baseline - 862.26).abs() <= 2.0,
+        "제목 baseline {title_baseline:.2}px"
+    );
+}
+
+#[test]
+fn spec_table_at_page_start_keeps_printed_top_margin() {
+    let core = open(SPEC);
+    let tree = core.build_page_render_tree(23).expect("Print 24쪽");
+    let mut stack = vec![&tree.root];
+    let mut top = None;
+    while let Some(node) = stack.pop() {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.section_index == Some(SPEC_SECTION)
+                && table.para_index == Some(163)
+                && table.control_index == Some(0)
+            {
+                top = Some(node.bbox.y);
+            }
+        }
+        stack.extend(node.children.iter());
+    }
+    // 독립 한컴 Print의 표 상단은 96dpi 117~118px이다.
+    let top = top.expect("24쪽 첫 표");
+    assert!((top - 117.5).abs() <= 2.0, "표 상단 {top:.2}px");
+}
+
+#[test]
+fn hwpspec_second_coanchored_table_keeps_print_origin() {
+    let core = open("samples/hwpspec.hwp");
+    let tree = core.build_page_render_tree(22).expect("Print 23쪽");
+    let mut stack = vec![&tree.root];
+    let mut top = None;
+    while let Some(node) = stack.pop() {
+        if let RenderNodeType::Table(table) = &node.node_type {
+            if table.section_index == Some(2)
+                && table.para_index == Some(129)
+                && table.control_index == Some(3)
+            {
+                top = Some(node.bbox.y);
+            }
+        }
+        stack.extend(node.children.iter());
+    }
+    // 독립 한컴 Print에서 같은 표의 파란 상단은 96dpi 672~673px이다.
+    let top = top.expect("공동 앵커 두 번째 표");
+    assert!((top - 673.0).abs() <= 1.5, "표 상단 {top:.2}px");
+}
+
+#[test]
+fn spec_table_caption_preserves_its_printed_number() {
+    let core = open(SPEC);
+    let para = &core.document().sections[SPEC_SECTION].paragraphs[163];
+    let rhwp::model::control::Control::Table(table) = &para.controls[0] else {
+        panic!("원본 표 컨트롤");
+    };
+    assert_eq!((table.common.attr >> 26) & 7, 6, "원본 번호 범주");
+    let saved = table
+        .caption
+        .as_ref()
+        .expect("원본 표 캡션")
+        .paragraphs
+        .iter()
+        .flat_map(|paragraph| paragraph.controls.iter())
+        .find_map(|control| match control {
+            rhwp::model::control::Control::AutoNumber(number) => Some(number.number),
+            _ => None,
+        });
+    assert_eq!(saved, Some(18), "원본에 저장된 표 번호");
+    let tree = core.build_page_render_tree(23).expect("Print 24쪽");
+    let mut stack = vec![&tree.root];
+    let mut captions = Vec::new();
+    while let Some(node) = stack.pop() {
+        if let RenderNodeType::TextLine(line) = &node.node_type {
+            if line.caption_owner.is_some() {
+                let text: String = node
+                    .children
+                    .iter()
+                    .filter_map(|child| match &child.node_type {
+                        RenderNodeType::TextRun(run) => Some(run.display_or_text()),
+                        _ => None,
+                    })
+                    .collect();
+                captions.push(text);
+            }
+        }
+        stack.extend(node.children.iter());
+    }
+    assert!(
+        captions
+            .iter()
+            .any(|text| { text.contains("18") && text.contains("바이너리 데이터 속성") }),
+        "한컴 Print 표 18 캡션: {captions:?}"
+    );
+}
+
 /// 구역 3 의 문단 `para` 표가 놓인 쪽들(0부터).
 fn table_pages(core: &DocumentCore, para: usize) -> Vec<u32> {
     let mut pages = Vec::new();

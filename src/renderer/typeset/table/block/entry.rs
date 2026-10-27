@@ -1877,11 +1877,26 @@ impl TypesetEngine {
                         para,
                         table,
                         ctrl_idx,
-                        text_origin,
+                        if has_preceding_coanchored_float && para.line_segs.is_empty() {
+                            // 앞 표와 같은 글 앞 앵커는 문단 흐름 원점을 공유한다.
+                            // 문단 앞 간격은 형제 표마다 다시 적용하지 않는다.
+                            placement_para_start_height
+                        } else {
+                            text_origin
+                        },
                         lines,
                         whole_placement_height,
                         self.dpi,
                     )
+                    .filter(|placement| {
+                        // 글 앞의 형제 표는 같은 문단 원점을 공유하고 뒤 글줄은
+                        // 모든 표의 점유를 소비한다. 첫 표만 독립 흐름으로 확정하면
+                        // 뒤 표 원점에 문단 앞 간격이 더해지고 글이 표 사이에 남는다.
+                        // 글 뒤 형제의 CoanchoredTable 소유는 그대로 유지한다.
+                        !(input.is_first_placed
+                            && para.line_segs.is_empty()
+                            && placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::CoanchoredTable)
+                    })
                     })
                 } else {
                     crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_host(

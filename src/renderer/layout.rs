@@ -13420,8 +13420,10 @@ impl LayoutEngine {
                     // 같은 문단 앵커를 공유하고 선행 float exclusion 으로 함께 같은 y 까지 밀리므로,
                     // 작은 offset 은 흡수되어 둘이 겹친다. 제목이 그려지는 위치(선행 exclusion 아래로
                     // 밀린 para 흐름) + 제목 줄높이 아래로 표를 내려 겹침을 막는다. 큰 offset 으로 표가
-                    // 이미 더 아래면 max 라 영향 없다.
+                    // 이미 더 아래면 max 라 영향 없다. 글 없는 공동 앵커도 위의 배제 경로를
+                    // 공유하지만, 실제 제목은 없으므로 이 줄 높이 예약은 적용하지 않는다.
                     let table_y_start = if is_current_visible_para_float
+                        && para_has_non_whitespace_text(para)
                         && signed_hwpunit(t.common.vertical_offset) > 0
                         && !crate::renderer::float_placement::visible_host_text_flows_below_offset_float(
                             para,
