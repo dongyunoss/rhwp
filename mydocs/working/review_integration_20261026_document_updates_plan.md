@@ -676,3 +676,7 @@ WASM 차트 대조에서도 같은 문제가 확인됐다. `incoming-124`의 새
 차트 의존성을 재빌드한 Native 및 WASM으로 sample16 3개 문서를 각각 64쪽씩 다시 렌더링했다. 독립 Print PNG와의 양방향 반경 2px 정수 비교에서 384/384쪽의 미대응 픽셀이 0이다. 실제 PNG별 SHA-256과 입력·실행 신원은 [픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8319/final/sample16-pixel-contract.json)에 기록했다. 이는 #8188 범위의 확인이며 다른 기존 문서의 WASM 하락을 해결했다는 뜻은 아니다.
 
 중첩 셀 1쪽을 브라우저 글꼴 추적으로 확인한 결과 일반 환경에서는 시스템 HCR Dotum을 실제로 사용한다. 독립 PDF의 HCR Dotum CID 글꼴에서 확인한 256개 문자의 윤곽과 시스템·한컴 설치 글꼴의 윤곽은 모두 일치하고 힌팅 프로그램도 같다. 시스템 글꼴을 임의 제한하면 Noto Sans KR ExtraLight가 선택돼 점수가 올라가지만 같은 PDF 글꼴의 윤곽과 일치하지 않으므로 정답이나 최종 통과 근거로 사용하지 않는다. 이전 소스와 이전 글꼴 등록 도구를 함께 사용해도 98.35047%였으며 Chromium 155와 156에서 PNG가 같았다. 동일 글꼴의 과거 출력 차이는 계속 조사한다. [시스템 글꼴 조사](assets/review_integration_20261026/validation/post-rebase-8319/corrected-wasm-system-font-investigation.json)
+
+### 전체 회귀에서 발견한 가맹사업 쪽수와 표 뒤 문단
+
+현재 Native 실행 파일 및 전체 Rust 검사에서 가맹사업 문서가 독립 Print·기준의 142쪽과 달리 143쪽이다. 첫 차이는 118쪽이며 중첩 표의 이전 컷 `[58]`이 실제 높이 재검사 후 `[57]`로 바뀌어 119쪽에 작은 조각이 추가된다. 7개 기존 검사가 이 쪽수에서 실패한다. 별도의 `split-rows-60-policy-1-body-false-flow-false.hwp`는 기준·Print의 표 뒤 본문 y=310.7px가 현재 307.0px로 바뀌어 px 소유 검사가 실패한다. 표 자체 괘선은 일치한다. [재현 기록](assets/review_integration_20261026/validation/post-rebase-8319/franchise-float-regression-diagnostic.json). 기대값을 바꾸지 않고 저장 컷의 물리 프레임과 마지막 표 조각 이후 간격을 좁혀 보정해야 한다.
