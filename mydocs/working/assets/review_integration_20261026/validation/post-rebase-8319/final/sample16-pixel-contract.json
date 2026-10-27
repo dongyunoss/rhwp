@@ -1,8 +1,8 @@
 {
-  "status": "invalid_native_and_wasm_producer",
+  "status": "pass",
   "source_commit": "f5c3972844442d7d2c74496bfd4db06cec26615b",
-  "native_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
-  "wasm_binary_sha256": "3c9fb1cd813e74638fc4e23051879a75622e51f83be3dd6f2d9fad1dc0c6ecdc",
+  "native_binary_sha256": "3a7b0c02eb624c38e75ef18240abe2c6c39c2aabb24f43d38be4dc0757444b0a",
+  "wasm_binary_sha256": "dc7dd9a1a9a725a486064356ad583032d02394ad75cb64de8f1809ccfe87248b",
   "font_condition": "217 historical font programs matched by SHA; font environment semantically reconstructed, not byte identical",
   "font_programs": [
     {
@@ -881,8 +881,8 @@
   },
   "pages_checked": 384,
   "raw100": 384,
-  "failed": 0,
-  "original_full_report_sha256": "26ef6b77d0f7a82fab7d369c0019316e6398e2ae17bd9ef0e370d01ce83bf44c",
+  "failed": [],
+  "original_full_report_sha256": "cd1d0b631925ba5786810520578f0525439a20793ae122f09e3dee0e20db166c",
   "runs": {
     "native/hwpx": {
       "hwp": {
@@ -895,11 +895,12 @@
       },
       "raster_backend": "native-skia",
       "font_environment_sha256": "a665e92d8bae13cf3aef2f471a6186f3bac23e51c374138db63718db96f322a3",
-      "manifest_sha256": "a822c9c728ef8c937b1d6eabc88af32281c77c9b2a4946532a63b5446bbbc182",
+      "manifest_sha256": "7c6211d04842b9ae256fe0edc510645b98bddce5701da34a0074c9e186239776",
       "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final/sample16/native/hwpx.tsv",
       "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
       "pages": 64,
-      "raw100": 64
+      "raw100": 64,
+      "run_git_head": "2cef6b6e36081d37f472598e671a11c1ec1605df"
     },
     "native/hwp2024": {
       "hwp": {
@@ -912,11 +913,12 @@
       },
       "raster_backend": "native-skia",
       "font_environment_sha256": "a665e92d8bae13cf3aef2f471a6186f3bac23e51c374138db63718db96f322a3",
-      "manifest_sha256": "f9c534d002b8d6df2034ad5ee7f52cc4fd7668944b864a15987ae314eff9a843",
+      "manifest_sha256": "b71dfe95166e61f6805fb56d9d8d5062a369b38b5de1c235eb7711c17be8b53a",
       "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final/sample16/native/hwp2024.tsv",
       "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
       "pages": 64,
-      "raw100": 64
+      "raw100": 64,
+      "run_git_head": "2cef6b6e36081d37f472598e671a11c1ec1605df"
     },
     "native/hwp2022": {
       "hwp": {
@@ -929,11 +931,12 @@
       },
       "raster_backend": "native-skia",
       "font_environment_sha256": "64439206a3148412e943916a9cc7bed9585d519a4c8cb068800ab5f428273868",
-      "manifest_sha256": "6cb9f4fbb3f13641d680399c5ea991260d580e7f59121fa3c9383e2ddf5ba10f",
+      "manifest_sha256": "ff77b27b23e7fb7a6269100688c41a294f58d200e45721d7ed628d4bdd19421a",
       "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final/sample16/native/hwp2022.tsv",
       "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
       "pages": 64,
-      "raw100": 64
+      "raw100": 64,
+      "run_git_head": "2cef6b6e36081d37f472598e671a11c1ec1605df"
     },
     "wasm/hwpx": {
       "hwp": {
@@ -946,11 +949,12 @@
       },
       "raster_backend": "wasm-canvas2d",
       "font_environment_sha256": "a665e92d8bae13cf3aef2f471a6186f3bac23e51c374138db63718db96f322a3",
-      "manifest_sha256": "01363e605399f25ac3858af5066c1c5651d440e78e4486581b528e44f030452b",
+      "manifest_sha256": "482120a6c487a00fe204288fbf5d528082bc9c1798ad87e1977ebbce44db711f",
       "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final/sample16/wasm/hwpx.tsv",
       "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
       "pages": 64,
-      "raw100": 64
+      "raw100": 64,
+      "run_git_head": "c1815e2bd4e3a5c64d65b557931fc6a81e50ca97"
     },
     "wasm/hwp2024": {
       "hwp": {
@@ -963,11 +967,12 @@
       },
       "raster_backend": "wasm-canvas2d",
       "font_environment_sha256": "a665e92d8bae13cf3aef2f471a6186f3bac23e51c374138db63718db96f322a3",
-      "manifest_sha256": "f875250f7b5d9aa7221dbbf8e9d5d38dac0561ef9cd5d8149dda45b1458e0375",
+      "manifest_sha256": "a3872b6eeedf99b7c45f1b01ac77787f7a8d54358cfe60292324f7e8cf4146f9",
       "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final/sample16/wasm/hwp2024.tsv",
       "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
       "pages": 64,
-      "raw100": 64
+      "raw100": 64,
+      "run_git_head": "84f3c7f19b868d3e40637f33cda693998ad4883e"
     },
     "wasm/hwp2022": {
       "hwp": {
@@ -980,11 +985,12 @@
       },
       "raster_backend": "wasm-canvas2d",
       "font_environment_sha256": "64439206a3148412e943916a9cc7bed9585d519a4c8cb068800ab5f428273868",
-      "manifest_sha256": "af3267bed490b2baf7521e3d1e24eddc048a401df54e10eca2438a1546a7ba27",
+      "manifest_sha256": "6971d156cbe99da1dcffda857734be6c72582081d1233f2a7e7a048cd615e262",
       "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8319/final/sample16/wasm/hwp2022.tsv",
       "tsv_sha256": "5429bc2eda944f5ffc11b73079695f3fe1f0c934af9dfb3725ccc2392dd4b97f",
       "pages": 64,
-      "raw100": 64
+      "raw100": 64,
+      "run_git_head": "84f3c7f19b868d3e40637f33cda693998ad4883e"
     }
   },
   "pages": [
@@ -4828,6 +4834,5 @@
       "reference_unmatched": 0,
       "raw100": true
     }
-  ],
-  "invalidation_note": "384쪽 실제 출력은 100%였으나 Native와 WASM 모두 이전 worktree 차트 의존성을 포함했다. 현재 소스의 최종 증거로 인정하지 않고 두 산출물과 전쪽을 다시 검증한다."
+  ]
 }

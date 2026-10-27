@@ -670,3 +670,7 @@ WASM 차트 대조에서도 같은 문제가 확인됐다. `incoming-124`의 새
 ### 현재 소스로 재빌드한 WASM 하락 조사
 
 `release` codegen-units 16으로 새 빌드한 WASM SHA-256은 `dc7dd9a1a9a725a486064356ad583032d02394ad75cb64de8f1809ccfe87248b`다. 차트 검증 쪽은 #8319 기준과 동일한 99.66483%지만 과거 통합 TSV와 비교한 여러 쪽에서 0.1%p 이상 하락했다. 중첩 셀 1쪽은 98.57262%에서 98.35045%로 떨어졌다. 같은 51개 글꼴 프로그램을 같은 순서로 공급했으며 힌팅을 끄거나 최대로 바꾸고 ExtraLight family를 제외한 별도 진단은 해당 PNG를 바꾸지 않았다. 과거 WASM 바이트는 남아 있지 않아 원인을 단정하지 않는다. 기준을 낮추지 않고 조사·보정한다. 새 WASM의 AI 제공자 브라우저 검사 34항목과 PDF 가져오기 UI 검사 24항목은 통과했다. [하락 진단](assets/review_integration_20261026/validation/post-rebase-8319/corrected-wasm-decline-diagnostic.json)
+
+### #8188 새 Native·WASM 전쪽 픽셀 확인
+
+차트 의존성을 재빌드한 Native 및 WASM으로 sample16 3개 문서를 각각 64쪽씩 다시 렌더링했다. 독립 Print PNG와의 양방향 반경 2px 정수 비교에서 384/384쪽의 미대응 픽셀이 0이다. 실제 PNG별 SHA-256과 입력·실행 신원은 [픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8319/final/sample16-pixel-contract.json)에 기록했다. 이는 #8188 범위의 확인이며 다른 기존 문서의 WASM 하락을 해결했다는 뜻은 아니다.
