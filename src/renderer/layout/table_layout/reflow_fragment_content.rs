@@ -150,14 +150,14 @@ impl LayoutEngine {
         if cell.text_direction != 0 {
             return None;
         }
-        // 자식의 행/유닛 커서가 없는 혼합 스트림은 자체 물리 예약을 이미
-        // 발행한다. 그 스트림은 기존 공통 컷 장부가 점유와 수용량을 함께
-        // 소비하게 한다. 행 컷으로 재구성하거나 paint용 표시 높이만으로
-        // 대신하면 시작 띠의 예약이 사라져 다음 쪽의 소스 줄까지 수용한다.
+        // 혼합 스트림은 자체 소스 투영과 물리 예약을 함께 발행한다.
+        // mixed_nested_recursive도 그 투영의 속성이며 nested_row의 행 컷과
+        // 같은 주소가 아니다. 기존 공통 컷 장부가 점유와 수용량을 소비하게
+        // 하고 이 행 프레임으로 다시 해석하지 않는다.
         if units
             .get(start..end)?
             .iter()
-            .any(|unit| unit.mixed_nested_fragment && !unit.mixed_nested_recursive)
+            .any(|unit| unit.mixed_nested_fragment)
         {
             return None;
         }
