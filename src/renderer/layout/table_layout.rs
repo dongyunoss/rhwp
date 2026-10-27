@@ -26820,7 +26820,12 @@ impl LayoutEngine {
                             .unwrap_or_else(|| {
                                 self.nested_cut_height(child, &cut, styles, purpose)
                             });
-                        extra += (child_height - reserved_flow).max(0.0);
+                        // 자식 컷이 경계 밖으로 넘긴 줄 뒤 전진은 투영된 부모
+                        // 유닛에도 남아 있다. 같은 컷의 확인된 전진만 감소 한도로
+                        // 사용해, 내용 종료와 별개인 빈 물리 예약은 유지한다.
+                        let trailing =
+                            self.projected_cut_trailing_advance(child, &cut, styles, purpose);
+                        extra += (child_height - reserved_flow).max(-trailing);
                         // 자식의 실제 상자가 셀 최소 높이를 늘린 경우 부모 행도
                         // 측정 단계와 같은 원래 안 여백을 예약한다. 선언 높이에
                         // 종속된 paint padding guard를 전역 변경하지 않는다.

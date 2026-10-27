@@ -61,3 +61,65 @@ suite·unit-tier 정책과 변경 문서 세 개의 상대 링크도 통과했�
 Rust 파일은 `state/commands.rs`이며 해당 파일의 최종 rustfmt 검사도 통과했다.
 [실행 결과](checkpoint-validation.json)에 실패한 두 컴파일과 현재 성공을 구분했다.
 전체 회귀·전쪽 시각 검증은 아직 미완료다.
+
+## 기존 회귀 실패의 선행 해결 및 새 기준 로직 대조
+
+`source_frame_control_ownership`의 7개 중 6개가 통과했고,
+`whole_tac_line_keeps_declared_cell_frame_and_all_source_text`는 기준 11쪽의 표를 찾지
+못해 실패했다. 기대값은 변경하지 않았다. 입력은
+`samples/basic/issue2007_nested_cell_pagination_42065.hwp`이며 독립 한컴 Print는 17쪽이다.
+새 기준 `af6bb05b`를 직접 빌드한 Native도 17쪽, 결합 후보는 19쪽이다.
+
+기존 해결은 [#8213 구현 기록](../../../../../pr/archives/pr_8213_review_impl.md)의
+`4816eda4121b317d6ade8a9bec1520518795a54f` 등이다. 저장 TAC 호스트 글줄이
+표의 선언 높이와 바깥여백을 온전히 소유할 때 표 내부 내용을 쪼개지 않는 계약이다.
+
+새 기준의 `3fc713b5fee68c833a99390299e25533cd31f9e9`는
+`advance_row_cut_for_physical_band`에서 실제 높이가 초과한 뒤 저장 꼬리 흡수 없이
+다시 선택하도록 바꿨다. [#8319 단계 기록](../../../../../working/task_semanticist21_20261024_edit_frame_coordinate_space.md)의
+Native172·175 절을 대조했다. 이 유효성 보정을 제거하거나, 자식 물리 예약의 감소분을
+무조건 허용하는 방식은 사용하지 않는다. 후자는 같은 기록의 3×3 자식 표에서 아직
+소비하지 않은 물리 띠를 제거했던 실패 방식이다.
+
+현재 진단에서는 11쪽의 컷 `[159]..[191]`을 고른 뒤 예약 891.053333px에
+추가 물리 높이가 더해져 요구 894.813333px이 예산 894.4px을 넘는다.
+재선택은 `[190]`에서 닫혀 온전한 TAC 표가 다음 쪽으로 밀린다. 이 숫자는 진단값이며
+구현 분기나 허용치로 사용하지 않는다. 자식의 같은 source cut과 부모 예약을 대조 중이다.
+
+### 결합부 보정 후보: 확인된 후행 전진만 재귀 부모에 전달
+
+진단용 실행에서 같은 부모 컷 `[159]..[191]`의 자식 컷 높이는 887.733333px,
+투영 예약은 891.053333px이다. 기존 `max(0)`가 자식 컷에서 제외한 후행 전진을
+부모에 남기는 것을 확인했다. 독립 Print의 TAC 표는 11쪽에 온전히 있고, 원본 호스트
+줄 높이도 표 선언과 바깥여백을 포함한다. 이때 표는 쪼개지지 않아야 한다.
+
+수용 모드·허용치·기대값은 그대로 둔다. `projected_cut_trailing_advance`가 한 셀의
+원본 유닛을 그대로 투영한 같은 자식 컷에서 기존 capacity/occupied trailing 판정과
+`continued_cut_nested_atom_tail`을 조회한다. 부모 차이의 하한만 이 확인된 전진의
+음수로 바꾼다. 전체 내용 종료와 별개인 선언 빈 띠·다열 행의 물리 예약은 회수하지 않는다.
+원본 슬롯과 새 재조판 슬롯의 수용량 구분도 기존 helper를 그대로 소비한다.
+
+실제 소비 경로는 `advance_row_cut_for_physical_band` → `row_cut_height(Capacity)` →
+`mixed_nested_flow_extra_for_height` → 같은 자식 `NestedTableCut`이다. 실제 배치는
+`mixed_nested_split_from_cut`의 동일한 자식 컷을 소비하고, 외곽 조각과 정렬은
+같은 공통 extra의 `Occupied` 높이를 사용한다. 진단용 출력 코드는 제거했다.
+보정 후보의 컴파일·기존 회귀·정상 대조·시각 검증은 아직 진행 중이다.
+
+### 비교 기준과 이전 통합 결과의 구분
+
+`issue2007-base-native.tsv`는 새 devel `af6bb05b` 단독 출력이다. 17쪽이지만
+최저 45.01591%이며 7쪽이 90% 미만이다. 현재 후보의 완료 TSV로 사용하지 않는다.
+이전 통합 head `3a2a081a418a38a2fb696136835d0f721b216972`의 커밋된 TSV와
+현재 보존본이 바이트 동일하고, 원본·PDF SHA도 동일함을 재확인했다.
+이전 Native 최저는 94.38594%, WASM 최저는 94.22950%이며 각각 17쪽 모두 통과했다.
+11쪽 Native는 이전 98.82287% / devel 단독 62.41087%, 12쪽은 99.24307% / 45.01591%다.
+기존 개선을 낮은 devel 수치로 바꾸지 않는다.
+
+### 작은 경계 재검증
+
+보정한 CLI로 기존의 변경 없는 회귀 assertion을 직접 실행해 7개 모두 통과했다.
+수정 전에는 같은 검사에서 TAC 표의 11쪽 소유가 실패했고 19쪽이었다. 보정 후 17쪽이며
+11쪽 표의 선언 높이·내용 순서·칸 내부 포함을 모두 통과했다.
+[같은 assertion의 수정 전후 실행](tail-transfer-boundary-validation.json)에 바이너리·소스·로그
+SHA를 구분했다. 이는 집중 CLI 검사이며 최종 전체 Rust·Native/fresh WASM 검증을
+대신하지 않는다. 이전 TSV의 수치를 낮은 새 devel 수치로 대체하지 않는다.
