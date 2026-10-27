@@ -1,3 +1,6 @@
+#[path = "column_width_contract_tests.rs"]
+mod column_width_contract_tests;
+
 use super::super::page_layout::PageLayoutInfo;
 use super::super::pagination::{ColumnContent, PageContent, PageItem};
 use super::text_measurement::estimate_text_width;
@@ -478,39 +481,6 @@ fn stored_layout_relocated_picture_caption_uses_next_saved_flow_anchor() {
         stored_relocated_picture_successor_origin(false, &host, &table, Some(&next), 96.0)
             .is_none()
     );
-}
-
-#[test]
-fn oversized_row_width_outlier_does_not_expand_base_columns() {
-    let mut cells = Vec::new();
-    for row in 0..3 {
-        for col in 0..2 {
-            cells.push(Cell {
-                row,
-                col,
-                row_span: 1,
-                col_span: 1,
-                width: if row == 0 && col == 0 { 150 } else { 100 },
-                ..Default::default()
-            });
-        }
-    }
-    let table = Table {
-        row_count: 3,
-        col_count: 2,
-        cells,
-        common: CommonObjAttr {
-            width: 200,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    let engine = LayoutEngine::with_default_dpi();
-    let widths = engine.resolve_column_widths(&table, 2);
-    let expected = hwpunit_to_px(100, DEFAULT_DPI);
-
-    assert!((widths[0] - expected).abs() < 0.01, "widths={widths:?}");
-    assert!((widths[1] - expected).abs() < 0.01, "widths={widths:?}");
 }
 
 #[test]

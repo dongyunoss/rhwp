@@ -527,15 +527,19 @@ fn compound_fraction_preserves_a_declared_frame_that_contains_its_natural_paint(
 }
 
 #[test]
-fn compound_fraction_color_keeps_the_same_frame_and_advance() {
-    let mut source = equation();
-    source.script = "가 TIMES LEFT ( {나} over {다} RIGHT )".into();
-    let plain = rendered(&document(source.clone())).1.layout_box;
-    source.script = format!("COLOR{{255,0,0}}{{{}}}", source.script);
-    let colored = rendered(&document(source)).1.layout_box;
+fn legacy_color_spelling_keeps_the_independent_print_empty_paint() {
+    // 빈 버전 COLOR는 현대 RGB 래퍼가 아니다. 같은 원본의 독립 Print는 비어 있다.
+    // 현대 COLOR의 표시·간격은 modern_color_boundary_preserves_print_owned_operator_gaps가 보호한다.
+    let core = completed_control("mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/equation-cc9-legacy-color.hwpx");
+    assert_eq!(core.page_count(), 1, "독립 Print의 한 쪽 소속");
+    let (_, paint) = rendered(&core);
+    assert!(paint.script.starts_with("COLOR"), "원본 구형 스크립트 보존");
     assert_eq!(
-        (plain.width, plain.height, plain.baseline),
-        (colored.width, colored.height, colored.baseline),
-        "a transparent paint wrapper does not choose another compound frame"
+        paint.layout_box.width, 0.0,
+        "독립 Print에 없는 수식을 만들지 않음"
+    );
+    assert_eq!(
+        paint.layout_box.height, 0.0,
+        "현대 색상 프레임을 잘못 적용하지 않음"
     );
 }

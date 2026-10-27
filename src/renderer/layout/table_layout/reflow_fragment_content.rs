@@ -187,6 +187,22 @@ impl LayoutEngine {
                 // 그 줄은 호스트의 첫 소유 유닛과 함께 다음 조각에서 한 번 소비한다.
                 continue;
             }
+            // 혼합 자식의 유닛도 실제 배치가 소비하는 같은 소스 컷으로 잰다.
+            // nested_row가 없는 혼합 투영을 통째 표로 해석하면 한 줄 컷에
+            // 전체 자식 높이를 예약해 정상 분할을 과대 크기 강제 배치로 바꾼다.
+            if own.iter().any(|unit| unit.mixed_nested_fragment) {
+                let split =
+                    self.mixed_nested_split_from_cut(cell, table, styles, start, end, pi)?;
+                height += match purpose {
+                    CutHeight::Capacity => split.flow_height,
+                    CutHeight::Occupied => split.visible_height,
+                } + own
+                    .iter()
+                    .filter(|unit| !unit.mixed_nested_fragment)
+                    .map(|unit| unit.height)
+                    .sum::<f64>();
+                continue;
+            }
             let children: Vec<_> = para
                 .controls
                 .iter()
