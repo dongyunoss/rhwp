@@ -486,3 +486,15 @@
 - 같은 고정 CLI로 Native 63개·941쪽 비교를 새로 시작했다. 테스트 소스와 독립 기대값은
   변경하지 않았으며 관련 17개는 이후 현재 source의 전체 nextest에 포함해 실행한다.
   앞 단계의 17개 통과를 현재 전체 회귀 완료로 바꾸어 기록하지 않는다.
+
+### 최종 Native와 최적화 WASM 빌드 고정
+
+- 생산 source `f272b81c28b2525c5f6e520ef1e5d499b16672d3`의 Native 63개·941쪽이 전부 90% 이상이다.
+  최저 90.81277%, 대응 기준 60개·895쪽의
+  수치 하락은 0쪽이다. 실제 [완료 원장](assets/review_integration_20261026/validation/v14-native-review.json)을 연결한다.
+- 같은 source snapshot 1828개로 최종 release WASM과 wasm-opt를 완료했다.
+  `pkg`·Studio public·고정 패키지 JS/WASM 해시가 같고 WebAssembly.compile이 통과했다.
+  [실제 빌드·해시](assets/review_integration_20261026/validation/final-wasm-build.json)를 보존한다.
+- 생성 binding과 Native 증거를 커밋한 뒤 그 clean head에서 전체 Rust lint·회귀·Native
+  공식 검사를 순차 실행한다. 실제 fresh WASM UI·63개 전쪽 비교도 남아 있으며
+  모두 완료하기 전에는 PR을 제출하지 않는다.
