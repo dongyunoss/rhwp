@@ -533,7 +533,11 @@ fn legacy_color_spelling_keeps_the_independent_print_empty_paint() {
     let core = completed_control("mydocs/pr/assets/legacy_literal_operator_plane_20261025/inputs/equation-cc9-legacy-color.hwpx");
     assert_eq!(core.page_count(), 1, "독립 Print의 한 쪽 소속");
     let (_, paint) = rendered(&core);
-    assert!(paint.script.starts_with("COLOR"), "원본 구형 스크립트 보존");
+    assert_eq!(
+        paint.script, "가 COLOR{255,0,0}{=} 나",
+        "원본의 앞뒤 글자를 포함한 구형 스크립트 보존"
+    );
+    assert!(paint.svg_content.is_empty(), "독립 Print와 같은 빈 표시");
     assert_eq!(
         paint.layout_box.width, 0.0,
         "독립 Print에 없는 수식을 만들지 않음"
