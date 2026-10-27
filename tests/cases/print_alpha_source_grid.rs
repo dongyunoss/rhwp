@@ -63,6 +63,72 @@ fn png(node: roxmltree::Node<'_, '_>) -> image::RgbaImage {
 }
 
 #[test]
+fn grouped_transparent_images_keep_their_source_bottom_border() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let output = root.join("output/test-runs").join(format!(
+        "print-alpha-group-{}-{}",
+        std::process::id(),
+        SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    fs::create_dir_all(&output).unwrap();
+    let result = Command::new(env!("CARGO_BIN_EXE_rhwp"))
+        .current_dir(root)
+        .arg("export-svg")
+        .arg("samples/한글문서파일형식_5.0_revision1.3.hwp")
+        .args(["--profile", "print", "--compat", "2022", "-p", "20", "-o"])
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(result.status.success(), "인쇄 SVG 출력 실패: {result:?}");
+    let svg_path = fs::read_dir(&output)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .find(|path| path.extension().is_some_and(|extension| extension == "svg"))
+        .expect("21쪽 SVG");
+    let svg = fs::read_to_string(svg_path).unwrap();
+    let doc = roxmltree::Document::parse(&svg).unwrap();
+    let borders = doc
+        .descendants()
+        .filter(|node| node.is_element() && node.tag_name().name() == "image")
+        .filter_map(|node| {
+            let x: f64 = node.attribute("x")?.parse().ok()?;
+            let y: f64 = node.attribute("y")?.parse().ok()?;
+            let width: f64 = node.attribute("width")?.parse().ok()?;
+            let height: f64 = node.attribute("height")?.parse().ok()?;
+            if !((235.0..=238.0).contains(&x) || (411.0..=414.0).contains(&x))
+                || !(396.0..=399.0).contains(&y)
+                || width < 160.0
+            {
+                return None;
+            }
+            let href = node
+                .attributes()
+                .find(|attribute| attribute.name() == "href")?
+                .value();
+            let data = href.strip_prefix("data:image/png;base64,")?;
+            let bytes = base64::engine::general_purpose::STANDARD
+                .decode(data)
+                .ok()?;
+            let pixels = image::load_from_memory(&bytes).ok()?.to_rgba8();
+            let opaque = (0..pixels.width())
+                .filter(|x| pixels.get_pixel(*x, pixels.height() - 1)[3] >= 128)
+                .count();
+            // 한컴 Print에서 두 그림의 하단선은 96dpi 기준 약 440px이다.
+            ((y + height - 440.0).abs() <= 1.5 && opaque * 10 >= pixels.width() as usize * 9)
+                .then_some(())
+        })
+        .count();
+    assert_eq!(
+        borders, 2,
+        "원본 PNG 두 개의 마지막 선을 인쇄 경로에서 보존"
+    );
+    fs::remove_dir_all(output).unwrap();
+}
+
+#[test]
 fn continuous_alpha_print_keeps_text_order_and_independent_carrier_frame() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let oracle: Value = serde_json::from_slice(
