@@ -2,11 +2,9 @@
 
 ## 최종 판정
 
-**머지 보류 — #8116 리베이스 후 양쪽 기능 보존 검증 진행 중.**
-
-아래 완료 결과는 리베이스 전 고정 후보의 실제 기록이다. 새 base의 최종 수용 판정은 추가 검증 뒤 갱신한다.
+**메인터너 보정 후 수용 가능 — 중첩 표 높이와 물리 끝 프레임 통합 범위의 필수 로컬 검증 완료.**
 원 head의 단독 실행이나 원격 승인을 뜻하지 않는다. 원 변경을 누적 적용한 아래 통합 후보에 대한 판정이며,
-통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 이번 작업은 통합 PR 제출까지다.
+통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자의 PR 생성 승인을 받은 뒤 통합 PR을 제출한다.
 
 ## 접수와 적용
 
@@ -16,11 +14,11 @@
 | 고정 원 head | `d9aab2292be0da4c71dc2c28665fd9ddc8c07a59` |
 | 원 PR의 이슈 연결 | 원 PR 자동 닫기 연결 없음; 통합 PR의 자동 닫기로 전환하지 않음 |
 | 원 head CI 참고값 | SUCCESS; 통합 후보 CI와 구분 |
-| 검증한 통합 code/test head | `1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559` |
-| 시각 production source | `f272b81c28b2525c5f6e520ef1e5d499b16672d3` |
-| 고정 기준 devel | `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c` |
+| 검증한 통합 code/test head | `2e902abacf328bccdd7780606666ac3b1c5c1ce9` |
+| 시각 production source | `ae8c413f84a01a4cc4591357056183709f21b150` |
+| 고정 기준 devel | `faa885e8b54ffc7cdf4196cd43a3103f362499a2` |
 | 실제 적용·중복 | 7개 적용 / 10개 patch 중복 제외 |
-| reviewer·조회 시점 상태 | jangster77 지정 유지 / OPEN / mergeable=UNKNOWN; 머지 전 재조회 필요 |
+| reviewer·조회 시점 상태 | jangster77 지정 유지 / OPEN / mergeable=MERGEABLE; 머지 전 재조회 필요 |
 
 브랜치는 `review/integration-20261026-document-updates`다. [적용 순서·SHA·단계 기록](<../../../mydocs/pr/archives/pr_8213_review_impl.md>)과
 [원 head·reviewer·댓글·스레드 재조회](<../../../mydocs/working/assets/review_integration_20261026/validation/source-pr-preflight.json>), [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>)을 연결한다.
@@ -35,7 +33,7 @@
 
 보호 검사: [nested_table_height_cache_contract.rs](<../../../tests/cases/nested_table_height_cache_contract.rs>). 전체 nextest 또는 해당 Native/Studio 실행의 실제 결과에 포함된다.
 
-추가 보정: `8c699b0c6a8548885fc572e01b831b981273c380`, `71d7ac1d0f7eacf3e318c37a0a1bbc8c26fa1f33`, `2f358577db579aedc822b4e5f220dee414d42f66`, `3ae26ef0a1a20a8810813a085179220f56d2561a`, `f34157026afad07c423e58a9b3018b9c46593325`, `642d29dab1d06596de784c113527a2482073e828`, `401d9070b6bf3cca3803c3c87ac88a0ad4a07a6b`, `56a638b9960e8bad9c3f73185a17665d7f7c94b1`, `59c7fef1674658c138625cc9348becbef5cbcd04`. 기여자의 원 변경과 구분하며 일반성·독립 근거·수정 전후는 통합 계획에 기록했다.
+추가 보정: `db096cb48ae1b113cbe9c0d3c6dce7986ac3e9df`, `dceccce7947325cb28f02501dabc9a46b2005cb6`, `1785fc69eb278c2aaba82a62a958af62c949e3f8`, `4816eda4121b317d6ade8a9bec1520518795a54f`, `358e256f92354a1a9686867a38f478a36adde734`, `607c578e3b2cf1bca5c58a0ca0e679be97f23582`, `8fd43e0cadc07674f2a7ad0d4489592381c7bdb1`, `eaa4918972d0d7354641c72b0bc8bf38d5954bed`, `92f41d036fe4cd9f04348a97e36d5e07b7d3cf0c`. 기여자의 원 변경과 구분하며 일반성·독립 근거·수정 전후는 통합 계획에 기록했다.
 
 성능 판정은 반복 판정의 이동·캐시 무효화·저장 바이트와 출력 무회귀에 한정한다. 기여자의 장비별 가속률이나 비공개 편람의 수치를 재현했다고 주장하지 않는다.
 
@@ -46,16 +44,16 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 | 입력 조합 | 전체 쪽수 | Native 최저 raw | fresh WASM 최저 raw |
 | --- | ---: | ---: | ---: |
-| newsletter-korean | 2 | [93.09499%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/native/newsletter-korean.tsv>) | [91.58176%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-korean.tsv>) |
 | newsletter-chinese | 2 | [93.55035%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/native/newsletter-chinese.tsv>) | [92.66758%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-chinese.tsv>) |
 | nested-height-cache | 17 | [94.38594%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/native/nested-height-cache.tsv>) | [94.22950%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/nested-height-cache.tsv>) |
+| newsletter-korean | 2 | [93.09499%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/native/newsletter-korean.tsv>) | [91.58176%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/newsletter-korean.tsv>) |
 | endnotes-november | 21 | [90.81277%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/native/endnotes-november.tsv>) | [91.32974%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-november.tsv>) |
 | endnotes-september | 23 | [95.03445%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/native/endnotes-september.tsv>) | [96.35945%](<../../../mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/endnotes-september.tsv>) |
 
 해당 조합은 모두 독립 PDF의 전쪽과 대응하며 90% 미만·후보 쪽수 불일치·누락이 없다. 실제 경로·입력/PDF SHA·명령은 [전쪽 실행 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/visual-validation.json>),
 [커밋 blob과 실제 입력의 해시 감사](<../../../mydocs/working/assets/review_integration_20261026/validation/tracked-input-audit.json>), [실제 글꼴·PDF 래스터 출처](<../../../mydocs/working/assets/review_integration_20261026/validation/font-and-raster-provenance.json>)에 있다.
 
-[동일 조건 base/head 판정](<../../../mydocs/working/assets/review_integration_20261026/validation/base-head-comparison.json>)에서 Native·WASM 각각 60개 조합·895개 기준 쪽을 비교했고 2%p 이상 하락은 0쪽이다. 미세 하락 여부·최대 하락은 원장의 실제 값을 따른다.
+[동일 조건 base/head 판정](<../../../mydocs/working/assets/review_integration_20261026/validation/base-head-comparison.json>)에서 Native·WASM 각각 64개 조합·910개 기준 쪽을 비교했고 2%p 이상 하락은 0쪽이다. 미세 하락 여부·최대 하락은 원장의 실제 값을 따른다.
 기준의 공식 사양 83쪽/71쪽과 cellnotes 12쪽/11쪽 오류는 기준 실패로 보존하고 모든 기준 쪽을 별도 진단 비교했다.
 새 editable 3모드는 구 버전에 없으므로 독립 PDF·실제 본문 소유 검사로 별도 검증했다.
 
@@ -69,7 +67,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 | 기존 해결의 선행 분석 | 충족 — [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>); 원 이슈·원 해결·보정 SHA를 실패별로 추적 |
 | 구현 근거와 일반성 | 충족 — 위 실제 소비 경로와 독립 기대값. 문서 ID 보정·출력 은폐 없이 공통 결과 사용 |
 | 측정·배치 일관성 | 충족 — 공통 계산·저장 줄·프레임 결과의 실제 소비와 전쪽 Native/WASM 출력 대조 |
-| 리베이스 기능 보존 | 비해당 — 검토 중 base 변경·추가 리베이스 없음. 고정 devel 대비 실제 출력은 별도 전쪽 비교 |
+| 리베이스 기능 보존 | 충족 — #8116 새 base의 15개 계약·4개 문서와 기존 17개 계약·전쪽을 함께 검증. 한 충돌에서 두 수용 조건을 보존했으며 커밋 대조와 실행 원장에 기록 |
 | 최종 출력 소비 | 충족 — 실제 Native PNG·fresh WASM Canvas, 적용되는 CanvasKit 경로를 구분 |
 | 분할·이어받기 | 충족 — 실제 컷·요구/예약 높이·배치·후속 소유를 관련 회귀와 독립 전쪽 Print로 대조 |
 | 줄 소속과 점유 높이 | 충족 — 원본 LineSeg/개체 줄·공통 flow 결과·실제 문단/개체 소유 대조 |

@@ -2,11 +2,9 @@
 
 ## 최종 판정
 
-**머지 보류 — #8116 리베이스 후 양쪽 기능 보존 검증 진행 중.**
-
-아래 완료 결과는 리베이스 전 고정 후보의 실제 기록이다. 새 base의 최종 수용 판정은 추가 검증 뒤 갱신한다.
+**메인터너 보정 후 수용 가능 — HWP3 연결 그림의 결정적 순서 통합 범위의 필수 로컬 검증 완료.**
 원 head의 단독 실행이나 원격 승인을 뜻하지 않는다. 원 변경을 누적 적용한 아래 통합 후보에 대한 판정이며,
-통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 이번 작업은 통합 PR 제출까지다.
+통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자의 PR 생성 승인을 받은 뒤 통합 PR을 제출한다.
 
 ## 접수와 적용
 
@@ -16,11 +14,11 @@
 | 고정 원 head | `bfe5d44cf1d08806d9ac12aff1096096ed0853c0` |
 | 원 PR의 이슈 연결 | 원 PR 자동 닫기 연결 없음; 통합 PR의 자동 닫기로 전환하지 않음 |
 | 원 head CI 참고값 | SUCCESS; 통합 후보 CI와 구분 |
-| 검증한 통합 code/test head | `1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559` |
-| 시각 production source | `f272b81c28b2525c5f6e520ef1e5d499b16672d3` |
-| 고정 기준 devel | `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c` |
+| 검증한 통합 code/test head | `2e902abacf328bccdd7780606666ac3b1c5c1ce9` |
+| 시각 production source | `ae8c413f84a01a4cc4591357056183709f21b150` |
+| 고정 기준 devel | `faa885e8b54ffc7cdf4196cd43a3103f362499a2` |
 | 실제 적용·중복 | 1개 적용 / 0개 patch 중복 제외 |
-| reviewer·조회 시점 상태 | jangster77 지정 유지 / OPEN / mergeable=UNKNOWN; 머지 전 재조회 필요 |
+| reviewer·조회 시점 상태 | jangster77 지정 유지 / OPEN / mergeable=MERGEABLE; 머지 전 재조회 필요 |
 
 브랜치는 `review/integration-20261026-document-updates`다. [적용 순서·SHA·단계 기록](<../../../mydocs/pr/archives/pr_8219_review_impl.md>)과
 [원 head·reviewer·댓글·스레드 재조회](<../../../mydocs/working/assets/review_integration_20261026/validation/source-pr-preflight.json>), [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>)을 연결한다.
@@ -52,7 +50,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 | 기존 해결의 선행 분석 | 충족 — [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>); 원 이슈·원 해결·보정 SHA를 실패별로 추적 |
 | 구현 근거와 일반성 | 충족 — 위 실제 소비 경로와 독립 기대값. 문서 ID 보정·출력 은폐 없이 공통 결과 사용 |
 | 측정·배치 일관성 | 비해당 — 글꼴 순수 판정·digest 또는 저장 payload·순서·AI 전송 계약이며 조판 계산을 바꾸지 않음 |
-| 리베이스 기능 보존 | 비해당 — 검토 중 base 변경·추가 리베이스 없음. 고정 devel 대비 실제 출력은 별도 전쪽 비교 |
+| 리베이스 기능 보존 | 충족 — #8116 새 base의 15개 계약·4개 문서와 기존 17개 계약·전쪽을 함께 검증. 한 충돌에서 두 수용 조건을 보존했으며 커밋 대조와 실행 원장에 기록 |
 | 최종 출력 소비 | 충족 — 글꼴·digest의 독립 입력 반례, payload 재열기·교체 반례 또는 실제 Studio UI |
 | 분할·이어받기 | 비해당 — 표 조각 컷·이어받기 규칙은 변경하지 않음 |
 | 줄 소속과 점유 높이 | 비해당 — 새 줄 배치 규칙 없음 |

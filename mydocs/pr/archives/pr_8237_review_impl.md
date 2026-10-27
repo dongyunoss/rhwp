@@ -2,8 +2,8 @@
 
 - 원 head: `f58e857b1294dd1ed0ea1f355f6323fbc5dbcd51`
 - 통합 branch: `review/integration-20261026-document-updates`
-- base: `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`
-- 완료한 로컬 code/test 검증 head: `1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559`
+- base: `faa885e8b54ffc7cdf4196cd43a3103f362499a2`
+- 완료한 로컬 code/test 검증 head: `2e902abacf328bccdd7780606666ac3b1c5c1ce9`
 - 최종 판정·입력·명령·제한: [pr_8237_review.md](pr_8237_review.md)
 - 단계 계획·독립 근거: [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>)
 
@@ -18,11 +18,11 @@
 | 5 | `a19b8bc9359d8b80d86c7b497d9d1e7f40c72774` | 동일 patch 선행 반영으로 중복 제외 |
 | 6 | `6d1ad105f8b56d4639855200e1b6ccf9b7ddc618` | 동일 patch 선행 반영으로 중복 제외 |
 | 7 | `a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c` | 동일 patch 선행 반영으로 중복 제외 |
-| 8 | `d8728de201a9e4c5f83a3d66c1916eff8dc3fe42` | `57f46feb2892eebff6bb8c4f3a4a1519ce2fb85d` |
-| 9 | `f58e857b1294dd1ed0ea1f355f6323fbc5dbcd51` | `ee8b055a54b329b8d13b7cbfa51850c7013cfd26` |
+| 8 | `d8728de201a9e4c5f83a3d66c1916eff8dc3fe42` | `86ae2ca94ca7a1c042cfa6722f2a01d73940163e` |
+| 9 | `f58e857b1294dd1ed0ea1f355f6323fbc5dbcd51` | `948f730389b950f00e23bb7c97f5bf2ede4b386b` |
 
 적층 선행 commit은 patch-id로 대조했다. merge commit을 다시 체리픽하지 않았고 원 저자·`-x` 출처를 보존했다.
-#8227·#8237의 사전 가상 충돌은 적층 부모를 명시한 예상 tree와 실제 결과가 일치했다. 실제 체리픽 충돌은 없었다.
+#8227·#8237의 사전 가상 충돌은 적층 부모를 명시한 예상 tree와 실제 결과가 일치했다. 실제 체리픽 충돌은 없었다. 이후 #8116 리베이스의 line_breaking.rs 한 충돌은 두 수용 조건을 모두 유지해 해소했다. 리베이스 전후 SHA·원 저자 보존은 커밋 대조 원장에 기록했다.
 
 ## 보정·검증·후속 경계
 
@@ -30,7 +30,7 @@
 2. 승인된 기존 미달 페이지를 공통 로직에서 보정하고 단계별 일반 커밋으로 고정했다.
 3. 관련 전쪽 Native/fresh WASM 선행 검증·직접 판독 뒤 정식 소유 회귀를 보강하고, 최종 최적화 WASM 전쪽·기준 대비 하락 기준을 검증했다.
 4. 전체 필수 로컬 검증을 실제 완료한 뒤 원 PR별 이 기록을 작성했다.
-5. 통합 PR을 제출한다. 이후 원격 CI·승인·머지·원 PR 종료는 별도 후속 조건이다.
+5. 최종 로컬 커밋·본문을 준비하고 작업지시자 승인 후 원격 push·통합 PR 제출을 진행한다. 이후 CI·머지·원 PR 종료는 별도 후속 조건이다.
 
 보정 SHA: 이 PR 단독 보정 없음; 공통 통합 보정은 상위 계획 참조.
 

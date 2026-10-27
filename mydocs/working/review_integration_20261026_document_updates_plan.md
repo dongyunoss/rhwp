@@ -517,7 +517,7 @@
 
 ### 리베이스 후 Native 보존 확인
 
-- 현재 Native 67개·956쪽이 전부90% 이상이다. 새 base 64개·910쪽의 같은 PDF·글꼴을 대조해 2%p 이상 하락은 0쪽, 양의 하락 0쪽이다.
+- 현재 Native 67개·956쪽이 전부 90% 이상이다. 새 base 64개·910쪽의 같은 PDF·글꼴을 대조해 2%p 이상 하락은 0쪽, 양의 하락 0쪽이다.
 - 기존63개·941쪽 중 941쪽의 실제 화소가 리베이스 전과 같다. 새4문서의 표·제목 경계는 독립 Print와 직접 읽었다. [Native 비교](assets/review_integration_20261026/validation/post-rebase-8116/native-comparison.json)와 [판독](assets/review_integration_20261026/validation/post-rebase-8116/native-direct-reading.json)을 연결한다.
 - fresh WASM과 리베이스 후 전체 Rust 검증은 아직 남아 있다.
 
@@ -537,3 +537,23 @@
 
 - 현재 source의 locked release WASM·wasm-opt가 완료됐고 Native와 source snapshot이 같다. pkg/public 해시와 WebAssembly.compile을 확인했다.
 - 이 증거를 커밋한 clean head에서 lint·새 base/충돌 경로 focused·전체 nextest·Native 필수 검사를 순차 수행한다. 실제 fresh WASM 브라우저와67개 전쪽도 별도로 확인한다. 모두 완료 전 PR을 제출하지 않는다.
+
+### 새 base 변경 영역의 실제 WASM 확대 판독
+
+- 올바르게 재컴파일한 WASM으로 네 원본의 여섯 비교 패널과 중첩 셀의 기준/후보/독립 Print 확대 영역을 직접 확인했다. 제목·작은 표·본문·중첩 셀·후속 내용의 소유와 겹침 방지 기능을 보존한다.
+- title-between-shapes의 장식 색상 영역 크기와 일부 셀 줄바꿈 등 독립 PDF와의 차이는 새 base에도 있는 외양 차이다. 해당 쪽은 기준/후보 PNG가 동일하다. 새 15쪽 중 Native/WASM 각각 14쪽은 기준과 바이트 동일하며, 중첩 셀 1쪽의 RGB 차이는 별도 확대 대조했다. raw 지표와 내용·행 경계를 유지하며 픽셀 완전 일치를 주장하지 않는다.
+- `validation/post-rebase-8116/wasm-direct-reading.json`과 두 incoming-base-output-continuity 원장에 실제 이미지 해시·독립 reference·관찰을 기록했다. 기존 Native 판독도 글꼴이라는 포괄적 표현에 숨기지 않고 장식·줄바꿈 차이를 구체화했다.
+
+### PR 생성의 사전 승인 조건
+
+- 작업지시자의 최신 지시 “pr 은 승인 받고 진행”에 따라 로컬 검증·커밋·검토 기록·실제 PR 본문 준비까지 완료한 뒤 생성 승인을 받는다. 승인 전 원격 push·PR 생성은 하지 않는다. 원 PR comment·close·머지도 현재 범위에 넣지 않는다.
+- 승인 대기 시 검토 가능한 최종 커밋과 정식 증거, 본문안을 제시한다. 임시 출력·유휴 debug 정리는 필수 증거를 정식 경로에 반영한 뒤 기존 지침대로 수행한다.
+
+### 최종 로컬 검증 완료와 승인 대기 준비
+
+- code/test 검증 head `2e902abacf328bccdd7780606666ac3b1c5c1ce9`에서 필수 Rust 18단계를 모두 exit0으로 완료했다. 전체 nextest 11,637 PASS·기존 skip 45개, Native lib 합계 4,040 PASS·기존 ignore 12개, 필수 Native 4개 모듈을 실제 실행했다.
+- Native/fresh 최적화 WASM은 각각 67개 조합·956쪽 전부 90% 이상이며, 기준 64개·910쪽에서 양의 하락과 2%p 이상 하락 모두 0쪽이다. 리베이스 이전 63개·941쪽은 양쪽 경로 모두 PNG 바이트 동일하다.
+- 현재 입력·독립 PDF 125개와 Git blob을 대조했다. 실제 PDF import 중간본 12개는 생성 영수증으로만 식별한다. 소유 관계 17개·새 base 15개는 완료된 전체 실행의 실제 PASS 항목으로 확인했으며 별도 실행 수로 더하지 않는다.
+- 원 PR 20건의 head·reviewer·미해결 스레드를 재조회해 고정 head 유지·reviewer 20건 유지·미해결 0건을 확인했고 review/impl 40개와 오늘할일을 갱신했다. 문서 43개·내부 링크 770개는 누락·임시 전용 증거 링크 없이 통과했다.
+- 최신 devel fetch 결과는 기존 기준 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`와 같아 추가 리베이스·회귀 반복은 필요 없다. 본인 열린 #8319는 조회 시 CI 진행 중·실패 없음이며 다른 작업을 수정하지 않았다. PR 생성 승인 후에는 상태를 다시 확인한다.
+- 최종 로컬 기록을 커밋한 뒤 본문안을 생성한다. 사용자의 사전 승인 전 원격 push·PR 생성·머지·원 PR comment/close는 진행하지 않는다.

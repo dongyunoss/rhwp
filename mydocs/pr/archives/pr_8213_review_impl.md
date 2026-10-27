@@ -2,8 +2,8 @@
 
 - 원 head: `d9aab2292be0da4c71dc2c28665fd9ddc8c07a59`
 - 통합 branch: `review/integration-20261026-document-updates`
-- base: `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`
-- 완료한 로컬 code/test 검증 head: `1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559`
+- base: `faa885e8b54ffc7cdf4196cd43a3103f362499a2`
+- 완료한 로컬 code/test 검증 head: `2e902abacf328bccdd7780606666ac3b1c5c1ce9`
 - 최종 판정·입력·명령·제한: [pr_8213_review.md](pr_8213_review.md)
 - 단계 계획·독립 근거: [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>)
 
@@ -21,16 +21,16 @@
 | 8 | `ef90aed188c899fb5d67d33725523d057d925765` | 동일 patch 선행 반영으로 중복 제외 |
 | 9 | `a6060b598c785cc5a7c1d63a1e3f4ff5e46b62dd` | 동일 patch 선행 반영으로 중복 제외 |
 | 10 | `276d569c2f5abce5b77bfb89aed016951e314bd3` | 동일 patch 선행 반영으로 중복 제외 |
-| 11 | `32301f8a2d3f2b88fe037b37a2af8167f2d81b3c` | `626c676302c902fb085756d6d6512a8ec43bf850` |
-| 12 | `2e720473b79548a5d5fc38346ab4348447f33384` | `f510ce652ed39036c5cb101962c5add91942026d` |
-| 13 | `d1b4197b988a4117886aa771d297030752d586c6` | `9603550d08932417e248f29e0ea13716dc376048` |
-| 14 | `46f702c76b69c7d4bf3408404b70683b172caf15` | `ed00e9d2b24080bb121bdd4205d75d482256e2a7` |
-| 15 | `6621445d1510b26b5dc2835c692cda91a7977d29` | `11e7e46912e026fdde9d55363052d904c8ae6909` |
-| 16 | `2a8142924baa7da16e151a3a4520bf564eb7f354` | `2edbfb844aae32266d0b35028ae078797e3473eb` |
-| 17 | `d9aab2292be0da4c71dc2c28665fd9ddc8c07a59` | `c2aebcf431fe69895c3a469182962127f7b54999` |
+| 11 | `32301f8a2d3f2b88fe037b37a2af8167f2d81b3c` | `8f42004d89d8d6baa5d0a966eca51e772d4ba081` |
+| 12 | `2e720473b79548a5d5fc38346ab4348447f33384` | `60f58c28cc76febf6fd373322a5c7bc606ea0e98` |
+| 13 | `d1b4197b988a4117886aa771d297030752d586c6` | `9250712288fa156197d4f63beec5a47f8d11b37d` |
+| 14 | `46f702c76b69c7d4bf3408404b70683b172caf15` | `59821b6602508f70a74ca4c90ed854409d51db0b` |
+| 15 | `6621445d1510b26b5dc2835c692cda91a7977d29` | `aeb22b68520296fc7dd586e38297029ed8d29b43` |
+| 16 | `2a8142924baa7da16e151a3a4520bf564eb7f354` | `c3257d2b32f3c2eff4ca6537bcea427cd2ad5e9f` |
+| 17 | `d9aab2292be0da4c71dc2c28665fd9ddc8c07a59` | `ae58d6d9c2afa665da7296747dff1f51e0a2e5bd` |
 
 적층 선행 commit은 patch-id로 대조했다. merge commit을 다시 체리픽하지 않았고 원 저자·`-x` 출처를 보존했다.
-#8227·#8237의 사전 가상 충돌은 적층 부모를 명시한 예상 tree와 실제 결과가 일치했다. 실제 체리픽 충돌은 없었다.
+#8227·#8237의 사전 가상 충돌은 적층 부모를 명시한 예상 tree와 실제 결과가 일치했다. 실제 체리픽 충돌은 없었다. 이후 #8116 리베이스의 line_breaking.rs 한 충돌은 두 수용 조건을 모두 유지해 해소했다. 리베이스 전후 SHA·원 저자 보존은 커밋 대조 원장에 기록했다.
 
 ## 보정·검증·후속 경계
 
@@ -38,9 +38,9 @@
 2. 승인된 기존 미달 페이지를 공통 로직에서 보정하고 단계별 일반 커밋으로 고정했다.
 3. 관련 전쪽 Native/fresh WASM 선행 검증·직접 판독 뒤 정식 소유 회귀를 보강하고, 최종 최적화 WASM 전쪽·기준 대비 하락 기준을 검증했다.
 4. 전체 필수 로컬 검증을 실제 완료한 뒤 원 PR별 이 기록을 작성했다.
-5. 통합 PR을 제출한다. 이후 원격 CI·승인·머지·원 PR 종료는 별도 후속 조건이다.
+5. 최종 로컬 커밋·본문을 준비하고 작업지시자 승인 후 원격 push·통합 PR 제출을 진행한다. 이후 CI·머지·원 PR 종료는 별도 후속 조건이다.
 
-보정 SHA: `8c699b0c6a8548885fc572e01b831b981273c380`, `71d7ac1d0f7eacf3e318c37a0a1bbc8c26fa1f33`, `2f358577db579aedc822b4e5f220dee414d42f66`, `3ae26ef0a1a20a8810813a085179220f56d2561a`, `f34157026afad07c423e58a9b3018b9c46593325`, `642d29dab1d06596de784c113527a2482073e828`, `401d9070b6bf3cca3803c3c87ac88a0ad4a07a6b`, `56a638b9960e8bad9c3f73185a17665d7f7c94b1`, `59c7fef1674658c138625cc9348becbef5cbcd04`.
+보정 SHA: `db096cb48ae1b113cbe9c0d3c6dce7986ac3e9df`, `dceccce7947325cb28f02501dabc9a46b2005cb6`, `1785fc69eb278c2aaba82a62a958af62c949e3f8`, `4816eda4121b317d6ade8a9bec1520518795a54f`, `358e256f92354a1a9686867a38f478a36adde734`, `607c578e3b2cf1bca5c58a0ca0e679be97f23582`, `8fd43e0cadc07674f2a7ad0d4489592381c7bdb1`, `eaa4918972d0d7354641c72b0bc8bf38d5954bed`, `92f41d036fe4cd9f04348a97e36d5e07b7d3cf0c`.
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.

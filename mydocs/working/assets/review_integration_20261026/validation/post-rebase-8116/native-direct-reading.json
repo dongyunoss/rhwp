@@ -23,7 +23,7 @@
       "actual_png_sha256": "6d0bc57b19291780cbef83df80c7cfd457ab8aa69a1da9e3849a2f765ec1ad67",
       "comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/rebase8116-title_between_floating_shapes-p003-native-compare.png",
       "observation": "셋째 쪽의 장식·본문·하단 표와 뒤 장식이 기준과 같은 쪽에 놓인다.",
-      "remaining_appearance": "기존 글꼴 굵기·래스터 차이를 픽셀 완전 일치로 주장하지 않는다."
+      "remaining_appearance": "기준 devel에도 있는 상단 장식의 색상 영역 크기·제목 글꼴 굵기 차이, 일부 셀의 줄바꿈 차이가 남아 있다. 독립 PDF와 픽셀 완전 일치로 주장하지 않는다. Native/WASM의 기준-후보 출력 연속성 원장으로 기존 차이를 구분한다."
     },
     {
       "key": "rebase8116-title_between_floating_shapes",
@@ -31,7 +31,7 @@
       "actual_png_sha256": "1ff28b2ff2b914feb16866d0b1cc463271533b2d5e527f62572a0d867b5cd9ac",
       "comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8116/reading/rebase8116-title_between_floating_shapes-p004-native-compare.png",
       "observation": "넷째 쪽 제목이 한 글줄로 유지되고 표 위 간격이 보존된다.",
-      "remaining_appearance": "기존 글꼴 굵기·래스터 차이를 픽셀 완전 일치로 주장하지 않는다."
+      "remaining_appearance": "기준 devel에도 있는 상단 장식의 색상 영역 크기·제목 글꼴 굵기 차이, 일부 셀의 줄바꿈 차이가 남아 있다. 독립 PDF와 픽셀 완전 일치로 주장하지 않는다. Native/WASM의 기준-후보 출력 연속성 원장으로 기존 차이를 구분한다."
     },
     {
       "key": "rebase8116-picture_cell_row_height",

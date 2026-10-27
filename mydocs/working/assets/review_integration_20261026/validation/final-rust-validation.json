@@ -1,12 +1,12 @@
 {
-  "head": "1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559",
-  "base": "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c",
-  "started_at": "2026-10-27T03:16:53.957605+00:00",
+  "head": "2e902abacf328bccdd7780606666ac3b1c5c1ce9",
+  "base": "faa885e8b54ffc7cdf4196cd43a3103f362499a2",
+  "started_at": "2026-10-27T07:12:59.732641+00:00",
   "target": "/home/tsjang/rhwp/target/pr-review",
   "build_jobs": 4,
   "steps": [
     {
-      "name": "v14-final-fmt-check",
+      "name": "v15-final-fmt-check",
       "command": [
         "cargo",
         "fmt",
@@ -15,15 +15,13 @@
         "--check"
       ],
       "exit": 0,
-      "seconds": 58.8091222679941,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-fmt-check.log",
+      "seconds": 97.62837911094539,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-fmt-check.log",
       "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "log_bytes": 0,
-      "observed_test_summary": [],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      "observed_test_summary": []
     },
     {
-      "name": "v14-final-clippy-host",
+      "name": "v15-final-clippy-host",
       "command": [
         "cargo",
         "clippy",
@@ -35,15 +33,13 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 120.47023034491576,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-clippy-host.log",
-      "log_sha256": "9c8bc5ed68d4de8993b097768860e2d1bc93e653ec168ec6d04d8b4210c28ed6",
-      "log_bytes": 118,
-      "observed_test_summary": [],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      "seconds": 197.97856402792968,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-clippy-host.log",
+      "log_sha256": "c3d784db76ecb61af86af09fce8afde4a863efcf9894008bb75c8af07cb3899f",
+      "observed_test_summary": []
     },
     {
-      "name": "v14-final-clippy-wasm",
+      "name": "v15-final-clippy-wasm",
       "command": [
         "cargo",
         "clippy",
@@ -60,15 +56,13 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 108.04714820394292,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-clippy-wasm.log",
-      "log_sha256": "f0d12cc1fa01dee27f2d3c5d2dc8075ceec8dfd834ac684f83fe97c400c43fb7",
-      "log_bytes": 118,
-      "observed_test_summary": [],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      "seconds": 178.2005542309489,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-clippy-wasm.log",
+      "log_sha256": "b105ff3ea2f47dc08ebd9310e422bfcc37e32e28c67eb288e0ffaedef91402f2",
+      "observed_test_summary": []
     },
     {
-      "name": "v14-final-workspace-build",
+      "name": "v15-final-workspace-build",
       "command": [
         "cargo",
         "build",
@@ -78,15 +72,13 @@
         "/home/tsjang/rhwp/target/pr-review"
       ],
       "exit": 0,
-      "seconds": 125.58855921099894,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-workspace-build.log",
-      "log_sha256": "32a202556c391edce0a60d19492de06b115d75e80a9c33465fb0cd1ced3760cd",
-      "log_bytes": 266,
-      "observed_test_summary": [],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      "seconds": 268.5670830429299,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-workspace-build.log",
+      "log_sha256": "ecaaa7c04251a62bbbf7e8fe1d749915663a28913d96a6454a187fe1d0a2d2aa",
+      "observed_test_summary": []
     },
     {
-      "name": "v14-final-clippy-workspace",
+      "name": "v15-final-clippy-workspace",
       "command": [
         "cargo",
         "clippy",
@@ -100,49 +92,143 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 165.86408127495088,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-clippy-workspace.log",
-      "log_sha256": "8e32a14574b35044f2dbdf239ff24abaac3c1531589a2322e6d99095c2907bf7",
-      "log_bytes": 266,
-      "observed_test_summary": [],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      "seconds": 301.69688945089,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-clippy-workspace.log",
+      "log_sha256": "a6bcde234733a09f15e9487e11e83135f93221b1176f6e4a04045c0b8aac88b7",
+      "observed_test_summary": []
     },
     {
-      "name": "v14-final-suite-policy",
+      "name": "v15-final-suite-policy",
       "command": [
         "node",
         "scripts/rust-test-suite-manifest.mjs",
         "--check",
         "--base-ref",
-        "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
+        "faa885e8b54ffc7cdf4196cd43a3103f362499a2"
       ],
       "exit": 0,
-      "seconds": 4.4808686709729955,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-suite-policy.log",
-      "log_sha256": "9b5ec10d9a13258ca7c264c8da7291bb92c0336f6410874b3a8fb7a842d186f0",
-      "log_bytes": 179,
-      "observed_test_summary": [],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      "seconds": 2.889752003015019,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-suite-policy.log",
+      "log_sha256": "ba6ed37e880011a15b1ce9053b4d50018afa931cd61d048acb8835177588a9b7",
+      "observed_test_summary": []
     },
     {
-      "name": "v14-final-unit-tier-policy",
+      "name": "v15-final-unit-tier-policy",
       "command": [
         "node",
         "scripts/rust-unit-test-tiers.mjs",
         "--check",
         "--base-ref",
-        "0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c"
+        "faa885e8b54ffc7cdf4196cd43a3103f362499a2"
       ],
       "exit": 0,
-      "seconds": 31.55554954498075,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-unit-tier-policy.log",
+      "seconds": 32.29837763903197,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-unit-tier-policy.log",
       "log_sha256": "d8ea078dd615474da03f5bd8e22900752ea88c198fc4f7afd3bc1f60be4290bc",
-      "log_bytes": 118,
-      "observed_test_summary": [],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      "observed_test_summary": []
     },
     {
-      "name": "v14-final-nextest-all",
+      "name": "v15-focused-issue_8080_no_lineseg_overlay_table_flow",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8080_no_lineseg_overlay_table_flow",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 766.4374877939699,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-focused-issue_8080_no_lineseg_overlay_table_flow.log",
+      "log_sha256": "8b6e00fcf63e0d9f4584455c0b09c0b4bca1bf6a9bafb5d159e6504ae77a8eb5",
+      "observed_test_summary": [
+        "     Summary [   2.124s] 15 tests run: 15 passed, 257 skipped"
+      ]
+    },
+    {
+      "name": "v15-focused-issue_6312_float_anchor_line_uses_source_vpos",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_6312_float_anchor_line_uses_source_vpos",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 32.516370237921365,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-focused-issue_6312_float_anchor_line_uses_source_vpos.log",
+      "log_sha256": "08bb780fd2a0bcf8c482fe4f048b289d40b9d62ee5f50d2c322f6bea261a4e59",
+      "observed_test_summary": [
+        "     Summary [   3.224s] 6 tests run: 6 passed, 276 skipped"
+      ]
+    },
+    {
+      "name": "v15-focused-issue_7642_missing_lineseg_picture_flow",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7642_missing_lineseg_picture_flow",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 37.36143651593011,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-focused-issue_7642_missing_lineseg_picture_flow.log",
+      "log_sha256": "3648812e27084143670716a34c6a66ad6cd48ef32f356482e090e2426a702816",
+      "observed_test_summary": [
+        "     Summary [   0.268s] 4 tests run: 4 passed, 262 skipped"
+      ]
+    },
+    {
+      "name": "v15-focused-source_frame_control_ownership",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "source_frame_control_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 15.56023666902911,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-focused-source_frame_control_ownership.log",
+      "log_sha256": "fab47b47300d4a6d29dd53ae46bd898000500ab09d8665cc707c6807b8b0a1ee",
+      "observed_test_summary": [
+        "     Summary [  12.115s] 7 tests run: 7 passed, 265 skipped"
+      ]
+    },
+    {
+      "name": "v15-focused-issue_8271_hwpx_reopen_tac_picture_float",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8271_hwpx_reopen_tac_picture_float",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 43.91148969391361,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-focused-issue_8271_hwpx_reopen_tac_picture_float.log",
+      "log_sha256": "b2f16453f80d475374844d8395d337fb62234fd98f2c129d7a5ba561f94dfae5",
+      "observed_test_summary": [
+        "     Summary [   0.069s] 4 tests run: 4 passed, 226 skipped"
+      ]
+    },
+    {
+      "name": "v15-final-nextest-all",
       "command": [
         "cargo",
         "nextest",
@@ -158,17 +244,15 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 3805.030049634981,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-nextest-all.log",
-      "log_sha256": "288ee9bc612d52b3c8f16c8d48c44febfc9708d9d0691e3a31bd316329b40c9a",
-      "log_bytes": 1630140,
+      "seconds": 4390.293555655982,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-nextest-all.log",
+      "log_sha256": "1772be048e19d6b681f567dc74efd396693f4f751180fd95aafd5fd3e3167760",
       "observed_test_summary": [
-        "     Summary [2498.634s] 11622 tests run: 11622 passed (50 slow), 45 skipped"
-      ],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+        "     Summary [3446.290s] 11637 tests run: 11637 passed (63 slow), 45 skipped"
+      ]
     },
     {
-      "name": "v14-final-native-skia-lib",
+      "name": "v15-final-native-skia-lib",
       "command": [
         "cargo",
         "test",
@@ -185,20 +269,18 @@
         "12"
       ],
       "exit": 0,
-      "seconds": 597.1880331769353,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-skia-lib.log",
-      "log_sha256": "30c2eadda4103f5b5ca8069e281674821173cef1317de65d42290280bd2b06a2",
-      "log_bytes": 344197,
+      "seconds": 626.0653117969632,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-native-skia-lib.log",
+      "log_sha256": "dc436964aa81dcc8860f6095f55fcd2ff1c04b9763ed2545fa9c98c22c8015da",
       "observed_test_summary": [
-        "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 59.02s",
+        "test result: ok. 3858 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 76.79s",
         "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
         "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
         "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
-      ],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+      ]
     },
     {
-      "name": "v14-final-native-issue_2225_missing_picture_placeholder",
+      "name": "v15-final-native-issue_2225_missing_picture_placeholder",
       "command": [
         "node",
         "scripts/run-rust-test.mjs",
@@ -212,17 +294,15 @@
         "native-skia"
       ],
       "exit": 0,
-      "seconds": 566.5944255270297,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-issue_2225_missing_picture_placeholder.log",
-      "log_sha256": "d02119d58a50b7b78bba3d698c378936fa5344ac62a0371dcb08c08da53699e0",
-      "log_bytes": 1030,
+      "seconds": 598.0378167340532,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-native-issue_2225_missing_picture_placeholder.log",
+      "log_sha256": "8b35e082df36179e4f5b32d06386454cc2073df155b89e54be2dc7daa0bcf9e6",
       "observed_test_summary": [
-        "     Summary [   1.936s] 2 tests run: 2 passed, 275 skipped"
-      ],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+        "     Summary [   1.651s] 2 tests run: 2 passed, 267 skipped"
+      ]
     },
     {
-      "name": "v14-final-native-render_p37_direct_pdf_export",
+      "name": "v15-final-native-render_p37_direct_pdf_export",
       "command": [
         "node",
         "scripts/run-rust-test.mjs",
@@ -236,17 +316,15 @@
         "native-skia"
       ],
       "exit": 0,
-      "seconds": 32.90232081001159,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-render_p37_direct_pdf_export.log",
-      "log_sha256": "f05269e4903a68868fc1740e3b5c245de6be524ddc4eb0a0f259710d7505f39f",
-      "log_bytes": 3162,
+      "seconds": 29.68470891600009,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-native-render_p37_direct_pdf_export.log",
+      "log_sha256": "709fe5628ed76e825b6191ebcf262c8678a94064cc13dee211de3342c01d1151",
       "observed_test_summary": [
-        "     Summary [   0.941s] 14 tests run: 14 passed, 246 skipped"
-      ],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+        "     Summary [   0.659s] 14 tests run: 14 passed, 255 skipped"
+      ]
     },
     {
-      "name": "v14-final-native-native_fractional_glyph_origin",
+      "name": "v15-final-native-native_fractional_glyph_origin",
       "command": [
         "node",
         "scripts/run-rust-test.mjs",
@@ -260,17 +338,15 @@
         "native-skia"
       ],
       "exit": 0,
-      "seconds": 31.592160071944818,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-native_fractional_glyph_origin.log",
-      "log_sha256": "a09a3627ec71f7d1bcd1b3f224e7b8df19c26ecca3a961f0515a880e6e5b7b2e",
-      "log_bytes": 1333,
+      "seconds": 25.427867599064484,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-native-native_fractional_glyph_origin.log",
+      "log_sha256": "18f41dc88c1247bb97b255a6f0b65059def34a49ea4bacd241610368976fa34d",
       "observed_test_summary": [
-        "     Summary [   1.684s] 4 tests run: 4 passed, 278 skipped"
-      ],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+        "     Summary [   1.346s] 4 tests run: 4 passed, 285 skipped"
+      ]
     },
     {
-      "name": "v14-final-native-issue_7445_biotoxin_source_ownership",
+      "name": "v15-final-native-issue_7445_biotoxin_source_ownership",
       "command": [
         "node",
         "scripts/run-rust-test.mjs",
@@ -284,16 +360,14 @@
         "native-skia"
       ],
       "exit": 0,
-      "seconds": 42.172764812014066,
-      "temporary_log_path": "output/pr-review/planet6897-20261026/v14-final-native-issue_7445_biotoxin_source_ownership.log",
-      "log_sha256": "0dddabeb0e847147a8b1bd5ac4565f31cec93780e1449c746230df4b9406d31a",
-      "log_bytes": 2160,
+      "seconds": 14.322828114032745,
+      "temporary_log_path": "output/pr-review/planet6897-20261026/v15-final-native-issue_7445_biotoxin_source_ownership.log",
+      "log_sha256": "60173fb19d5623e13ab462b6ff512d0c7dbd89df0d622c8148513ff594f1ebcc",
       "observed_test_summary": [
-        "     Summary [  13.513s] 9 tests run: 9 passed, 265 skipped"
-      ],
-      "log_storage": "temporary; excluded from final PR tree and removed at review end"
+        "     Summary [  12.061s] 9 tests run: 9 passed, 260 skipped"
+      ]
     }
   ],
   "status": "passed",
-  "completed_at": "2026-10-27T04:51:45.995678+00:00"
+  "completed_at": "2026-10-27T09:20:40.570133+00:00"
 }

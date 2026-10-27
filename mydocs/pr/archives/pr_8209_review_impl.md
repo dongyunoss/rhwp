@@ -2,8 +2,8 @@
 
 - 원 head: `01588f1e997b37795d2dbafecdf1f015341d553c`
 - 통합 branch: `review/integration-20261026-document-updates`
-- base: `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`
-- 완료한 로컬 code/test 검증 head: `1cd656fdf9a09e88cd1ee9eb92f4c43358ea2559`
+- base: `faa885e8b54ffc7cdf4196cd43a3103f362499a2`
+- 완료한 로컬 code/test 검증 head: `2e902abacf328bccdd7780606666ac3b1c5c1ce9`
 - 최종 판정·입력·명령·제한: [pr_8209_review.md](pr_8209_review.md)
 - 단계 계획·독립 근거: [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>)
 
@@ -11,15 +11,15 @@
 
 | 순서 | 원 SHA | 실제 적용 SHA / 처리 |
 | ---: | --- | --- |
-| 1 | `ef089bc668d64e02b10a596d927d9d3b0bc347a6` | `81dd6e099e770343f3ba7382654118c6462ac859` |
-| 2 | `1091fb933df18e3171b34f048d0de24d4a054562` | `916048d29b7603305a4c22cf9bb80584e3c52e64` |
-| 3 | `ca45a7162a9af5102b10ff941d92ab6625a4cfeb` | `a410ae27ab05af32132df4c086775ff36ebd8952` |
-| 4 | `65f281399bae5457f021585532eaab2276e6540c` | `799894aecb949109f07a8e85de359d16c4cd0387` |
-| 5 | `92c64aef7f4971a5b1fb563c7396c284f1e61a06` | `a22ed83a746c2f3995cba830d1accf309e85e0e6` |
-| 6 | `01588f1e997b37795d2dbafecdf1f015341d553c` | `ca638217d50845db03df171a3ef4686e3911f3a6` |
+| 1 | `ef089bc668d64e02b10a596d927d9d3b0bc347a6` | `b3e02b4657ca534dc7d0980ffd429b9cffe465cc` |
+| 2 | `1091fb933df18e3171b34f048d0de24d4a054562` | `8b09ea80ab2e1094b5d437672cb7708a5702629b` |
+| 3 | `ca45a7162a9af5102b10ff941d92ab6625a4cfeb` | `6a9b72e2b24cd71557825926f8f6e93e7bc79bae` |
+| 4 | `65f281399bae5457f021585532eaab2276e6540c` | `4e1b4a3b7135ed2681046e52e96f08abf2fde830` |
+| 5 | `92c64aef7f4971a5b1fb563c7396c284f1e61a06` | `c073ea740bf284005d437ea89e08f36bfad501f4` |
+| 6 | `01588f1e997b37795d2dbafecdf1f015341d553c` | `993d9a5e82491a7136a1d3549a7862dff9ba959f` |
 
 적층 선행 commit은 patch-id로 대조했다. merge commit을 다시 체리픽하지 않았고 원 저자·`-x` 출처를 보존했다.
-#8227·#8237의 사전 가상 충돌은 적층 부모를 명시한 예상 tree와 실제 결과가 일치했다. 실제 체리픽 충돌은 없었다.
+#8227·#8237의 사전 가상 충돌은 적층 부모를 명시한 예상 tree와 실제 결과가 일치했다. 실제 체리픽 충돌은 없었다. 이후 #8116 리베이스의 line_breaking.rs 한 충돌은 두 수용 조건을 모두 유지해 해소했다. 리베이스 전후 SHA·원 저자 보존은 커밋 대조 원장에 기록했다.
 
 ## 보정·검증·후속 경계
 
@@ -27,7 +27,7 @@
 2. 승인된 기존 미달 페이지를 공통 로직에서 보정하고 단계별 일반 커밋으로 고정했다.
 3. 관련 전쪽 Native/fresh WASM 선행 검증·직접 판독 뒤 정식 소유 회귀를 보강하고, 최종 최적화 WASM 전쪽·기준 대비 하락 기준을 검증했다.
 4. 전체 필수 로컬 검증을 실제 완료한 뒤 원 PR별 이 기록을 작성했다.
-5. 통합 PR을 제출한다. 이후 원격 CI·승인·머지·원 PR 종료는 별도 후속 조건이다.
+5. 최종 로컬 커밋·본문을 준비하고 작업지시자 승인 후 원격 push·통합 PR 제출을 진행한다. 이후 CI·머지·원 PR 종료는 별도 후속 조건이다.
 
 보정 SHA: 이 PR 단독 보정 없음; 공통 통합 보정은 상위 계획 참조.
 
