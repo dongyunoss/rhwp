@@ -662,3 +662,7 @@ WASM 차트 대조에서도 같은 문제가 확인됐다. `incoming-124`의 새
 최종 검증에서 제외한다. 실행 중인 전체 Rust 컴파일 역시 실제 `--extern`이 이전
 차트 `.rlib`을 참조하는 것을 확인했으므로 중단했다. 소스 내용은 바꾸지 않고 현재
 차트 crate 소스 시각을 갱신해 의존성을 명시 재빌드한 다음 차트 출력부터 검사한다.
+
+### 현재 소스로 다시 빌드한 Native 중간 검증
+
+차트 의존성을 현재 소스로 재빌드한 Native 실행 파일 SHA-256은 `3a7b0c02eb624c38e75ef18240abe2c6c39c2aabb24f43d38be4dc0757444b0a`다. 실제 차트 SVG의 테두리 색·두께는 `#868686`/1이며 해당 쪽 점수는 99.80761%다. sample16 세 문서의 Native 192쪽 PNG를 독립 Print PNG와 양방향 반경 2px로 직접 비교해 미대응 픽셀 0을 확인했다. 기존 범위 완료분 56건·693쪽에서 90% 미만과 0.1%p 이상 하락은 없었다. 이는 중간 결과다. WASM 전쪽, 나머지 비교, 전체 Rust 및 브라우저 검사는 완료 전이다. [중간 기록](assets/review_integration_20261026/validation/post-rebase-8319/corrected-native-interim.json)
