@@ -3770,6 +3770,19 @@ impl LayoutEngine {
     ) -> f64 {
         // [#6929] 진입 시점의 단 상태 — 이후 이 함수가 자식을 붙이므로 먼저 찍어 둔다.
         let column_is_empty_on_entry = col_node.children.is_empty();
+        // 확정된 자식 원점으로 배치하면서 가용 높이만 이전 흐름 원점에서 재면,
+        // 이미 들어가는 온전한 마지막 행에도 가짜 컷이 생긴다. 같은 부모 하단과
+        // 확정 원점으로 viewport를 구성해 행 수용과 실제 배치가 함께 소비한다.
+        // 명시적인 소스 컷은 자체 이어받기 viewport를 소유한다.
+        let resolved_nested_area = resolved_table_origin
+            .filter(|_| depth > 0 && nested_split.is_none())
+            .map(|(_, top)| LayoutRect {
+                x: col_area.x,
+                y: top,
+                width: col_area.width,
+                height: (col_area.y + col_area.height - top).max(0.0),
+            });
+        let col_area = resolved_nested_area.as_ref().unwrap_or(col_area);
         // 중첩 표도 최상위 측정과 같은 부모 행/외부 자식 분리를 소비한다.
         let reflow_measured = measured_table
             .is_none()
@@ -4180,10 +4193,6 @@ impl LayoutEngine {
         // 않으며, 다음 조각은 부모 RowBreak viewport가 다시 호출해 소유한다.
         let inferred_viewport_split = if nested_split.is_none()
             && depth > 0
-            // 글앞·글뒤 표는 호스트의 남은 흐름 높이로 내용을 분할하지 않는다.
-            // 측정한 자기 행 상자를 그대로 배치하고 실제 부모 clip은 별도로
-            // 소비한다. 남은 높이를 컷으로 바꾸면 마지막 행만 줄어 글줄이 샌다.
-            && !self.nested_table_is_overlay(table)
             && col_area.height > 0.0
             && row_y.last().copied().unwrap_or(0.0) > col_area.height + 0.5
         {
