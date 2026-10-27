@@ -7,9 +7,9 @@ TSV SHA-256은 [provenance.json](provenance.json)에 있다. 실행 로그와 �
 
 ## 원본과 독립 기준
 
-- [원본 HWP](../../../../samples/2025%20행정업무운영%20편람(최종).hwp)의 SHA-256은
+- 당시 원본 `samples/2025 행정업무운영 편람(최종).hwp`의 SHA-256은
   `40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f`다.
-- [한컴2024+KoPub Print PDF](../../../../pdf/2025%20행정업무운영%20편람(최종)-hwp-kopub-2024.pdf)의
+- 당시 한컴 2024+KoPub Print PDF `pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf`의
   SHA-256은 `3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593`다.
   원 #7751의 실제 통합 #7964와 같은 독립 기준이다. 기존 정상 Print와 출처를 재사용하며
   RHWP 저장본이나 RHWP export PDF를 기준으로 대체하지 않았다. 원본과 PDF는 이미 커밋돼 있다.
@@ -42,7 +42,7 @@ raw는 색상 경계 보정 전 2px 이웃 실루엣 값이다. 엄격 RGB 픽�
 [독립 좌표](independent_coordinates.json)는 PDF의 실제 vector 선·채움 경로를 72pt에서
 96DPI로 환산한 값이다. 구현의 계산값을 기대값으로 복사하지 않았다.
 
-새 [정식 회귀 파일](../../../../tests/cases/stored_tac_source_and_line_frames.rs)은 다음을 검사한다.
+당시 정식 회귀 파일 `tests/cases/stored_tac_source_and_line_frames.rs`은 다음을 검사했다.
 
 - 111쪽 표의 구역·문단·컨트롤 소속, 셀 내용 순서·누락·중복, 앞뒤 표의 겹침 방지와
   독립 PDF 윗변·아랫변을 함께 보호한다.
@@ -61,3 +61,9 @@ raw는 색상 경계 보정 전 2px 이웃 실루엣 값이다. 엄격 RGB 픽�
 실제 실행은 `stored-tac-new-regressions-1170.log` 및 해당 제품별 로그에 있다. 컴파일 실패를
 수정 전 결함의 검출 증거로 세지 않았다. 기존 회귀의 기대값·golden·허용치는 변경하지 않았다.
 이 폴더의 통과는 전체 통합 후보의 Rust·lint·다른 문서·원격 CI 완료를 뜻하지 않는다.
+
+## 현재 통합 후보의 범위
+
+위 내용은 당시 실행의 역사적 기록이다. 사용자의 범위 지정에 따라 행정업무운영 편람과
+해당 회귀 파일은 현재 통합 PR 검토에서 제외·제거했다. 이 자료를 현재 후보의 제출 증거나
+활성 검사로 연결하지 않으며 삭제된 회귀 파일과 파생 참조를 다시 생성하지 않는다.

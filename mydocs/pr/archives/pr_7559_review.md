@@ -1,146 +1,101 @@
----
-kind: snapshot
-status: active
-canonical: mydocs/pr/archives/pr_7559_review.md
-last_verified: 2026-10-26
----
-
 # PR #7559 리뷰 — 새 표의 저장 전후 원점
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 공개 API 표의 저장 전후 원점·빈 호스트 점유 범위의 로컬 검증 완료.**
+**메인터너 보정 후 수용 가능 — 새 표의 저장 전후 원점 범위의 로컬 검증 완료.**
 
-원 contributor head가 아니라 메인터너 보정한 통합 후보의 판정이다. 아래 현재 증거와
-실제 검사 실행을 대조했다. 통합 PR의 정확한 code head CI·merge·후속 처리는
-앞으로 수행할 조건이며 로컬 통과로 대신하지 않는다.
+원 contributor head의 직접 merge 판정과 메인터너 보정한 통합 후보의 판정을 구분한다. 원격 CI·merge·후속 처리는 실제 수행 후 별도로 기록한다.
 
-## 최종 로컬 판정 근거 — 2026-10-26
-
-원 head `5f1f1057bd1b7981b3801b815aa28b98860932a2`가 원격과 같음을 재확인했다. 검증 코드는
-`61528013511c87c732524f91c6f224286a055337`, 실제 렌더 source는
-`bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`, 고정 devel은
-`238de6de41a208648f4ade6b494fe433a81c1fce`다. 제출 전 fetch에서도 같은 base를
-확인했으므로 추가 리베이스하지 않았다. 이후 문서·증거 커밋은 코드·검사를 바꾸지 않았다.
-
-| 필수 근거 | 최종 확인 결과 |
-| --- | --- |
-| 원 PR의 현재 검사 | 아래 모듈·함수별 실제 PASS와 로그 행을 확인했다. 소스 존재를 실행 결과로 대신하지 않았다. |
-| 전쪽 Native/fresh WASM | 18조건·각 1쪽(전체 18쪽/backend)에서 최저 100.00000% / 100.00000%, 독립 Print 쪽수 일치·90% 미만/누락 0쪽 |
-| 고정 devel 보존 | 동일 입력·Print·글꼴·backend의 페이지별 비교에서 0.1%p 초과 하락 0쪽 |
-| 직접 판독 | 표 원점·행 높이와 뒤 본문 순서를 확인했다. 원점 불변의 0.2px는 저장 전후 관계 검사이며 독립 PDF의 절대 좌표 핀이 아니다. |
-| 전체 로컬 게이트 | fmt·수집/단위 정책·Release build/lib·전체 nextest·Skia 3종·Native/WASM/workspace Clippy·workspace build·doctest 완료. 실제 종료 근거는 아래 공통 기록 참조 |
-| 원격 절차 | 통합 PR의 정확한 code head CI·실제 merge·후속 comment는 앞으로 수행할 조건이다. 원 contributor head를 직접 승인·merge한 기록이 아니다. |
-
-조건 번호 042, 043, 044, 045, 046, 047, 048, 049, 050, 051, 052, 053, 054, 055, 059, 060, 061, 062. [전쪽 TSV·원본/Print·producer·해시와 판독](../assets/source_pr_qualified_20261026/README.md)을
-이 PR의 직접 근거로 연결한다. raw는 색상 경계 보정 전 2px 실루엣이며 RGB 완전 일치나
-과거 별도 지표의 통과를 뜻하지 않는다. Native255·표준 release/wasm-opt를 마친 fresh073을
-사용했다. 측정 뒤 코드 변경은 없으며, 과거 제품의 표는 당시 결과로 구분한다.
-
-| 출력 경로 | 현재 대표 review | 현재 standalone overlay |
-| --- | --- | --- |
-| Native | [review](../assets/source_pr_qualified_20261026/png/native/046/review_001.png) | [overlay](../assets/source_pr_qualified_20261026/png/native/046/overlay_001.png) |
-| fresh WASM | [review](../assets/source_pr_qualified_20261026/png/fresh-wasm/046/review_001.png) | [overlay](../assets/source_pr_qualified_20261026/png/fresh-wasm/046/overlay_001.png) |
-
-Merge 후에는 이 대표 파일을
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/source_pr_qualified_20261026/`
-위 표의 실제 상대 경로로 고정해 contributor comment에 두 이미지를 함께 표시한다.
-같은 merge의 devel 포함·asset 존재·CI 결과를 먼저 확인하고 한국어 존댓말의
-`--body-file` 본문을 게시한 뒤 API에서 한글·링크·실제 Markdown을 다시 확인한다.
-
-
-## 원 기여의 현재 커밋 대응
-
-현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
-
-| 원 커밋 | 통합 후보의 대응 |
-| --- | --- |
-| `ebba2950fe97e00d38715e05236f6182f1a74da8` | `31c9b59bf291209963b87ec04d3af80a7c93daff` |
-| `2ee1ad24b403d384262d499db071bca10f6be5d5` | `e8f140492570fdf65dd48872df006e6d3ce8e5d3` |
-| `5f1f1057bd1b7981b3801b815aa28b98860932a2` | 원 PR의 merge 전용 커밋: 별도 기능 적용 없음 |
-
-## 접수 정보
-
-이하 최초 접수와 중간 검토의 제품·기준 SHA 및 당시 진행 상태를 보존한다.
-현재 판정은 위 「최종 로컬 판정 근거」와 아래 「통합 후보의 실제 검사 실행」이 정본이다.
-과거의 진행 중·미완료 표현을 현재 로컬 게이트 상태로 사용하지 않는다.
+## 접수 정보와 적용 계보
 
 | 항목 | 값 |
 | --- | --- |
-| 원 PR | [#7559](https://github.com/edwardkim/rhwp/pull/7559), semanticist21, devel 대상 Draft |
-| 2026-10-21 조회 head | `5f1f1057bd1b7981b3801b815aa28b98860932a2` |
-| 기능 commit | `ebba2950fe97e00d38715e05236f6182f1a74da8`, `2ee1ad24b403d384262d499db071bca10f6be5d5` |
-| 로컬 cherry-pick | `675cf1802e`, `8caef79030`; 나머지 head commit은 devel merge |
-| reviewer | jangster77; 기존 요청 API 영수증 확인 |
-| 통합 branch | `review/semanticist21-20261019` |
-| 최신 집중 검사 제품 | `9810f26ccfbf9073679a7b79c3cfa5ece18905b6`, Native078 |
+| 원 PR·작성자 | [#7559](https://github.com/edwardkim/rhwp/pull/7559) / semanticist21 |
+| 원 head | `5f1f1057bd1b7981b3801b815aa28b98860932a2` |
+| 통합 브랜치 | `review/semanticist21-20261019` |
+| 검증 코드·테스트 source | `04c92da78165ccbf63b467855591df183655a98d` |
+| 고정 upstream/devel | `faa885e8b54ffc7cdf4196cd43a3103f362499a2` |
+| 원격 조회 시 상태 | 2026-10-27 조회에서 원 head 불변·open·reviewer jangster77 확인. 원 Draft 여부와 통합 후보 판정은 별개 |
 
-원문·commit·변경 파일 조회는 ignored output의 `pr7559-current-review-1142.json`,
-reviewer 영수증은 `pr-7559-reviewers.json`에 있다. 변경 파일은
-`tests/cases/table_hwpx_save_origin_contract.rs` 하나다. 현재 파일은 원 기능 commit
-`2ee1ad24b4`의 바이트와 동일하며 SHA-256은
-`e5ef237b0abe215694b4c3ec0e6492d576ef18474d58aa11d8c42ae8e8f2bb2d`다.
-
-## 원 주장과 독립 기대값
-
-원 PR은 공개 API로 표를 만든 뒤 셀 안 여백 또는 표 offset을 변경하고, 편집 중·HWP
-재열기·HWPX 재열기의 원점과 쪽수 보존을 검사한다. 작성자는 두 실패를 명시했고,
-기존 #7265의 한컴 정본 여백을 되돌려 통과시키면 안 된다고 설명했다.
-
-#7265 → 실제 통합 #7430, 관련 #7538의 미병합 상태와 #7518 → #7570의 계산 줄 계약을
-먼저 대조했다. 분석·코드 소비 위치·실행 기록은
-[계산 빈 호스트 보정](../../working/task_semanticist21_20261020_computed_empty_host_frame.md)에 있다.
-예전 저장 fixture의 통과를 현재 공개 API 입력의 검증으로 대신하지 않았다.
-
-현재 API의 offset·padding 및 HWP/HWPX 네 입력을 각각 독립 한컴2020 MCP Print로
-출력했다. 호스트의 계산 LineSeg를 정상 저장 줄로 오인하거나 높이 0으로 없애지 않고,
-빈 글줄·표 앞 여백·양수 offset·표 높이·뒤 여백의 물리 점유를 공통 결과로 계산했다.
-fit과 실제 표 배치가 같은 표 원점·점유 끝을 소비한다. 뒤 문단도 표를 피하는 첫 줄의
-확정 원점을 사용하며 문서 ID·글자 크기·좌표별 예외는 없다.
-
-## 시각 증거와 회귀 검사
-
-관련 검증 자료는 [계산 빈 호스트 증거](../assets/computed_empty_host_line_20261020/README.md)에
-연결했다. 제품 `bc649064faaa2193380c1ab5b2567b4470f2472e`의 14개 경계 입력은
-각 전 1쪽 Native/fresh WASM raw100%이며, 공개 API 원본 네 조건과 합친 18조건도
-양쪽100%다. 실제 한컴2020 `11.0.0.9136`·PrintMethod0·1-up PDF다.
-같은 입력·Print·글꼴의 고정 devel 대조와 확대 판독을 완료한 과거 제품의 증거이며,
-최신 통합 head의 최종 전쪽 결과로 재표기하지 않는다.
-
-원 PR의 저장 전후 원점 불변 검사 두 개는 기대값을 바꾸지 않고 Native078에서 모두
-통과했다. 공통 빈 호스트 관계 검사 5개와 형제 표 관계 검사 7개도 같은 제품에서
-통과했다. 실행 명령·정식 소스 SHA·로그는
-`emphasis-metric-current-failure-focus-1135.json`에 있다.
-원점 불변의 0.2px 허용 오차를 독립 PDF의 절대 좌표 기준값으로 설명하지 않는다.
-
-## 조판 원칙과 통합 판정
-
-| 항목 | 판정·근거 |
+| 원 커밋 | 현재 통합의 대응 |
 | --- | --- |
-| 원 주장과 검사 | 공개 API의 두 저장 경로·쪽수·원점 보존을 직접 검사; 원 검사 바이트 유지 |
-| 공통 결과의 소비 | `computed_host_frame`의 표 원점·점유 끝을 fit과 실제 배치가 함께 소비 |
-| 핵심 반례 | 작은/큰 빈 줄·양수 offset·다음 문단 앞 간격·표 위에 들어가는 글줄과 회피 글줄 |
-| 회귀 검출 | 빈 호스트 정식 관계 검사 5개는 이전 제품에서 4FAIL·정상 대조 1PASS, 보정 뒤 5PASS |
-| 독립 시각 증거 | 위 과거 제품의 전쪽 Native/fresh100%와 직접 판독·원문 TSV·독립 Print 보존 |
-| 최신 통합 gate | fresh030·전체 Rust·lint·관련 전쪽 시각 및 최신 devel 기능 보존 검증 진행 중 |
+| `ebba2950fe97e00d38715e05236f6182f1a74da8` | `15f1ed01500cbbf3ace1be1b34f1c64f52b9c66d` |
+| `2ee1ad24b403d384262d499db071bca10f6be5d5` | `d7e9463ef247987a73f7cea27ce438f12f644c95` |
+| `5f1f1057bd1b7981b3801b815aa28b98860932a2` | 원 PR의 devel merge 전용 커밋; 별도 기능 체리픽 없음 |
 
-필수 통합 검증을 완료한 뒤 최종 판정을 갱신한다. 전체 Rust1085의 별도 실패를 집중
-검사 통과로 해소했다고 보고하지 않는다. 실제 통합 승인·merge 뒤에는 원 재현 기여와
-보정 범위, 실제 merge SHA 및 대표 review·overlay를 원 PR에 연결하는 후속 처리를 한다.
+## 구현 주장·공통 소비 경로·반례
 
-## 현재 후보의 실제 검사 실행 — 2026-10-26
+공개 API로 생성한 새 표의 저장 전후 원점 불일치를 재현한 기여다. 공통 computed_host_frame의 표 원점·점유 끝을 fit과 실제 배치가 함께 소비하도록 보정했다. 작은/큰 빈 줄, 양수 offset, 다음 문단 앞 간격, 표 위로 들어가는 글줄과 회피 글줄을 구분한다. 원점 불변의 상대 오차는 독립 Print의 절대 좌표 핀과 구분한다.
 
-현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
-`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
-동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
-Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
-이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+## 원 PR의 실제 회귀 실행
 
-아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+아래 함수와 실제 최종 PASS 행을 대조했다. 계약 검사 통과와 독립 Print의 시각 일치를 구분한다.
 
 - [tests/cases/table_hwpx_save_origin_contract.rs](../../../tests/cases/table_hwpx_save_origin_contract.rs): SHA-256 `e5ef237b0abe215694b4c3ec0e6492d576ef18474d58aa11d8c42ae8e8f2bb2d`.
-  - `generated_table_offset_origin_survives_hwpx_save`: PASS, `logs/current-full-nextest-4184.log:10121` (`rhwp::regression_suite_022`).
-  - `generated_table_padding_origin_survives_hwpx_save`: PASS, `logs/current-full-nextest-4184.log:10126` (`rhwp::regression_suite_022`).
+  - `generated_table_padding_origin_survives_hwpx_save`: PASS, `rhwp::regression_suite_016`, 로컬 `logs/coherent-full-nextest-4697.log:8598`.
+  - `generated_table_offset_origin_survives_hwpx_save`: PASS, `rhwp::regression_suite_016`, 로컬 `logs/coherent-full-nextest-4697.log:8597`.
 
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+## 독립 Print·전쪽 TSV·대표 페이지
+
+이 PR의 기존 검증 입력은 최종 조건 번호 059, 060, 061, 062, 063, 064, 065, 066, 067, 068, 069, 070, 071, 072, 076, 077, 078, 079에 연결한다. 다른 PR의 평균 점수로 이 범위를 대신하지 않는다.
+
+| 조건 | 전체 쪽수 | Native 최저 raw·전체 TSV | fresh WASM 최저 raw·전체 TSV |
+| --- | ---: | --- | --- |
+| 059 | 1 | [100.00000](../assets/s21_20261027/n/c/059.tsv) | [100.00000](../assets/s21_20261027/w/c/059.tsv) |
+| 060 | 1 | [100.00000](../assets/s21_20261027/n/c/060.tsv) | [100.00000](../assets/s21_20261027/w/c/060.tsv) |
+| 061 | 1 | [100.00000](../assets/s21_20261027/n/c/061.tsv) | [100.00000](../assets/s21_20261027/w/c/061.tsv) |
+| 062 | 1 | [100.00000](../assets/s21_20261027/n/c/062.tsv) | [100.00000](../assets/s21_20261027/w/c/062.tsv) |
+| 063 | 1 | [100.00000](../assets/s21_20261027/n/c/063.tsv) | [100.00000](../assets/s21_20261027/w/c/063.tsv) |
+| 064 | 1 | [100.00000](../assets/s21_20261027/n/c/064.tsv) | [100.00000](../assets/s21_20261027/w/c/064.tsv) |
+| 065 | 1 | [100.00000](../assets/s21_20261027/n/c/065.tsv) | [100.00000](../assets/s21_20261027/w/c/065.tsv) |
+| 066 | 1 | [100.00000](../assets/s21_20261027/n/c/066.tsv) | [100.00000](../assets/s21_20261027/w/c/066.tsv) |
+| 067 | 1 | [100.00000](../assets/s21_20261027/n/c/067.tsv) | [100.00000](../assets/s21_20261027/w/c/067.tsv) |
+| 068 | 1 | [100.00000](../assets/s21_20261027/n/c/068.tsv) | [100.00000](../assets/s21_20261027/w/c/068.tsv) |
+| 069 | 1 | [100.00000](../assets/s21_20261027/n/c/069.tsv) | [100.00000](../assets/s21_20261027/w/c/069.tsv) |
+| 070 | 1 | [100.00000](../assets/s21_20261027/n/c/070.tsv) | [100.00000](../assets/s21_20261027/w/c/070.tsv) |
+| 071 | 1 | [100.00000](../assets/s21_20261027/n/c/071.tsv) | [100.00000](../assets/s21_20261027/w/c/071.tsv) |
+| 072 | 1 | [100.00000](../assets/s21_20261027/n/c/072.tsv) | [100.00000](../assets/s21_20261027/w/c/072.tsv) |
+| 076 | 1 | [100.00000](../assets/s21_20261027/n/c/076.tsv) | [100.00000](../assets/s21_20261027/w/c/076.tsv) |
+| 077 | 1 | [100.00000](../assets/s21_20261027/n/c/077.tsv) | [100.00000](../assets/s21_20261027/w/c/077.tsv) |
+| 078 | 1 | [100.00000](../assets/s21_20261027/n/c/078.tsv) | [100.00000](../assets/s21_20261027/w/c/078.tsv) |
+| 079 | 1 | [100.00000](../assets/s21_20261027/n/c/079.tsv) | [100.00000](../assets/s21_20261027/w/c/079.tsv) |
+
+[입력·Print 경로와 SHA, producer·DPI·글꼴, base TSV 및 대표 review·overlay](../assets/s21_20261027/README.md)를 각 조건 번호로 대조한다. raw는 색상 경계 보정 전 2px 내용 실루엣이며 RGB 완전 일치가 아니다. 실제 빈 페이지의 raw 100%는 가시 내용의 정확성 증거로 사용하지 않고, 원본·독립 Print의 쪽수와 소유 계약을 별도로 검사한다.
+
+신규 검사는 문단·줄·개체의 소유·순서·누락·중복·포함·겹침 관계를 기본으로 한다. 독립 Print와 실제 판독을 마치고 Native/fresh WASM이 모두 98% 이상인 완료 페이지만 독립 좌표 ±2px를 허용하며 관계 검사도 유지한다. 원본 HU·크기·비율 계약과 임의 화면 좌표 핀을 구분한다.
+
+## 리베이스와 전체 검증의 경계
+
+새 base #8116의 기존 네 입력은 같은 Print·글꼴·DPI에서 현재 보정 범위와 함께 비교했다. 확정된 중첩 표 원점에서 측정과 배치가 같은 가용 높이를 소비하도록 보정했으며 기존 15개 검사의 기대값을 바꾸지 않았다. 사용자 지시의 페이지별 하락 한계는 0.1%p다. base의 90% 미만은 변경 전 비교 자료로 구분하고 후보는 모든 관련 쪽에서 90% 이상을 유지한다.
+
+필수 로컬 게이트는 최종 실행 결과와 source SHA를 대조해 완료했다. 전체 Rust·Skia·Studio의 실제 종료 집계는 공통 증거의 실행 요약을 따른다.
+
+## 원격 처리와 후속 기록
+
+통합 PR을 실제 템플릿에 맞춰 제출한 뒤 정확한 head의 CI·mergeability를 확인한다. 사용자가 승인한 옵션 2의 별도 self-review·오늘할일 PR을 code CI 이후 처리한다. 원 PR별 리뷰는 각각 유지하고 실제 통합 merge·devel 포함을 확인한 뒤 존댓말로 원 기여와 보정 범위, CI·merge SHA 및 그 SHA에 고정한 대표 review·overlay를 연결한다. contributor fork·branch와 원 history는 보존한다.
+
+대표 쪽 선정: 새 표를 HWPX로 저장·재열기한 표와 뒤 본문의 원점. 다른 PR의 임의 페이지로 대체하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+[Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 통합 merge와 자산의 devel 포함을 확인한 뒤에만 게시한다. 이 계획을 원 PR의 직접 merge 승인으로 쓰지 않는다.
+
+검증 범위는 위 조건 059, 060, 061, 062, 063, 064, 065, 066, 067, 068, 069, 070, 071, 072, 076, 077, 078, 079 전체 쪽이다. raw 90% 미만·누락·측정 불가 후보는 양쪽 0쪽이며, 대표 페이지와 전체 범위의 최저값을 구분한다. 평균·RGB 진단값으로 raw 미달을 면제하지 않았다.
+
+대표는 조건 077의 1쪽이다. 다음 수치는 실제 새 출력·같은 독립 Print를 대조한 값이며 완전한 RGB 일치의 선언이 아니다.
+
+| 출력 | raw 실루엣 | pixel_match | visual_accuracy_proxy_percent | review / overlay |
+| --- | ---: | ---: | ---: | --- |
+| native | 100.00000% | 99.60387% | 1.97222% | [review](../assets/s21_20261027/panels/native/077-p001-review.png) / [overlay](../assets/s21_20261027/panels/native/077-p001-overlay.png) |
+| wasm | 100.00000% | 99.60297% | 1.80455% | [review](../assets/s21_20261027/panels/wasm/077-p001-review.png) / [overlay](../assets/s21_20261027/panels/wasm/077-p001-overlay.png) |
+
+직접 판독과 남은 차이는 공통 증거의 해당 조건·쪽 기록을 따른다. 새 출력 쌍과 실제 이전 판독의 동일성을 검증한 재사용 범위를 구분했다.
+
+게시 문안은 원 기여에 감사드리고, 원 PR 번호·원 head와 통합 후보의 보정 범위·실제 CI·merge SHA를 존댓말로 설명한다. 같은 asset의 아래 URL에서 `<merge-commit-sha>`만 실제 merge SHA로 바꾼다.
+
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/077-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/077-p001-overlay.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/077-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/077-p001-overlay.png`
+
+실제 LF 본문 파일을 `--body-file`로 게시하고 API로 본문·한글·이미지 URL을 재조회한다. 동일 merge·동일 증거의 기존 comment가 있으면 중복 게시하지 않는다.

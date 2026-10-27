@@ -2,193 +2,107 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 묶기·풀기 후 활성 필드의 원래 셀 소유 범위의 로컬 검증 완료.**
+**메인터너 보정 후 수용 가능 — 묶기·풀기 뒤 필드와 회전 자식 보존 범위의 로컬 검증 완료.**
 
-원 contributor head가 아니라 메인터너 보정한 통합 후보의 판정이다. 아래 현재 증거와
-실제 검사 실행을 대조했다. 통합 PR의 정확한 code head CI·merge·후속 처리는
-앞으로 수행할 조건이며 로컬 통과로 대신하지 않는다.
+원 contributor head의 직접 merge 판정과 메인터너 보정한 통합 후보의 판정을 구분한다. 원격 CI·merge·후속 처리는 실제 수행 후 별도로 기록한다.
 
-## 최종 로컬 판정 근거 — 2026-10-26
-
-원 head `9c83132affd66957e024fce12c4b63a51ab0d33c`가 원격과 같음을 재확인했다. 검증 코드는
-`61528013511c87c732524f91c6f224286a055337`, 실제 렌더 source는
-`bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`, 고정 devel은
-`238de6de41a208648f4ade6b494fe433a81c1fce`다. 제출 전 fetch에서도 같은 base를
-확인했으므로 추가 리베이스하지 않았다. 이후 문서·증거 커밋은 코드·검사를 바꾸지 않았다.
-
-| 필수 근거 | 최종 확인 결과 |
-| --- | --- |
-| 원 PR의 현재 검사 | 아래 모듈·함수별 실제 PASS와 로그 행을 확인했다. 소스 존재를 실행 결과로 대신하지 않았다. |
-| 전쪽 Native/fresh WASM | 16조건·각 1쪽(전체 16쪽/backend)에서 최저 100.00000% / 100.00000%, 독립 Print 쪽수 일치·90% 미만/누락 0쪽 |
-| 고정 devel 보존 | 동일 입력·Print·글꼴·backend의 페이지별 비교에서 0.1%p 초과 하락 0쪽 |
-| 직접 판독 | 묶기·풀기와 HWP/HWPX 저장의 실제 그림을 대조하고, 도형 뒤 표 번호가 바뀌어도 활성 필드가 원래 셀 내용을 가리키는 관계 검사의 PASS를 확인했다. |
-| 전체 로컬 게이트 | fmt·수집/단위 정책·Release build/lib·전체 nextest·Skia 3종·Native/WASM/workspace Clippy·workspace build·doctest 완료. 실제 종료 근거는 아래 공통 기록 참조 |
-| 원격 절차 | 통합 PR의 정확한 code head CI·실제 merge·후속 comment는 앞으로 수행할 조건이다. 원 contributor head를 직접 승인·merge한 기록이 아니다. |
-
-조건 번호 001, 002, 003, 004, 015, 016, 017, 018, 031, 032, 033, 034, 035, 036, 037, 038. [전쪽 TSV·원본/Print·producer·해시와 판독](../assets/source_pr_qualified_20261026/README.md)을
-이 PR의 직접 근거로 연결한다. raw는 색상 경계 보정 전 2px 실루엣이며 RGB 완전 일치나
-과거 별도 지표의 통과를 뜻하지 않는다. Native255·표준 release/wasm-opt를 마친 fresh073을
-사용했다. 측정 뒤 코드 변경은 없으며, 과거 제품의 표는 당시 결과로 구분한다.
-
-| 출력 경로 | 현재 대표 review | 현재 standalone overlay |
-| --- | --- | --- |
-| Native | [review](../assets/source_pr_qualified_20261026/png/native/031/review_001.png) | [overlay](../assets/source_pr_qualified_20261026/png/native/031/overlay_001.png) |
-| fresh WASM | [review](../assets/source_pr_qualified_20261026/png/fresh-wasm/031/review_001.png) | [overlay](../assets/source_pr_qualified_20261026/png/fresh-wasm/031/overlay_001.png) |
-
-Merge 후에는 이 대표 파일을
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/source_pr_qualified_20261026/`
-위 표의 실제 상대 경로로 고정해 contributor comment에 두 이미지를 함께 표시한다.
-같은 merge의 devel 포함·asset 존재·CI 결과를 먼저 확인하고 한국어 존댓말의
-`--body-file` 본문을 게시한 뒤 API에서 한글·링크·실제 Markdown을 다시 확인한다.
-
-
-## 원 기여의 현재 커밋 대응
-
-현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
-
-| 원 커밋 | 통합 후보의 대응 |
-| --- | --- |
-| `9c83132affd66957e024fce12c4b63a51ab0d33c` | `aabbf69df38a3238cb12a5bfc783be6f125cc7c4` |
-
-## 접수 정보
-
-이하 최초 접수와 중간 검토의 제품·기준 SHA 및 당시 진행 상태를 보존한다.
-현재 판정은 위 「최종 로컬 판정 근거」와 아래 「통합 후보의 실제 검사 실행」이 정본이다.
-과거의 진행 중·미완료 표현을 현재 로컬 게이트 상태로 사용하지 않는다.
+## 접수 정보와 적용 계보
 
 | 항목 | 값 |
 | --- | --- |
-| 원 PR·작성자·base | [#8042](https://github.com/edwardkim/rhwp/pull/8042) / semanticist21 / devel |
+| 원 PR·작성자 | [#8042](https://github.com/edwardkim/rhwp/pull/8042) / semanticist21 |
 | 원 head | `9c83132affd66957e024fce12c4b63a51ab0d33c` |
-| 기능 커밋 → 로컬 체리픽 | `9c83132affd66957e024fce12c4b63a51ab0d33c` → `1f821d1242` |
-| 통합 후보 | `review/semanticist21-20261019`, 제품 `6fc2b3490d`, 검토 기록 직전 HEAD `a524b12732` |
-| 고정 devel | `2e3b4f880bd11d35398e6ea0100846611f13a72d` |
-| reviewer | jangster77의 reviewer 지정 API 응답을 보존했고 상세 검토 전 확인했다 |
-| 작성 시점 참고 | 1159 재조회에서 OPEN, Draft=false; 제출 전 최신 head·CI·mergeability 재확인 |
-| 관련 이슈 | 원 PR의 재현·구현 범위로 검토한다. 확인하지 않은 이슈 close를 약속하지 않는다 |
+| 통합 브랜치 | `review/semanticist21-20261019` |
+| 검증 코드·테스트 source | `04c92da78165ccbf63b467855591df183655a98d` |
+| 고정 upstream/devel | `faa885e8b54ffc7cdf4196cd43a3103f362499a2` |
+| 원격 조회 시 상태 | 2026-10-27 조회에서 원 head 불변·open·reviewer jangster77 확인. 원 Draft 여부와 통합 후보 판정은 별개 |
 
-## 변경과 원 구현 검토
-
-묶기·풀기의 컨트롤 배열 변경에 맞춰 field_ranges와 본문 활성 필드 번호를 갱신한다. 풀 때 자식의 실제 행렬이 그리는 크기·중심과 그룹 정렬을 사용하며 두 저장 형식에서 같은 기하를 유지한다.
-
-원 4검사는 필드 목록·범위·저장 보존을 검사하지만 활성 필드를 설정하지 않는다. 별도 공개 API 진단 1178에서 본문 필드의 묶기/풀기×HWP/HWPX 4조건은 같은 활성 주소를 유지했다. 그러나 1179의 표 셀 반례는 묶기 때 표 번호 4→3, 풀기 때 3→4로 바뀌어도 활성 경로가 옛 번호에 남았다. 본문만 갱신하는 조건으로는 셀 소유 보존을 입증할 수 없다.
-
-원 PR 본문·변경 파일·커밋은 ignored `pr8042-current-review-1159.json`과 원 history에
-보존했다. 원 변경과 메인터너 통합 보정을 구분하며, helper 이름이나 테스트 통과만으로
-실제 출력과 활성 필드의 의미를 모두 입증했다고 판정하지 않는다.
-
-## 검증 입력과 결과
-
-최종 입력·독립 PDF·전체 Native/fresh WASM TSV·대표 review/overlay는
-[그룹 API 증거](../assets/semanticist21_group_geometry_20261021/README.md) 및
-[출처 원문](../assets/semanticist21_group_geometry_20261021/provenance.json)에 연결했다.
-원 helper를 현재 제품에 연결해 만든 HWP/HWPX 14쌍이다. HWPX는 기존 Print 입력과
-바이트가 같아 SHA가 맞는 영수증을 재사용했고 HWP는 별도 실제 MCP engine 2020으로
-Print했다. 실제 한컴 빌드는 11.0.0.9136, PrintMethod0·one-up이다.
-
-- 28조건 모두 Native079/fresh WASM031 raw100%, 독립 PDF 쪽수1=1이다.
-- `ungroup_content_geometry` 4 PASS. 정식 파일은 원 head와 바이트가 같다(SHA-256 `ea0c6ce8a03aff92b6757d9652e63e7bd587ee7397c5b8964ce4012c9b7df807`). 본문 활성 주소 진단은 4 PASS지만 표 셀의 활성 주소 보존은 미충족이다.
-- Native079/fresh031의 기록된 제품 소스 183개는 검토 HEAD `a524b12732`와 바이트가
-  같다. 실행 원문은 ignored `native079-wasm031-committed-source-equivalence-1183.json`에 있다.
-- 같은 제품의 표·양식·선·언어 원본 53조건526쪽은 양쪽 전쪽90% 이상이며, 고정 devel
-  대비0.1%p 이상 하락0쪽이다. 이 범위는 현재 API28조건의 devel 출력 대조를 대신하지 않는다.
-- Rust lint/build4항목은 `a524b12732`에서 성공했다. 전체 Rust1180은 같은 Rust 소스를
-  고정해 실행 중이다. 이전 focused 통과를 전체 회귀 완료로 표현하지 않는다.
-
-현재 API28조건의 고정 devel 직접 대조, 남은 활성 셀 소유 반례와 전체 통합 필수
-검증은 끝까지 수행한다. 필수 자료가 부족하다는 기록만 남겨 PR을 제출하지 않는다.
-
-## 조판 원칙과 직접 판독
-
-| 항목 | 판정과 근거 |
+| 원 커밋 | 현재 통합의 대응 |
 | --- | --- |
-| 공통 측정·배치 | 자식의 실제 paint 행렬과 저장 행렬을 대조하고 변환한 윤곽의 합집합으로 그룹 틀을 정했다. 문서명·좌표 clamp를 추가하지 않았다 |
-| 저장 조판 정보 | 현재 공개 API가 생성한 HWP/HWPX를 별도 Print와 대조했다. 수동 XML 진단을 실제 원본 완료 증거로 대신하지 않았다 |
-| 구현 주장·검사 | 필드 목록·범위와 활성 주소 검사를 구분했다. 본문 정상 대조와 표 셀 반례의 결과를 [분석 기록](../../working/task_semanticist21_20261021_group_active_field_owner.md)에 연결했다 |
-| 분할·이어받기 | 이 단계의 그룹 편집은 표 분할 컷·예약 높이를 바꾸지 않는다. 통합의 별도 표 보정은 해당 문서·검사에서 검증한다 |
-| 회귀 추가 조건 | 현재 단계는 원 검사와 기대값을 유지했다. 새 셀 주소 검사는 독립 Print·관련 전쪽 양쪽90%·직접 판독 뒤 새 이름으로 추가한다 |
-| 입력 커밋 | 현재28입력·PDF·원문 TSV·대표 PNG를 이 통합 브랜치의 같은 증거 묶음으로 보존한다. 실행 로그·중간 JSON은 ignored output에 둔다 |
+| `9c83132affd66957e024fce12c4b63a51ab0d33c` | `6b8282e2fe0148e08baa5720083ddd11f178c535` |
 
-30도 자식 묶음(HWPX), 크기·회전 자식 묶음(HWP)의 같은 쪽을 Native와 fresh의
-review/standalone overlay로 직접 열어 위치·회전·외곽·겹침 순서를 확인했다. 검은
-테두리의 약한 농도도 조사했다. 실제 stroke0.48 CSS px와 PDF0.36pt는 같은 물리 굵기이며
-Native/Canvas에 선이 존재한다. 저해상도 raster 농도 차이는 남는다. 600DPI 추가 진단을
-정식96DPI 점수나 허용치 변경에 사용하지 않았다. raw100%를 RGB 동일로 설명하지 않는다.
+## 구현 주장·공통 소비 경로·반례
 
-## 활성 셀 주소 보정의 현재 검증
+묶기/풀기 뒤 필드 보존과 회전 자식 원점의 계약을 검토한다. 실제 자식 paint 행렬과 저장 행렬을 맞추고 변환 윤곽의 합집합을 그룹 틀로 사용한다. 본문 필드의 지역 번호와 표 셀 필드의 루트 소유 번호를 분리해 공통 삽입·도형 제거·묶기/풀기가 같은 주소 변환을 소비한다. 원 #7588의 재현 검사와 메인터너 보정의 활성 셀 주소 검사를 구분한다.
 
-같은 본문 문단의 컨트롤 번호 remap이 본문 필드의 지역 번호와 셀 필드의 본문 소유
-번호를 구분하도록 보정했다. 셀 경로의 첫 컨트롤 번호만 옮기고 지역 필드 번호·나머지
-경로는 보존한다. 공통 삽입 helper와 도형 제거·묶기·풀기가 같은 변환을 소비한다.
-기존 #7595 → #7601 통합의 본문 필드 계약도 유지했다.
+## 원 PR의 실제 회귀 실행
 
-새 정식 검사 [active_field_group_root_owner.rs](../../../tests/cases/active_field_group_root_owner.rs)의
-HWP/HWPX×묶기/풀기4개는 Native079에서4FAIL, Native081에서4PASS다. 양쪽 strict build는
-성공했고 같은 활성 주소의 재설정·필드 안 입력·양쪽 저장 내용 보존을 검사한다.
-[원본·독립 Print·양쪽 전쪽100% 선행 증거](../assets/active_field_group_owner_20261021/README.md)를
-먼저 확보했다. 기존 필드·그룹 검사와 기대값을 삭제하거나 px 허용치를 넓히지 않았다.
-현재 source는 이 검토 기록과 함께 일반 커밋으로 고정한다. Native081의 실제 제품/소스
-바이트와 수정 전후 실행은 ignored `char-overlap-native-build-081-result.json`,
-`emphasis-metric-current-failure-focus-1214.json`에 있다.
-
-앞선 현재 API28조건은 고정 devel의 실제 Native/WASM 출력과 직접 비교를 완료했다.
-각각 전28쪽100%, 쪽수1=1,0.1%p 이상 하락0쪽이다. 기준은 `2e3b4f880b`, 실제 기준 제품은
-인쇄 경로 동등성을 입증한 `d7d4d2ea6e`이며 새2e3 빌드로 바꿔 설명하지 않는다.
-`group-api-base-comparison-1199.json`에 원본·PDF·TSV SHA와 페이지별 비교를 보존했다.
-
-위 결과는 이 보정의 Native 계약과 저장본 시각 선행 증거다. 새 fresh WASM에서의 API·
-출력 및 통합 전체 회귀·전쪽·확대 판독을 완료하기 전에는 PR을 제출하거나 승인하지 않는다.
-
-## 후속 실행과 원격 조건
-
-[구현·검증 순서](pr_8042_review_impl.md)에 따라 남은 보정과 실제 실행을 완료한다.
-최신 devel과 contributor head 확인·필요한 rebase 기능 보존 검증, 전체 로컬 gate를
-마친 뒤 구체적인 통합 PR 결과에 대한 작업지시자 승인을 받는다. 통합 PR 번호용 별도
-review 문서나 docs PR을 만들지 않는다. 오늘할일은 통합 PR 절차의 해당 시점에 기록한다.
-
-## 현재 후보의 실제 검사 실행 — 2026-10-26
-
-현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
-`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
-동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
-Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
-이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
-
-아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+아래 함수와 실제 최종 PASS 행을 대조했다. 계약 검사 통과와 독립 Print의 시각 일치를 구분한다.
 
 - [tests/cases/active_field_group_root_owner.rs](../../../tests/cases/active_field_group_root_owner.rs): SHA-256 `bd095b50f8d4110db554606333b975aa6525b91249d40d1a3faf989aae3489f1`.
-  - `group_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/current-full-nextest-4184.log:9318` (`rhwp::regression_suite_020`).
-  - `group_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/current-full-nextest-4184.log:9319` (`rhwp::regression_suite_020`).
-  - `ungroup_before_active_cell_field_preserves_hwp_owner`: PASS, `logs/current-full-nextest-4184.log:9320` (`rhwp::regression_suite_020`).
-  - `ungroup_before_active_cell_field_preserves_hwpx_owner`: PASS, `logs/current-full-nextest-4184.log:9321` (`rhwp::regression_suite_020`).
+  - `group_before_active_cell_field_preserves_hwp_owner`: PASS, `rhwp::regression_suite_001`, 로컬 `logs/coherent-full-nextest-4697.log:4026`.
+  - `group_before_active_cell_field_preserves_hwpx_owner`: PASS, `rhwp::regression_suite_001`, 로컬 `logs/coherent-full-nextest-4697.log:4027`.
+  - `ungroup_before_active_cell_field_preserves_hwp_owner`: PASS, `rhwp::regression_suite_001`, 로컬 `logs/coherent-full-nextest-4697.log:4028`.
+  - `ungroup_before_active_cell_field_preserves_hwpx_owner`: PASS, `rhwp::regression_suite_001`, 로컬 `logs/coherent-full-nextest-4697.log:4029`.
 - [tests/cases/group_shapes_child_geometry.rs](../../../tests/cases/group_shapes_child_geometry.rs): SHA-256 `4974f0e3b4cb13396948c4fa66b3019f8666031bf2fc4d1b95ea88f763376dfb`.
-  - `grouping_keeps_children_positioned_against_different_bases`: PASS, `logs/current-full-nextest-4184.log:4310` (`rhwp::regression_suite_002`).
-  - `grouping_keeps_scaled_and_rotated_children_drawn_in_place`: PASS, `logs/current-full-nextest-4184.log:4311` (`rhwp::regression_suite_002`).
-  - `grouping_keeps_stacking_order_regardless_of_target_order`: PASS, `logs/current-full-nextest-4184.log:4312` (`rhwp::regression_suite_002`).
+  - `grouping_keeps_scaled_and_rotated_children_drawn_in_place`: PASS, `rhwp::regression_suite_012`, 로컬 `logs/coherent-full-nextest-4697.log:7264`.
+  - `grouping_keeps_stacking_order_regardless_of_target_order`: PASS, `rhwp::regression_suite_012`, 로컬 `logs/coherent-full-nextest-4697.log:7266`.
+  - `grouping_keeps_children_positioned_against_different_bases`: PASS, `rhwp::regression_suite_012`, 로컬 `logs/coherent-full-nextest-4697.log:7262`.
 - [tests/cases/ungroup_content_geometry.rs](../../../tests/cases/ungroup_content_geometry.rs): SHA-256 `ea0c6ce8a03aff92b6757d9652e63e7bd587ee7397c5b8964ce4012c9b7df807`.
-  - `group_keeps_following_field_live_and_in_both_formats`: PASS, `logs/current-full-nextest-4184.log:10405` (`rhwp::regression_suite_023`).
-  - `ungroup_keeps_following_field_live_and_in_both_formats`: PASS, `logs/current-full-nextest-4184.log:10406` (`rhwp::regression_suite_023`).
-  - `ungroup_plain_child_keeps_drawn_position_and_roundtrips`: PASS, `logs/current-full-nextest-4184.log:10407` (`rhwp::regression_suite_023`).
-  - `ungroup_rotated_child_keeps_drawn_position_and_roundtrips`: PASS, `logs/current-full-nextest-4184.log:10408` (`rhwp::regression_suite_023`).
+  - `ungroup_plain_child_keeps_drawn_position_and_roundtrips`: PASS, `rhwp::regression_suite_011`, 로컬 `logs/coherent-full-nextest-4697.log:7184`.
+  - `ungroup_rotated_child_keeps_drawn_position_and_roundtrips`: PASS, `rhwp::regression_suite_011`, 로컬 `logs/coherent-full-nextest-4697.log:7185`.
+  - `ungroup_keeps_following_field_live_and_in_both_formats`: PASS, `rhwp::regression_suite_011`, 로컬 `logs/coherent-full-nextest-4697.log:7183`.
+  - `group_keeps_following_field_live_and_in_both_formats`: PASS, `rhwp::regression_suite_011`, 로컬 `logs/coherent-full-nextest-4697.log:7182`.
 
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+## 독립 Print·전쪽 TSV·대표 페이지
+
+이 PR의 기존 검증 입력은 최종 조건 번호 018, 019, 020, 021, 032, 033, 034, 035, 048, 049, 050, 051, 052, 053, 054, 055에 연결한다. 다른 PR의 평균 점수로 이 범위를 대신하지 않는다.
+
+| 조건 | 전체 쪽수 | Native 최저 raw·전체 TSV | fresh WASM 최저 raw·전체 TSV |
+| --- | ---: | --- | --- |
+| 018 | 1 | [100.00000](../assets/s21_20261027/n/c/018.tsv) | [100.00000](../assets/s21_20261027/w/c/018.tsv) |
+| 019 | 1 | [100.00000](../assets/s21_20261027/n/c/019.tsv) | [100.00000](../assets/s21_20261027/w/c/019.tsv) |
+| 020 | 1 | [100.00000](../assets/s21_20261027/n/c/020.tsv) | [100.00000](../assets/s21_20261027/w/c/020.tsv) |
+| 021 | 1 | [100.00000](../assets/s21_20261027/n/c/021.tsv) | [100.00000](../assets/s21_20261027/w/c/021.tsv) |
+| 032 | 1 | [100.00000](../assets/s21_20261027/n/c/032.tsv) | [100.00000](../assets/s21_20261027/w/c/032.tsv) |
+| 033 | 1 | [100.00000](../assets/s21_20261027/n/c/033.tsv) | [100.00000](../assets/s21_20261027/w/c/033.tsv) |
+| 034 | 1 | [100.00000](../assets/s21_20261027/n/c/034.tsv) | [100.00000](../assets/s21_20261027/w/c/034.tsv) |
+| 035 | 1 | [100.00000](../assets/s21_20261027/n/c/035.tsv) | [100.00000](../assets/s21_20261027/w/c/035.tsv) |
+| 048 | 1 | [100.00000](../assets/s21_20261027/n/c/048.tsv) | [100.00000](../assets/s21_20261027/w/c/048.tsv) |
+| 049 | 1 | [100.00000](../assets/s21_20261027/n/c/049.tsv) | [100.00000](../assets/s21_20261027/w/c/049.tsv) |
+| 050 | 1 | [100.00000](../assets/s21_20261027/n/c/050.tsv) | [100.00000](../assets/s21_20261027/w/c/050.tsv) |
+| 051 | 1 | [100.00000](../assets/s21_20261027/n/c/051.tsv) | [100.00000](../assets/s21_20261027/w/c/051.tsv) |
+| 052 | 1 | [100.00000](../assets/s21_20261027/n/c/052.tsv) | [100.00000](../assets/s21_20261027/w/c/052.tsv) |
+| 053 | 1 | [100.00000](../assets/s21_20261027/n/c/053.tsv) | [100.00000](../assets/s21_20261027/w/c/053.tsv) |
+| 054 | 1 | [100.00000](../assets/s21_20261027/n/c/054.tsv) | [100.00000](../assets/s21_20261027/w/c/054.tsv) |
+| 055 | 1 | [100.00000](../assets/s21_20261027/n/c/055.tsv) | [100.00000](../assets/s21_20261027/w/c/055.tsv) |
+
+[입력·Print 경로와 SHA, producer·DPI·글꼴, base TSV 및 대표 review·overlay](../assets/s21_20261027/README.md)를 각 조건 번호로 대조한다. raw는 색상 경계 보정 전 2px 내용 실루엣이며 RGB 완전 일치가 아니다. 실제 빈 페이지의 raw 100%는 가시 내용의 정확성 증거로 사용하지 않고, 원본·독립 Print의 쪽수와 소유 계약을 별도로 검사한다.
+
+신규 검사는 문단·줄·개체의 소유·순서·누락·중복·포함·겹침 관계를 기본으로 한다. 독립 Print와 실제 판독을 마치고 Native/fresh WASM이 모두 98% 이상인 완료 페이지만 독립 좌표 ±2px를 허용하며 관계 검사도 유지한다. 원본 HU·크기·비율 계약과 임의 화면 좌표 핀을 구분한다.
+
+## 리베이스와 전체 검증의 경계
+
+새 base #8116의 기존 네 입력은 같은 Print·글꼴·DPI에서 현재 보정 범위와 함께 비교했다. 확정된 중첩 표 원점에서 측정과 배치가 같은 가용 높이를 소비하도록 보정했으며 기존 15개 검사의 기대값을 바꾸지 않았다. 사용자 지시의 페이지별 하락 한계는 0.1%p다. base의 90% 미만은 변경 전 비교 자료로 구분하고 후보는 모든 관련 쪽에서 90% 이상을 유지한다.
+
+필수 로컬 게이트는 최종 실행 결과와 source SHA를 대조해 완료했다. 전체 Rust·Skia·Studio의 실제 종료 집계는 공통 증거의 실행 요약을 따른다.
+
+## 원격 처리와 후속 기록
+
+통합 PR을 실제 템플릿에 맞춰 제출한 뒤 정확한 head의 CI·mergeability를 확인한다. 사용자가 승인한 옵션 2의 별도 self-review·오늘할일 PR을 code CI 이후 처리한다. 원 PR별 리뷰는 각각 유지하고 실제 통합 merge·devel 포함을 확인한 뒤 존댓말로 원 기여와 보정 범위, CI·merge SHA 및 그 SHA에 고정한 대표 review·overlay를 연결한다. contributor fork·branch와 원 history는 보존한다.
+
+대표 쪽 선정: 묶기·풀기 편집 뒤 누름틀과 자식 회전 상태. 다른 PR의 임의 페이지로 대체하지 않는다.
 
 ## Merge 후 contributor PR comment 계획
 
-승인받은 통합 PR이 merge된 뒤 실제 merge SHA·CI URL·원 기여와 메인터너 보정 범위를
-한국어 존댓말로 설명한다. Visual Sweep [정본](../../manual/verification/visual_sweep_guide.md)의
-전쪽 지표와 직접 판독·남은 농도 차이를 연결한다. 대표 이미지는 같은 asset의
-`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/semanticist21_group_geometry_20261021/` 아래
-Native/fresh review·overlay URL로 고정한다. 본문 파일을 `--body-file`로 전달하고 API로
-게시 내용을 재확인한다. 이 계획은 사전 comment나 원 PR close의 실행 승인이 아니다.
+[Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 통합 merge와 자산의 devel 포함을 확인한 뒤에만 게시한다. 이 계획을 원 PR의 직접 merge 승인으로 쓰지 않는다.
 
-## 보정 커밋의 Native·fresh 활성 셀 검증
+검증 범위는 위 조건 018, 019, 020, 021, 032, 033, 034, 035, 048, 049, 050, 051, 052, 053, 054, 055 전체 쪽이다. raw 90% 미만·누락·측정 불가 후보는 양쪽 0쪽이며, 대표 페이지와 전체 범위의 최저값을 구분한다. 평균·RGB 진단값으로 raw 미달을 면제하지 않았다.
 
-`ae6d24e744`에서 셀 누름틀의 루트 소유 주소를 공통 보정했다. 새 관계형 정식 검사4개는
-Native079에서4FAIL, Native081에서4PASS다. 실제 공개 WASM 편집 API도 fresh031에서
-4FAIL, 같은 보정 소스의 최적화 fresh032에서4PASS로 바뀌었다. 필드 재활성화의
-idempotence·표 소유 번호 이동·지역 주소 보존·입력과 두 저장 형식의 내용을 확인했다.
-[검증 출처와 입력](../assets/active_field_group_owner_20261021/README.md)에 소스·제품 해시와
-실제 결과를 연결했다. 현재 Rust lint/build4단계는 모두 성공했다. 새 전쪽 fresh와
-전체 Rust 실패·차트 등 통합 필수 항목은 계속 검증하며, 최종 판정은 **머지 보류**다.
+대표는 조건 052의 1쪽이다. 다음 수치는 실제 새 출력·같은 독립 Print를 대조한 값이며 완전한 RGB 일치의 선언이 아니다.
+
+| 출력 | raw 실루엣 | pixel_match | visual_accuracy_proxy_percent | review / overlay |
+| --- | ---: | ---: | ---: | --- |
+| native | 100.00000% | 99.81041% | 44.16529% | [review](../assets/s21_20261027/panels/native/052-p001-review.png) / [overlay](../assets/s21_20261027/panels/native/052-p001-overlay.png) |
+| wasm | 100.00000% | 99.82635% | 48.65582% | [review](../assets/s21_20261027/panels/wasm/052-p001-review.png) / [overlay](../assets/s21_20261027/panels/wasm/052-p001-overlay.png) |
+
+직접 판독과 남은 차이는 공통 증거의 해당 조건·쪽 기록을 따른다. 새 출력 쌍과 실제 이전 판독의 동일성을 검증한 재사용 범위를 구분했다.
+
+게시 문안은 원 기여에 감사드리고, 원 PR 번호·원 head와 통합 후보의 보정 범위·실제 CI·merge SHA를 존댓말로 설명한다. 같은 asset의 아래 URL에서 `<merge-commit-sha>`만 실제 merge SHA로 바꾼다.
+
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/052-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/052-p001-overlay.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/052-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/052-p001-overlay.png`
+
+실제 LF 본문 파일을 `--body-file`로 게시하고 API로 본문·한글·이미지 URL을 재조회한다. 동일 merge·동일 증거의 기존 comment가 있으면 중복 게시하지 않는다.

@@ -2,45 +2,26 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 같은 재현의 독립 Print·Native/fresh WASM 시각 검증과 새 집중 회귀를 완료했다. 공통 생산 코드의 전체 Rust·lint·Studio 게이트도 완료했다. 통합 PR의 잔여 원 PR별 확인과 정확한 head CI는 앞으로 수행한다.**
+**메인터너 보정 후 수용 가능 — 셀 그림의 편집 소유와 쪽 그리기 순서 범위의 로컬 검증 완료.**
 
-원 contributor head를 직접 merge하지 않는다. 전체 로컬 게이트의 실제 종료 결과를 확인했다. 통합 head CI와 나머지 원 PR별 필수
-검증을 완료하기 전에는 통합하지 않는다. 아직 PR을 제출하거나 원 PR을 close하지 않았다.
+원 contributor head의 직접 merge 판정과 메인터너 보정한 통합 후보의 판정을 구분한다. 원격 CI·merge·후속 처리는 실제 수행 후 별도로 기록한다.
 
-## 원 기여의 현재 커밋 대응
-
-현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
-
-| 원 커밋 | 통합 후보의 대응 |
-| --- | --- |
-| `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2` | `7151f3ce7f70e521a642c058319783fa78aaef98` |
-
-## 접수 정보와 통합 대응
+## 접수 정보와 적용 계보
 
 | 항목 | 값 |
 | --- | --- |
 | 원 PR·작성자 | [#8061](https://github.com/edwardkim/rhwp/pull/8061) / semanticist21 |
-| 고정 원 head | `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2` |
-| 통합 대응 | `140c38ddc5c5a87504fb562c18cec052f77ac291` |
+| 원 head | `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2` |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
-| 원격 확인 | 2026-10-26 KST: 원 head 일치, reviewer jangster77 지정, draft=false |
-| 새 생산 코드 | Native 257 / 최적화 fresh WASM 074. Git head와 실제 덧씌운 파일 해시는 아래 provenance에서 구분한다. |
+| 검증 코드·테스트 source | `04c92da78165ccbf63b467855591df183655a98d` |
+| 고정 upstream/devel | `faa885e8b54ffc7cdf4196cd43a3103f362499a2` |
+| 원격 조회 시 상태 | 2026-10-27 조회에서 원 head 불변·open·reviewer jangster77 확인. 원 Draft 여부와 통합 후보 판정은 별개 |
 
-## 원 주장과 독립 검증
+| 원 커밋 | 현재 통합의 대응 |
+| --- | --- |
+| `a9c06c8a8a526205a59c68b1ed40eb66d84ad9c2` | `6415fc062abc4c1ba9546dcfa987101b21688e95` |
 
-원 검사는 흐르는 표의 글 뒤 그림을 쪽 단위 도형보다 항상 위에 두었다. 정상 기하 정보를
-명시한 같은 재현의 독립 한컴 Print에서는 `flowWithText=0, zOrder=0` 그림이
-`zOrder=1` 쪽 도형에 가려졌다. 그림의 zOrder를 2로 높이거나 flowWithText를 1로 바꾸면
-그림이 위에 보였다. 떠 있는 표도 같은 구분을 따랐다. 따라서 셀의 편집 소유와 쪽/표의
-그리기 소유를 분리했다. 그림 bitmap·테두리는 같은 개체의 내부 순서를 유지한다.
-
-초기 진단 입력의 생략된 기하 정보와 레이어 의미의 결함을 구분했다. 초기 불완전한
-HWPX의 raw 0.95511%를 정상 문서의 결과로 바꾸지 않았다. 생성 방식·8개 입력과 Print
-PDF·producer·페이지별 TSV·대표 PNG·직접 판독은
-[정식 증거](../assets/cell_picture_layer_qualified_20261026/README.md)를 따른다.
-
-## 실제 소비 경로와 검사
+## 구현 주장·공통 소비 경로·반례
 
 - [anchored_cell_paint.rs](../../../src/renderer/layout/anchored_cell_paint.rs)의 그림 생성 후
   layer 부여 → 셀 순서 조립 → 같은 쪽 도형과 묶음 정렬 → 기존 paint replay가 소비한다.
@@ -53,62 +34,74 @@ PDF·producer·페이지별 TSV·대표 PNG·직접 판독은
   과거 후보 `61528013511c87c732524f91c6f224286a055337`에서 이 검사가 PASS했던 것은
   잘못된 가정을 검출하지 못한 결과다. 해당 PASS를 현재 결함의 검증 근거로 쓰지 않는다.
 
-## 실제 결과 — 2026-10-26
+## 원 PR의 실제 회귀 실행
 
-| 검증 | 실제 결과 |
-| --- | --- |
-| 같은 재현의 속성 대조 8조건 | Native/fresh WASM 각각 전쪽 raw 100%, 각각 독립 Print와 1쪽 일치 |
-| 고정 base와 페이지별 비교 | 8조건 × 2 backend, 0.1%p 초과 하락 0쪽 |
-| 실제 레이어 결함의 검출 | 독립 쪽 그림 2조건·테두리 1조건, 수정 전 FAIL / 수정 후 PASS |
-| 새 집중 회귀 | 셀 그림 9개 + 정상 RowBreak 1개 = 10 PASS·0 FAIL |
-| 새 공통 코드의 선행 영향 검증 | 15조건·104쪽/backend, 전쪽 90% 이상·쪽수 일치 |
-| 기존 영향 문서·RowBreak의 base 비교 | 7조건·96쪽/backend, 0.1%p 초과 하락 0쪽 |
-| 직접 판독 | 8조건의 동일 영역 및 대표 양쪽 정본 review·standalone overlay 확인 |
-
-raw 100%는 RGB 동일을 뜻하지 않는다. 불투명 영역의 색상 가림은 별도 PNG 검사로
-보호했다. PHOTO의 작은 래스터 경계와 떠 있는 그림의 약 1.12px 원점 차이는 남으며
-독립 좌표 ±2px 안이다. 점수만으로 차이를 숨기거나 좌표를 clamp하지 않았다.
-
-같은 원본 HWPUNIT 좌표가 f64 연산 뒤 약 1e-14px 달라지는 관계 assertion 오류는
-원본 정수 단위에서 동등·포함을 비교하도록 바로잡았다. 독립 Print의 ±2px 조건은
-유지했다. 수정 후 focused nextest의 최종 exit 0과 10 PASS·0 FAIL을 확인했다.
-
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-`cell-scope-focused-4175-result.json`, `logs/cell-scope-focused-4175.log`,
-`cell-scope-negative-proof-4176.json`, `cell-scope-base-comparison-4179.json`에 종료와
-수정 전후 근거가 있다. [파일별 생산 코드·입력·TSV·PNG 해시](../assets/cell_picture_layer_qualified_20261026/provenance.json)를
-고정했다. 과거 코드의 전체 nextest 11,708 PASS와 Studio 결과를 새 코드의 전체 완료로
-재사용하지 않는다.
-
-## 제외와 후속 처리
-
-sample16·편람의 기존 삭제를 유지하며 이전 파생 참조를 재생성하지 않는다.
-새 입력은 같은 #8061 재현의 8조건뿐이며 다른 실물 HWP를 수집하지 않았다.
-원 PR별 기록은 통합 PR에 유지하고, 실제 code head CI 뒤 승인된 옵션 2의
-self-review·오늘할일 후속 PR을 처리한다. merge 뒤 실제 merge SHA의 증적·통합 링크와
-보정 결과를 원 PR에 남긴다. contributor fork·branch는 보존한다.
-[개별 구현 기록](pr_8061_review_impl.md)을 따른다.
-
-## 현재 후보의 실제 검사 실행 — 2026-10-26
-
-현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
-`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
-동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
-Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
-이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
-
-아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+아래 함수와 실제 최종 PASS 행을 대조했다. 계약 검사 통과와 독립 Print의 시각 일치를 구분한다.
 
 - [tests/cases/verified_cell_picture_layer_scope.rs](../../../tests/cases/verified_cell_picture_layer_scope.rs): SHA-256 `943d352051dc56854faf4fec87c6768f615f4e176f5930f298159ea86ab624de`.
-  - `verified_cell_picture_bitmap_precedes_its_own_border`: PASS, `logs/cell-scope-focused-4175.log:8` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_floating_higher_z_preserves_page_order`: PASS, `logs/cell-scope-focused-4175.log:9` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_floating_owner_preserves_page_order`: PASS, `logs/cell-scope-focused-4175.log:10` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_floating_text_flow_preserves_owner_plane`: PASS, `logs/cell-scope-focused-4175.log:7` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_following_text_inherits_cell_paint`: PASS, `logs/cell-scope-focused-4175.log:12` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_higher_page_z_order_remains_above_shape`: PASS, `logs/cell-scope-focused-4175.log:11` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_page_shape_occludes_independent_picture`: PASS, `logs/cell-scope-focused-4175.log:13` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_print_pixels_match_independent_occlusion`: PASS, `logs/cell-scope-focused-4175.log:15` (`rhwp::regression_suite_013`).
-  - `verified_cell_picture_without_occluder_remains_visible`: PASS, `logs/cell-scope-focused-4175.log:6` (`rhwp::regression_suite_013`).
+  - `verified_cell_picture_page_shape_occludes_independent_picture`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6915`.
+  - `verified_cell_picture_without_occluder_remains_visible`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6916`.
+  - `verified_cell_picture_higher_page_z_order_remains_above_shape`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6914`.
+  - `verified_cell_picture_following_text_inherits_cell_paint`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6913`.
+  - `verified_cell_picture_floating_owner_preserves_page_order`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6911`.
+  - `verified_cell_picture_floating_higher_z_preserves_page_order`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6909`.
+  - `verified_cell_picture_floating_text_flow_preserves_owner_plane`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6912`.
+  - `verified_cell_picture_bitmap_precedes_its_own_border`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/coherent-full-nextest-4697.log:6908`.
+  - `verified_cell_picture_print_pixels_match_independent_occlusion`: PASS, `rhwp::regression_suite_010`, 로컬 `logs/rebase-faa-native-verified_cell_picture_layer_scope-4693.log:16`.
+- [tests/cases/verified_rowbreak_successor_print_frame.rs](../../../tests/cases/verified_rowbreak_successor_print_frame.rs): SHA-256 `7ff936f02395f121cb06856ca21c774af03e2c93b13dd7037f9261a709f3399d`.
+  - `verified_rowbreak_fragments_and_successor_keep_print_frames`: PASS, `rhwp::regression_suite_019`, 로컬 `logs/coherent-full-nextest-4697.log:9448`.
 
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+## 독립 Print·전쪽 TSV·대표 페이지
+
+이 PR의 기존 검증 입력은 최종 조건 번호 115, 116, 117, 118, 119, 120, 121, 122에 연결한다. 다른 PR의 평균 점수로 이 범위를 대신하지 않는다.
+
+| 조건 | 전체 쪽수 | Native 최저 raw·전체 TSV | fresh WASM 최저 raw·전체 TSV |
+| --- | ---: | --- | --- |
+| 115 | 1 | [100.00000](../assets/s21_20261027/n/c/115.tsv) | [100.00000](../assets/s21_20261027/w/c/115.tsv) |
+| 116 | 1 | [100.00000](../assets/s21_20261027/n/c/116.tsv) | [100.00000](../assets/s21_20261027/w/c/116.tsv) |
+| 117 | 1 | [100.00000](../assets/s21_20261027/n/c/117.tsv) | [100.00000](../assets/s21_20261027/w/c/117.tsv) |
+| 118 | 1 | [100.00000](../assets/s21_20261027/n/c/118.tsv) | [100.00000](../assets/s21_20261027/w/c/118.tsv) |
+| 119 | 1 | [100.00000](../assets/s21_20261027/n/c/119.tsv) | [100.00000](../assets/s21_20261027/w/c/119.tsv) |
+| 120 | 1 | [100.00000](../assets/s21_20261027/n/c/120.tsv) | [100.00000](../assets/s21_20261027/w/c/120.tsv) |
+| 121 | 1 | [100.00000](../assets/s21_20261027/n/c/121.tsv) | [100.00000](../assets/s21_20261027/w/c/121.tsv) |
+| 122 | 1 | [100.00000](../assets/s21_20261027/n/c/122.tsv) | [100.00000](../assets/s21_20261027/w/c/122.tsv) |
+
+[입력·Print 경로와 SHA, producer·DPI·글꼴, base TSV 및 대표 review·overlay](../assets/s21_20261027/README.md)를 각 조건 번호로 대조한다. raw는 색상 경계 보정 전 2px 내용 실루엣이며 RGB 완전 일치가 아니다. 실제 빈 페이지의 raw 100%는 가시 내용의 정확성 증거로 사용하지 않고, 원본·독립 Print의 쪽수와 소유 계약을 별도로 검사한다.
+
+신규 검사는 문단·줄·개체의 소유·순서·누락·중복·포함·겹침 관계를 기본으로 한다. 독립 Print와 실제 판독을 마치고 Native/fresh WASM이 모두 98% 이상인 완료 페이지만 독립 좌표 ±2px를 허용하며 관계 검사도 유지한다. 원본 HU·크기·비율 계약과 임의 화면 좌표 핀을 구분한다.
+
+## 리베이스와 전체 검증의 경계
+
+새 base #8116의 기존 네 입력은 같은 Print·글꼴·DPI에서 현재 보정 범위와 함께 비교했다. 확정된 중첩 표 원점에서 측정과 배치가 같은 가용 높이를 소비하도록 보정했으며 기존 15개 검사의 기대값을 바꾸지 않았다. 사용자 지시의 페이지별 하락 한계는 0.1%p다. base의 90% 미만은 변경 전 비교 자료로 구분하고 후보는 모든 관련 쪽에서 90% 이상을 유지한다.
+
+필수 로컬 게이트는 최종 실행 결과와 source SHA를 대조해 완료했다. 전체 Rust·Skia·Studio의 실제 종료 집계는 공통 증거의 실행 요약을 따른다.
+
+## 원격 처리와 후속 기록
+
+통합 PR을 실제 템플릿에 맞춰 제출한 뒤 정확한 head의 CI·mergeability를 확인한다. 사용자가 승인한 옵션 2의 별도 self-review·오늘할일 PR을 code CI 이후 처리한다. 원 PR별 리뷰는 각각 유지하고 실제 통합 merge·devel 포함을 확인한 뒤 존댓말로 원 기여와 보정 범위, CI·merge SHA 및 그 SHA에 고정한 대표 review·overlay를 연결한다. contributor fork·branch와 원 history는 보존한다.
+
+대표 쪽 선정: 쪽 기준 떠 있는 그림의 높은 z-order와 실제 셀 내용 쌓기 순서; 115는 정상 대조군. 다른 PR의 임의 페이지로 대체하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+[Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 통합 merge와 자산의 devel 포함을 확인한 뒤에만 게시한다. 이 계획을 원 PR의 직접 merge 승인으로 쓰지 않는다.
+
+검증 범위는 위 조건 115, 116, 117, 118, 119, 120, 121, 122 전체 쪽이다. raw 90% 미만·누락·측정 불가 후보는 양쪽 0쪽이며, 대표 페이지와 전체 범위의 최저값을 구분한다. 평균·RGB 진단값으로 raw 미달을 면제하지 않았다.
+
+대표는 조건 120의 1쪽이다. 다음 수치는 실제 새 출력·같은 독립 Print를 대조한 값이며 완전한 RGB 일치의 선언이 아니다.
+
+| 출력 | raw 실루엣 | pixel_match | visual_accuracy_proxy_percent | review / overlay |
+| --- | ---: | ---: | ---: | --- |
+| native | 100.0% | 99.8076% | 97.61361% | [review](../assets/s21_20261027/panels/native/120-p001-review.png) / [overlay](../assets/s21_20261027/panels/native/120-p001-overlay.png) |
+| wasm | 100.0% | 99.847% | 98.10231% | [review](../assets/s21_20261027/panels/wasm/120-p001-review.png) / [overlay](../assets/s21_20261027/panels/wasm/120-p001-overlay.png) |
+
+직접 판독: 녹색 그림·붉은 셀 개체·PHOTO 글자의 쌓기 순서와 포함을 대조했다. 그림 바깥 경계의 AA 잔차가 남는다.
+
+게시 문안은 원 기여에 감사드리고, 원 PR 번호·원 head와 통합 후보의 보정 범위·실제 CI·merge SHA를 존댓말로 설명한다. 같은 asset의 아래 URL에서 `<merge-commit-sha>`만 실제 merge SHA로 바꾼다.
+
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/120-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/120-p001-overlay.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/120-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/120-p001-overlay.png`
+
+실제 LF 본문 파일을 `--body-file`로 게시하고 API로 본문·한글·이미지 URL을 재조회한다. 동일 merge·동일 증거의 기존 comment가 있으면 중복 게시하지 않는다.

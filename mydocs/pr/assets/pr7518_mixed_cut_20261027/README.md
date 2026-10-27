@@ -9,9 +9,9 @@
 
 ## 보정 전후와 전체 페이지 자격
 
-고정 base는 `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`, 보정한 production source는
-`4ab8b438f8d244e1d341c527ed9b5bf8b9d8acb1`이다. Native276은 6쪽으로 잘못 분할했고,
-실패한 4쪽의 raw는 72.30%였다. 현재 Native280과 표준 최적화 fresh WASM090은
+최종 고정 base는 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`, 검증한 production source는
+`04c92da78165ccbf63b467855591df183655a98d`다. 초기 혼합 컷 보정 source `4ab8b438f8d244e1d341c527ed9b5bf8b9d8acb1`의 이력과 최종 재검증을 구분한다. Native276은 6쪽으로 잘못 분할했고,
+실패한 4쪽의 raw는 72.30%였다. 최종 Native284와 표준 최적화 fresh WASM092는
 두 입력 모두 독립 Print와 8쪽이 일치한다. 다음은 각 입력 전체 8쪽의 최저 raw다.
 
 | 기존 입력 계열 | base Native | 현재 Native | base fresh WASM | 현재 fresh WASM |
@@ -46,8 +46,8 @@ fresh WASM raw가 각각 98% 이상이고 실제 review·standalone overlay를 �
   `valid_orientation` 4쪽의 `UNIT 000~017`을 정확히 한 번씩 순서대로 자식 표 안에
   배치하는지 확인한다. 8쪽의 최종 프레임과 이미 소비한 유닛의 중복 없음도 검사한다.
 
-이름이 다른 기존 원문 보존·마지막 문단의 쪽/셀 소유 검사도 그대로 유지했다. 새 두 함수의
-실제 실행과 수정 전 FAIL/수정 후 PASS는 별도 Rust 검증 결과로 확정한다. 시각 자격과
+이름이 다른 기존 원문 보존·마지막 문단의 쪽/셀 소유 검사도 그대로 유지했다. 새 두 함수와 마지막 원문 소유 검사의 실제 수정 전 FAIL/수정 후 PASS는
+[동일 바이너리 실행 증거](../s21_20261027/execution-evidence.json)에 연결한다. 독립 좌표는 변경하지 않았다. 시각 자격과
 fixture 등록만으로 전체 Rust나 PR 준비가 완료됐다고 판정하지 않는다.
 
 ## 대표 PNG와 남은 차이
@@ -84,5 +84,5 @@ Visual Sweep은 `--silhouette-only`, `--compat 2022`, `--dpi 96`, `--page-worker
 저장소 `assets/fonts`이며 backend별 공급 집합 해시도 oracle에 보존했다.
 
 전체 통합 범위의 Rust·WASM·Studio 검증은
-[현재 작업 기록](../../../working/task_semanticist21_20261027_mixed_cut_regression.md)에
+[현재 작업 기록](../../../working/task_semanticist21_20261027_rebase_8116.md)에
 별도로 연결한다. 이 두 원본의 통과를 다른 문서나 전체 검증의 통과로 확대하지 않는다.

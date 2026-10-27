@@ -1,111 +1,24 @@
 # PR #7694 구현·검증 기록
 
-## 범위와 고정 기준
+[개별 리뷰](pr_7694_review.md)의 실제 소비 경로와 원 커밋 대응을 따른다.
+원 contributor head는 `0e7383d03753ac2546b0be74f19a244fe81747ff`, 검증 코드·테스트 source는
+`04c92da78165ccbf63b467855591df183655a98d`, 고정 devel은 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`다.
 
-[개별 리뷰](pr_7694_review.md)의 원 head `0e7383d03753ac2546b0be74f19a244fe81747ff`와 실제 소비 경로를 따른다. `review/semanticist21-20261019`에서 고정 devel `238de6de41a208648f4ade6b494fe433a81c1fce` 위로 누적한 45개 원 PR 중 하나다. 추가 PR을 체리픽하거나 다른 HWP로 범위를 확대하지 않는다.
+## 보정과 검증
 
-## 원 커밋과 통합 대응
+move_inline_control_native는 배포 문서·원본/대상 주소·잠금·logical caret를 먼저 검증하고 영향 구역 복제본에서 remove/insert를 실행한다. 실제 문서 commit 이전에 실패할 수 있는 검사를 끝내는 순서를 확인한다. 같은 위치 no-op은 이벤트를 발행하지 않으며, source 제거 후 sibling 경로와 목적지 offset을 다시 계산한다. inline_control_move의 18개 검사와 분리한 유효 저장본 검사 1개는 Unicode·필드·형광펜·범위 태그·BinData·실제 OOXML 차트 payload 및 공개 HWP/HWPX 저장을 포함한다. 이동 전후 실제 차트의 과거 시각 미달은 뒤의 OLE/차트 공통 보정으로 해결했으며, 원 이동 API와 차트 paint 보정의 범위를 구분한다.
 
-| 원 커밋 | 통합 후보의 대응 |
-| --- | --- |
-| `f7c0acb2c9580cae3ebc14e09bb503dba261ffaa` | `7649c9cea4a9d58971286439679923942e3198d0` |
-| `3e2a9dc1c6597e357634835208e0efcfca5288c0` | `d7e9c740d24850458714ee18f9702463ef99d3dd` |
-| `9dab2711be1156aefc5318a1adb4e98fb0a309fe` | `dd5fb7e0fa9480cee81489aa3a11fb33f2fe3144` |
-| `30a29eaf5481b6ca8b1c283c10b695a735eadc35` | `53390b6d801bcc61ef81314b1b3cd4795a0d0267` |
-| `5f7a4fca71f816c2fb72154639c31e3826423a28` | `29ebef650759de94893649b0e780381d555859c3` |
-| `3e68f620a9c2643bb52a78d305b2f7e95f06a631` | `0758d3f6d26adbcd13638a59ccb52c0eab38f8cd` |
-| `55f06f5505d6f6ddd449a3f7b1cb4acd84c29ac2` | `215da38331fece58f4047cabede6346015d87ee8` |
-| `09f91ff16986b6f64db4a3b46d1a63ca0f6e8de5` | `a1a5a91759cdd1f422bf0ad1c3a7724a8704c31e` |
-| `9052f0bde427f93bf3cefe5de09875065a49bfbb` | 원 devel merge; 기능 체리픽에서 제외 |
-| `133e09e154d0d496850d64deb7e823b2599cceba` | `00bf9e023f51562a6c704fa586165ac71931e7c9` |
-| `680f44ae667ba16b8ecc1073ce815286788d138b` | `508693b3afb3d625521c82f412fd6fef6d5d1c80` |
-| `0e7383d03753ac2546b0be74f19a244fe81747ff` | `a5493a01a4be9822d1fa18e918fbb34ae5a33b5a` |
+공통 연산의 정상 대조군과 실패 경계를 개별 리뷰의 실제 검사에 연결한다. 이미 정확한
+독립 기대값은 유지하며, 잘못된 고정 위치·과거 쪽수 핀은 원본·독립 Print에 따라 재검토한다.
+실행 결과와 명령, 현재 입력의 전체 Native/fresh WASM TSV·직접 판독은
+[최종 제출 증거](../assets/s21_20261027/README.md)의 해당 조건을 따른다.
 
-충돌 보정과 원 기능의 유지 여부는 원 커밋·현재 코드 후보·독립 기대값을 대조한다. 메인터너의 공통 renderer·편집 소유 보정과 원 contributor 변경을 혼동하지 않는다. 원 head는 직접 merge 대상이 아니다.
+## 현재 단계와 후속 처리
 
-## 실행 순서와 현재 상태
+메인터너 보정 후 수용 가능 — 기능: 인라인 개체를 논리 캐럿 위치로 원자적으로 이동하는 API 추가 범위의 로컬 검증 완료.
 
-1. 원 PR의 reviewer·head를 확인하고 기능 commit을 최신 devel 위에 누적 적용했다. 원격 원 head를 재작성하지 않았다.
-2. 코드·회귀 후보 `61528013511c87c732524f91c6f224286a055337`의 로컬 Rust 검증을 완료했다. 렌더 source는 `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a`이며 이후 증거 등록은 런타임을 바꾸지 않았다. 미완료 항목을 완료로 표시하지 않는다.
-3. 개별 리뷰의 독립 Print·Native/fresh WASM·소비 경로와 전체 로컬 게이트를 완료한 뒤 최종 판정을 갱신한다. PR 직전 devel head를 재조회하고 변경됐으면 리베이스한 기능과 현재 보정 범위를 함께 검증한다.
-4. 승인된 통합 PR을 실제 템플릿에 맞춰 제출하고 정확한 code head CI를 관찰한다. 별도로 승인된 옵션 2의 self-review·오늘할일 후속 PR은 code CI 뒤에 처리한다. 원 PR별 검토 기록은 통합 PR에 유지한다.
-5. CI·merge 조건을 확인해 통합하고 merge SHA의 devel 포함을 확인한다. 이 PR에는 보정·검증 결과와 통합 링크를 남긴 뒤 원 PR을 close한다. 관련 이슈는 전체 해결 범위가 확인된 경우만 닫는다.
-6. contributor fork·branch를 보존하고 소유·실행 상태를 확인한 검토 worktree·임시 산출물만 정리한다. 공유 `target/pr-review`는 유지한다.
-
-## 제외와 복원 경계
-
-sample16·편람의 삭제된 회귀·파생 참조는 복구하지 않는다. 별도 이관 검사를 이 통합의 통과 증거로 다시 등록하지 않는다. 통합 전 코드 변경이 필요하면 일반 추가 commit으로 보정하고 영향 검증을 재실행한다. contributor history를 reset·amend·force-push하지 않는다.
-
-## 완료 전 남은 기록
-
-정확한 전체 검증 terminal 결과, 적용 입력의 시각 증거·직접 판독과 최종 판정, 실제 통합 PR·CI·merge SHA·후속 comment URL은 수행 후 기록한다. 이 계획 자체를 해당 단계의 완료로 간주하지 않는다.
-
-## 현재 후보의 실제 검사 실행 — 2026-10-26
-
-현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
-`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
-동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
-Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
-이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
-
-아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
-
-- [tests/cases/inline_control_move.rs](../../../tests/cases/inline_control_move.rs): SHA-256 `d85b9ba7f75bed2cdd5c7f942bee95d9c609ca94d0ccf345e62b9c95a9412ea1`.
-  - `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`: PASS, `logs/move-cleanup-focused-4207.log:22` (`rhwp::regression_suite_014`).
-  - `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`: PASS, `logs/move-cleanup-focused-4207.log:7` (`rhwp::regression_suite_014`).
-  - `committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets`: PASS, `logs/current-full-nextest-4184.log:9361` (`rhwp::regression_suite_020`).
-  - `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`: PASS, `logs/move-cleanup-focused-4207.log:9` (`rhwp::regression_suite_014`).
-  - `header_and_note_destinations_return_existing_owner_forms`: PASS, `logs/move-cleanup-focused-4207.log:8` (`rhwp::regression_suite_014`).
-  - `locked_object_and_locked_parent_reject_without_mutation`: PASS, `logs/move-cleanup-focused-4207.log:13` (`rhwp::regression_suite_014`).
-  - `malformed_source_or_destination_coordinates_reject_without_changes`: PASS, `logs/move-cleanup-focused-4207.log:11` (`rhwp::regression_suite_014`).
-  - `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`: PASS, `logs/move-cleanup-focused-4207.log:10` (`rhwp::regression_suite_014`).
-  - `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`: PASS, `logs/move-cleanup-focused-4207.log:21` (`rhwp::regression_suite_014`).
-  - `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`: PASS, `logs/move-cleanup-focused-4207.log:12` (`rhwp::regression_suite_014`).
-  - `nested_markpen_colors_keep_outer_inner_order_when_moved`: PASS, `logs/move-cleanup-focused-4207.log:6` (`rhwp::regression_suite_014`).
-  - `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`: PASS, `logs/move-cleanup-focused-4207.log:19` (`rhwp::regression_suite_014`).
-  - `picture_binary_identity_and_control_metadata_survive_cross_owner_move`: PASS, `logs/move-cleanup-focused-4207.log:17` (`rhwp::regression_suite_014`).
-  - `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`: PASS, `logs/move-cleanup-focused-4207.log:16` (`rhwp::regression_suite_014`).
-  - `public_hwp_export_preserves_inline_chart_with_and_without_move`: PASS, `logs/move-cleanup-focused-4207.log:23` (`rhwp::regression_suite_014`).
-  - `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`: PASS, `logs/move-cleanup-focused-4207.log:14` (`rhwp::regression_suite_014`).
-  - `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`: PASS, `logs/move-cleanup-focused-4207.log:18` (`rhwp::regression_suite_014`).
-  - `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`: PASS, `logs/move-cleanup-focused-4207.log:15` (`rhwp::regression_suite_014`).
-  - `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`: PASS, `logs/move-cleanup-focused-4207.log:20` (`rhwp::regression_suite_014`).
-- [tests/cases/valid_inline_move_fixture_contract.rs](../../../tests/cases/valid_inline_move_fixture_contract.rs): SHA-256 `00528471f32b6f7dc3fbab806ad0b814d7b07156be298ef679f2f73d7a48d8aa`.
-  - `valid_inline_move_fixtures_preserve_saved_carets_and_chart_data`: PASS, `logs/move-cleanup-focused-4207.log:24` (`rhwp::regression_suite_017`).
-
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
-
-## 손상된 일반 HWP 표본 삭제 — 2026-10-26
-
-독립 Hancom 2020 Print 요청에서 일반 이동 표본 두 파일은
-`HANCOM_DOCUMENT_OPEN_REJECTED` 손상 경고로 거절됐다. 사용자 지시에 따라
-`tests/fixtures/inline-control-move/before.hwp`와 `after.hwp`를 삭제했다.
-별도 보관본이나 대체 HWP를 활성 fixture에 추가하지 않는다.
-실패한 job은 각각 `56ddb08f-9bec-4a9d-834f-92e0088db40b`,
-`2cb98cd1-923a-42ea-a11b-dad564d4018c`이며 ignored
-`output/pr-review/semanticist21-20261019/existing-move-print-4193-result.json`에 있다.
-
-원 검사에서 일반 `before/after`의 확장자를 순회하던 경로를 없애고
-[유효한 저장본 계약](../../../tests/cases/valid_inline_move_fixture_contract.rs)에서
-HWPX 두 파일을 명시적으로 읽는다. 차트 HWP/HWPX 네 파일의 내용·개체 보존 검사는
-유지한다. 공용 주소·차트 조회 helper를 분리해 기존 파일은 983줄로 유지했다.
-원본의 정확한 내용·논리 캐럿·개체 수 assertion을 완화하거나 fixture를 숨기지 않았다.
-
-삭제 지시 이전에 시작한 전체 Rust 실행은 고정한 이전 검증 worktree의 결과다.
-이 삭제·검사 분리를 반영한 집중 회귀와 필수 lint는 별도로 재실행하며, 이전 결과를
-이번 검사 source의 PASS로 표시하지 않는다. sample16·편람의 삭제도 유지한다.
-
-
-## 기존 devel의 일반 HWPX 배치 결함 구분 — 2026-10-26
-
-일반 before/after HWPX는 한컴에서 정상적으로 열리지만 RHWP에서 도형·글상자가 겹친다.
-고정 base와 후보의 양쪽 raw가 각각 정확히 같아 새 회귀가 아님을 확인했다.
-[이슈 #8266](https://github.com/edwardkim/rhwp/issues/8266)에 원문 TSV 8개와 실제 원점·
-독립 Print 식별자를 등록했고, [입력/PDF 증거](../assets/issue_8266/README.md)를 보존했다.
-개인 작업 이슈나 기존 미해결 문서 묶음을 공통 이관 대상으로 자동 지정하지 않았다.
-
-일반 HWPX의 정확한 본문·개체·캐럿 보존 검사는 유지하며 정상 조판으로 부적합한 쪽수
-핀만 제거했다. 정상 차트 네 파일의 쪽수·내용 검사는 유지한다. 원 PR이 주장한 모델·
-원자적 이동·저장 API와 기존 devel의 일반 TAC 배치 결함을 구분하며 미달 쪽을 정상
-시각 검증에 섞지 않는다. 손상 HWP 두 파일은 삭제를 유지하고 대체본을 등록하지 않는다.
+통합 PR의 실제 code head CI·merge는 로컬 검증과 별개다. 사용자가 승인한 옵션 2에 따라
+CI 성공 뒤 별도 self-review·오늘할일 PR을 처리하며, 완료 시 실제 PR·CI·merge SHA와
+원 PR별 comment·close 결과를 기록한다. 번호나 merge 결과를 미리 만들지 않는다.
+삭제한 sample16·편람의 일반 회귀와 파생 참조를 되살리지 않는다. 명시적으로 지정한
+#8188 네 변환 입력의 기능 보존 검증은 별도 예외 범위로 구분한다.

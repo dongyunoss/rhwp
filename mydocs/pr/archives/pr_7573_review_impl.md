@@ -1,43 +1,32 @@
-# PR #7573 구현·검증 순서 — 경계 개체의 복사·삭제 소유 일치
+# PR #7573 구현·검증 기록
 
-[개별 검토](pr_7573_review.md)의 원 head·체리픽과 공통 보정을 기준으로 한다.
+[개별 리뷰](pr_7573_review.md)의 실제 소비 경로와 원 커밋 대응을 따른다.
+원 contributor head는 `84e80b5d82455254bdbdaca0a2b19dff92f1be12`, 검증 코드·테스트 source는
+`04c92da78165ccbf63b467855591df183655a98d`, 고정 devel은 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`다.
 
-1. 원 Draft의 정상 대조군1개와 양 끝 실패2개를 읽고 복사·삭제의 글자 축과 문단 끝
-   후행 개체 계약을 추적했다. #7509의 입력/복사 범위와 같은 문제로 묶어 완료하지 않는다.
-2. `0eb36de6d5`에서 본문·셀 경계가 같은 `delete_paragraph_boundary`를 소비하게 했다.
-   원본 control 번호 변경은 모델 `remove_control`에 맡겼다.
-3. Rust1180의 관련3검사 PASS는 확인했으나 수량 유지가 내용과 서식 전체를 입증하지는
-   않는다. 수정 전후 경계 실행, 원문·소유 보존 반례와 최신 제품 집중 검사를 완료한다.
-4. API 생성 전/후4조건을 최신 Native/fresh와 독립 Print PDF로 재검증하고 직접 판독한다.
-   옛019의 양쪽 raw100%와 최신 후보를 구분하고 고정 devel 대비 하락도 확인한다.
-5. 전체 필수 로컬 검증과 원본·PDF·전쪽 TSV·대표 PNG 보존을 마친 뒤 최종 판정을 갱신한다.
-   검증을 우회해 Draft PR을 새로 만들거나 관련 이슈 전체를 닫지 않는다.
-6. 사용자 승인 후 통합 PR·CI·merge를 진행하며, 원 PR별 comment/close·관련 이슈·문서
-   후속 처리에는 실제 merge SHA를 사용한다. 현재 remote 조치는 수행하지 않았다.
+## 보정과 검증
 
-실행 로그·중간 JSON·다음 실행 메모는 ignored output에만 보존한다. 기존 기대값 완화와
-회귀 제거로 개체 보존 결함을 숨기지 않는다.
+`copySelection`과 `deleteRange`가 선택의 경계 표를 다르게 소유하면 같은 범위를 오려
+빈 문단에 붙일 때 표가 둘로 늘어난다. 원 PR은 공개 API로 `abc`·표·`xyz`·빈 문단을
+생성하고 정상 중간 선택1개와 양 끝 경계 실패2개를 제시한다.
 
-현재 제품43ab의 전체 Rust1352에서 관련3검사 PASS를 재확인했다. Native088·fresh037의
-최신1347 실행에서도 편집 저장본4조건의 전쪽 raw100%·Print 쪽수 일치를 확인했다.
-통합 전체는59개 Rust 실패와 다른 시각 미달이 남아 있으며, 이 PR의 직접 판독·최신 devel
-대조·제출 asset 보존도 이어서 완료한다. 실제 실행 로그는 ignored output의
-`logs/batch-cut-native088-1347.log`와 `logs/wasm037-focus-queue-1351.log`에 연결된다.
+보정은 `commands/text_editing.rs`의 공통 `delete_paragraph_boundary`에서 복사와 같은
+반개방 글자 범위를 사용한다. 문단 끝까지 선택한 경우 후행 개체를 포함하며, 경계 안의
+표·그림을 역순으로 제거한 뒤 텍스트를 삭제한다. 개체 슬롯 제거는 모델의 공통
+`remove_control`을 사용해 글자 모양과 필드의 control 번호도 함께 갱신한다. 같은 문단,
+여러 문단과 셀 경계 삭제가 이 연산을 소비한다. 특정 문서·표 번호의 예외를 추가하지 않는다.
 
-## 현재 후보의 실제 검사 실행 — 2026-10-26
+공통 연산의 정상 대조군과 실패 경계를 개별 리뷰의 실제 검사에 연결한다. 이미 정확한
+독립 기대값은 유지하며, 잘못된 고정 위치·과거 쪽수 핀은 원본·독립 Print에 따라 재검토한다.
+실행 결과와 명령, 현재 입력의 전체 Native/fresh WASM TSV·직접 판독은
+[최종 제출 증거](../assets/s21_20261027/README.md)의 해당 조건을 따른다.
 
-현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
-`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
-동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
-Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
-이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+## 현재 단계와 후속 처리
 
-아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+메인터너 보정 후 수용 가능 — 오려 붙이기 선택 경계의 표 소유 보존 범위의 로컬 검증 완료.
 
-- [tests/cases/issue_7444_cut_boundary_object.rs](../../../tests/cases/issue_7444_cut_boundary_object.rs): SHA-256 `41337da29e671877401935322a39efff28c0a1e00b7440a2ecf66c1d28973040`.
-  - `cut_ending_at_table_paragraph_start_does_not_duplicate_table`: PASS, `logs/current-full-nextest-4184.log:6669` (`rhwp::regression_suite_010`).
-  - `cut_starting_at_table_paragraph_start_does_not_duplicate_table`: PASS, `logs/current-full-nextest-4184.log:6670` (`rhwp::regression_suite_010`).
-  - `cut_with_table_in_selection_interior_moves_one_table`: PASS, `logs/current-full-nextest-4184.log:6671` (`rhwp::regression_suite_010`).
-
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+통합 PR의 실제 code head CI·merge는 로컬 검증과 별개다. 사용자가 승인한 옵션 2에 따라
+CI 성공 뒤 별도 self-review·오늘할일 PR을 처리하며, 완료 시 실제 PR·CI·merge SHA와
+원 PR별 comment·close 결과를 기록한다. 번호나 merge 결과를 미리 만들지 않는다.
+삭제한 sample16·편람의 일반 회귀와 파생 참조를 되살리지 않는다. 명시적으로 지정한
+#8188 네 변환 입력의 기능 보존 검증은 별도 예외 범위로 구분한다.

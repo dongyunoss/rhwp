@@ -2,123 +2,115 @@
 
 ## 최종 판정
 
-**머지 보류 — 고정한 통합 코드 후보의 전체 로컬 검증과 이 PR의 필수 증거를 대조 중이다.**
+**메인터너 보정 후 수용 가능 — 기능: 인라인 개체를 논리 캐럿 위치로 원자적으로 이동하는 API 추가 범위의 로컬 검증 완료.**
 
-최신 원격 CI·통합·후속 처리는 아직 완료되지 않았다. 원 contributor head의 직접 merge가 아니라 메인터너 보정한 통합 후보를 검토한다. 실제 완료 결과를 수집한 뒤 판정을 갱신한다.
+원 contributor head의 직접 merge 판정과 메인터너 보정한 통합 후보의 판정을 구분한다. 원격 CI·merge·후속 처리는 실제 수행 후 별도로 기록한다.
 
-## 접수 정보
+## 접수 정보와 적용 계보
 
 | 항목 | 값 |
 | --- | --- |
 | 원 PR·작성자 | [#7694](https://github.com/edwardkim/rhwp/pull/7694) / semanticist21 |
-| 고정 원 head | `0e7383d03753ac2546b0be74f19a244fe81747ff` |
-| 원격 확인 | 2026-10-26 KST: head 일치, reviewer jangster77 지정 확인; 당시 draft=true |
+| 원 head | `0e7383d03753ac2546b0be74f19a244fe81747ff` |
 | 통합 브랜치 | `review/semanticist21-20261019` |
-| 현재 통합 후보 | `d6ea10837218e7e490b166ed76af221490b61ba2` |
-| 초기 렌더 소스·증거 등록(과거) | `bbf3aed18dd82bbf344072b77b5ac590e7a71f3a` / `2c6393f7bb` |
-| 고정 devel | `238de6de41a208648f4ade6b494fe433a81c1fce` |
+| 검증 코드·테스트 source | `04c92da78165ccbf63b467855591df183655a98d` |
+| 고정 upstream/devel | `faa885e8b54ffc7cdf4196cd43a3103f362499a2` |
+| 원격 조회 시 상태 | 2026-10-27 조회에서 원 head 불변·open·reviewer jangster77 확인. 원 Draft 여부와 통합 후보 판정은 별개 |
 
-## 변경과 원 커밋 적용
-
-현재 대응표는 통합 head `fcc9c69c006c3cd134a0ed0dcd1f2822bc32aa2d`·기준 devel `0bb36e6f976e9ebeba0b1c48d86a2c5bdaee7f7c`의 실제 history를 대조했다. 원 head의 merge 전용 커밋과 이미 포함된 동등 구현은 기능 체리픽과 구분한다. 이 표는 커밋 출처이며 전체 검증 완료 판정은 아니다.
-
-| 원 커밋 | 통합 후보의 대응 |
+| 원 커밋 | 현재 통합의 대응 |
 | --- | --- |
-| `f7c0acb2c9580cae3ebc14e09bb503dba261ffaa` | `0d79a4fb2667d798219eb385272868c6a2d2c350` |
-| `3e2a9dc1c6597e357634835208e0efcfca5288c0` | `c9ec53e777218065cd9ae3e277bb6337e99b031b` |
-| `9dab2711be1156aefc5318a1adb4e98fb0a309fe` | `964fdd73168dd65972710d3c83a88d10c919a7eb` |
-| `30a29eaf5481b6ca8b1c283c10b695a735eadc35` | `c3b8cdd31189f4f2a97c8019cdf22c30431546fc` |
-| `5f7a4fca71f816c2fb72154639c31e3826423a28` | `e453521e3b08141caca21110f1c41723192361ee` |
-| `3e68f620a9c2643bb52a78d305b2f7e95f06a631` | `f173f492925f910d20ff80ffa10b085ca24377ba` |
-| `55f06f5505d6f6ddd449a3f7b1cb4acd84c29ac2` | `9e56a496154afbb644d6ced4cfc4566233b54206` |
-| `09f91ff16986b6f64db4a3b46d1a63ca0f6e8de5` | `77ec41181ff9d6e3e05615635c4f2a88496b7b5a` |
-| `9052f0bde427f93bf3cefe5de09875065a49bfbb` | 원 PR의 merge 전용 커밋: 별도 기능 적용 없음 |
-| `133e09e154d0d496850d64deb7e823b2599cceba` | `a62225506afaa57c1f5bd8632f4cb6da64aaa5d9` |
-| `680f44ae667ba16b8ecc1073ce815286788d138b` | `07c8aed01d3b9f506672c976a912e98345d359af` |
-| `0e7383d03753ac2546b0be74f19a244fe81747ff` | `60b81c4174ed407db90fa3017d3f37def1ab6efc` |
+| `f7c0acb2c9580cae3ebc14e09bb503dba261ffaa` | `d1e0e6effb76f008212e35e30d424b3d2bf16859` |
+| `3e2a9dc1c6597e357634835208e0efcfca5288c0` | `cbba1142ab875690931e534d0e4dd96613dc99fa` |
+| `9dab2711be1156aefc5318a1adb4e98fb0a309fe` | `0ebe2b9c984c71776077526290833410527e86ce` |
+| `30a29eaf5481b6ca8b1c283c10b695a735eadc35` | `890cb141fd9cecab6b08a59cd467a83f77aa4fce` |
+| `5f7a4fca71f816c2fb72154639c31e3826423a28` | `4b8fa6a3f6c03a9b5d13344632a64741a9a72932` |
+| `3e68f620a9c2643bb52a78d305b2f7e95f06a631` | `19472f0d01d239d0fdc04c18e0cbe07fa8519f1a` |
+| `55f06f5505d6f6ddd449a3f7b1cb4acd84c29ac2` | `9babbc89eaad590cfba07e9740ac46a7f625384d` |
+| `09f91ff16986b6f64db4a3b46d1a63ca0f6e8de5` | `1f9f9a3c6625b309d6801a069a27f19e6451b3c7` |
+| `9052f0bde427f93bf3cefe5de09875065a49bfbb` | 원 PR의 devel merge 전용 커밋; 별도 기능 체리픽 없음 |
+| `133e09e154d0d496850d64deb7e823b2599cceba` | `a4f46c90d1e602898037cc4aafdffb21a407e8ca` |
+| `680f44ae667ba16b8ecc1073ce815286788d138b` | `255357ae0a8852af1298f5b46f3c85a092d17ec1` |
+| `0e7383d03753ac2546b0be74f19a244fe81747ff` | `4ae7eacf88977ac7d39d079ddc72ba670ff5178c` |
 
-### 실제 소비 경로와 반례
+## 구현 주장·공통 소비 경로·반례
 
-move_inline_control_native는 배포 문서·원본/대상 주소·잠금·logical caret를 먼저 검증하고 영향 구역 복제본에서 remove/insert를 실행한다. 실제 문서 commit 이전에 실패할 수 있는 검사를 끝내는 순서를 확인한다. 같은 위치 no-op은 이벤트를 발행하지 않으며, source 제거 후 sibling 경로와 목적지 offset을 다시 계산한다. inline_control_move의 18개 검사와 분리한 유효 저장본 검사 1개는 Unicode·필드·형광펜·범위 태그·BinData·실제 OOXML 차트 payload 및 공개 HWP/HWPX 저장을 포함한다. 시각 chart-before/after 미달을 뒤의 OLE/차트 공통 보정과 구분해 기록한다.
+move_inline_control_native는 배포 문서·원본/대상 주소·잠금·logical caret를 먼저 검증하고 영향 구역 복제본에서 remove/insert를 실행한다. 실제 문서 commit 이전에 실패할 수 있는 검사를 끝내는 순서를 확인한다. 같은 위치 no-op은 이벤트를 발행하지 않으며, source 제거 후 sibling 경로와 목적지 offset을 다시 계산한다. inline_control_move의 18개 검사와 분리한 유효 저장본 검사 1개는 Unicode·필드·형광펜·범위 태그·BinData·실제 OOXML 차트 payload 및 공개 HWP/HWPX 저장을 포함한다. 이동 전후 실제 차트의 과거 시각 미달은 뒤의 OLE/차트 공통 보정으로 해결했으며, 원 이동 API와 차트 paint 보정의 범위를 구분한다.
 
+## 원 PR의 실제 회귀 실행
 
-
-### 현재 소스와 검사
-
-- [src/document_core/commands/header_footer_ops.rs](../../../src/document_core/commands/header_footer_ops.rs)
-- [src/document_core/commands/text_editing.rs](../../../src/document_core/commands/text_editing.rs)
-- [src/document_core/converters/hwpx_to_hwp.rs](../../../src/document_core/converters/hwpx_to_hwp.rs)
-- [src/document_core/inline_control.rs](../../../src/document_core/inline_control.rs)
-- [src/document_core/mod.rs](../../../src/document_core/mod.rs)
-- [src/model/event.rs](../../../src/model/event.rs)
-- [src/serializer/body_text.rs](../../../src/serializer/body_text.rs)
-- [src/wasm_api.rs](../../../src/wasm_api.rs)
-- [tests/cases/inline_control_move.rs](../../../tests/cases/inline_control_move.rs)
-
-- `tests/cases/inline_control_move.rs`: SHA-256 `d85b9ba7f75bed2cdd5c7f942bee95d9c609ca94d0ccf345e62b9c95a9412ea1`. 직접 선언 검사 18개: `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`, `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`, `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`, `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`, `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`, `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`, `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`, `header_and_note_destinations_return_existing_owner_forms`, `picture_binary_identity_and_control_metadata_survive_cross_owner_move`, `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`, `locked_object_and_locked_parent_reject_without_mutation`, `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`, `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`, `nested_markpen_colors_keep_outer_inner_order_when_moved`, `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`, `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`, `public_hwp_export_preserves_inline_chart_with_and_without_move`, `malformed_source_or_destination_coordinates_reject_without_changes`.
-
-삭제·교체한 옛 검사와 현재 활성 검사를 구분한다. 위 목록은 현재 source 검사이며 실행 PASS 집계가 아니다.
-
-## 검증 입력과 결과
-
-원 PR의 증적이나 helper assertion만으로 독립 Print 일치를 선언하지 않는다. 적용 입력·최종 head의 결과를 개별적으로 대조한 뒤 최종 판정을 갱신한다.
-
-전체 로컬 Rust 검증은 완료했다. 현재 함수별 실제 PASS와 종료 근거는 아래 「통합 후보의 실제 검사 실행」에 기록했다. 독립 시각 근거와 원격 CI는 별도로 판정한다.
-
-통합 후보의 현재 공통 시각 비교에서는 17조건·213쪽/backend의 후보 최저가 Native 92.04708%, fresh WASM 91.53306%였다. [전쪽 TSV](../assets/semanticist21_rebase_qualified_20261026/README.md)의 수치 대응 가능한 16조건·211쪽/backend에서 0.1%p 초과 하락 0쪽을 확인했고, #6133은 base 1쪽에서 독립 Print와 같은 2쪽으로 복원된 구조 개선으로 따로 기록했다. 이는 이 PR의 별도 입력이나 아래 필수 증거가 자동으로 검증됐다는 뜻이 아니다. #8228의 변경 기능 보존과 현재 보정 대상만 확인하며 다른 HWP로 범위를 넓히지 않는다.
-
-| 조판 검토 항목 | 현재 근거와 판정 경계 |
-| --- | --- |
-| 규칙·공통 소비 | 위 실제 소비 경로와 반례를 따른다. helper 뒤 덮어쓰기·다른 frame을 실제 결과와 대조한다. |
-| 입력·독립 기대값 | 입력 생성 방식과 한컴 Print 출처를 증거별로 구분한다. source와 무관한 값이나 원 작성자의 주장만으로 통과 처리하지 않는다. |
-| 줄·문단·개체 소유 | 현재 검사 소스의 순서·누락·중복·포함·겹침 관계를 확인한다. |
-| 시각·px 자격 | 전쪽 양쪽 raw 90% 이상·쪽수 일치·직접 판독이 필요하다. ±2px는 양쪽 98% 이상을 확인한 해당 페이지의 독립 좌표에만 허용한다. |
-| 리베이스 기능 보존 | 새 base와 현재 후보의 동일 입력·producer·Print 조건을 대조한다. 평균값으로 페이지별 0.1%p 초과 하락을 상쇄하지 않는다. |
-| 완료된 로컬 게이트 | 아래 실제 실행 결과와 공통 종료 기록을 대조했다. 이 PR의 독립 시각 증거와 원격 CI는 별도로 판정한다. |
-
-sample16·편람의 기존 삭제를 유지하며 삭제 파일을 향하던 파생 참조도 재생성하지 않는다. 미해결 이관 문서를 완료 범위나 이슈 닫기 목록에 넣지 않는다.
-
-
-현재 저장본 계약 1개는 [분리한 새 검사](../../../tests/cases/valid_inline_move_fixture_contract.rs)에서 실제 실행했다. 손상 HWP를 다시 읽는 확장자 순회는 제거했다.
-
-## 현재 후보의 실제 검사 실행 — 2026-10-26
-
-현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
-`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
-동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
-Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
-이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
-
-아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+아래 함수와 실제 최종 PASS 행을 대조했다. 계약 검사 통과와 독립 Print의 시각 일치를 구분한다.
 
 - [tests/cases/inline_control_move.rs](../../../tests/cases/inline_control_move.rs): SHA-256 `d85b9ba7f75bed2cdd5c7f942bee95d9c609ca94d0ccf345e62b9c95a9412ea1`.
-  - `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`: PASS, `logs/move-cleanup-focused-4207.log:22` (`rhwp::regression_suite_014`).
-  - `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`: PASS, `logs/move-cleanup-focused-4207.log:7` (`rhwp::regression_suite_014`).
-  - `committed_public_fixtures_reopen_and_keep_objects_at_the_saved_carets`: PASS, `logs/current-full-nextest-4184.log:9361` (`rhwp::regression_suite_020`).
-  - `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`: PASS, `logs/move-cleanup-focused-4207.log:9` (`rhwp::regression_suite_014`).
-  - `header_and_note_destinations_return_existing_owner_forms`: PASS, `logs/move-cleanup-focused-4207.log:8` (`rhwp::regression_suite_014`).
-  - `locked_object_and_locked_parent_reject_without_mutation`: PASS, `logs/move-cleanup-focused-4207.log:13` (`rhwp::regression_suite_014`).
-  - `malformed_source_or_destination_coordinates_reject_without_changes`: PASS, `logs/move-cleanup-focused-4207.log:11` (`rhwp::regression_suite_014`).
-  - `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`: PASS, `logs/move-cleanup-focused-4207.log:10` (`rhwp::regression_suite_014`).
-  - `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`: PASS, `logs/move-cleanup-focused-4207.log:21` (`rhwp::regression_suite_014`).
-  - `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`: PASS, `logs/move-cleanup-focused-4207.log:12` (`rhwp::regression_suite_014`).
-  - `nested_markpen_colors_keep_outer_inner_order_when_moved`: PASS, `logs/move-cleanup-focused-4207.log:6` (`rhwp::regression_suite_014`).
-  - `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`: PASS, `logs/move-cleanup-focused-4207.log:19` (`rhwp::regression_suite_014`).
-  - `picture_binary_identity_and_control_metadata_survive_cross_owner_move`: PASS, `logs/move-cleanup-focused-4207.log:17` (`rhwp::regression_suite_014`).
-  - `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`: PASS, `logs/move-cleanup-focused-4207.log:16` (`rhwp::regression_suite_014`).
-  - `public_hwp_export_preserves_inline_chart_with_and_without_move`: PASS, `logs/move-cleanup-focused-4207.log:23` (`rhwp::regression_suite_014`).
-  - `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`: PASS, `logs/move-cleanup-focused-4207.log:14` (`rhwp::regression_suite_014`).
-  - `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`: PASS, `logs/move-cleanup-focused-4207.log:18` (`rhwp::regression_suite_014`).
-  - `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`: PASS, `logs/move-cleanup-focused-4207.log:15` (`rhwp::regression_suite_014`).
-  - `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`: PASS, `logs/move-cleanup-focused-4207.log:20` (`rhwp::regression_suite_014`).
+  - `same_paragraph_forward_and_back_preserve_unicode_order_styles_data_and_undo`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7853`.
+  - `adjacent_objects_have_distinct_before_after_carets_and_no_op_emits_nothing`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7840`.
+  - `cross_paragraph_move_keeps_paragraphs_and_both_save_formats`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7841`.
+  - `moving_after_a_trailing_auto_number_preserves_its_placeholder_and_both_save_formats`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7846`.
+  - `zero_length_field_slot_is_removed_exactly_and_field_indices_and_marks_survive`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7856`.
+  - `target_sibling_path_reindexes_after_source_removal_and_own_descendant_is_rejected`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7855`.
+  - `protected_cells_distribution_invalid_control_and_invalid_caret_are_atomic`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7851`.
+  - `header_and_note_destinations_return_existing_owner_forms`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7842`.
+  - `picture_binary_identity_and_control_metadata_survive_cross_owner_move`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7850`.
+  - `moving_out_of_a_cell_updates_its_owner_after_insertion_before_the_parent`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7847`.
+  - `locked_object_and_locked_parent_reject_without_mutation`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7843`.
+  - `markpen_object_ranges_move_between_paragraphs_and_preserve_unpaired_metadata`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7845`.
+  - `nonempty_field_insertion_keeps_object_inside_after_text_is_deleted`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7849`.
+  - `nested_markpen_colors_keep_outer_inner_order_when_moved`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7848`.
+  - `table_shape_textbox_and_chart_payloads_are_moved_without_recreation`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7854`.
+  - `actual_ooxml_chart_keeps_control_and_binary_payloads_after_move_and_save`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7839`.
+  - `public_hwp_export_preserves_inline_chart_with_and_without_move`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7852`.
+  - `malformed_source_or_destination_coordinates_reject_without_changes`: PASS, `rhwp::regression_suite_014`, 로컬 `logs/coherent-full-nextest-4697.log:7844`.
+- [tests/cases/ooxml_chart_print_frame.rs](../../../tests/cases/ooxml_chart_print_frame.rs): SHA-256 `eed1c3118653f04d739bcc15b19462147d07c59fb59530bfa57c6fe32ad685fc`.
+  - `hwp_and_hwpx_moved_charts_keep_print_frame_axes_and_content_relations`: PASS, `rhwp::regression_suite_003`, 로컬 `logs/coherent-full-nextest-4697.log:4780`.
 - [tests/cases/valid_inline_move_fixture_contract.rs](../../../tests/cases/valid_inline_move_fixture_contract.rs): SHA-256 `00528471f32b6f7dc3fbab806ad0b814d7b07156be298ef679f2f73d7a48d8aa`.
-  - `valid_inline_move_fixtures_preserve_saved_carets_and_chart_data`: PASS, `logs/move-cleanup-focused-4207.log:24` (`rhwp::regression_suite_017`).
+  - `valid_inline_move_fixtures_preserve_saved_carets_and_chart_data`: PASS, `rhwp::regression_suite_016`, 로컬 `logs/coherent-full-nextest-4697.log:8611`.
 
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+## 독립 Print·전쪽 TSV·대표 페이지
+
+이 PR의 기존 검증 입력은 최종 조건 번호 124, 125, 128, 129에 연결한다. 다른 PR의 평균 점수로 이 범위를 대신하지 않는다.
+
+| 조건 | 전체 쪽수 | Native 최저 raw·전체 TSV | fresh WASM 최저 raw·전체 TSV |
+| --- | ---: | --- | --- |
+| 124 | 1 | [99.80761](../assets/s21_20261027/n/c/124.tsv) | [99.66483](../assets/s21_20261027/w/c/124.tsv) |
+| 125 | 1 | [99.71479](../assets/s21_20261027/n/c/125.tsv) | [99.73289](../assets/s21_20261027/w/c/125.tsv) |
+| 128 | 1 | [99.80761](../assets/s21_20261027/n/c/128.tsv) | [99.66483](../assets/s21_20261027/w/c/128.tsv) |
+| 129 | 1 | [99.71479](../assets/s21_20261027/n/c/129.tsv) | [99.73289](../assets/s21_20261027/w/c/129.tsv) |
+
+[입력·Print 경로와 SHA, producer·DPI·글꼴, base TSV 및 대표 review·overlay](../assets/s21_20261027/README.md)를 각 조건 번호로 대조한다. raw는 색상 경계 보정 전 2px 내용 실루엣이며 RGB 완전 일치가 아니다. 실제 빈 페이지의 raw 100%는 가시 내용의 정확성 증거로 사용하지 않고, 원본·독립 Print의 쪽수와 소유 계약을 별도로 검사한다.
+
+신규 검사는 문단·줄·개체의 소유·순서·누락·중복·포함·겹침 관계를 기본으로 한다. 독립 Print와 실제 판독을 마치고 Native/fresh WASM이 모두 98% 이상인 완료 페이지만 독립 좌표 ±2px를 허용하며 관계 검사도 유지한다. 원본 HU·크기·비율 계약과 임의 화면 좌표 핀을 구분한다.
+
+## 리베이스와 전체 검증의 경계
+
+새 base #8116의 기존 네 입력은 같은 Print·글꼴·DPI에서 현재 보정 범위와 함께 비교했다. 확정된 중첩 표 원점에서 측정과 배치가 같은 가용 높이를 소비하도록 보정했으며 기존 15개 검사의 기대값을 바꾸지 않았다. 사용자 지시의 페이지별 하락 한계는 0.1%p다. base의 90% 미만은 변경 전 비교 자료로 구분하고 후보는 모든 관련 쪽에서 90% 이상을 유지한다.
+
+필수 로컬 게이트는 최종 실행 결과와 source SHA를 대조해 완료했다. 전체 Rust·Skia·Studio의 실제 종료 집계는 공통 증거의 실행 요약을 따른다.
+
+## 원격 처리와 후속 기록
+
+통합 PR을 실제 템플릿에 맞춰 제출한 뒤 정확한 head의 CI·mergeability를 확인한다. 사용자가 승인한 옵션 2의 별도 self-review·오늘할일 PR을 code CI 이후 처리한다. 원 PR별 리뷰는 각각 유지하고 실제 통합 merge·devel 포함을 확인한 뒤 존댓말로 원 기여와 보정 범위, CI·merge SHA 및 그 SHA에 고정한 대표 review·overlay를 연결한다. contributor fork·branch와 원 history는 보존한다.
+
+대표 쪽 선정: 차트를 논리 슬롯으로 옮긴 뒤 본문·차트·후속 문단의 순서. 다른 PR의 임의 페이지로 대체하지 않는다.
 
 ## Merge 후 contributor PR comment 계획
 
-[Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 실제 통합 PR·merge SHA·CI 결과와 이 PR의 보정 범위를 존댓말로 설명한다. 시각 검증에 사용한 대표 review·overlay는 위 안정 경로에서 실제 merge SHA로 고정한 raw URL로 함께 표시한다. 아직 확정하지 않은 수치·이미지 URL이나 미실행 경로를 만들지 않는다.
+[Visual Sweep merge comment 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 통합 merge와 자산의 devel 포함을 확인한 뒤에만 게시한다. 이 계획을 원 PR의 직접 merge 승인으로 쓰지 않는다.
 
-실제 asset의 devel 반영을 확인한 뒤 `--body-file`로 게시하고 API로 본문·이미지를 재조회한다. contributor branch·fork를 삭제하거나 원 history를 rewrite하지 않는다. [개별 구현·후속 절차](pr_7694_review_impl.md)를 따른다.
+검증 범위는 위 조건 124, 125, 128, 129 전체 쪽이다. raw 90% 미만·누락·측정 불가 후보는 양쪽 0쪽이며, 대표 페이지와 전체 범위의 최저값을 구분한다. 평균·RGB 진단값으로 raw 미달을 면제하지 않았다.
+
+대표는 조건 125의 1쪽이다. 다음 수치는 실제 새 출력·같은 독립 Print를 대조한 값이며 완전한 RGB 일치의 선언이 아니다.
+
+| 출력 | raw 실루엣 | pixel_match | visual_accuracy_proxy_percent | review / overlay |
+| --- | ---: | ---: | ---: | --- |
+| native | 99.71479% | 98.86178% | 62.44166% | [review](../assets/s21_20261027/panels/native/125-p001-review.png) / [overlay](../assets/s21_20261027/panels/native/125-p001-overlay.png) |
+| wasm | 99.73289% | 99.08741% | 67.58761% | [review](../assets/s21_20261027/panels/wasm/125-p001-review.png) / [overlay](../assets/s21_20261027/panels/wasm/125-p001-overlay.png) |
+
+직접 판독: 옮긴 차트 앞의 차트 새 자리와 차트 뒤 앞뒤 본문, 제목·축·세 계열·범례를 대조했다. 작은 글자와 선 농도 잔차가 남는다.
+
+게시 문안은 원 기여에 감사드리고, 원 PR 번호·원 head와 통합 후보의 보정 범위·실제 CI·merge SHA를 존댓말로 설명한다. 같은 asset의 아래 URL에서 `<merge-commit-sha>`만 실제 merge SHA로 바꾼다.
+
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/125-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/native/125-p001-overlay.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/125-p001-review.png`
+`https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/s21_20261027/panels/wasm/125-p001-overlay.png`
+
+실제 LF 본문 파일을 `--body-file`로 게시하고 API로 본문·한글·이미지 URL을 재조회한다. 동일 merge·동일 증거의 기존 comment가 있으면 중복 게시하지 않는다.

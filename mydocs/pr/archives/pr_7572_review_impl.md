@@ -1,43 +1,33 @@
-# PR #7572 구현·검증 순서 — 명시적 배치의 페이지 확정 소유
+# PR #7572 구현·검증 기록
 
-[개별 검토](pr_7572_review.md)의 원 head·적용 SHA와 메인터너 보정을 기준으로 한다.
-이미 적용한45개 PR 범위만 검토하며 새 PR은 체리픽하지 않는다.
+[개별 리뷰](pr_7572_review.md)의 실제 소비 경로와 원 커밋 대응을 따른다.
+원 contributor head는 `59276bb29419c3a439866d132f5be69a6c759c7c`, 검증 코드·테스트 source는
+`04c92da78165ccbf63b467855591df183655a98d`, 고정 devel은 `faa885e8b54ffc7cdf4196cd43a3103f362499a2`다.
 
-1. 원 Draft의 본문·검사 두 개와 실제 직접 `paginate()` 호출을 대조했다. 기존 서식 상속과
-   배치 중 페이지 확정을 서로 다른 계약으로 유지했다.
-2. 공통 본문 서식 helper와 local replace가 배치 중 문단 조합·dirty 상태를 갱신하도록
-   `0eb36de6d5`에서 보정했다. 비배치 경로의 즉시 쪽 나눔은 유지한다.
-3. 종료 직후 캐럿·페이지 정보, 앞뒤 문단·서식, HWP/HWPX 왕복과 snapshot을 추가 검사했다.
-   Rust1180에서 관련3검사 PASS를 확인했으며 전체 실행의 다른75실패를 숨기지 않는다.
-4. 수정 전 결함 검출과 최신 제품 집중 실행, 동일 API 저장본3조건의 최신 Native/fresh
-   Print 대조·직접 판독·devel 무회귀를 완료한다. 이전 source의 raw100%를 최신 결과로 쓰지 않는다.
-5. 통합 후보의 필수 전체 로컬 검증을 마친 뒤 개별 최종 판정·입력/TSV/대표 PNG를 고정한다.
-   검토 기록만을 위한 통합 PR 번호의 별도 PR은 만들지 않는다.
-6. 사용자 승인 후 remote push·PR을 수행한다. 이후 CI·merge·원 PR comment/close·이슈와
-   문서 정리는 실제 검증 head와 merge SHA에 따라 처리한다.
+## 보정과 검증
 
-로그·중간 JSON·다음 실행 메모는 ignored output에만 남긴다. 테스트 기대값을 완화해 완료하지 않는다.
+원 PR은 편집 서식의 상속 규칙 변경을 요구하지 않는다. `beginBatch`와 `endBatch` 사이의
+본문 `applyCharFormat`·`replaceBodyTextLocal`이 중간 쪽 나눔을 확정하지 않아야 한다는
+계약을 실패 검사 두 개로 제시한다. 원 PR의 측정 시간은 성능 보장으로 사용하지 않는다.
 
-현재 제품43ab의 전체 Rust1352에서 관련3검사 PASS를 재확인했다. Native088·fresh037의
-최신1347 실행에서도 편집 저장본3조건의 전쪽 raw100%·Print 쪽수 일치를 확인했다.
-통합 전체는59개 Rust 실패와 다른 시각 미달이 남아 있으며, 이 PR의 직접 판독·최신 devel
-대조·제출 asset 보존도 이어서 완료한다. 실제 실행 로그는 ignored output의
-`logs/batch-cut-native088-1347.log`와 `logs/wasm037-focus-queue-1351.log`에 연결된다.
+보정한 `commands/formatting.rs`의 본문 서식 변경은
+`rebuild_paragraph_deferred_in_batch`를 통해 스타일과 해당 문단 조합을 즉시 갱신하고,
+배치 중에는 구역을 dirty로 남긴다. `commands/text_editing.rs`의 local replace도 문단
+조합 결과를 갱신한 뒤 배치 여부를 먼저 확인한다. `flowChanged`가 true여도 배치 중에는
+직접 `paginate()`하지 않으며 `documentPaginationPending`을 true로 반환한다.
+마지막 쪽 소속은 공통 `endBatch`가 확정한다. 특정 문서·음절·좌표로 분기하지 않는다.
 
-## 현재 후보의 실제 검사 실행 — 2026-10-26
+공통 연산의 정상 대조군과 실패 경계를 개별 리뷰의 실제 검사에 연결한다. 이미 정확한
+독립 기대값은 유지하며, 잘못된 고정 위치·과거 쪽수 핀은 원본·독립 Print에 따라 재검토한다.
+실행 결과와 명령, 현재 입력의 전체 Native/fresh WASM TSV·직접 판독은
+[최종 제출 증거](../assets/s21_20261027/README.md)의 해당 조건을 따른다.
 
-현재 통합 head는 `d6ea10837218e7e490b166ed76af221490b61ba2`, base는 `4e690c930105fa09fef484787ed0a2e5e182d444`다. 생산 코드는
-`a90a2057a7e967a617c043c62e71f4fab26186df`와 동일하다. 문서 전용 리베이스의 코드·검사 tree
-동일성을 확인했다. 전체 nextest 11,716 PASS·0 FAIL, Skia lib 4,040 PASS·0 FAIL과 추가
-Native 3종·문서 테스트·Studio 전체 2,597 PASS의 terminal 결과를 확인했다. 삭제·분리 뒤
-이동 계약 19개는 4207에서 별도로 다시 실행했고, 4205의 전체 lint도 통과했다.
+## 현재 단계와 후속 처리
 
-아래는 현재 source와 실제 PASS 행의 대응이다. 계약 검사 통과를 별도 입력의 독립 Print 일치나
-원격 CI·merge 완료로 확대하지 않는다. 원 PR 재현의 남은 시각 확인과 최종 판정은 별도다.
+메인터너 보정 후 수용 가능 — 본문 조합 중 명시적 배치의 쪽 나눔 경계 범위의 로컬 검증 완료.
 
-- [tests/cases/body_ime_format_batch.rs](../../../tests/cases/body_ime_format_batch.rs): SHA-256 `b4c005fc87e4e3518f82fe093e6b33153edff44921f5cc88b02c07cd29c5f6ea`.
-  - `body_char_format_defers_pagination_until_end_batch`: PASS, `logs/current-full-nextest-4184.log:7440` (`rhwp::regression_suite_013`).
-  - `explicit_composition_format_preserves_text_caret_and_roundtrip_after_batch`: PASS, `logs/current-full-nextest-4184.log:7441` (`rhwp::regression_suite_013`).
-  - `local_body_replace_defers_pagination_until_end_batch`: PASS, `logs/current-full-nextest-4184.log:7442` (`rhwp::regression_suite_013`).
-
-로그 루트는 ignored `output/pr-review/semanticist21-20261019/`다.
+통합 PR의 실제 code head CI·merge는 로컬 검증과 별개다. 사용자가 승인한 옵션 2에 따라
+CI 성공 뒤 별도 self-review·오늘할일 PR을 처리하며, 완료 시 실제 PR·CI·merge SHA와
+원 PR별 comment·close 결과를 기록한다. 번호나 merge 결과를 미리 만들지 않는다.
+삭제한 sample16·편람의 일반 회귀와 파생 참조를 되살리지 않는다. 명시적으로 지정한
+#8188 네 변환 입력의 기능 보존 검증은 별도 예외 범위로 구분한다.
