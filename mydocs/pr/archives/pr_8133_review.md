@@ -94,3 +94,7 @@ CanvasKit 전체 sungeo UI는 shaping·작업량 상한에 따른 Canvas2D 전�
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR이 제시한 가는 획 쪽
+
+후속 #8184 보정 전 측정에서 원 PR의 간트 표 문서 `issue1937_rowbreak_footnote_overpagination.hwp` 49쪽은 Native·fresh WASM 모두 100.00000%, `samples/basic/calendar_year.hwp` 1쪽은 각각 98.82866% / 98.50891%다. 해당 문서의 독립 PDF·입력 SHA와 전쪽 값은 [Native 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json)과 [WASM 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json)의 `issue1937`, `hairline-calendar` 항목을 따른다. 이 수치는 후속 보정 후 새 측정을 뜻하지 않는다.
