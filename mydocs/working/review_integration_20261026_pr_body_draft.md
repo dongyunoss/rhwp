@@ -30,6 +30,7 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
   기준에서도 90% 미만인 여섯 쪽은 기존 예외로 별도 기록한다.
   [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/fixed-wasm-matrix.json).
 - 표 뒤 문단 보정 당시 전체 Rust 회귀검사는 11,898개 통과·45개 skip으로 종료했다. 이후 원 PR 추가 체리픽과 회귀 assertion 변경이 있으므로 이 실행을 최종 head의 전체 회귀 결과로 표기하지 않는다. 작업지시자 지시에 따라 전체 회귀는 다시 실행하지 않으며 필요한 남은 개별 검사를 진행한다.
+- 후속 보정 후 관련 선택 회귀 24개가 모두 통과했다(필터에서 제외된 794개는 재실행하지 않음). [검사명·명령과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json).
 - #8184 후속 보정 전 측정에서 #8188 세 문서의 Native 및 fresh WASM 총 384쪽은 실제 이미지의 양방향
   반경 2px 미대응 픽셀이 0이다. [전쪽 픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8328/sample16-fixed-wasm/combined-pixel-contract.json).
 - #7723의 2010 저장본은 과거 PDF 기준과 새 MCP PDF 기준의 결과가 다르다.
