@@ -703,11 +703,27 @@
         },
         {
           "pdf": "pdf/exam_kor-2022.pdf",
-          "status": "ambiguous-source"
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
         },
         {
           "pdf": "pdf/issue7382-regression-review/exam_kor-2020-reprint.pdf",
-          "status": "ambiguous-source"
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
         },
         {
           "pdf": "pdf/issue7642-exam-print/exam-03-exam_kor-hwp-print-2020.pdf",
@@ -979,11 +995,27 @@
       "pdfs": [
         {
           "pdf": "pdf/exam_kor-2022.pdf",
-          "status": "ambiguous-source"
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
         },
         {
           "pdf": "pdf/issue7382-regression-review/exam_kor-2020-reprint.pdf",
-          "status": "ambiguous-source"
+          "status": "ambiguous-source",
+          "pages": 20,
+          "page_sizes_pt": [
+            [
+              841.0,
+              1190.0
+            ]
+          ],
+          "all_pages_a4": false
         },
         {
           "pdf": "pdf/hwpx/exam_kor-hwpx-2020.pdf",
@@ -1062,7 +1094,14 @@
       "prior_pages": 20,
       "prior_page_size": "A4",
       "status": "replaced by verified 2020 MCP A3 Print",
-      "evidence": "exam-hwp-mcp-print.json"
+      "evidence": "exam-hwp-mcp-print.json",
+      "current_pages": 20,
+      "current_page_sizes_pt": [
+        [
+          841.0,
+          1190.0
+        ]
+      ]
     },
     {
       "input": "samples/exam_kor.hwp",
@@ -1074,7 +1113,14 @@
       "evidence": "exam-hwp-mcp-print.json",
       "prior_pdf_sha256": "92d1219ea53fd0505332b9bd0e10952a37b0c84f30edcbbde7ed2e9a73b24804",
       "prior_pages": 31,
-      "prior_page_size": "A4"
+      "prior_page_size": "A4",
+      "current_pages": 20,
+      "current_page_sizes_pt": [
+        [
+          841.0,
+          1190.0
+        ]
+      ]
     }
   ]
 }
