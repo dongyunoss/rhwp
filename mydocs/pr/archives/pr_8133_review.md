@@ -98,3 +98,7 @@ Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남�
 ## 원 PR이 제시한 가는 획 쪽
 
 후속 #8184 보정 전 측정에서 원 PR의 간트 표 문서 `issue1937_rowbreak_footnote_overpagination.hwp` 49쪽은 Native·fresh WASM 모두 100.00000%, `samples/basic/calendar_year.hwp` 1쪽은 각각 98.82866% / 98.50891%다. 해당 문서의 독립 PDF·입력 SHA와 전쪽 값은 [Native 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json)과 [WASM 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json)의 `issue1937`, `hairline-calendar` 항목을 따른다. 이 수치는 후속 보정 후 새 측정을 뜻하지 않는다.
+
+## 후속 표 보정 이후 출력 보존
+
+후속 표 보정 이후 원 PR의 `issue1937_rowbreak_footnote_overpagination.hwp` 49쪽과 `calendar_year.hwp` 1쪽은 Native와 WASM 각각 보정 전 렌더 PNG와 같다. 같은 이전 PDF 래스터 기준 점수 차이는 0이며 [Native 전쪽 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-native-png-comparison.json), [WASM 전쪽 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-wasm-png-comparison.json)에서 확인한다.
