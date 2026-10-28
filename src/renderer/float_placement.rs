@@ -3874,6 +3874,8 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
             if !complete {
                 return 0.0;
             }
+            // HWP5에서 내보낸 HWPX는 HWP 원본의 저장 흐름을 따른다. 여기서
+            // hwpx_container는 그 계보를 제외한 HWPX 컨테이너만 나타낸다.
             // HWPX에 원본 줄이 없거나 HWP에 구현용 슬롯만 있는 경우에는 바깥 아래
             // 여백과 다음 문단의 앞 간격을 공유한다는 원본 증거가 없다. HWP의 저장 줄
             // 없는 제목은 별도로 앞 간격을 흡수하는 기존 계약을 유지한다.
