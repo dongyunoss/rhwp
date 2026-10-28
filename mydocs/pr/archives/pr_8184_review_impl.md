@@ -49,7 +49,7 @@
 
 1. 고정 원 head 적용과 예상 tree·중복을 원장으로 확인했다.
 2. 승인된 기존 미달 페이지를 공통 로직에서 보정하고 단계별 일반 커밋으로 고정했다.
-3. 관련 전쪽 Native/fresh WASM 선행 검증과 직접 판독 뒤 정식 소유 회귀를 보강했다. 후속 보정 뒤 기존 통합 67개 입력과 표 조각 36개 입력의 비교는 확인했고 #8319 보존 대상 197개 입력의 재비교는 진행 중이다.
+3. 관련 전쪽 Native/fresh WASM 선행 검증과 직접 판독 뒤 정식 소유 회귀를 보강했다. 후속 보정 뒤 기존 통합 67개 입력과 표 조각 36개 입력을 확인했다. #8319 보존 대상 197개 입력·256쪽도 Native와 fresh WASM 각각 전쪽 렌더 PNG가 보정 전과 같다. [Native](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-native-same-raster-comparison.json), [WASM](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-wasm-same-raster-comparison.json).
 4. 이전 전체 회귀와 후속 보정의 선택 회귀를 구분해 기록했다. 작업지시자 지시에 따라 전체 회귀는 재실행하지 않는다. 현재 남은 전쪽 비교와 미해결 기준을 모두 마치기 전에는 제출 전 전체 검증 완료로 판정하지 않는다.
 5. 최종 로컬 커밋·본문을 준비하고 작업지시자 승인 후 원격 push·통합 PR 제출을 진행한다. 이후 CI·머지·원 PR 종료는 별도 후속 조건이다.
 

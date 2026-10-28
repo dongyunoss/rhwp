@@ -1010,7 +1010,7 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 ### 2026-10-29 후속 검증 진행
 
 - 후속 표 보정에 직접 연결되는 `issue_8149_empty_host_float_page_bottom`, `source_owned_float_fragment_frames`, `issue_8160_saved_page_boundaries` 세 묶음의 선택 nextest는 종료 코드 0, 24개 통과다. 필터에서 제외된 794개는 실행하지 않았고 전체 회귀도 다시 실행하지 않았다. [명령·검사명·로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json).
-- #8319 보존 대상 197개 입력도 후속 보정 전후 Native·fresh WASM으로 실행 중이다. WASM 임시 집계에는 이전 패키지 SHA가 잘못 들어갔으므로 각 실행 manifest의 실제 사용 패키지 SHA를 확인한 뒤 정식 원장을 작성한다.
+- #8319 보존 대상 197개 입력·256쪽은 후속 보정 전후 Native와 fresh WASM 렌더 PNG가 각 경로에서 모두 동일하다. 같은 이전 PDF 래스터 기준 최저는 Native 93.22230% / WASM 93.61735%이며 90% 미만과 0.1%p 이상 하락이 없다. WASM 집계 헤더의 이전 패키지 SHA는 실제 실행 인자와 개별 manifest 197개를 확인해 정정했다. [Native 전쪽](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-native-same-raster-comparison.json), [WASM 전쪽·패키지 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-wasm-same-raster-comparison.json). 새 PDF 래스터 직접 측정과 구분한다.
 - #7723 공백 설정 통제 인쇄에서는 변환 HWPX의 charPr 55 `useFontSpace`만 0에서 1로 바꾸면 문제 문단의 첫 줄이 원래 인쇄 결과보다 길어졌다. 원본 속성은 0이므로 임의 변경하지 않는다. [인쇄 대조와 원본 글꼴 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json).
 
 - 회귀 근거 정리 시작점 이후 변경된 Rust 검사 26개 파일을 다시 대조했다. 첫 줄의 유형과 합성 ZIP 검사 외 날짜·raw 96dpi·Native/WASM·전쪽 최저 표기, 첫 주석의 정식 근거 29개 경로의 존재와 Git 추적을 확인했다. 이 기계 검사는 수치의 의미나 98% 기준의 적합성을 대신 판정하지 않는다. [파일별 주석·해시 목록](assets/review_integration_20261026/validation/post-rebase-8328/regression-26-header-inventory.json).
@@ -1023,7 +1023,7 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 
 ### 2026-10-29 #8319 보존 대상 Native 완료
 
-- 후속 표 보정 뒤 197개 입력·256쪽의 Native 렌더 PNG가 이전과 모두 동일하며, 입력·PDF SHA도 각각 확인했다. 기존 PDF 래스터로 산출한 전쪽 최저는 93.22230%, 90% 미만과 0.1%p 이상 하락은 없다. 새 PDF 래스터의 직접 측정은 아니며 fresh WASM 비교는 별도로 진행한다. [전쪽 원장](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-native-same-raster-comparison.json).
+- 후속 표 보정 뒤 197개 입력·256쪽의 Native 렌더 PNG가 이전과 모두 동일하며, 입력·PDF SHA도 각각 확인했다. 기존 PDF 래스터로 산출한 전쪽 최저는 93.22230%, 90% 미만과 0.1%p 이상 하락은 없다. 새 PDF 래스터의 직접 측정은 아니며 fresh WASM도 전쪽 동일함을 별도로 확인했다. [전쪽 원장](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-native-same-raster-comparison.json).
 
 ### 2026-10-29 시스템 글꼴 비의존 검증
 
