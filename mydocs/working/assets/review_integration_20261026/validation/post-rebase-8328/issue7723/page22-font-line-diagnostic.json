@@ -42,13 +42,13 @@
     "old_pdf": "응용프",
     "new_pdf": "응용프로",
     "rhwp_default": "응용프",
-    "rhwp_gulim_metrics_trial": "응용프로"
+    "rhwp_poppy_to_gulim_metrics_trial": "응용프로"
   },
   "first_line_next_start": {
     "old_pdf": "스위치",
     "new_pdf": "스위치",
     "rhwp_default": "스위치",
-    "rhwp_gulim_metrics_trial": "위치"
+    "rhwp_poppy_to_gulim_metrics_trial": "위치"
   },
   "pdf_resources": {
     "old_latin_text_resource": "T3, Type3, object 31",
@@ -58,8 +58,8 @@
   "new_font12_comparison": "추출 글꼴과 Gulim을 비교한 기존 진단에서 87개 코드 중 윤곽 76개 일치, 11개 차이",
   "raw_metric_page22": {
     "default": 98.298,
-    "gulim_metrics_trial": 94.5712,
-    "gulim_paint_trial": 98.33248
+    "poppy_to_gulim_metrics_trial": 94.5712,
+    "poppy_to_gulim_paint_trial": 98.33248
   },
   "qualification": "줄 나눔과 글꼴 프로그램 차이를 확인했지만 치환의 전체 규칙이나 100% 해결을 입증하지 않는다. 글꼴 매핑 실험은 다른 쪽에 하락이 있어 적용하지 않았다.",
   "tools": [
