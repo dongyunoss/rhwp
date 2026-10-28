@@ -4,7 +4,7 @@
 
 ## 최종 판정
 
-**통합 후보 최종 판정 보류 — PDF 편집 우선 본문 흐름의 관련 결과는 아래에 기록했다.**
+**#8227의 편집 우선 본문 흐름은 통합 브랜치에 반영됐고 관련 검사가 통과했다. 통합 PR의 최종 판정은 별도 남은 조건을 따른다.**
 원 head의 단독 실행이나 원격 승인을 뜻하지 않는다. 원 변경을 누적 적용한 아래 통합 후보에 대한 판정이며,
 통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자가 승인한 통합 PR은 남은 검사와 미해결 기준을 처리한 뒤 제출한다.
 
@@ -13,7 +13,8 @@
 | 항목 | 값 |
 | --- | --- |
 | 원 PR·작성자·base | [#8227](https://github.com/edwardkim/rhwp/pull/8227) / planet6897 / devel |
-| 고정 원 head | `a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c` |
+| 체리픽 당시 원 head | `a34d1fb70dcdc2e1f692efaa63bfd2d77ee0e74c` |
+| 2026-10-28 재조회 원 head | `fe855d85935c47b3ff5fd1b93839e5926f468828`; 7개 커밋의 patch-id가 체리픽 당시 원 커밋과 각각 동일 |
 | 원 PR의 이슈 연결 | 원 PR 자동 닫기 연결 없음; 통합 PR의 자동 닫기로 전환하지 않음 |
 | 원 head CI 참고값 | SUCCESS; 통합 후보 CI와 구분 |
 | 검증한 통합 code/test head | `2e902abacf328bccdd7780606666ac3b1c5c1ce9` |
@@ -37,7 +38,7 @@ fidelity와 editable을 명시적으로 구분한다. editable에서는 실제 �
 
 편집 가능 모드의 2010 PDF 7쪽에서 「결국르포르는…」 첫 글줄 위치를 독립 PDF 좌표 x=603.98px, y=388.54px와 각각 ±2px로 비교하는 고정형 검사를 추가했다. 이전에 측정한 편집 전 7쪽 일치율은 Native 99.82145% / fresh WASM 99.77620%다. 편집 후 문단의 관계 검사는 그대로 유지한다. 해당 파일의 검사 4개가 통과했으며 [좌표 근거](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json>)와 [검사 실행](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf-editable-coordinate-test.json>)을 기록한다.
 
-같은 시험의 편집을 HWP로 저장·재열기한 별도 입력은 편집 문장이 있는 4쪽 Native 65.17416% / fresh WASM 64.97946%, 전16쪽 최저 1.58239% / 1.63218%다. 한컴 2020 Print 5쪽과 비교할 때 재열기 출력은 내용과 쪽 배치가 크게 다르다. 이 수치는 메모리 내 편집 관계 검사의 직접 측정이 아니며, 저장·재열기 경로 차이는 미해결이다. [독립 Print와 전쪽 측정](<../../../mydocs/pr/assets/pr8227-editable-after-save/evidence.json>).
+별도로 만든 추가 실험에서 같은 시험의 편집을 HWP로 저장·재열기한 입력은 편집 문장이 있는 4쪽 Native 65.17416% / fresh WASM 64.97946%, 전16쪽 최저 1.58239% / 1.63218%다. 한컴 2020 Print 5쪽과 재열기 출력의 내용과 쪽 배치가 크게 다르다. 이는 원 PR이 제출한 편집 전 시각 검증이나 메모리 내 편집 관계 검사의 결과가 아니다. 이 추가 실험을 근거로 #8227의 제출 범위가 미해결이라고 판정하지 않는다. [실험 입력·독립 Print와 전쪽 측정](<../../../mydocs/pr/assets/pr8227-editable-after-save/evidence.json>).
 
 동일한 저장 HWP·PDF·현재 글꼴 환경으로 새 base와 후보의 Native 4~6쪽을 추가 비교한 결과 PNG가 모두 동일했다. 이 확인은 해당 세 쪽에 한하며 WASM이나 다른 쪽까지 같다는 뜻은 아니다.
 
