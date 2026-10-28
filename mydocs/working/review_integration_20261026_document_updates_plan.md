@@ -737,6 +737,12 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 [PDF·탐색·목록 근거](assets/review_integration_20261026/validation/post-rebase-8328/onsemiro-kopub-font-diagnostic.json)는
 표본 결과이므로 전체 글자나 과거 실행의 선택을 대신하지 않는다. 실제 원본의
 글꼴 대응을 추적하기 전 임의의 글꼴 매핑으로 수치를 맞추지 않는다.
+원본 HWP 글꼴 목록에도 KoPubWorld 돋움·바탕과 `_Pro` 이름이 있다. PDF에서 실제
+사용한 KoPubWorld 돋움 Light·Bold, 바탕 Light 세 글꼴의 ToUnicode·Identity
+CID를 통해 각각 82·12·855개 글리프를 현 서버의 대응 글꼴과 대조했고, 분해된
+윤곽 명령과 좌표가 모두 같다. [독립 윤곽 비교](assets/review_integration_20261026/validation/post-rebase-8328/onsemiro-kopub-outline-identity.json)에
+PDF와 글꼴 해시를 기록한다. 글리프 윤곽 동일성만으로 전체 메트릭이나 과거
+Chromium의 선택까지 같다고 판정하지 않는다.
 
 #8319 반영 범위 Native 재검증은 197개 입력·256쪽을 완료했다. 실제 입력·PDF와
 TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했으며 실행 오류,
