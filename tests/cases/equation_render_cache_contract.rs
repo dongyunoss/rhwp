@@ -1,9 +1,11 @@
-//! 검사 유형: 관계형.
+//! 검사 유형: 관계형·고정형.
 //! 2026-10-28 측정 raw(96dpi, PDFium):
 //! equation-lim.hwp: 1쪽 Native 99.88926% / fresh WASM 100.00000%; 전1쪽 최저 99.88926% / 100.00000%.
 //! 3-11월_실전_통합_2022.hwp: 1쪽 Native 98.71272% / fresh WASM 98.70189%; 21쪽 Native 90.80955% / fresh WASM 90.84255%; 전21쪽 최저 90.80955% / 90.84255%.
+//! equation-lim.hwp의 수식 `+ 1` 편집·저장본: 1쪽 Native 99.89669% / fresh WASM 100.00000%; 전1쪽 최저 99.89669% / 100.00000%.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 수식 편집본의 독립 Print와 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/equation-edited-print-evidence.json.
 //!
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -13,6 +15,7 @@
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::{Control, Equation};
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 fn read_fixture(path: &str) -> Vec<u8> {
     std::fs::read(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(path))
@@ -145,6 +148,35 @@ fn body_equation_edit_after_render_matches_fresh_render() {
             "{props}: 먼저 그린 문서의 편집 출력이 새 문서와 다르다"
         );
     }
+}
+
+#[test]
+fn edited_body_equation_starts_at_independent_print_origin() {
+    fn find(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Equation(_)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(find)
+    }
+    let bytes = read_fixture("samples/equation-lim.hwp");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("source");
+    let coord = first_body_equation(&core);
+    let props = single_value_edits(body_equation(&core, coord)).remove(0);
+    core.set_equation_properties_native(coord.0, coord.1, coord.2, None, None, &props)
+        .expect("edit equation");
+    assert!(body_equation(&core, coord).script.ends_with(" + 1"));
+    let tree = core.build_page_render_tree(0).expect("edited page");
+    let frame = find(&tree.root).expect("edited equation");
+    assert!(
+        (frame.bbox.x - 113.86).abs() <= 2.0,
+        "independent Print x: {}",
+        frame.bbox.x
+    );
+    assert!(
+        (frame.bbox.y - 132.22).abs() <= 2.0,
+        "independent Print numerator top: {}",
+        frame.bbox.y
+    );
 }
 
 #[test]
