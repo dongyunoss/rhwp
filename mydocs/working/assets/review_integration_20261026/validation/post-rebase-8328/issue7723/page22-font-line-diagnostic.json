@@ -582,5 +582,24 @@
     "command": "rhwp info samples/hwp3-sample16-hwp5-2010.hwp --json",
     "raw_info_sha256": "a4b095dadb1354c65b53759d3216af45913674b6db4ae21c7f8ededf7886f8e0",
     "guide": "mydocs/manual/mcp_hwp2024Convert_usage.md"
+  },
+  "physical_fit_trace": {
+    "date": "2026-10-29",
+    "method": "현재 HEAD의 별도 worktree에서 문단 446의 실제 물리 구간 fit 판정값만 출력하고 기존 줄 나눔 동작은 변경하지 않았다.",
+    "page": 22,
+    "line_start_index": 53,
+    "candidate_character": "로",
+    "candidate_start_index": 107,
+    "current_width_hwp": 42728,
+    "candidate_advance_hwp": 1040,
+    "candidate_fit_width_after_letter_spacing_hwp": 1300,
+    "effective_width_hwp": 44024,
+    "candidate_excess_hwp": 4,
+    "pair_adjustment_hwp": 0,
+    "space_savings_hwp": 0,
+    "candidate_accepted": false,
+    "interpretation": "줄 끝 자간을 제외한 판정폭 44028이 물리 구간 너비 44024보다 4 HWPUNIT 커서 거절된다. 새로운 PDF에서 해당 글자를 포함하지만 이 한 사례만으로 물리 구간의 일반 허용값을 변경할 근거는 되지 않는다. 기존 PDF는 같은 글자 이전에서 줄이 끝난다.",
+    "diagnostic_source": "src/renderer/composer/line_breaking.rs",
+    "control_settings": "print, compat 2024, 원본 폭 보존 글꼴 환경, 기존 엄격 글꼴 공급"
   }
 }
