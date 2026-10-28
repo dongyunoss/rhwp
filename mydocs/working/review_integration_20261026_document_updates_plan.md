@@ -723,6 +723,10 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 명시적 글꼴 공급 목록은 각각 51개 파일의 해시와 순서가 모두 같다.
 [글꼴 공급 비교](assets/review_integration_20261026/validation/post-rebase-8328/wasm-font-supply-comparison.json)는
 시스템 글꼴 선택까지 같다는 증거가 아니므로 환경 차이는 계속 조사한다.
+현재 `fontconfig` 진단에서는 sample16용으로 추가된 시스템 글꼴 220개가 검색되며,
+해당 경로를 제외하는 조사 설정에서는 0개다. 두 설정의 `fc-match` 결과는 한양신명조와
+함초롬돋움에서 달라진다. [설정·선택 결과](assets/review_integration_20261026/validation/post-rebase-8328/fontconfig-selection-diagnostic.json)를
+기록하되, 이는 Chromium의 실제 글꼴 사용이나 과거 환경 전체의 복원을 입증하지 않는다.
 
 #8319 반영 범위 Native 재검증은 197개 입력·256쪽을 완료했다. 실제 입력·PDF와
 TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했으며 실행 오류,
