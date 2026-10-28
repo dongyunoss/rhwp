@@ -941,3 +941,10 @@ skip으로 종료했다. 실패한 `source_owned_float_fragment_frames` 검사�
 단정하지 않으며, 0.1%p 기준 통과로 처리하지 않는다.
 [Native 비교](assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json),
 [폰트 환경 진단](assets/review_integration_20261026/validation/post-rebase-8328/newsletter-font-environment-diagnostic.json).
+
+시험 HWPX `samples/hwpx/exam_kor.hwpx`의 원본 용지는 A3인데 기존
+`pdf/hwpx/exam_kor-hwpx-2020.pdf`는 A4로 출력돼 페이지별 비교 기준으로 맞지 않았다.
+사용자 지시에 따라 해당 PDF를 한컴 2020 MCP의 원본 용지 Print 1-up으로 재출력해
+덮어썼다. 새 PDF는 A3·20쪽이며 입력·이전 PDF·새 PDF의 해시와 job 정보는
+[MCP 증거](assets/review_integration_20261026/validation/post-rebase-8328/exam-hwpx-mcp-print.json)에
+기록한다. A4 PDF를 기준으로 측정한 낮은 수치는 유효한 비교 결과로 사용하지 않는다.
