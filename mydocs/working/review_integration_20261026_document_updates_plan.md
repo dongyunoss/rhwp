@@ -709,6 +709,11 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 [선택 쪽별 세 수치와 입력·PDF·바이너리 해시](assets/review_integration_20261026/validation/post-rebase-8328/historical-wasm-spot-comparison.json)를
 기록했다. 이는 원래 TSV의 실행 환경이 복원됐다는 증거가 아니며 전체 WASM 범위의
 0.1%p 기준 통과를 뜻하지 않는다. 환경 차이와 나머지 쪽의 비교는 계속한다.
+보존된 과거 WASM 원본 PNG 세 장(중첩 표 1쪽, 9월 미주 20쪽, 11월 미주 21쪽)을
+현재 기준 PDF PNG와 직접 재비교해 과거 TSV의 98.57262%, 96.35945%, 91.32974%를
+각각 재현했다. 과거 PNG와 현재 환경의 같은 과거 WASM PNG를 서로 비교한 수치는
+각각 100%, 100%, 99.91143%다. [이미지 해시와 직접 비교](assets/review_integration_20261026/validation/post-rebase-8328/historical-representative-png-comparison.json)는
+수치 차이의 공간적·환경적 원인이나 다른 아홉 쪽의 과거 이미지를 대신하지 않는다.
 
 기존 통합 범위 fresh WASM 실행은 67개 입력·956쪽을 완료했다. 90% 미만과 실행
 오류는 없지만 과거 TSV와 직접 대조하면 12쪽이 0.1%p 이상 낮아 **미통과**다.
