@@ -32,7 +32,7 @@
     "156.0.8078.47"
   ],
   "old_chromium_png_equal": true,
-  "note": "동일 글꼴의 현재와 과거 출력 차이는 미해결. 이전 소스의 codegen-units=16 원본 빌드 재현은 전체 Cargo 검사 종료 후 수행.",
+  "note": "과거 소스의 codegen-units=16 최적화 빌드가 원본 WASM 해시와 일치함. 현재 브라우저 환경에서 과거 출력 차이의 원인은 계속 조사한다.",
   "exact_historical_wasm_control": {
     "source_commit": "3a2a081a418a38a2fb696136835d0f721b216972",
     "codegen_units": 16,
