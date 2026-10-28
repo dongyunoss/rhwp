@@ -39,10 +39,11 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - 후속 보정 후 관련 선택 회귀 24개가 모두 통과했다(필터에서 제외된 794개는 재실행하지 않음). [검사명·명령과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json).
 - #8184 후속 보정 전 측정에서 #8188 세 문서의 Native 및 fresh WASM 총 384쪽은 실제 이미지의 양방향
   반경 2px 미대응 픽셀이 0이다. [전쪽 픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8328/sample16-fixed-wasm/combined-pixel-contract.json).
-- #7723의 2010 저장본은 과거 PDF 기준과 새 MCP PDF 기준의 결과가 다르다.
-  새 기준의 64쪽 중 2쪽만 100%여서 `Closes #7723`을 넣거나 #7445를 완료
-  처리할 수 없다. 원 PR HWPX를 현재 MCP로 재출력한 22쪽에서도 같은 차이를 확인했다.
-  기존·새 PDF의 래스터와 글꼴 자원 비교는 [22쪽 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json)에 기록한다.
+- #7723의 2010 이름 원본은 기본 HWP와 바이트가 같고, 기존 2024 MCP PDF 기준 Native
+  전 64쪽에서 raw 100%를 확인했다. 이후 재출력한 새 MCP PDF는 같은 결과가 아니며
+  원 PR HWPX의 22쪽 재출력에서도 차이가 관찰됐다. 작업지시자는 PR 검증 기준으로 기존
+  MCP PDF를 선택했다. 선택 기준에 대한 최종 후보 Native·fresh WASM 전쪽 확인이 진행 중이다.
+  새 PDF의 미달은 [22쪽 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json)에 별도로 기록한다.
 - 과거 WASM TSV 일부의 원래 실행 환경은 재현하지 못했다. 대신 아래 #8319 보존 비교는
   동일한 기존 PDF 래스터와 전쪽 렌더 PNG 해시를 경로별로 대조한 결과다.
 - 과거 TSV와 차이가 난 12쪽은 과거와 SHA가 동일한 WASM과 최신 후보를 같은 현재 글꼴·PDF
