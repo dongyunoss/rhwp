@@ -425,5 +425,68 @@
       }
     },
     "qualification": "변환된 HWPX에서도 미달이 재현됐다. 변환본 HCI Poppy의 글꼴 종류는 TTF이고 원본 HWP의 종류는 HFT이므로 두 환경 설정의 내부 처리까지 동일하다고 보지 않는다. 임시 입력·PDF는 커밋하지 않는다."
+  },
+  "page22_unmatched_pixel_bands": {
+    "date": "2026-10-29",
+    "native_png_sha256": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+    "pdf_png_sha256": "a18a8ac8d54ce09dd5913616165a62e0e4668e39f19459ec6b3beac904a4ccf5",
+    "method": "RGB 최소 채널 232 미만을 내용으로 판정하고 반경 2px 안에 짝이 없는 화소의 합을 40px 높이 띠로 집계",
+    "total_unmatched": 2061,
+    "content_union": 121093,
+    "bands": [
+      {
+        "y_start": 80,
+        "y_end_exclusive": 120,
+        "pixels": 4
+      },
+      {
+        "y_start": 360,
+        "y_end_exclusive": 400,
+        "pixels": 16
+      },
+      {
+        "y_start": 560,
+        "y_end_exclusive": 600,
+        "pixels": 6
+      },
+      {
+        "y_start": 600,
+        "y_end_exclusive": 640,
+        "pixels": 1
+      },
+      {
+        "y_start": 680,
+        "y_end_exclusive": 720,
+        "pixels": 252
+      },
+      {
+        "y_start": 720,
+        "y_end_exclusive": 760,
+        "pixels": 1167
+      },
+      {
+        "y_start": 760,
+        "y_end_exclusive": 800,
+        "pixels": 561
+      },
+      {
+        "y_start": 800,
+        "y_end_exclusive": 840,
+        "pixels": 27
+      },
+      {
+        "y_start": 840,
+        "y_end_exclusive": 880,
+        "pixels": 24
+      },
+      {
+        "y_start": 920,
+        "y_end_exclusive": 960,
+        "pixels": 3
+      }
+    ],
+    "dominant_680_to_800_pixels": 1980,
+    "dominant_percentage_of_unmatched": 96.07,
+    "qualification": "문단 446이 있는 세 띠의 합이며 같은 띠의 모든 화소가 그 문단에 속한다는 뜻은 아니다."
   }
 }
