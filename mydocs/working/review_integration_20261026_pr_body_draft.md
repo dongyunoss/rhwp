@@ -78,3 +78,6 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - Fontconfig 검색 결과를 0개로 제한한 환경에서 최신 WASM을 사용한 CanvasKit 점선 네 종류와
   투명 테두리 검사가 통과했다. 글자 연산은 검사 범위에서 제외했으며 시스템 글꼴 디렉터리를
   숨긴 실험은 아니다. [실행 근거](assets/review_integration_20261026/validation/post-rebase-8328/studio-fresh-browser-20261029.json).
+- 최신 Visual Sweep의 선택 검사 13개와 CI workflow `actionlint`가 통과했다. [명령과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/prepr-visual-ci-checks.json).
+- 새로 설치한 글꼴은 내부 검증에만 사용한다. base 대비 변경 파일과 변경된 HWPX·ZIP·EPUB에서
+  글꼴 확장자 파일은 발견되지 않았다. 이 검사는 PDF 글꼴 자원을 검사하지 않았다. [범위와 결과](assets/review_integration_20261026/validation/post-rebase-8328/font-distribution-audit.json).
