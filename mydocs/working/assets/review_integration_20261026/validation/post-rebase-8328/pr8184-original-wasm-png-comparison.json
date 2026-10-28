@@ -5030,5 +5030,8 @@
   "baseline": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json",
   "baseline_sha256": "78524e879aec6833c940eb507e3f649fb4c96da3c6110eb357027970db744fbd",
   "wasm_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4",
-  "scope": "기존 67개 입력 중 별도 재검증한 공식 사양서를 제외한 66개; 행정업무편람 제외"
+  "scope": "기존 67개 입력 중 별도 재검증한 공식 사양서를 제외한 66개; 행정업무편람 제외",
+  "same_raster_tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-wasm-same-raster.tsv",
+  "same_raster_tsv_sha256": "a49a5ae62bbd4befd80e9497e0f9c1c6326ce98197c2f6c39c6fde10b1a9dae9",
+  "same_raster_tsv_note": "출력 PNG가 완전히 같고 기존 기준 PDF 래스터도 고정했을 때 이전 값과 차이 0임을 해시로 추론한 수치이며 새 PDF 래스터 측정값이 아니다."
 }
