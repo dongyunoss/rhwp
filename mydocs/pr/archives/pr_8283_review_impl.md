@@ -34,4 +34,4 @@
 
 ## 2026-10-28 최신 원 PR 대조
 
-최신 원 PR `9c671965c6`과 후보의 그림 호스트 구현을 대조했다. `line_breaking.rs` 차이는 별도 #8167 도형 여백 계산이며 #8271 그림 호스트 분기는 동일하다. 회귀 검사 파일의 수용 범위는 별도로 확인한다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
+최신 원 PR `9c671965c6`과 후보의 그림 호스트 구현을 대조했다. `line_breaking.rs` 차이는 별도 #8167 도형 여백 계산이며 #8271 그림 호스트 분기는 동일하다. 회귀 검사 파일은 원 PR의 기존 검사를 유지하고 독립 Print 기준 그림 네 변의 ±2px 검사를 추가했다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
