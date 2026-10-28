@@ -301,6 +301,14 @@ impl TypesetEngine {
                         (end as f64 * self.dpi / 7200.0 - st.current_height).abs()
                             <= self.dpi / 7200.0
                     });
+                let coanchored_host_reset = st.col_count == 1
+                    && !profile.session_edited()
+                    && profile.hwp5_stored_pagination_layout()
+                    && crate::renderer::float_placement::stored_empty_host_frame::coanchored_host_restarts_page(
+                        prev_para,
+                        para,
+                        crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi),
+                    );
                 let trigger = if st.col_count > 1 {
                     if is_distribute {
                         cv < prev_vpos_end && prev_vpos_end > 0
@@ -331,6 +339,7 @@ impl TypesetEngine {
                         || source_margin_restart
                         || inline_frame_page_restart
                         || stored_picture_group_reset
+                        || coanchored_host_reset
                         || reconstructed_source_vpos.is_some()
                 };
                 // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전

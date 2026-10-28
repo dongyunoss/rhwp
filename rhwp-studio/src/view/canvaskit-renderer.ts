@@ -473,6 +473,10 @@ export class CanvasKitLayerRenderer {
   private currentShowParagraphMarks = false;
   private currentShowControlCodes = false;
   private currentClipEnabled = true;
+  // Page-space length of one device pixel at the current scale; the floor for shape/line strokes (#8125).
+  private currentDeviceStrokeFloor = 0;
+  // Screen SkPicture records local coordinates; retain its external device transform for strokes.
+  private recordingStrokeDeviceMatrix: number[] | null = null;
   private currentReplayFeatureCounts: CanvasKitReplayFeatureCounts = {
     dashedStrokes: 0,
     glyphRuns: 0,
@@ -1025,8 +1029,10 @@ export class CanvasKitLayerRenderer {
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
       this.selectTextVariants(tree.root, canvas);
       this.currentTreeFingerprint = replayFingerprint(tree);
+      this.currentDeviceStrokeFloor = Number.isFinite(scale) && scale > 0 ? 1 / scale : 0;
+      // The stroke floor follows the scale, so static pictures are recorded per scale.
       this.currentPictureContext = this.currentTreeFingerprint
-        ? `${this.currentTreeFingerprint}:${this.documentGeneration}:${this.localFontRevision}:${this.imageResourceRevision}:${JSON.stringify(this.glyphRunFonts.diagnostics())}`
+        ? `${this.currentTreeFingerprint}:${scale}:${this.documentGeneration}:${this.localFontRevision}:${this.imageResourceRevision}:${JSON.stringify(this.glyphRunFonts.diagnostics())}`
         : null;
       if (this.currentTreeFingerprint) {
         const fingerprints = this.treeFingerprints.get(inputTree as PageLayerTree) ?? new Set<string>();
@@ -1089,6 +1095,7 @@ export class CanvasKitLayerRenderer {
     } finally {
       this.currentTreeFingerprint = null;
       this.currentPictureContext = null;
+      this.currentDeviceStrokeFloor = 0;
       this.currentPageExtent = null;
       this.currentBitmapPaperGrid = null;
       this.currentOp = null;
@@ -1781,12 +1788,13 @@ export class CanvasKitLayerRenderer {
       const recordingBounds = this.staticPictureBounds(node);
       // Print 그림 표본은 실제 장치 CTM에 종속된다. Native와 같이 그 CTM에서
       // 기록하고 재생 때만 역행렬을 상쇄해, cache가 격자를 다시 확대하지 않게 한다.
-      const deviceMatrix = profile === 'print' ? canvas.getTotalMatrix?.() : null;
+      const strokeDeviceMatrix = canvas.getTotalMatrix?.() ?? null;
+      const deviceMatrix = profile === 'print' ? strokeDeviceMatrix : null;
       const inverseMatrix = deviceMatrix ? this.canvasKit.Matrix?.invert(deviceMatrix) : null;
       if (!this.recordingStaticPicture && this.currentPictureContext && this.currentTreeFingerprint
         && (node.cacheHint === 'staticSubtree' || node.cacheHint === 'preferVectorRecording')
         && recordingBounds && (profile !== 'print' || inverseMatrix)) {
-        const nodeKey = replayFingerprint([node, activeLayer, deviceMatrix]);
+        const nodeKey = replayFingerprint([node, activeLayer, strokeDeviceMatrix]);
         if (nodeKey) {
           const key = `${this.currentPictureContext}:${profile}:${replayPlane}:${nodeKey}`;
           const cached = this.staticPictures.get(key);
@@ -1801,6 +1809,8 @@ export class CanvasKitLayerRenderer {
           const before = { ...this.currentReplayFeatureCounts };
           const diagnosticStart = { equations: this.equationRoutes.values.length, textRecoveries: this.textRecoveries.values.length,
             textFailures: this.textFailures.values.length, imageRecoveries: this.imageRecoveries.values.length, patternOps: this.patternReplayOps };
+          const previousStrokeDeviceMatrix = this.recordingStrokeDeviceMatrix;
+          this.recordingStrokeDeviceMatrix = deviceMatrix ? null : strokeDeviceMatrix;
           this.recordingStaticPicture = true;
           try {
             let deviceBounds = recordingBounds;
@@ -1847,6 +1857,7 @@ export class CanvasKitLayerRenderer {
             }
           } finally {
             this.recordingStaticPicture = false;
+            this.recordingStrokeDeviceMatrix = previousStrokeDeviceMatrix;
             if (!finished) { try { picture = recorder.finishRecordingAsPicture(); } catch { /* failed recording */ } }
             picture?.delete();
             recorder.delete();
@@ -5433,9 +5444,9 @@ export class CanvasKitLayerRenderer {
       draw(shadowPaint);
       shadowPaint.delete?.();
       if (style?.strokeColor && (style.strokeWidth ?? 0) > 0) {
-        const shadowStroke = this.makeStrokePaint(shadow.color, style.strokeWidth ?? 1, shadow.opacity);
+        const shadowStroke = this.makeStrokePaint(shadow.color, this.deviceStrokeWidth(canvas, style.strokeWidth ?? 1), shadow.opacity);
         try {
-          this.drawStrokeWithDash(style.strokeDash, shadowStroke, () => draw(shadowStroke));
+          this.drawStrokeWithDash(style.strokeDash, shadowStroke, () => draw(shadowStroke), undefined, style.strokeWidth ?? 1);
         } finally {
           shadowStroke.delete?.();
         }
@@ -5460,9 +5471,9 @@ export class CanvasKitLayerRenderer {
       paint.delete?.();
     }
     if (style?.strokeColor && (style.strokeWidth ?? 0) > 0) {
-      const paint = this.makeStrokePaint(style.strokeColor, style.strokeWidth ?? 1, style.opacity);
+      const paint = this.makeStrokePaint(style.strokeColor, this.deviceStrokeWidth(canvas, style.strokeWidth ?? 1), style.opacity);
       try {
-        this.drawStrokeWithDash(style.strokeDash, paint, () => draw(paint));
+        this.drawStrokeWithDash(style.strokeDash, paint, () => draw(paint), undefined, style.strokeWidth ?? 1);
       } finally {
         paint.delete?.();
       }
@@ -5660,13 +5671,13 @@ export class CanvasKitLayerRenderer {
     for (const [widthRatio, offsetRatio] of this.compoundLineSegments(style.lineType)) {
       const paintWidth = widthRatio === 1 && offsetRatio === 0 && resolvedSingleWidth !== undefined
         ? resolvedSingleWidth : Math.max(0.3, width * widthRatio);
-      const paint = this.makeStrokePaint(color, paintWidth, opacity);
+      const paint = this.makeStrokePaint(color, this.deviceStrokeWidth(canvas, paintWidth), opacity);
       const ox = nx * width * offsetRatio;
       const oy = ny * width * offsetRatio;
       try {
         this.drawStrokeWithDash(style.dash, paint, () => {
           canvas.drawLine(x1 + ox, y1 + oy, x2 + ox, y2 + oy, paint);
-        }, style.dashPattern);
+        }, style.dashPattern, paintWidth);
       } finally {
         paint.delete?.();
       }
@@ -5705,6 +5716,7 @@ export class CanvasKitLayerRenderer {
     paint: SkPaint,
     draw: () => void,
     explicitPattern?: number[],
+    declaredWidth = paint.getStrokeWidth(),
   ): void {
     if (explicitPattern !== undefined && (
       explicitPattern.length === 0 || explicitPattern.length > 16
@@ -5722,7 +5734,7 @@ export class CanvasKitLayerRenderer {
     // 도형 스타일은 96dpi 좌표이며 pen 외곽은 한컴 Print의 600dpi 물리 단위다.
     const hwpPattern = typeof dash === 'string' && dash.startsWith('hwp');
     const outline = 96 / 600;
-    const scale = hwpPattern ? Math.max(paint.getStrokeWidth() - outline, outline) : 1;
+    const scale = hwpPattern ? Math.max(Math.max(0.1, declaredWidth) - outline, outline) : 1;
     const intervals = explicitPattern ?? (Array.isArray(dash) ? dash : dash === undefined || dash === 'solid'
       ? null
       : patterns[dash]?.map((value, index) => {
@@ -6006,6 +6018,28 @@ export class CanvasKitLayerRenderer {
     paint.setStyle(this.canvasKit.PaintStyle.Fill);
     paint.setColor(this.color(color, opacity));
     return paint;
+  }
+
+  /**
+   * Shape and line strokes thinner than one device pixel are drawn one pixel wide (#8125).
+   * A Hancom print raster fills a whole device pixel even for 0.1 mm table rules; anti-aliasing
+   * the declared width leaves them faint. Same rule as Canvas2D `floor_line_width_to_device`
+   * and Native Skia.
+   */
+  private deviceStrokeWidth(canvas: SkCanvas, width: number): number {
+    const matrix = canvas.getTotalMatrix?.();
+    if (!matrix) return Math.max(width, this.currentDeviceStrokeFloor ?? 0);
+    let [a, c, , b, d] = matrix;
+    const external = this.recordingStrokeDeviceMatrix;
+    if (external) {
+      const [ea, ec, , eb, ed] = external;
+      [a, b, c, d] = [ea * a + ec * b, eb * a + ed * b, ea * c + ec * d, eb * c + ed * d];
+    }
+    const determinant = Math.abs(a * d - b * c);
+    if (!Number.isFinite(determinant) || determinant === 0) return width;
+    // Inverse affine maps one device pixel back to local space, as Native/Canvas2D do.
+    const unit = Math.min(Math.hypot(d, b), Math.hypot(c, a)) / determinant;
+    return Number.isFinite(unit) && unit > 0 ? Math.max(width, unit) : width;
   }
 
   private makeStrokePaint(color: string, width: number, opacity = 1): SkPaint {

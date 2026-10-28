@@ -873,8 +873,7 @@ pub fn fit_stored_hwpx_no_adjust_rowspans(
     dpi: f64,
 ) -> Option<MeasuredTable> {
     let row_count = measured.row_heights.len();
-    if table.common.treat_as_char
-        || table.common.text_wrap != TextWrap::TopAndBottom
+    if table.common.text_wrap != TextWrap::TopAndBottom
         || table.raw_table_record_attr & 0x08 == 0
         || table.common.height == 0
         || row_count != table.row_count as usize
@@ -908,11 +907,27 @@ pub fn fit_stored_hwpx_no_adjust_rowspans(
             declared[row] = height;
         }
     }
-    if declared.iter().any(|height| *height <= 0.0)
-        || declared
-            .iter()
-            .zip(&measured.row_heights)
-            .any(|(saved, actual)| (saved - actual).abs() > 1.5)
+    if declared.iter().any(|height| *height <= 0.0) {
+        return None;
+    }
+    let target = hwpunit_to_px(table.common.height as i32, dpi)
+        - measured.cell_spacing * (row_count - 1) as f64;
+    if table.common.treat_as_char {
+        // 글자처럼 취급하는 noAdjust 표는 모든 저장 행과 병합 셀이 전체
+        // 프레임을 정확히 닫는 경우에만 저장 행을 신뢰한다. 실내용 성장이나
+        // 편집된 표를 임의로 줄이지 않도록 행별 오차도 제한한다.
+        if (declared.iter().sum::<f64>() - target).abs() > 0.1
+            || declared
+                .iter()
+                .zip(&measured.row_heights)
+                .any(|(saved, actual)| (saved - actual).abs() > (saved * 0.15).max(12.0))
+        {
+            return None;
+        }
+    } else if declared
+        .iter()
+        .zip(&measured.row_heights)
+        .any(|(saved, actual)| (saved - actual).abs() > 1.5)
     {
         return None;
     }
@@ -930,8 +945,6 @@ pub fn fit_stored_hwpx_no_adjust_rowspans(
         }
     }
 
-    let target = hwpunit_to_px(table.common.height as i32, dpi)
-        - measured.cell_spacing * (row_count - 1) as f64;
     let last = target - declared[..row_count - 1].iter().sum::<f64>();
     let saved_last = declared[row_count - 1];
     let measured_content_floor = measured
@@ -5500,12 +5513,15 @@ impl HeightMeasurer {
                     };
             }
         }
+        // 측정 셀마다 표 전체를 찾지 않도록 (행, 열)의 첫 셀을 한 번 색인한다.
+        let mut cell_at = std::collections::HashMap::with_capacity(table.cells.len());
+        for cell in &table.cells {
+            cell_at
+                .entry((cell.row as usize, cell.col as usize))
+                .or_insert(cell);
+        }
         for mc in &mut measured_cells {
-            let Some(cell) = table
-                .cells
-                .iter()
-                .find(|c| c.row as usize == mc.row && c.col as usize == mc.col)
-            else {
+            let Some(&cell) = cell_at.get(&(mc.row, mc.col)) else {
                 continue;
             };
             let wrap_bottom = self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);

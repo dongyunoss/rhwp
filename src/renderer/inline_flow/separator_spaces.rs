@@ -10,7 +10,7 @@ pub(super) fn has_flow_content(row: &[InlineFlowBox], chars: &[char]) -> bool {
             chars[range.clone()].iter().any(|ch| !ch.is_whitespace())
         }
         InlineFlowContent::Table { .. } | InlineFlowContent::Picture { .. } => true,
-        InlineFlowContent::FloatingTable { .. } => false,
+        InlineFlowContent::FloatingTable { .. } | InlineFlowContent::FloatingShape { .. } => false,
     })
 }
 

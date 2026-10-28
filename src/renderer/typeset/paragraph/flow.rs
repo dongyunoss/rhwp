@@ -38,6 +38,23 @@ pub(in crate::renderer::typeset) fn place(
             fmt.spacing_before,
             st.current_height,
         );
+    // [#8149] 인증 배치가 없는 빈 host 자리차지 표 상자 뒤도 같은 앞 간격 소비를 따른다.
+    let stored_frame_shared_spacing = if stored_frame_shared_spacing > 0.0 {
+        stored_frame_shared_spacing
+    } else {
+        crate::renderer::float_placement::empty_host_float_successor_absorbed_spacing_px(
+            st.current_items.last(),
+            paragraphs,
+            para_idx,
+            fmt.spacing_before,
+            (st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+                && !st.profile.session_edited(),
+            st.profile.hwpx_container(),
+            st.profile.hwp5_origin_hwpx(),
+            st.current_height,
+            dpi,
+        )
+    };
     st.reclaim_flow_by(stored_frame_shared_spacing.min(st.current_height));
     let previous_is_partial_table = st.current_items.last().is_some_and(
         |item| matches!(item, PageItem::PartialTable { para_index, .. } if *para_index < para_idx),

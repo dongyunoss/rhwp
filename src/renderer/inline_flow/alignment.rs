@@ -49,7 +49,7 @@ pub(super) fn gaps(
             chars[range.clone()].iter().any(|ch| !ch.is_whitespace())
         }
         InlineFlowContent::Table { .. } | InlineFlowContent::Picture { .. } => true,
-        InlineFlowContent::FloatingTable { .. } => false,
+        InlineFlowContent::FloatingTable { .. } | InlineFlowContent::FloatingShape { .. } => false,
     };
     let Some(first) = row.iter().position(visible) else {
         return gaps;

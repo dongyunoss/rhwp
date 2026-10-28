@@ -1128,6 +1128,27 @@ impl KoPubFamily {
     /// 한글을 0.953em·공백을 0.457em 으로 재서(정본 0.936·0.5), 그 문서 pi=143 처럼
     /// 한/글이 한 줄에 담는 줄을 둘로 끊는다.
     fn from_primary(primary_name: &str) -> Option<Self> {
+        // 글자마다 불리므로 이름 판정은 최근 글꼴 이름 몇 개에 대해 한 번만 한다.
+        const RECENT: usize = 8;
+        thread_local! {
+            static RECENT_NAMES: std::cell::RefCell<Vec<(Box<str>, Option<KoPubFamily>)>> =
+                const { std::cell::RefCell::new(Vec::new()) };
+        }
+        RECENT_NAMES.with(|recent| {
+            let mut recent = recent.borrow_mut();
+            if let Some((_, family)) = recent.iter().find(|(name, _)| **name == *primary_name) {
+                return *family;
+            }
+            let family = Self::classify(primary_name);
+            if recent.len() >= RECENT {
+                recent.remove(0);
+            }
+            recent.push((primary_name.into(), family));
+            family
+        })
+    }
+
+    fn classify(primary_name: &str) -> Option<Self> {
         let lower = primary_name.to_lowercase().replace(' ', "");
         // World 배포본은 이름을 달리하지만 독립 Print의 cmap/hmtx와 설치
         // 프로그램의 윤곽·전진이 같다. 바탕 한글은 반올림한0.94 대신936/1000이다.
@@ -1526,6 +1547,25 @@ fn measure_char_width_embedded_decision<'a>(
     )
 }
 
+/// CSS 글꼴 체인의 첫 face 이름(따옴표·앞뒤 공백 제외).
+///
+/// 글자마다 불리므로 대부분인 단일 이름은 그대로 돌려준다. 결과는 분리·다듬기와 같다.
+fn css_primary_face(font_family: &str) -> &str {
+    let plain = !font_family.contains([',', '\'', '"'])
+        && !font_family.starts_with(char::is_whitespace)
+        && !font_family.ends_with(char::is_whitespace);
+    if plain {
+        return font_family;
+    }
+    font_family
+        .split(',')
+        .next()
+        .unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"')
+}
+
 /// [#7092] `font_metric_trusted` — 메트릭 표를 그 글꼴 자신의 폭으로 믿을 수 있는지
 /// (TTF 선언 · 대체 없음). 스타일을 모르는 호출은 거짓으로 종전 측정을 따른다.
 fn measure_char_width_embedded_decision_for_font<'a>(
@@ -1537,13 +1577,7 @@ fn measure_char_width_embedded_decision_for_font<'a>(
     font_metric_trusted: bool,
     hft_hangul_face: bool,
 ) -> EmbeddedWidthDecision<'a> {
-    let primary_name = font_family
-        .split(',')
-        .next()
-        .unwrap_or(font_family)
-        .trim()
-        .trim_matches('\'')
-        .trim_matches('"');
+    let primary_name = css_primary_face(font_family);
     if let Some(em) = font_metrics_data::original_glyph_advance_em(primary_name, bold, italic, c) {
         return EmbeddedWidthDecision {
             width_px: Some(quantize_hwp_px(font_size * em)),

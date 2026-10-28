@@ -75,6 +75,15 @@ pub(in crate::renderer::typeset) fn build_plan(
     } else {
         inline_flow::plan(para, para_index, styles, tables, &frame, &exclusions)?
     };
+    plan = inline_flow::floating_shapes::resolve(
+        plan,
+        para,
+        para_index,
+        styles,
+        tables,
+        &frame,
+        &exclusions,
+    )?;
     plan.relative_to(column.x, column.y);
     Some(plan)
 }

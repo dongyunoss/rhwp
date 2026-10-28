@@ -18,6 +18,13 @@ impl LayoutEngine {
         ctx: &ColumnItemCtx,
         y_offset: f64,
     ) -> f64 {
+        if ctx.inline_flow_plans.get(&para_index).is_some_and(|plan| {
+            plan.floating_shapes
+                .iter()
+                .any(|item| item.control == control_index)
+        }) {
+            return y_offset;
+        }
         let ColumnItemCtx {
             page_content,
             paragraphs,

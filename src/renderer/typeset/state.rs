@@ -918,6 +918,8 @@ impl TypesetState {
             stored_vpos_base: self.data.vpos_page_base,
             current_footnote_height: self.data.current_footnote_height,
             footnote_safety_margin: self.data.footnote_safety_margin,
+            footnote_separator_overhead: self.data.footnote_separator_overhead,
+            footnote_between_notes_margin: self.data.footnote_between_notes_margin,
             current_zone_y_offset: self.data.current_zone_y_offset,
             current_bottom_fixed_exclusion: self.data.current_bottom_fixed_exclusion,
             next_page_stored_body_origin: self
@@ -1010,6 +1012,20 @@ impl TypesetState {
 
     /// fit을 통과한 동일 plan을 배치 metadata와 높이에 함께 반영한다.
     pub(super) fn commit_inline_flow(&mut self, para_index: usize, plan: InlineFlowPlan) {
+        for item in &plan.floating_shapes {
+            if let Some(exclusion) = &item.exclusion {
+                self.data
+                    .side_wrap_exclusions
+                    .insert((para_index, item.control), exclusion.clone());
+            }
+            self.data
+                .paragraph_float_placements
+                .insert((para_index, item.control), item.placement);
+            self.data.current_items.push(PageItem::Shape {
+                para_index,
+                control_index: item.control,
+            });
+        }
         self.data
             .current_items
             .push(PageItem::FullParagraph { para_index });
@@ -1145,12 +1161,57 @@ mod transition;
 mod whole_float_successor;
 
 pub(super) struct TypesetState {
-    data: data::StateView,
+    data: Revised<data::StateView>,
 }
 
 impl std::ops::Deref for TypesetState {
     type Target = data::StateView;
     fn deref(&self) -> &Self::Target {
         &self.data
+    }
+}
+
+impl TypesetState {
+    /// 상태 내용의 세대. 같은 값이면 마지막 조회 이후 어떤 필드도 쓰지 않았다.
+    pub(in crate::renderer::typeset) fn revision(&self) -> u64 {
+        self.data.revision
+    }
+}
+
+/// 쓰기 접근마다 프로세스 전역에서 새 세대를 받는 값.
+///
+/// 상태의 쓰기는 모두 `DerefMut`를 거치므로 세대가 같은 두 시점의 내용은 같다.
+/// 복제본도 다음 쓰기에서 다른 세대를 받으므로 서로의 세대와 겹치지 않는다.
+struct Revised<T> {
+    value: T,
+    revision: u64,
+}
+
+static NEXT_STATE_REVISION: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+fn next_state_revision() -> u64 {
+    NEXT_STATE_REVISION.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+}
+
+impl<T> Revised<T> {
+    fn new(value: T) -> Self {
+        Self {
+            value,
+            revision: next_state_revision(),
+        }
+    }
+}
+
+impl<T> std::ops::Deref for Revised<T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        &self.value
+    }
+}
+
+impl<T> std::ops::DerefMut for Revised<T> {
+    fn deref_mut(&mut self) -> &mut T {
+        self.revision = next_state_revision();
+        &mut self.value
     }
 }

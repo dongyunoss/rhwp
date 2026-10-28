@@ -3016,6 +3016,19 @@ fn floating_anchor_font_size_px(
         .fold(0.0, f64::max)
 }
 
+/// [#8167] 글자처럼 취급한 도형이 줄에서 차지하는 상자(HU) — 도형 크기에 바깥 여백을 더한다.
+/// 한/글 저장 줄은 이 상자 높이를 줄 높이로 쓴다(samples HWPX 의 바깥 여백 있는 글자처럼
+/// 사각형 78줄 전부 `vertsize = 높이 + 위 + 아래 여백`). 배치도 같은 상자로 줄 안 폭과
+/// 기준선 자리를 센다(`tac_object_outer_margins_px`).
+fn tac_shape_box_hu(shape: &crate::model::shape::ShapeObject) -> (i32, i32) {
+    let common = shape.common();
+    let margin = &common.margin;
+    (
+        shape.flow_width_hu() + i32::from(margin.left) + i32::from(margin.right),
+        shape.flow_height_hu() + i32::from(margin.top) + i32::from(margin.bottom),
+    )
+}
+
 fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
     para.controls
         .iter()
@@ -3023,7 +3036,9 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
             Control::Picture(pic) if pic.common.treat_as_char => {
                 Some(super::inline_picture_occupied_size_hu(pic).1)
             }
-            Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
+            Control::Shape(shape) if shape.common().treat_as_char => {
+                Some(tac_shape_box_hu(shape).1)
+            }
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
             Control::Equation(eq) if eq.common.treat_as_char => {
                 Some(crate::renderer::equation::flow_height_hwp(eq) as i32)
@@ -3040,10 +3055,7 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
         Control::Picture(pic) if pic.common.treat_as_char => {
             super::inline_picture_occupied_size_hu(pic)
         }
-        Control::Shape(shape) if shape.common().treat_as_char => (
-            (shape.common().width as i32).max(shape.shape_attr().current_width as i32),
-            shape.flow_height_hu(),
-        ),
+        Control::Shape(shape) if shape.common().treat_as_char => tac_shape_box_hu(shape),
         Control::Table(table) if table.common.treat_as_char => {
             // [#5785 후속] 선언 폭 우선 — 원시 열 합은 행별 구획이 다른 표에서 과대집계된다.
             let width = table.flow_width_hu() as i32;
@@ -3253,6 +3265,25 @@ fn control_is_line_width_neutral_float_table(control: &Control) -> bool {
             && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))
 }
 
+/// 자리차지(TopAndBottom)·글 뒤·글 앞 비-TAC 그림·도형은 자기 상자를 부동 개체 소유자가
+/// 배치하고, 같은 문단 본문 줄의 **폭**은 바꾸지 않는다 — 표의 같은 계약
+/// (`control_is_line_width_neutral_float_table`)과 같은 축이다. 어울림(Square)·
+/// Tight·Through 는 배제 밴드가 줄 폭을 바꾸므로 들지 않는다(`layout_picture_band` 소유).
+/// 캡션은 개체 상자의 일부라 줄과 무관하다.
+pub(crate) fn control_is_line_width_neutral_float_object(control: &Control) -> bool {
+    use crate::model::shape::TextWrap;
+    let common = match control {
+        Control::Picture(picture) => &picture.common,
+        Control::Shape(shape) => shape.common(),
+        _ => return false,
+    };
+    !common.treat_as_char
+        && matches!(
+            common.text_wrap,
+            TextWrap::TopAndBottom | TextWrap::BehindText | TextWrap::InFrontOfText
+        )
+}
+
 /// 대체 메트릭으로 폭이 바뀐 수식의 첫 소유 줄만 저장 캐시 경계로 삼는다.
 /// 앞쪽의 정상 줄과 각주 앵커까지 함께 재조판하면 무관한 문단 배치가 바뀐다.
 pub(super) fn remeasured_equation_start_row(para: &Paragraph) -> Option<usize> {
@@ -3404,15 +3435,25 @@ pub(super) fn supports_picture_band_frame_controls(para: &Paragraph) -> bool {
     non_tac_pictures <= 1
 }
 
+/// 저장 줄이 없는 글자처럼 그림 호스트 — 프레임 fill 이 유일한 소유자다.
+fn no_ls_inline_picture_host_fill(para: &Paragraph) -> bool {
+    para.line_segs.is_empty() && supports_inline_picture_frame_controls(para)
+}
+
 // Captioned pictures and floating controls have separate layout owners. A
 // caption-free inline picture instead consumes a real slot in this text flow,
 // including at the paragraph end and alongside another inline picture.
+// 줄 폭을 바꾸지 않는 부동 그림·도형은 자기 상자만 따로 배치되므로 이 흐름의 슬롯을
+// 소비하지 않는다 — 투영(`inline_frame_input::project`)도 인라인 크기가 없는 개체를 건너뛴다.
+// 사양하면 같은 문단의 글자처럼 그림이 줄 높이를 잃는다(#8271).
 fn supports_inline_picture_frame_controls(para: &Paragraph) -> bool {
     para.controls
         .iter()
         .any(|control| matches!(control, Control::Picture(picture) if picture.common.treat_as_char))
         && para.controls.iter().all(|control| match control {
-            Control::Picture(picture) => picture.common.treat_as_char && picture.caption.is_none(),
+            Control::Picture(picture) if picture.common.treat_as_char => picture.caption.is_none(),
+            float if control_is_line_width_neutral_float_object(float) => true,
+            Control::Picture(_) => false,
             other => control_is_width_neutral_marker(other),
         })
 }
@@ -3863,6 +3904,7 @@ fn layout_paragraph_in_frame_impl(
                 || (para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
                 || (para.line_segs.is_empty() && supports_overlay_table_frame_controls(para))
                 || supports_overlay_shape_frame_controls(para)
+                || no_ls_inline_picture_host_fill(para)
         }
         FramePurpose::PictureAnchor => picture_anchor_projection::admits(para),
     };
@@ -3870,9 +3912,8 @@ fn layout_paragraph_in_frame_impl(
         return None;
     }
 
-    let projected = (para.line_segs.is_empty()
-        && (supports_tac_table_band_frame_controls(para)
-            || supports_inline_picture_frame_controls(para)))
+    let projected = ((para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para))
+        || no_ls_inline_picture_host_fill(para))
     .then(|| inline_frame_input::project(para, styles, dpi))
     .flatten();
     let para = projected.as_ref().map_or(para, |(input, _)| input);
@@ -4512,7 +4553,10 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
         && (supports_tac_table_band_frame_controls(para)
             || supports_overlay_table_frame_controls(para)
             || supports_overlay_shape_frame_controls(para));
-    if !supports_picture_band_frame_controls(para) && !tac_table_host_fill {
+    if !supports_picture_band_frame_controls(para)
+        && !tac_table_host_fill
+        && !no_ls_inline_picture_host_fill(para)
+    {
         if !supports_cached_body_frame_controls(para) || (!stale && !para.line_segs.is_empty()) {
             return None;
         }

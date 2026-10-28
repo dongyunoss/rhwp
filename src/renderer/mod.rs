@@ -249,10 +249,16 @@ pub(crate) fn overlapping_dash_leader_segment(
     if advance <= 0.0 || natural_width <= advance + 0.25 {
         return None;
     }
-    // 한컴 출력의 하이픈 획은 저장 글자 원점에서 시작하며 기준선보다
-    // 0.43em 위에 있다. 길이는 저장 advance 안에서만 남긴다.
+    // 두 한컴 Print 원본의 실제 선분은 일반 서체 기준선에서 약 0.36em 위다.
+    // 굵게·기울임은 별도 잉크 근거가 없으므로 기존 위치를 유지한다.
+    // 길이는 저장 advance 안에서만 남긴다.
     let end = (font_size * 0.38).min(advance * 0.7);
-    Some((0.0, end, -font_size * 0.43, font_size * 0.054))
+    let rise = if style.bold || style.italic {
+        0.43
+    } else {
+        0.36
+    };
+    Some((0.0, end, -font_size * rise, font_size * 0.054))
 }
 
 /// Backend replay 직전의 optional scalar positions를 한 번 더 검증한다.

@@ -39,7 +39,7 @@ pub(crate) use reflow_block_cell::{
     reflow_host_line_height, supports_reflow_external_table_frame, ReflowBlockCellFlow,
     ReflowBlockOrigin, ReflowExternalTableFlow,
 };
-mod stored_empty_host_frame;
+pub(crate) mod stored_empty_host_frame;
 mod stored_nested_before_host;
 mod stored_nested_closing_host;
 mod stored_nested_terminal_line;
@@ -463,8 +463,8 @@ pub(crate) fn stored_plain_object_row_frame_heights(table: &Table) -> Option<Vec
         || table.page_break != TablePageBreak::RowBreak
         || !is_para_topbottom_float(&table.common)
         || table.common.height > i32::MAX as u32
-        || !stored_complete_column_frame(table)
         || table.cells.iter().any(|cell| cell.row_span != 1)
+        || !stored_complete_column_frame(table)
     {
         return None;
     }
@@ -1997,6 +1997,7 @@ pub(crate) fn block_table_caption_host_spacing_px(
     dpi: f64,
 ) -> f64 {
     if object_only_saved_table_anchor(para, table)
+        || textless_single_float_host(para, table)
         || saved_inline_sibling_owns_caption_host_line(para, table, dpi)
     {
         0.0
@@ -2005,6 +2006,21 @@ pub(crate) fn block_table_caption_host_spacing_px(
             .first()
             .map_or(0.0, |line| hwpunit_to_px(line.line_spacing, dpi))
     }
+}
+
+/// [#8149] 글자 없이 문단 기준 자리차지 표 하나만 든 host 는 캡션 아래에 둘 글줄이 없다.
+/// 저장 줄의 폭(`segment_width`)이 0 이 아니어도 같다 — 한글문서파일형식 30쪽 표 185 는 host
+/// 줄 폭이 39628 인데 저장 사다리가 다음 host 줄을 `위 + 표 + 캡션 + 아래` 바닥(187.9px)에
+/// 둔다. host 줄간격(600HU)을 캡션에 더하면 상자가 8.0px 길어져 뒤 표가 그만큼 내려갔다.
+pub(crate) fn textless_single_float_host(para: &Paragraph, table: &Table) -> bool {
+    !table.common.treat_as_char
+        && is_para_topbottom_float(&table.common)
+        && para.text.is_empty()
+        && para
+            .controls
+            .iter()
+            .filter(|control| !matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
+            .all(|control| matches!(control, Control::Table(t) if std::ptr::eq(t.as_ref(), table)))
 }
 
 /// 원본 한 줄의 높이와 캡션·여백이 인라인 형제의 상자를 정확히 닫으면
@@ -3807,6 +3823,130 @@ pub(crate) fn stored_frame_successor_shared_spacing_px(
         .unwrap_or(0.0)
 }
 
+/// [#8149] 글 없는 host 의 문단 기준 자리차지 표 상자 바로 뒤 문단은 한/글이 앞 간격을 그
+/// 표의 바깥 아래 여백 안에서 소비한다 — 다음 글줄이 상자 바닥에 놓인다. 저장 사다리가 상자를
+/// 인증하면 `stored_frame_successor_shared_spacing_px` 가 같은 일을 하므로, 이 함수는 인증
+/// 배치가 없을 때(다음 문단에 저장 줄이 없는 「4.3.x」 제목 등)만 쓴다. 한글문서파일형식 50쪽:
+/// 표 317·321 뒤 제목 318·322 가 앞 간격 13.3px 만큼 내려가 표 323 마지막 행이 넘어갔다.
+///
+/// 앞 간격이 바깥 아래 여백 띠 안에 다 들어갈 때만 앞 간격 전부를 띠가 흡수한다. 앞 간격이
+/// 띠보다 크면 한/글은 흡수하지 않는다 — 한/글 Print 는 float_fragment_frames split-rows-60
+/// (앞 간격 40.0px > 여백 3.8px) 2쪽 "다음 문단"을 조각 끝 + 여백 + 앞 간격 전부(310.72px)에
+/// 둔다. 일부만 빼면 정책연구용역 175쪽(4.0 > 1.9)·1341000 연구보고서 55쪽(7.6 > 1.9)이 어긋난다.
+/// 조판과 배치가 같은 직전 항목으로 판정한다.
+///
+/// 저장 조판에서 다음 문단의 저장 첫 줄이 있으면 그 줄이 증언하는 앞 간격 소비량(커서 + 앞
+/// 간격 − 저장 위치)을 쓴다. samples 의 흡수 사례 118곳 중 117곳은 저장 줄이 위 규칙의 흡수량을
+/// 증언한다. hwpspec 54쪽 pi=341(이어지는 마지막 조각 뒤 테두리 문단)은 소비 0(저장 vpos 141.8px =
+/// 상자 끝 128.4 + 앞 간격 13.3), rowbreak-problem-pages 5쪽 pi=12 는 앞 간격 전부를 증언한다 —
+/// 이 경우 흡수량만 빼면 devel 의 `stored_after_partial_table_shared_spacing_px` 가 저장 줄과
+/// 맞추던 커서가 어긋나 문단이 내려간다.
+pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
+    previous_item: Option<&crate::renderer::pagination::PageItem>,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    spacing_before: f64,
+    stored_layout: bool,
+    hwpx_container: bool,
+    hwp5_origin_hwpx: bool,
+    flow_from_body_top: f64,
+    dpi: f64,
+) -> f64 {
+    use crate::renderer::pagination::PageItem;
+    if spacing_before <= 0.0 {
+        return 0.0;
+    }
+    let (owner, control_index) = match previous_item {
+        Some(PageItem::Table {
+            para_index,
+            control_index,
+        }) => (*para_index, *control_index),
+        Some(PageItem::PartialTable {
+            para_index,
+            control_index,
+            end_row,
+            is_continuation,
+            ..
+        }) => {
+            let complete = paragraphs
+                .get(*para_index)
+                .and_then(|host| host.controls.get(*control_index))
+                .is_some_and(|control| matches!(control, Control::Table(t) if *end_row >= t.row_count as usize));
+            if !complete {
+                return 0.0;
+            }
+            // 저장 줄이 없는 HWPX 표 호스트와 후속 문단은 여백을 공유한다는
+            // 원본 증거가 없다. HWP5 유래 HWPX라도 호스트 저장 줄이 없는 경우에는
+            // 이 규칙을 적용한다. 호스트 저장 줄이 보존된 HWP5 유래 사양서의
+            // 줄 없는 제목은 원본 HWP의 앞 간격 흡수 계약을 유지한다.
+            let missing_line_needs_spacing = hwpx_container
+                && (!hwp5_origin_hwpx
+                    || paragraphs
+                        .get(*para_index)
+                        .is_none_or(|host| host.line_segs.is_empty()));
+            if *is_continuation
+                && paragraphs
+                    .get(para_index.saturating_add(1))
+                    .and_then(|next| next.line_segs.first())
+                    .map_or(missing_line_needs_spacing, |line| {
+                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            != 0
+                    })
+            {
+                return 0.0;
+            }
+            (*para_index, *control_index)
+        }
+        _ => return 0.0,
+    };
+    if owner.checked_add(1) != Some(para_index) {
+        return 0.0;
+    }
+    let Some(host) = paragraphs.get(owner) else {
+        return 0.0;
+    };
+    if host
+        .text
+        .chars()
+        .any(|c| !c.is_whitespace() && c > '\u{001F}' && c != '\u{FFFC}')
+    {
+        return 0.0;
+    }
+    let Some(Control::Table(table)) = host.controls.get(control_index) else {
+        return 0.0;
+    };
+    if !is_para_topbottom_float(&table.common) || signed_hwpunit(table.common.vertical_offset) != 0
+    {
+        return 0.0;
+    }
+    let outer_bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi).max(0.0);
+    if spacing_before > outer_bottom {
+        return 0.0;
+    }
+    let absorbed = spacing_before;
+    // 다음 문단의 저장 첫 줄이 이 쪽 커서 기준으로 앞 간격 소비량(0..=앞 간격)을 증언하면 그
+    // 값을 쓴다. 증언 범위 밖의 vpos(구역·쪽 경계 되감기 등)면 위 규칙을 그대로 쓴다.
+    let stored_consumption = stored_layout
+        .then(|| paragraphs.get(para_index))
+        .flatten()
+        .filter(|para| !para.stored_text_partition_is_dirty() && !para.cell_format_vpos_dirty)
+        .and_then(|para| para.line_segs.first())
+        .filter(|line| {
+            line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        })
+        .map(|line| hwpunit_to_px(line.vertical_pos, dpi))
+        .filter(|saved_top| *saved_top > 0.0)
+        .map(|saved_top| flow_from_body_top + spacing_before - saved_top)
+        .filter(|consumed| (-1.0..=spacing_before + 1.0).contains(consumed));
+    match stored_consumption {
+        Some(consumed) if (consumed - absorbed).abs() <= 1.0 => absorbed,
+        Some(consumed) if consumed.abs() <= 1.0 => 0.0,
+        Some(consumed) if (consumed - spacing_before).abs() <= 1.0 => spacing_before,
+        Some(consumed) => consumed.clamp(0.0, spacing_before),
+        None => absorbed,
+    }
+}
+
 /// A genuine source ladder and its independently stored successor close the
 /// paragraph's trailing space. This is an endpoint,
 /// not a height to add to a cursor that may already include leading spacing.
@@ -3922,6 +4062,7 @@ pub(crate) fn stored_terminal_empty_line_gap(
 /// Source coordinates remain separate from the accepted relative placement.
 pub(crate) fn stored_table_column_origin(
     para: &Paragraph,
+    next: Option<&Paragraph>,
     has_host_line: bool,
     placement: Option<&ParagraphFloatPlacement>,
     dpi: f64,
@@ -3932,8 +4073,52 @@ pub(crate) fn stored_table_column_origin(
             .and_then(|placement| placement.stored_host_origin)
             .map(|origin| source.saturating_sub(super::px_to_hwpunit(origin, dpi)))
     } else {
-        Some(source)
+        Some(stored_textless_float_box_origin(para, next, source).unwrap_or(source))
     }
+}
+
+/// [#8149] 단 첫머리의 글 없는 host 문단 기준 자리차지 표: 저장 host 줄은 문단 앞 간격 뒤에
+/// 있지만 표 상자는 문단 위끝(단 원점)에서 바깥 위 여백만큼 내려 시작한다. 저장 사다리가 다음
+/// 줄을 `원점 + 오프셋 + 위 여백 + 높이 + 아래 캡션 + 아래 여백` 에 두면 그 원점이 단의 저장
+/// 원점이다. 첫 줄 vpos 를 원점으로 쓰면 그 쪽의 저장 앵커가 모두 앞 간격만큼 위로 읽혀 저장
+/// 첫 조각 프레임을 버린다(한글문서파일형식 42쪽: 표 270 줄 500, 다음 줄 18828 =
+/// 0 + 566 + 14476 + 1802 + 1984 → 원점 0, 표 273 첫 조각 234.3px).
+fn stored_textless_float_box_origin(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+    source: i32,
+) -> Option<i32> {
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        return None;
+    };
+    if !textless_single_float_host(para, table)
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        // 쪽을 넘긴 양수 오프셋 표는 오프셋을 버린다(#4068) — 저장 등식이 이 쪽의 상자가 아니다.
+        || table.common.vertical_offset != 0
+        || table.common.height >= 0x8000_0000
+    {
+        return None;
+    }
+    let next = next?;
+    let next_line = next.line_segs.first().filter(|line| {
+        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    })?;
+    if next.stored_text_partition_is_dirty() || next.cell_format_vpos_dirty {
+        return None;
+    }
+    let frame = i64::from(table.common.vertical_offset)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + stored_empty_host_frame::stored_bottom_caption_hu(table)?
+        + i64::from(table.outer_margin_bottom);
+    let origin = i64::from(next_line.vertical_pos) - frame;
+    // 저장 host 줄은 앞 간격 뒤, 표 위 바깥 여백 띠 안에서 시작한다(표 아래에 놓인 host 줄은
+    // 원점의 증거가 아니다 — issue7198 첫 쪽).
+    ((0..i64::from(source)).contains(&origin)
+        && i64::from(source) < origin + i64::from(table.outer_margin_top))
+    .then(|| i32::try_from(origin).ok())
+    .flatten()
 }
 
 /// A saved restart at the current paragraph's own before-margin is a page
@@ -5841,6 +6026,7 @@ impl ParagraphFloatPlacement {
         table: &Table,
         origin: f64,
         stored_origin: Option<f64>,
+        applied_spacing_before: f64,
         table_height: f64,
         before: f64,
         after: f64,
@@ -5852,9 +6038,12 @@ impl ParagraphFloatPlacement {
         if !(empty_table_host_uses_formatted_box(para, table) || stored_origin.is_some()) {
             return None;
         }
+        // [#8149] 저장 원점은 host 줄 위치(문단 앞 간격 뒤)다. 한/글은 문단 기준 표를 그보다
+        // 위인 문단 윗변에 두므로(`from_saved_whole_empty_host` 와 같은 #7620 규칙) 상자는 적용한
+        // 앞 간격을 뺀 자리에서 세운다(한글문서파일형식 13쪽 표 51: 종전 +6.7px).
         Self::empty_host_box(
             table,
-            stored_origin.unwrap_or(origin),
+            stored_origin.map_or(origin, |stored| stored - applied_spacing_before),
             stored_origin,
             table_height,
             before,
@@ -5970,6 +6159,7 @@ impl ParagraphFloatPlacement {
         origin: f64,
         spacing_before: f64,
         measured_table_height: f64,
+        origin_closes_float_frame: bool,
         dpi: f64,
     ) -> Option<Self> {
         stored_empty_host_frame::from_stored_ladder(
@@ -5979,6 +6169,7 @@ impl ParagraphFloatPlacement {
             origin,
             spacing_before,
             measured_table_height,
+            origin_closes_float_frame,
             dpi,
         )
     }
