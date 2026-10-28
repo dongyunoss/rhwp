@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-28",
+  "production_tree": "c9722a0cc2027a69c51be9f71fcede1bca1020d9",
+  "wasm_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4",
+  "metric": "96dpi, PDFium, 반경 2px raw 실루엣",
+  "interpretation": "같은 PDF 바이트를 현재 PDFium 래스터화하면 일부 점수가 달라진다. 기존 래스터와의 비교와 현재 래스터 측정을 각각 기록하며 둘을 같은 결과로 주장하지 않는다.",
+  "cases": [
+    {
+      "key": "hwpx",
+      "input": "samples/hwp3-sample16-hwp5.hwpx",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "results": {
+        "wasm_current_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwpx-wasm_current_pdf_raster.tsv",
+          "sha256": "83539588ecf8ed49c8cf64302f3df2754535ec22effef49ae151a5629261954f",
+          "pages": 64,
+          "raw100": 62,
+          "min_raw": 99.98
+        },
+        "wasm_prior_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwpx-wasm_prior_pdf_raster.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "pages": 64,
+          "raw100": 64,
+          "min_raw": 100.0
+        },
+        "native_prior_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwpx-native_prior_pdf_raster.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "pages": 64,
+          "raw100": 64,
+          "min_raw": 100.0
+        }
+      }
+    },
+    {
+      "key": "hwp2024",
+      "input": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "pdf": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "results": {
+        "wasm_current_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2024-wasm_current_pdf_raster.tsv",
+          "sha256": "83539588ecf8ed49c8cf64302f3df2754535ec22effef49ae151a5629261954f",
+          "pages": 64,
+          "raw100": 62,
+          "min_raw": 99.98
+        },
+        "wasm_prior_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2024-wasm_prior_pdf_raster.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "pages": 64,
+          "raw100": 64,
+          "min_raw": 100.0
+        },
+        "native_prior_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2024-native_prior_pdf_raster.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "pages": 64,
+          "raw100": 64,
+          "min_raw": 100.0
+        }
+      }
+    },
+    {
+      "key": "hwp2022",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "pdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "results": {
+        "wasm_current_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2022-wasm_current_pdf_raster.tsv",
+          "sha256": "8a1c47e04532a2d40e2bc9eeff7668e1f1ceb0e1efc9cdb587540702973ca7f8",
+          "pages": 64,
+          "raw100": 63,
+          "min_raw": 99.98
+        },
+        "wasm_prior_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2022-wasm_prior_pdf_raster.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "pages": 64,
+          "raw100": 64,
+          "min_raw": 100.0
+        },
+        "native_prior_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2022-native_prior_pdf_raster.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "pages": 64,
+          "raw100": 64,
+          "min_raw": 100.0
+        }
+      }
+    }
+  ]
+}
