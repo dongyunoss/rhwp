@@ -803,5 +803,18 @@
     "method": "현재 서비스와 2026-10-27 배포 전 롤백 보존본의 worker 및 runner 소스를 읽기 전용으로 가져와 diff했다. 서버 설정·실행 파일은 바꾸지 않았다.",
     "observed_changes": "worker 변경은 열기/인쇄 대화상자 감시 분리와 문서 열기 종료 인계 대기, runner 변경은 감시 프로세스 종료·인계 마커와 인쇄 감시다. 비교한 두 소스 diff에 글꼴 선택 로직의 직접 변경은 없다.",
     "qualification": "이 보존본이 #8188 job에서 실제 실행된 정확한 바이너리라는 사실은 확인하지 못했다. 감시 순서가 HFT 로딩에 영향을 주는지도 실험하지 않았으므로 출력 변화의 원인으로 단정하지 않는다."
+  },
+  "mcp_runtime_files_time_check": {
+    "date": "2026-10-29",
+    "host": "win10-hwp-convert-2024",
+    "service_account": "LocalSystem",
+    "scope": "한컴 2024 설치 Bin의 Hwp 및 글꼴 관련 파일과 Shared/Fonts의 HFT 파일 메타데이터, 2024 런타임 프로필의 private font map 메타데이터",
+    "observed_hwp_and_font_bin_latest_write": "2026-07-14 15:46:02",
+    "observed_hft_latest_write": "2023-11-06 10:16:50",
+    "runtime_font_map_sha256": "4daee6e7be713d3c6051335d82bfc8f71da28829c27480684758eb2dae7b6bed",
+    "runtime_font_map_modified": "2026-09-04 20:29:53",
+    "current_worker_exe_sha256": "8b8ac0ebf6deb5b18c1496b4c6d5211165215e973de741fd2c6cb6ea25cfefa5",
+    "rollback_worker_exe_sha256": "092d9fef8a2db57de2c3c44883b01be0daff1a14a3498586fcde21e05478972b",
+    "qualification": "파일 변경 시간과 현재 해시는 과거 시점에 같은 파일이었음을 증명하지 않는다. 이전 원 PR job의 서버 상태 파일은 남아 있지 않았고 두 worker 실행 비교도 하지 않았다. worker 교체나 서버 설정 변경 없이 확인했다."
   }
 }
