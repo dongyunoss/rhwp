@@ -744,5 +744,15 @@
       }
     },
     "interpretation": "22쪽 새 기준은 98.24607%에서 99.90314%로 개선하지만 기존 기준은 100%에서 98.26082%로 1.73918%p 하락하고 새 기준도 100%에 미달한다. 기존 #8188 보존 요구와 충돌하므로 이 허용값은 채택하지 않는다. 현재 래스터 정책의 기존 PDF 1쪽은 99.98260%이며 과거 정책의 100%와 구분한다."
+  },
+  "hancom2024_host_poppy_check": {
+    "date": "2026-10-29",
+    "host_alias": "win10-hwp-convert-2024",
+    "service_observation": "HwpConvert2024Mcp 서비스 Running",
+    "file": "C:\\Program Files (x86)\\Hnc\\Office 2024\\HOffice130\\Shared\\Fonts\\HMEPO.HFT",
+    "sha256": "222fceeeffb111c095a760ee178e7c7aebf8d334cf91706658bccb4e2b1d01d4",
+    "comparison_evidence": "mydocs/pr/assets/issue_8160/poppy-original-widths.json",
+    "method": "SSH 읽기 전용 Get-ChildItem, Get-FileHash와 Get-Service. 파일을 복사하거나 서버 설정을 변경하지 않았다.",
+    "interpretation": "설치본은 원 PR에 기록한 HCI Poppy 원본과 일치한다. MCP 접속 주소는 해당 호스트 주소와 직접 일치하지 않으므로 이 서비스가 해당 변환 job을 실행했는지는 확인하지 못했다. 파일 존재와 서비스 실행만으로 해당 job의 폰트 로딩·선택을 증명하지 않는다."
   }
 }
