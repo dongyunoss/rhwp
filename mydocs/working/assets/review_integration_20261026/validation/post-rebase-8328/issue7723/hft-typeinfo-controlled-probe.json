@@ -62,5 +62,30 @@
     "familyType 및 여러 속성을 함께 바꿨고 어떤 값이 결과를 일으켰는지 분리하지 않았다.",
     "Type3 자원만으로 정확한 글꼴 이름을 증명하지 않는다.",
     "입력과 출력 PDF는 임시 진단 산출물이며 제품 입력·기준 PDF·회귀 검사에 적용하지 않았다."
-  ]
+  ],
+  "original_hwpx_metadata_mutation_probe": {
+    "date": "2026-10-29",
+    "original_input": "samples/hwp3-sample16-hwp5.hwpx",
+    "original_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+    "temporary_input_sha256": "30374a2a728432f2034d733747aa25f449dc9c96586346f3375982481a6175ea",
+    "modified_entries": 7,
+    "modified_members": [
+      "Contents/header.xml"
+    ],
+    "body_section_sha256": "6f73e382bbe81300abd9ca469ccf51fb7418e7cb3f4e740407a23d0cd9fc8189",
+    "change": "HCI Poppy 및 한양신명조 7개 font 항목의 typeInfo만 명조·0에서 고딕·비영 수치로 바꿨다. 입력 변형은 MCP 폰트 선택 진단 전용이다.",
+    "mcp_job_id": "aeb08f55-bdbe-4426-b0c1-3df638a944fa",
+    "engine": "2024",
+    "temporary_pdf_sha256": "806f1f88a331d11d24473cb83f61de037e9b786f249f55322fc4b5144801395b",
+    "pdf_pages": 64,
+    "checked_page": 22,
+    "modified_and_original_current_pdf_raster_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+    "text_line_end": "응용프로",
+    "result": "현재 MCP 출력의 22쪽 PNG가 변형 전 입력의 현재 MCP 출력과 완전히 같다. 이 7개 속성을 이 값으로 바꾸는 것만으로는 문제 쪽의 폰트 자원·줄 구성이 바뀌지 않는다.",
+    "limitations": [
+      "원본 문서를 바꾸지 않았다. 수정본 PDF를 정답으로 사용하지 않는다.",
+      "22쪽만 확인했고 다른 쪽이나 다른 속성 조합의 결과는 주장하지 않는다.",
+      "서버 출력 변화의 원인을 확정하지 않는다."
+    ]
+  }
 }
