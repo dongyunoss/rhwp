@@ -400,5 +400,30 @@
       }
     },
     "conclusion": "공백 설정을 1로 바꾸면 첫 줄에 스위가 넘어가 원래 새 MCP PDF와 달라진다. 원본 설정은 0이므로 설정을 켜서 맞추는 방법은 채택하지 않는다. 이 비교는 HWPX 실험이며 원본 HWP의 다른 차이 전체를 설명하지 않는다."
+  },
+  "converted_hwpx_rhwp_comparison": {
+    "date": "2026-10-29",
+    "input_sha256": "c9a2a833ed060d926d1a52baf48a7a93d30a03fc05e7e8a55caa1fb6d67ccd0d",
+    "input_job_id": "88f636fa-adcf-4d05-ad6f-df5bc9b52046",
+    "pdf_sha256": "a3aaf7497baefe2dc10983f72042fe2ffd03c5f69ec8a712f3011374bd8abca9",
+    "print_job_id": "3b5c6294-5957-4a98-873d-aabef05f815d",
+    "page": 22,
+    "pdf_pages": 64,
+    "metric": "96dpi PDFium, 반경 2px raw",
+    "results": {
+      "base": {
+        "raw_percent": 98.26045,
+        "render_png_sha256": "c14a62f45d16c4d0dc839bd23d5640a878d99c408b2ebb3b007e0712a5a42a99",
+        "pdf_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+        "active_x_px": 236.8
+      },
+      "poppy-paint": {
+        "raw_percent": 94.44641,
+        "render_png_sha256": "7ad3a671b5d7aab386cbaee6775e36f2190396f4f0c38ce0ad11f2de38895e03",
+        "pdf_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+        "active_x_px": 221.8
+      }
+    },
+    "qualification": "변환된 HWPX에서도 미달이 재현됐다. 변환본 HCI Poppy의 글꼴 종류는 TTF이고 원본 HWP의 종류는 HFT이므로 두 환경 설정의 내부 처리까지 동일하다고 보지 않는다. 임시 입력·PDF는 커밋하지 않는다."
   }
 }
