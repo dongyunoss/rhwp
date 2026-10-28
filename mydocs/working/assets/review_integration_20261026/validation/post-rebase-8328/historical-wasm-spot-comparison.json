@@ -88,6 +88,34 @@
       "candidate_percent": 97.55086,
       "candidate_drop_from_historical_pp": 0.45588,
       "candidate_drop_from_old_current_environment_pp": 0.00355
+    },
+    {
+      "key": "endnotes-november",
+      "page": 21,
+      "input_sha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+      "pdf_sha256": "efad255e305326b5b84507481b2158e59941ae2bf4d87dbf97cb5a93b9664a57",
+      "historical_tsv_sha256": "25e63f7a5565d510c8ebe5306caac196efff3730e9dd7c85755a99723504b728",
+      "old_current_environment_tsv_sha256": "4333af234ee33c3f75128ebc977083bc0c5f0a1cc616241b65f1ec13b8639e0a",
+      "candidate_tsv_sha256": "cda3c2fefd7b086139afa511c4c56fb23561b9bc7304194483fd21516a04b3da",
+      "historical_percent": 91.32974,
+      "old_current_environment_percent": 90.84543,
+      "candidate_percent": 90.84255,
+      "candidate_drop_from_historical_pp": 0.48719,
+      "candidate_drop_from_old_current_environment_pp": 0.00288
+    },
+    {
+      "key": "endnotes-september",
+      "page": 20,
+      "input_sha256": "d451ffbc72e8c84433f380c0cbcc8472f23286d53dce4b793a4bbb82f8715108",
+      "pdf_sha256": "748900124e771baf6ce7d90c2ef869b9078b53437c59bc47bdbcc42cba81bb80",
+      "historical_tsv_sha256": "e473e15f2b465cc75f2dc94c86dbf441d4daf5aed6d31e92e920b7406cd6eed7",
+      "old_current_environment_tsv_sha256": "6657b76a91b0d83bee8cd54d577215f9ce0d3c271978f32e4024684413deedb3",
+      "candidate_tsv_sha256": "7ab7db210bb6d761e34b7459c5ccd27bf4c43644818d6d4053cee037f8f2c266",
+      "historical_percent": 96.35945,
+      "old_current_environment_percent": 95.30078,
+      "candidate_percent": 95.32108,
+      "candidate_drop_from_historical_pp": 1.03837,
+      "candidate_drop_from_old_current_environment_pp": -0.0203
     }
   ],
   "native_helper_sha256": "5a8c2ef8a95330e685ab61073cdf149d256f253310fd946005ff63010fe84f2e",
