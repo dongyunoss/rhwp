@@ -13,7 +13,8 @@
 | 항목 | 값 |
 | --- | --- |
 | 원 PR·작성자·base | [#8128](https://github.com/edwardkim/rhwp/pull/8128) / planet6897 / devel |
-| 고정 원 head | `21c40f21c5ee019fdf1ee4e68bdfeed35d3ae26c` |
+| 체리픽 당시 원 head | `21c40f21c5ee019fdf1ee4e68bdfeed35d3ae26c` |
+| 2026-10-29 재조회 원 head | `063763a3a374d32d2b74f031c1603c317334e661`; [head·본문 대조](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-head-body-20261029.json), [리베이스 patch 검토](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md) |
 | 원 PR의 이슈 연결 | 원 PR 자동 닫기 연결 없음; 통합 PR의 자동 닫기로 전환하지 않음 |
 | 원 head CI 참고값 | SUCCESS; 통합 후보 CI와 구분 |
 | 검증한 통합 code/test head | `2e902abacf328bccdd7780606666ac3b1c5c1ce9` |
