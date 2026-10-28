@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): tac_picture_topandbottom_textbox.hwpx와 tac_picture_behindtext_textbox.hwpx는 각각 1쪽 Native·fresh WASM 100.00000%; 전1쪽 최저도 각 100.00000%.
+//! 재열기 검사에서 직접 생성한 문서와 실측 fixture의 배치가 같은지도 검사한다. 그림만 있는 합성 대조군은 별도다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8271-pdf-coordinates.json.
+//!
 //! [#8271] HWPX 로 저장한 뒤 다시 열어도 글자처럼 그림 + 줄 폭 중립 부동 개체 문단의 배치가 같다.
 //!
 //! 결함: HWPX 저장은 편집한 문단의 `linesegarray` 를 뺀다(한/글이 다시 계산하게 하는 설계).
@@ -200,6 +207,42 @@ fn behind_text_float_keeps_tac_picture_line_after_hwpx_reopen() {
         &placement(&core),
         &placement(&reopen_hwpx(&core)),
     );
+}
+
+#[test]
+fn independently_printed_fixtures_keep_picture_frame_after_reopen() {
+    for (wrap, path) in [
+        (
+            "TopAndBottom",
+            "samples/issue8271/tac_picture_topandbottom_textbox.hwpx",
+        ),
+        (
+            "BehindText",
+            "samples/issue8271/tac_picture_behindtext_textbox.hwpx",
+        ),
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
+        let fixture = DocumentCore::from_bytes(&std::fs::read(path).expect("fixture"))
+            .expect("parse fixture");
+        let measured = placement(&fixture);
+        let generated = placement(&reopen_hwpx(&edited(Some(wrap))));
+        assert_same_placement(wrap, &measured, &generated);
+        for (actual, print, name) in [
+            (measured.picture.x, 133.05, "left"),
+            (measured.picture.y, 132.18, "top"),
+            (measured.picture.x + measured.picture.width, 246.43, "right"),
+            (
+                measured.picture.y + measured.picture.height,
+                191.47,
+                "bottom",
+            ),
+        ] {
+            assert!(
+                (actual - print).abs() <= 2.0,
+                "{wrap} {name}: {actual:.2}px, Print {print:.2}px"
+            );
+        }
+    }
 }
 
 /// 대조군: 부동 개체가 없는 글자처럼 그림 문단은 종전에도 같았다.

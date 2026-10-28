@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): tac_rectangle_inline.hwpx와 tac_textbox_inline.hwpx는 각각 1쪽 Native·fresh WASM 100.00000%; 전1쪽 최저도 각 100.00000%.
+//! 실제 fixture와 생성 문서의 도형 배치를 비교한다. 도형이 없는 대조군은 별도의 합성 입력이다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8167-pdf-coordinates.json.
+//!
 //! [#8167] 편집으로 넣은 글자처럼 취급 도형은 자기 줄을 도형 높이만큼 키우고, 줄의 글자는
 //! 그 줄의 기준선(도형 아래 변 쪽)에 놓인다.
 //!
@@ -148,6 +155,31 @@ fn inserted_tac_textbox_grows_its_line_and_sits_on_the_baseline() {
 #[test]
 fn inserted_tac_rectangle_grows_its_line_and_sits_on_the_baseline() {
     check_tac_shape_line("rectangle");
+}
+
+#[test]
+fn inserted_shapes_match_independently_printed_fixture_frames() {
+    for (kind, pdf_x, pdf_y) in [("rectangle", 132.89, 132.02), ("textbox", 136.57, 135.85)] {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("samples/issue8167/tac_{kind}_inline.hwpx"));
+        let fixture = DocumentCore::from_bytes(&std::fs::read(path).expect("fixture"))
+            .expect("parse fixture");
+        let tree = fixture.build_page_render_tree(0).expect("fixture page");
+        let expected_height = SHAPE_H as f64 * 96.0 / 7200.0;
+        let shape = shape_box(&tree.root, expected_height).expect("fixture shape");
+        let generated = edited(Some(kind))
+            .build_page_render_tree(0)
+            .expect("generated page");
+        let inserted = shape_box(&generated.root, expected_height).expect("inserted shape");
+        for (actual, print, name) in [(shape.x, pdf_x, "x"), (shape.y, pdf_y, "y")] {
+            assert!(
+                (actual - print).abs() <= 2.0,
+                "{kind} {name}: {actual:.2}px, Print {print:.2}px"
+            );
+        }
+        assert!((inserted.x - shape.x).abs() <= 2.0, "{kind}: inserted x");
+        assert!((inserted.y - shape.y).abs() <= 2.0, "{kind}: inserted y");
+    }
 }
 
 /// 대조군: 도형이 없으면 host 줄은 글자 높이이고 다음 문단이 바로 이어진다.
