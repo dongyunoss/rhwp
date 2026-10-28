@@ -1002,3 +1002,7 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 ### 2026-10-29 #7723 새 인쇄 차이 추적
 
 - #7723 새 MCP 재출력은 이전 새 MCP 출력과 전 64쪽의 래스터 해시가 같았다. 22쪽에서 차이가 큰 문단 0.446은 원시 레코드에 저장 줄이 없고, 기존 PDF의 영문 실행은 Type3 글꼴, 새 PDF는 Type0 글꼴 자원을 쓴다. 새 PDF와 기존 PDF는 해당 문단 줄 끝도 다르다. HCI Poppy를 Gulim 메트릭으로 일괄 치환하면 다른 줄이 틀어져 채택하지 않았다. 이는 원인 계층을 좁힌 진단이며 100% 해결이 아니다. [재출력 전쪽 비교](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/mcp-repeat-all-page-check.json), [원본 레코드·글꼴·줄 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json).
+
+### 2026-10-29 기존 통합 입력 후속 보정 대조
+
+- 공식 사양서 71쪽과 별도 기존 입력 66건·885쪽을 합친 67건·956쪽에서 후속 보정 전후 Native와 fresh WASM 렌더 PNG가 각 경로에서 모두 동일했다. 입력·PDF SHA도 맞췄다. 같은 기존 PDF 래스터 기준 전쪽 raw 차이는 0이고, 두 경로 모두 90% 미만이 없다. 새 방식의 PDF 래스터를 쓴 직접 측정값과 동일하다는 뜻은 아니다. [Native](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-native-png-comparison.json), [WASM](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-wasm-png-comparison.json), [사양서](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json). 임시 PDF 가져오기 중간본 6건은 파일을 보존하지 않고 생성 출처와 해시를 남겼다. 행정업무편람은 제외했다.
