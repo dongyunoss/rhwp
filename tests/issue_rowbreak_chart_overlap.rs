@@ -122,6 +122,24 @@ fn rowbreak_page11_partial_table_stays_inside_body() {
 }
 
 #[test]
+fn rowbreak_page16_coanchored_table_keeps_print_origin() {
+    let doc = load_doc(SAMPLE);
+    let tree = doc.build_page_render_tree(15).expect("render page 16");
+    let inline = find_table_bbox(&tree.root, 28, 1).expect("inline table");
+    let floating = find_table_bbox(&tree.root, 28, 0).expect("floating table fragment");
+    let body = find_body_bbox(&tree.root).expect("page 16 body");
+    // 독립 한컴 2020 Print: 아래 표의 위끝 약 742px, 앞 표 아래 약 16px.
+    let gap = floating.y - (inline.y + inline.height);
+    assert!(
+        (floating.y - 742.0).abs() <= 2.0,
+        "floating top={}",
+        floating.y
+    );
+    assert!((gap - 16.0).abs() <= 2.0, "table gap={gap}");
+    assert!(floating.y + floating.height <= body.y + body.height + 0.5);
+}
+
+#[test]
 fn rowbreak_page13_following_reference_strip_stays_below_table() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let sample_path = Path::new(repo_root).join(SAMPLE);

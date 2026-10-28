@@ -9731,6 +9731,7 @@ impl LayoutEngine {
                             (self.profile.get().hwpx_stored_layout()
                                 || self.profile.get().hwp5_stored_pagination_layout())
                                 && !self.profile.get().session_edited(),
+                            self.profile.get().hwpx_container(),
                             y_offset - col_area.y,
                             self.dpi,
                         );

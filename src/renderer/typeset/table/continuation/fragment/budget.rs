@@ -1268,8 +1268,23 @@ impl TypesetEngine {
                                 .get(para.para_shape_id as usize)
                                 .map_or(0.0, |style| style.spacing_before.max(0.0))
                     };
+                    // HWPX에서 앞 간격을 복원해 처음 인정하는 앵커는 선언 높이가
+                    // 실제 행 경계를 증언할 때만 사용한다. 부분 행 안에서 끝나는
+                    // 선언은 흐름과 paint를 늘릴 수 있다. HWP5 저장 프레임은
+                    // 제목 행만 남기는 원본 분할도 인증하므로 기존 판정을 유지한다.
+                    let declared_row_boundary = cut_row_h
+                        .iter()
+                        .take(row_count)
+                        .enumerate()
+                        .scan(0.0, |height, (row, row_height)| {
+                            *height += row_height + if row > 0 { cs } else { 0.0 };
+                            Some(*height)
+                        })
+                        .any(|height| (height - frame_height).abs() <= 1.0);
                     (((anchor_px - actual_anchor).abs() <= 0.5
-                        || (anchor_px - host_line_anchor).abs() <= 0.5)
+                        || ((anchor_px - host_line_anchor).abs() <= 0.5
+                            && (st.profile.hwp5_stored_pagination_layout()
+                                || declared_row_boundary)))
                         && flow_bottom_px <= source_first_fragment_flow_bottom + 0.5
                         && placed_frame_fits
                         // 뒤쪽 셀의 변경은 첫 상자의 빈 물리 띠를 지우지 않는다.

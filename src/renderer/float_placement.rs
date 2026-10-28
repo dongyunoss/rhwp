@@ -3847,6 +3847,7 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
     para_index: usize,
     spacing_before: f64,
     stored_layout: bool,
+    hwpx_container: bool,
     flow_from_body_top: f64,
     dpi: f64,
 ) -> f64 {
@@ -3873,14 +3874,15 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
             if !complete {
                 return 0.0;
             }
-            // 이어받은 마지막 표 조각 뒤에 원본 줄이 없거나 구현용 슬롯만 있는 경우에는
-            // 바깥 아래 여백과 다음 문단의 앞 간격을 공유한다는 원본 증거가 없다.
+            // HWPX에 원본 줄이 없거나 HWP에 구현용 슬롯만 있는 경우에는 바깥 아래
+            // 여백과 다음 문단의 앞 간격을 공유한다는 원본 증거가 없다. HWP의 저장 줄
+            // 없는 제목은 별도로 앞 간격을 흡수하는 기존 계약을 유지한다.
             // 그 간격은 조각의 흐름이 이미 소유하므로 추측으로 한 번 더 흡수하지 않는다.
             if *is_continuation
                 && paragraphs
                     .get(para_index.saturating_add(1))
                     .and_then(|next| next.line_segs.first())
-                    .is_none_or(|line| {
+                    .map_or(hwpx_container, |line| {
                         line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                             != 0
                     })
