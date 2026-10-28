@@ -1,7 +1,7 @@
 # 통합 PR 본문 준비안
 
 > 작성 중: 아래 검증 항목이 끝나기 전에는 PR 제출용 본문으로 확정하지 않는다.
-> 원격 push와 PR 생성은 작업지시자의 승인을 받은 뒤 진행한다.
+> 작업지시자는 모든 필수 검증 완료 후 원격 PR과 후속 처리를 승인했다.
 
 ## 제목안
 
@@ -66,3 +66,5 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - Studio TypeScript 검사와 AI 제공자·PDF 배치·CanvasKit 변환 관련 선택 검사 41개가 통과했다.
   [대상과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/studio-targeted-20261029.json).
   이는 전체 Studio 검사나 최신 WASM 브라우저 검사 전체의 대체 결과가 아니다.
+- 최신 WASM을 실제로 받은 격리 브라우저에서 AI 제공자 검사 34개와 2010 시험 PDF의
+  기본·편집 배치 및 페이지 수 확인 6개가 통과했다. [바이트 해시·실행 근거](assets/review_integration_20261026/validation/post-rebase-8328/studio-fresh-browser-20261029.json).
