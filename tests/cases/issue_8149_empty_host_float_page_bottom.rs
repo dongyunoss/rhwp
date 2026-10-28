@@ -1,3 +1,13 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! rowfit-2020.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 33쪽 Native 100.00000% / fresh WASM 100.00000%; 전33쪽 최저 100.00000% / 100.00000%.
+//! reservefit-2020.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 65쪽 Native 100.00000% / fresh WASM 100.00000%; 전65쪽 최저 100.00000% / 100.00000%.
+//! headerrow-2020.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 31쪽 Native 100.00000% / fresh WASM 100.00000%; 전31쪽 최저 100.00000% / 100.00000%.
+//! 한글문서파일형식_5.0_revision1.3.hwp: 20쪽 Native 99.99560% / fresh WASM 99.92004%; 24쪽 Native 99.99751% / fresh WASM 99.99752%; 전71쪽 최저 95.31577% / 95.19516%.
+//! hwpspec.hwp: 23쪽 Native 99.99389% / fresh WASM 99.79148%; 54쪽 Native 99.99765% / fresh WASM 99.99765%; 전178쪽 최저 92.45593% / 92.83271%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 //! #8149 쪽 바닥에서 나뉘는 빈 host 문단 기준 자리차지 표 — 첫 조각에 실리는 행과 다음 쪽 행.
 //!
 //! 독립 기준은 같은 HWP 의 한/글 2020 Print PDF(`pdf/issue8149/*-2020.pdf`)다. 생성기는

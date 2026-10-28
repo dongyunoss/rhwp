@@ -1,3 +1,9 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! rowspan-band-fit.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 9쪽 Native 100.00000% / fresh WASM 100.00000%; 전9쪽 최저 97.84306% / 97.50188%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 //! RowBreak 표에서 앞 행의 병합 칸이 덮는 행이 쪽 끝에 걸릴 때, 그 행의 글줄과 안 여백이
 //! 남은 높이에 다 들어가면 한/글은 그 행을 이 쪽에 남은 높이로 끝내고 다음 쪽은 다음 행에서
 //! 시작한다. 남는 빈 띠의 크기는 조건이 아니다.

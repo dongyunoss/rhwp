@@ -1,3 +1,12 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! cellnotes_plain_N2_L7.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 11쪽 Native 98.43063% / fresh WASM 98.60333%; 전11쪽 최저 98.43063% / 98.60333%.
+//! cellnotes_span_N2.hwpx: 1쪽 Native 96.95701% / fresh WASM 96.92720%; 2쪽 Native 98.80823% / fresh WASM 98.96267%; 전2쪽 최저 96.95701% / 96.92720%.
+//! r110_cellnotes_span_N2.hwpx: 1쪽 Native 96.95701% / fresh WASM 96.92720%; 3쪽 Native 98.16845% / fresh WASM 98.40227%; 전3쪽 최저 96.95701% / 96.92720%.
+//! issue1937_rowbreak_footnote_overpagination.hwp: 35쪽 Native 99.99617% / fresh WASM 99.99621%; 41쪽 Native 99.99919% / fresh WASM 99.99595%; 42쪽 Native 100.00000% / fresh WASM 100.00000%; 전50쪽 최저 97.93136% / 97.80027%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 //! [#7732] 여러 쪽에 걸친 쪽 나눔 표의 칸 각주 — 행을 줄이지 않는다.
 //!
 //! 한/글 2020·2024 Print(합성 `samples/issue1937/gen_cell_notes_multipage.py`, 각주 앵커가 첫 쪽

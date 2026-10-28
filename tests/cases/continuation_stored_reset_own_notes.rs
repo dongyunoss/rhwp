@@ -1,3 +1,11 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! cont_reset_F20_L70_N0.hwp: 2쪽 Native 100.00000% / fresh WASM 100.00000%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 100.00000% / 100.00000%.
+//! cont_reset_F20_L70_N4.hwp: 2쪽 Native 99.99600% / fresh WASM 99.99287%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 99.99600% / 99.99287%.
+//! cont_reset_F20_L70_N6.hwp: 2쪽 Native 100.00000% / fresh WASM 99.99127%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 100.00000% / 99.99127%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 //! 한 문단이 세 쪽에 걸칠 때 둘째 쪽(이어지는 조각)의 저장 쪽 reset — 자기 각주가 있는 경우.
 //!
 //! 입력은 `samples/continuation_reset/gen_continuation_reset.py` 로 만든 HWPX 를 한/글 2020 이

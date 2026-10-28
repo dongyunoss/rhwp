@@ -1,3 +1,15 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! trim_n0_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.
+//! trim_n0_h6630_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.
+//! trim_n0_h6660_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.
+//! trim_n0_l1_big_h6500_F01.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.
+//! trim_n1_F01.hwpx: 1쪽 Native 99.24286% / fresh WASM 99.22884%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 99.24286% / 99.22884%.
+//! trim_n1_F04.hwpx: 1쪽 Native 99.21161% / fresh WASM 99.19721%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 99.21161% / 99.19721%.
+//! issue1937_rowbreak_footnote_overpagination.hwp: 32쪽 Native 99.99238% / fresh WASM 99.99242%; 33쪽 Native 99.95598% / fresh WASM 99.94937%; 44쪽 Native 99.86042% / fresh WASM 99.85697%; 45쪽 Native 99.99757% / fresh WASM 99.98557%; 전50쪽 최저 97.93136% / 97.80027%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 //! [#7732] 쪽 나눔(RowBreak) 표의 쪽 끝 행 — 각주 경계와 빈 잔여.
 //!
 //! 한/글 2020·2024 Print(합성 `samples/issue1937/gen_row_trim.py`, 한 줄 내용에 선언 높이만 큰

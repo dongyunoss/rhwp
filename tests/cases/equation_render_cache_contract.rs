@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! equation-lim.hwp: 1쪽 Native 99.88926% / fresh WASM 100.00000%; 전1쪽 최저 99.88926% / 100.00000%.
+//! 3-11월_실전_통합_2022.hwp: 1쪽 Native 98.71272% / fresh WASM 98.70189%; 21쪽 Native 90.80955% / fresh WASM 90.84255%; 전21쪽 최저 90.80955% / 90.84255%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 #![cfg(not(target_arch = "wasm32"))]
 
 //! 수식 흐름 프레임·paint 조각 캐시와 미주 단 측정 재사용이 편집 뒤 낡은 결과를

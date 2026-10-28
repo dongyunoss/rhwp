@@ -1,3 +1,9 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! caption-negative-offset.hwp: 1쪽 Native 97.67543% / fresh WASM 97.67277%; 전2쪽 최저 97.67543% / 97.67277%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 //! 위 캡션을 단 문단 기준 자리차지 표(빈 호스트, 음수 세로 오프셋)의 저장 프레임.
 //!
 //! 위 캡션 흐름 표의 음수 오프셋은 이미 받은 흐름 원점 앞으로 상자를 올리지 못해 출력에서

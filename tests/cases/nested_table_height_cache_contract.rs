@@ -1,3 +1,9 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! issue2007_nested_cell_pagination_42065.hwp: 1쪽 Native 94.47057% / fresh WASM 94.39749%; 17쪽 Native 98.45890% / fresh WASM 98.06580%; 전17쪽 최저 94.47057% / 94.39749%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//!
 #![cfg(not(target_arch = "wasm32"))]
 
 //! 중첩 표 본체 높이 캐시가 편집 뒤 낡은 높이를 내지 않는다. 먼저 그린 문서의 중첩 표
