@@ -1,3 +1,14 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-24 측정 raw(96dpi, PDFium, source 1f54c3df):
+//! 55쪽 Native 100.00000% / fresh WASM 100.00000%; 63쪽 Native 99.95399% / fresh WASM 99.95399%.
+//! 125쪽 Native 100.00000% / fresh WASM 100.00000%; 143쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 146쪽 Native 100.00000% / fresh WASM 100.00000%; 147쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 148쪽 Native 100.00000% / fresh WASM 100.00000%; 154쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 155쪽 Native 99.98997% / fresh WASM 99.98995%; 168쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 172쪽 Native 100.00000% / fresh WASM 100.00000%.
+//! 전205쪽 최저 Native 98.42761% / fresh WASM 98.42748%.
+//! 근거: mydocs/pr/assets/issue7445/completed-20261009/final-20261024/README.md.
+//!
 //! #7445 지정 댓글의 생물독 원본: 독립 PDF 205쪽 전수 시각 수용 후 복구한 회귀.
 //! C84 Native/fresh WASM 전205쪽96DPI raw 최저97.13499/97.13158%, 미달0.
 //! 원본 셀·문단·그림의 소속, 내용 보존과 상대 배치를 검사하고, 양쪽98% 이상인
