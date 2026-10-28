@@ -734,6 +734,12 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 98.57262%, 후보 98.57264%로 0.1%p 하락이 없다. [정확한 과거 이미지 재현과
 후보 비교](assets/review_integration_20261026/validation/post-rebase-8328/historical-exact-hcr-cell.json)는
 이 한 쪽의 근거이며 나머지 열한 쪽의 과거 조건 재현까지 의미하지 않는다.
+미주 PDF의 한컴바탕 윤곽은 9월 문서에서 대응 가능한 271개, 11월 문서에서 324개가
+서버 원본과 같았다(9월 유니코드 하나는 원본에서 찾지 못함). 한컴돋움은 각각
+25·27개 윤곽이 달랐지만 대상 쪽의 추출 텍스트에는 그 글자가 없었다.
+한컴바탕·돋움을 명시 공급한 과거 WASM 9월 20쪽은 95.32996%로 과거 96.35945%를
+재현하지 못했다. [PDF 윤곽·글꼴 공급 진단](assets/review_integration_20261026/validation/post-rebase-8328/endnotes-hancom-font-diagnostic.json)은
+추출되지 않은 표시에 대한 판정이나 원인 확정이 아니다.
 미달이 있는 중첩 표·온세미로 HWP·뉴스레터·9월 미주 문서의 기존과 현재
 명시적 글꼴 공급 목록은 각각 51개 파일의 해시와 순서가 모두 같다.
 [글꼴 공급 비교](assets/review_integration_20261026/validation/post-rebase-8328/wasm-font-supply-comparison.json)는

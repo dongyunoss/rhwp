@@ -1,0 +1,62 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "note": "PDF 글꼴 일부가 일치하고 선택 쪽 텍스트 추출과 공급 진단이 있었다는 사실만 기록한다. 선택 쪽의 비텍스트·다른 글리프나 과거 환경 전체를 대표하지 않는다.",
+  "documents": [
+    {
+      "key": "endnotes-september",
+      "page": 20,
+      "pdf": "pdf/3-09월_교육_통합_2022-hwp-2020.pdf",
+      "pdf_sha256": "748900124e771baf6ce7d90c2ef869b9078b53437c59bc47bdbcc42cba81bb80",
+      "batang": {
+        "pdf_font_object": 29,
+        "unicode_checked": 272,
+        "equal_outlines": 271,
+        "different_outlines": 0,
+        "missing_unicode": 1
+      },
+      "dotum": {
+        "pdf_font_object": 31,
+        "unicode_checked": 248,
+        "equal_outlines": 223,
+        "different_outlines": 25,
+        "missing_unicode": 0,
+        "page_text_chars": 0,
+        "different_chars_in_page_text": 0
+      }
+    },
+    {
+      "key": "endnotes-november",
+      "page": 21,
+      "pdf": "pdf/3-11월_실전_통합_2022-hwp-2020.pdf",
+      "pdf_sha256": "efad255e305326b5b84507481b2158e59941ae2bf4d87dbf97cb5a93b9664a57",
+      "batang": {
+        "pdf_font_object": 24,
+        "unicode_checked": 324,
+        "equal_outlines": 324,
+        "different_outlines": 0,
+        "missing_unicode": 0
+      },
+      "dotum": {
+        "pdf_font_object": 22,
+        "unicode_checked": 248,
+        "equal_outlines": 221,
+        "different_outlines": 27,
+        "missing_unicode": 0,
+        "page_text_chars": 5,
+        "different_chars_in_page_text": 0
+      }
+    }
+  ],
+  "local_batang_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+  "local_dotum_sha256": "2989f37963a66f865ff9875bb5da668593dd297da03a0d6a727d8da3c093eb8b",
+  "september_explicit_supply": {
+    "past_wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+    "manifest_sha256": "eb2e25714e315fab10e355a1c4a46dedaff0780a19d4740583d468357fc3b649",
+    "tsv_sha256": "3e2e5ac5bbaaf167698acf6880072d102701edc9fc7f6ab76daab0585195dc77",
+    "png_sha256": "55981389773c6bcb7738dabd03868d0b2768fe0c90421ce3e0e7a5255fa7a98d",
+    "historical_png_sha256": "4dc385cd6aaeeb8f652ec32bd67d941885faeed47ae489e5ab36c7d1b789be58",
+    "historical_raw_percent": 96.35945,
+    "past_wasm_normal_supply_raw_percent": 95.30078,
+    "past_wasm_explicit_supply_raw_percent": 95.32996
+  }
+}
