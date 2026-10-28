@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-28",
+  "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+  "pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "wasm_sha256": "7b9684d74a850c6925ec981a2cf005d86e50fe166b21bf71669ce2fdfc9ebbb4",
+  "comparison": "동일 독립 PDF의 이전 래스터를 고정하고 보정 전후 raw를 전쪽 비교. 현재 PDF 래스터 값도 병기한다.",
+  "dpi": 96,
+  "radius_px": 2,
+  "results": {
+    "native": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/native.tsv",
+      "sha256": "c6f27824cd16c59d4c1d5a70ae07d1cd72d0a717392d6fe4d12041ef2192b459",
+      "pages": 71,
+      "same": 71,
+      "drop_ge_0_1_pp": 0,
+      "minimum_same_pdf_raster": 95.31577,
+      "minimum_new_pdf_raster": 95.41724,
+      "current_pdf_raster_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "baseline_evidence": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json"
+    },
+    "wasm": {
+      "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/wasm.tsv",
+      "sha256": "6b6485ccad03a0640fee1895f894086f36fae69ea72fbd13827efb340f87ef05",
+      "pages": 71,
+      "same": 71,
+      "drop_ge_0_1_pp": 0,
+      "minimum_same_pdf_raster": 95.19516,
+      "minimum_new_pdf_raster": 95.46282,
+      "current_pdf_raster_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "baseline_evidence": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json"
+    }
+  }
+}
