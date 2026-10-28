@@ -16,7 +16,7 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 
 대상: #8115, #8128, #8133, #8142, #8184, #8202, #8205, #8206, #8209,
 #8210, #8213, #8215, #8217, #8219, #8221, #8227, #8229, #8237, #8265,
-#8283. 원 head와 적용 순서는 [체리픽 원장](assets/review_integration_20261026/cherry_pick_ledger.json)에 기록한다.
+#8283. 원 head와 최초 적용은 [기존 체리픽 원장](assets/review_integration_20261026/cherry_pick_ledger.json), 리베이스 후 현재 적용 SHA는 [대응 원장](assets/review_integration_20261026/cherry_pick_current_ledger_20261028.json)에 기록한다.
 #8268과 #8161은 이 통합 대상이 아니다.
 
 ## 제출 전 검증 기록 — 미완료
