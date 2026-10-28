@@ -60,3 +60,6 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - #8319 보존 대상 197개 입력·256쪽은 Native와 fresh WASM 렌더 PNG가 후속 보정 전과 각 경로에서 전쪽 동일했다. 기존 PDF 래스터 기준 최저는 Native 93.22230% / WASM 93.61735%이며, 0.1%p 이상 하락과 90% 미만이 없다. 새 PDF 래스터의 직접 측정과 구분한다. [Native 전쪽](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-native-same-raster-comparison.json), [WASM 전쪽](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-wasm-same-raster-comparison.json).
 
 - 시스템 글꼴 디렉터리를 가리고 Fontconfig 검색 결과를 0개로 제한한 Linux 격리 환경에서 이 브랜치의 회귀 파일 26개를 선택 실행해 110개 모두 통과했다. 저장소에 포함된 글꼴은 검사 자원으로 사용할 수 있으며, Windows·macOS나 전체 회귀의 대리 결과는 아니다. [파일별 검사와 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/fontless-branch-regression.json).
+- 2026-10-29 Rust 형식 검사, Native·WASM·workspace 전체 대상 Clippy, workspace 빌드,
+  테스트 모음과 단위 테스트 정책 검사가 통과했다. 전체 회귀는 지시에 따라 재실행하지 않았다.
+  [명령과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr-local-rust-gates-20261029.json).
