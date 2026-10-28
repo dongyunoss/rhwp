@@ -86,3 +86,9 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR이 제시한 입력과 쪽별 근거
+
+원 PR이 제시한 온새미로 HWP와 2020 PDF는 기여자 고정 커밋과 Git blob이 같다. 후속 표 보정 뒤 **같은 PDF**로 11쪽을 직접 재측정한 실루엣은 Native 96.14455% / fresh WASM 95.77960%이고 두 경로의 쪽수는 46쪽이다. 이 실행은 11쪽만 측정했으므로 전쪽 시각 gate 판정은 아니다. 원 PR의 [Native 11쪽 이미지](../assets/issue_8208/온새미로_p11_native_review.png)와 [WASM 11쪽 이미지](../assets/issue_8208/온새미로_p11_wasm_review.png)는 기여자 고정 커밋의 원본 blob과 일치한다.
+
+기존 통합 검증에는 별도 재출력한 PDF가 사용됐다. 두 PDF의 11쪽 래스터는 서로 달라 이 수치를 원 PR PDF의 점수로 대체하지 않는다. 원 PR의 나머지 두 입력은 동일한 HWP와 PDF로 확인했고, 기존 래스터 기준 3-11월 21쪽은 Native 90.80955% / WASM 90.84255%, 3-09월 20쪽은 95.06161% / 95.32108%다. 후속 보정 전후 렌더 PNG는 각각 같다. [입력·PDF·쪽별 수치와 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8210-claimed-page11.json). 편람은 검토 범위에서 제외한다.
