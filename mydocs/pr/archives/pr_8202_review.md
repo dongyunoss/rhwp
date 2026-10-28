@@ -1,6 +1,6 @@
 # PR #8202 리뷰 — 글자처럼 도형의 줄 상자
 
-> **2026-10-28 통합 후보 검증:** 이전 전체 회귀는 완료됐고 변경 검사와 Native·fresh WASM 비교 결과를 추가했다. 아래 과거 결과는 각 측정 당시 head의 기록이다. 한국어 가정통신문 2쪽의 0.1%p 초과 하락 및 일부 측정 근거는 미해결이므로 통합 후보의 최종 통과로 해석하지 않는다. 현재 상태는 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
+> **2026-10-29 통합 후보 검증:** 아래 과거 결과는 각 측정 당시 head의 기록이다. 한국어 가정통신문은 과거와 같은 글꼴·PDF 래스터 조건에서 Native 두 쪽의 렌더 PNG와 점수가 이전과 동일하다. 현재 시스템 글꼴 조건과 fresh WASM은 이 재현 결과와 구분한다. [동일 조건 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/newsletter-historical-font-recovery.json). 통합 최종 판정과 남은 조건은 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
 
 ## 최종 판정
 
