@@ -37,6 +37,8 @@ fidelity와 editable을 명시적으로 구분한다. editable에서는 실제 �
 
 편집 가능 모드의 2010 PDF 7쪽에서 「결국르포르는…」 첫 글줄 위치를 독립 PDF 좌표 x=603.98px, y=388.54px와 각각 ±2px로 비교하는 고정형 검사를 추가했다. 이전에 측정한 편집 전 7쪽 일치율은 Native 99.82145% / fresh WASM 99.77620%다. 편집 후 문단의 관계 검사는 그대로 유지한다. 해당 파일의 검사 4개가 통과했으며 [좌표 근거](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json>)와 [검사 실행](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf-editable-coordinate-test.json>)을 기록한다.
 
+같은 시험의 편집을 HWP로 저장·재열기한 별도 입력은 편집 문장이 있는 4쪽 Native 65.17416% / fresh WASM 64.97946%, 전16쪽 최저 1.58239% / 1.63218%다. 한컴 2020 Print 5쪽과 비교할 때 재열기 출력은 내용과 쪽 배치가 크게 다르다. 이 수치는 메모리 내 편집 관계 검사의 직접 측정이 아니며, 저장·재열기 경로 차이는 미해결이다. [독립 Print와 전쪽 측정](<../../../mydocs/pr/assets/pr8227-editable-after-save/evidence.json>).
+
 이 PR에 별도 단독 보정은 추가하지 않았다. 누적 통합에 필요한 컴파일 호환 보정과 다른 PR의 공통 경로 보정은 통합 후보에 포함된다.
 
 ## 검증 입력과 결과

@@ -3,6 +3,8 @@
 //! 21_언어_기출_편집가능본-2020.pdf 7쪽 99.58789% / 99.18794%; 전15쪽 최저 99.13134% / 98.69133%.
 //! 21_언어_기출_편집가능본.pdf 7쪽 99.77787% / 99.73748%; 전15쪽 최저 98.51800% / 98.44191%.
 //! 수치 쌍은 Native / fresh WASM이며 당시 head의 편집 전 가져오기 결과다. 편집 후 결과는 별도 문서다.
+//! 2026-10-28 같은 편집을 HWP로 저장·재열기한 입력 raw(96dpi, PDFium): 4쪽 Native 65.17416% / fresh WASM 64.97946%; 전16쪽 최저 1.58239% / 1.63218%.
+//! 편집 저장본 근거: mydocs/pr/assets/pr8227-editable-after-save/evidence.json. 메모리 편집의 직접 측정은 아니다.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/visual-validation.json.
 //! 2010 PDF 7쪽 좌표 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json.
 //!

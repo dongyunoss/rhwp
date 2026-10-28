@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-28",
+  "source_pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+  "source_pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+  "edit": "PDF editable 가져오기 후 \"싱어는위와같은롤스의시도를\" 문단 처음에 IR: 삽입, HWP 직렬화 및 재열기",
+  "edited_hwp_sha256": "ee52362ed174deddff7fd9c80c2861100402b39a3d7f188b7d2709ef2b64b670",
+  "independent_pdf": "pdf/pr8227-editable-import-edited-2020.pdf",
+  "independent_pdf_sha256": "95709baa066aaf9547e1e2d1f3eef99d8bf5b661b025ef68c2ea03b760451bcc",
+  "mcp_job_id": "1b19ab8f-0140-4442-bc32-cabd2ceaaf37",
+  "print": "Hancom 2020 MCP PrintToPDFEx method 0; A3",
+  "page_count": 16,
+  "edited_page": 4,
+  "method": "96dpi PDFium vs native-skia / fresh WASM canvas; silhouette raw radius 2px",
+  "native_binary_sha256": "2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0",
+  "wasm_sha256": "05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7",
+  "results": {
+    "native": {
+      "edited_page_4_percent": 65.17416,
+      "minimum_page": 5,
+      "minimum_percent": 1.58239,
+      "tsv": "mydocs/pr/assets/pr8227-editable-after-save/native.tsv"
+    },
+    "wasm": {
+      "edited_page_4_percent": 64.97946,
+      "minimum_page": 5,
+      "minimum_percent": 1.63218,
+      "tsv": "mydocs/pr/assets/pr8227-editable-after-save/wasm.tsv"
+    }
+  },
+  "scope": "메모리 내 편집 비교와는 별도로 동일 편집을 HWP로 저장·재열기해 측정했다. 편집된 문장이 HWP와 독립 Print 4쪽에 존재함을 확인했다. 이 수치를 메모리 편집의 직접 측정으로 쓰지 않는다."
+}
