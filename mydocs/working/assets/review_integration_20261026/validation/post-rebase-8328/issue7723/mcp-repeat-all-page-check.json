@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-28",
+  "date": "2026-10-29",
   "purpose": "동일 원본을 2024 MCP에서 두 차례 Print한 PDF의 64쪽을 같은 PDFium 설정으로 대조",
   "input": "samples/hwp3-sample16-hwp5-2010.hwp",
   "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
