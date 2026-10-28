@@ -753,6 +753,7 @@
     "sha256": "222fceeeffb111c095a760ee178e7c7aebf8d334cf91706658bccb4e2b1d01d4",
     "comparison_evidence": "mydocs/pr/assets/issue_8160/poppy-original-widths.json",
     "method": "SSH 읽기 전용 Get-ChildItem, Get-FileHash와 Get-Service. 파일을 복사하거나 서버 설정을 변경하지 않았다.",
-    "interpretation": "설치본은 원 PR에 기록한 HCI Poppy 원본과 일치한다. MCP 접속 주소는 해당 호스트 주소와 직접 일치하지 않으므로 이 서비스가 해당 변환 job을 실행했는지는 확인하지 못했다. 파일 존재와 서비스 실행만으로 해당 job의 폰트 로딩·선택을 증명하지 않는다."
+    "interpretation": "서비스 데이터에서 해당 job 식별자가 확인되고 설치본은 원 PR에 기록한 HCI Poppy 원본과 일치한다. 다만 파일 존재와 job 기록만으로 해당 worker가 그 글꼴을 실제 선택했는지 증명하지 않는다.",
+    "job_id_search": "서비스 데이터 디렉터리의 로그·JSON·텍스트 파일에서 #7723 MCP job 식별자가 포함된 파일 1개를 찾았다. 내용은 출력하지 않았다."
   }
 }
