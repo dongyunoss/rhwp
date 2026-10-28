@@ -35,6 +35,8 @@
 
 보호 검사: [hwpx_bindata_save_passthrough.rs](<../../../tests/cases/hwpx_bindata_save_passthrough.rs>), [hwpx_precompressed_entry.rs](<../../../tests/cases/hwpx_precompressed_entry.rs>). 전체 nextest 또는 해당 Native/Studio 실행의 실제 결과에 포함된다.
 
+원 PR의 합성 ZIP 바이트 동등성 검사는 독립된 파일로 유지한다. 2026-10-28 두 파일의 검사 4개를 현재 suite에서 다시 실행해 모두 통과했다. 합성 ZIP 검사는 실제 문서·쪽이 없어 시각 수치를 적용하지 않는다. [실행 근거](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8217-restored-tests.json>).
+
 이 PR에 별도 단독 보정은 추가하지 않았다. 누적 통합에 필요한 컴파일 호환 보정과 다른 PR의 공통 경로 보정은 통합 후보에 포함된다.
 
 성능 판정은 반복 판정의 이동·캐시 무효화·저장 바이트와 출력 무회귀에 한정한다. 기여자의 장비별 가속률이나 비공개 편람의 수치를 재현했다고 주장하지 않는다.
