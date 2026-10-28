@@ -263,5 +263,16 @@
     "resaved_paragraph": 446,
     "resaved_line_segment_records": 0,
     "scope": "한컴 2024 HWP 재저장본을 원시 레코드로 확인했다. 저장된 줄이 없어 인쇄 시 조판 줄 구성을 이 자료만으로 추출할 수 없다. 임시 저장본은 근거 파일로 커밋하지 않는다."
+  },
+  "hancom_2024_hwpx_probe": {
+    "date": "2026-10-29",
+    "job_id": "88f636fa-adcf-4d05-ad6f-df5bc9b52046",
+    "result_sha256": "c9a2a833ed060d926d1a52baf48a7a93d30a03fc05e7e8a55caa1fb6d67ccd0d",
+    "result_bytes": 3067100,
+    "section": "Contents/section0.xml",
+    "paragraph_global_index_including_nested": 700,
+    "text_characters": 196,
+    "line_segments": 0,
+    "scope": "한컴 HWPX 변환본도 해당 문단에 lineseg가 없어 인쇄 쪽의 줄 배치를 직접 복원할 수 없다. 임시 변환본은 커밋하지 않는다."
   }
 }
