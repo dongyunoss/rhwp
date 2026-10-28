@@ -18,5 +18,22 @@
   "native_page_sha256": "1df43e6c551daa2f6b5ea15df3746e230d4dc576b678052d28dc021bca00ec71",
   "print_page_sha256": "e48a30eeecc605355cb3dc66712ef7491f7baf29787781704692c82b5dc2ee79",
   "wasm_status": "Canvas 그림 decode 실패; raw not measured",
-  "interpretation": "직접 비교에서 PDF 첫 쪽에 Native 출력의 그림들이 빠져 있다. 연결 자원 공급 차이 가능성은 조사 중이며 원인을 확정하지 않는다. PDF 적합성과 전쪽 최소값 미확인; PR 시각 통과 근거로 사용하지 않는다."
+  "interpretation": "HWP3에는 D:\\\\Work\\\\Gwjang\\\\temp\\\\images 아래의 외부 그림 3개가 연결돼 있고 같은 파일명의 후보가 로컬 samples에 있다. MCP 입력은 HWP만 전송했으며 Print 1쪽에는 해당 그림이 없다. 원격 자원 접근 여부는 직접 확인되지 않았으므로 원인은 확정하지 않는다. PDF 적합성과 전쪽 최소값 미확인; PR 시각 기준으로 사용하지 않는다.",
+  "source_linked_pictures": [
+    {
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\oracle.gif",
+      "local_candidate": "samples/oracle.gif",
+      "local_candidate_sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+    },
+    {
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\rdb02.gif",
+      "local_candidate": "samples/rdb02.gif",
+      "local_candidate_sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+    },
+    {
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\s1.jpg",
+      "local_candidate": "samples/s1.jpg",
+      "local_candidate_sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+    }
+  ]
 }
