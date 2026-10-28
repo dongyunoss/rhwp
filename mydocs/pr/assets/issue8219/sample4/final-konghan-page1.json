@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-29",
+  "scope": "sample4 1쪽만 확인; 36쪽 전체를 새 글꼴로 다시 측정한 결과가 아니다",
+  "input": "samples/hwp3-sample4.hwp",
+  "input_sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+  "pdf": "pdf/hwp3-sample4-2020.pdf",
+  "pdf_sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60",
+  "dpi": 96,
+  "comparison_profile": "print",
+  "compat": "2022",
+  "new_font": {
+    "family": "중간공한 / Konghan Normal",
+    "sha256": "adb0346c72368434530c38348d9dcf05a989d755f9a1e698463724f0ee34dbf9",
+    "availability": "사용자 설치 글꼴; 저장소에 글꼴 바이트를 포함하지 않음"
+  },
+  "previous_evidence": "mydocs/pr/assets/issue8219/sample4/evidence.json",
+  "previous_evidence_sha256": "4479087e90e11b572157de38925960eccdd37cdf079acefcd0c663ebc9bd68a3",
+  "results": {
+    "native": {
+      "page": 1,
+      "previous_raw_percent": 64.32418,
+      "after_raw_percent": 66.60007,
+      "new_minus_old_pp": 2.27589,
+      "previous_and_current_pdf_raster_sha256": "3111babab0e7ff8a36e4eb694b30f9a37a5cd9c3a0d68a5010d6e14a8877a2f7",
+      "before_after_code_png_sha256": "bc3588cb99a88cff28e324fa7b8b26219d8c7fb930159ab82cdb3fe4e15a4ad3",
+      "before_after_code_png_identical": true,
+      "visual_sweep_exit_code": 1,
+      "exit_reason": "1쪽 90% 미만",
+      "new_run_manifest_sha256": "891a0821847b7f14ab163a008e2c93e5c4d98d72f3e99748e33a6646286f18de",
+      "previous_code_new_font_manifest_sha256": "aeb32ceafebe8113a9e821e59172ab4706349816cd7d1f8c896ba539a53ce4e1"
+    },
+    "wasm": {
+      "page": 1,
+      "previous_raw_percent": 64.81033,
+      "after_raw_percent": 66.44902,
+      "new_minus_old_pp": 1.63869,
+      "previous_and_current_pdf_raster_sha256": "3111babab0e7ff8a36e4eb694b30f9a37a5cd9c3a0d68a5010d6e14a8877a2f7",
+      "before_after_code_png_sha256": "183e5b70a62cf53e36ffce29ee5949cb5cf263f7657c3cdd55f15359b59f6619",
+      "before_after_code_png_identical": true,
+      "visual_sweep_exit_code": 1,
+      "exit_reason": "1쪽 90% 미만",
+      "new_run_manifest_sha256": "0c3947a4210040a2a5d52a4678a9d8a69b03ed69f2a47a663b38f2e74c1a9897",
+      "previous_code_new_font_manifest_sha256": "64a1c19a77f88df0ebd9d597725277e2637c62e020d21729bce37ca3c9ac17ab",
+      "font_loaded_sha256": "adb0346c72368434530c38348d9dcf05a989d755f9a1e698463724f0ee34dbf9"
+    }
+  },
+  "qualification": "두 글꼴 환경에서 같은 PDF 래스터를 사용했다. 보정 전후 바이너리끼리는 새 환경에서 PNG가 같았다. 이전 환경과 글꼴 공급 조건이 다르므로 차이의 유일한 원인을 단정하지 않는다. WASM 새 실행에는 해당 글꼴 경로를 명시했다. 1쪽은 양쪽 모두 90% 미만이며 사용자 결정에 따라 별도 보정하지 않는다."
+}

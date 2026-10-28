@@ -1014,3 +1014,7 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 - #7723 공백 설정 통제 인쇄에서는 변환 HWPX의 charPr 55 `useFontSpace`만 0에서 1로 바꾸면 문제 문단의 첫 줄이 원래 인쇄 결과보다 길어졌다. 원본 속성은 0이므로 임의 변경하지 않는다. [인쇄 대조와 원본 글꼴 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json).
 
 - 회귀 근거 정리 시작점 이후 변경된 Rust 검사 26개 파일을 다시 대조했다. 첫 줄의 유형과 합성 ZIP 검사 외 날짜·raw 96dpi·Native/WASM·전쪽 최저 표기, 첫 주석의 정식 근거 29개 경로의 존재와 Git 추적을 확인했다. 이 기계 검사는 수치의 의미나 98% 기준의 적합성을 대신 판정하지 않는다. [파일별 주석·해시 목록](assets/review_integration_20261026/validation/post-rebase-8328/regression-26-header-inventory.json).
+
+## 2026-10-29 중간공한 설치 후 1쪽 확인
+
+최종 중간공한 설치 뒤 sample4 1쪽만 같은 독립 PDF 래스터로 측정했다. Native 64.32418% → 66.60007%, WASM 64.81033% → 66.44902%다. 새 글꼴 환경에서 후속 표 보정 전후 PNG는 양 경로 모두 같다. WASM은 새 글꼴을 명시 공급해 해당 글꼴 SHA의 실제 로드를 확인했다. 양쪽 모두 90% 미만이며 글꼴 공급 조건이 달라 결과 차이의 유일한 원인을 단정하지 않는다. 사용자 결정에 따라 이 쪽을 추가 보정하지 않고, 다른 35쪽은 이 실험으로 재측정하지 않았다. [1쪽 측정·해시](<../pr/assets/issue8219/sample4/final-konghan-page1.json>).
