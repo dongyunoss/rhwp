@@ -31,6 +31,13 @@
           "pages": 64,
           "raw100": 64,
           "min_raw": 100.0
+        },
+        "native_current_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwpx-native_current_pdf_raster.tsv",
+          "sha256": "f6fa9bcc0b59514a6d5c1931399d7170f35b96ca503ade7377072e4f592504e7",
+          "pages": 64,
+          "raw100": 61,
+          "min_raw": 99.98
         }
       },
       "prior_pdf_raster_policy": "pdfium_smooth_rgb_v1",
@@ -449,6 +456,13 @@
           "pages": 64,
           "raw100": 64,
           "min_raw": 100.0
+        },
+        "native_current_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2024-native_current_pdf_raster.tsv",
+          "sha256": "f6fa9bcc0b59514a6d5c1931399d7170f35b96ca503ade7377072e4f592504e7",
+          "pages": 64,
+          "raw100": 61,
+          "min_raw": 99.98
         }
       },
       "prior_pdf_raster_policy": "pdfium_smooth_rgb_v1",
@@ -867,6 +881,13 @@
           "pages": 64,
           "raw100": 64,
           "min_raw": 100.0
+        },
+        "native_current_pdf_raster": {
+          "tsv": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/hwp2022-native_current_pdf_raster.tsv",
+          "sha256": "8a1c47e04532a2d40e2bc9eeff7668e1f1ceb0e1efc9cdb587540702973ca7f8",
+          "pages": 64,
+          "raw100": 63,
+          "min_raw": 99.98
         }
       },
       "prior_pdf_raster_policy": "pdfium_smooth_rgb_v1",
