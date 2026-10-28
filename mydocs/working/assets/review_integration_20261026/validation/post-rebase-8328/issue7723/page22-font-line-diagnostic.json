@@ -791,5 +791,17 @@
     "registration": "session 0에서 private font map의 대상 글꼴을 AddFontResourceEx로 등록한다.",
     "visibility": "InspectFontVisibility는 GDI EnumFontFamiliesEx로 한컴바탕과 한컴돋움 두 계열을 확인하고, 별도 자식 프로세스도 동일한 표시 여부를 확인한다.",
     "conclusion": "font_scope verified는 한컴바탕·한컴돋움의 해당 가시성 검증을 의미하며 문서별 HCI Poppy HFT의 실제 선택이나 포함을 증명하지 않는다. 현재 Poppy 출력이 대체된 직접 원인을 확정하지 않는다."
+  },
+  "mcp_worker_history_comparison": {
+    "date": "2026-10-29",
+    "host": "win10-hwp-convert-2024",
+    "prior_snapshot": "rollback-observer-handoff-20261027-233322-6bad159c",
+    "prior_worker_sha256": "4f7c751d113a2a89ce75a3e6dce6931d88689bb4614b4027ffe9d0b4f3499c25",
+    "current_worker_sha256": "ae6381676e64b8feae103729f45788677cfbc4e45e20ade128887328f473a2a4",
+    "prior_runner_sha256": "b2c22c761d7f07542a894c5657586d189c8776eddaa4255e1031a2a2d14dadda",
+    "current_runner_sha256": "6e711630e37ad7d0252462f61dc0a759796dc0dd790ced5d844ec740402f4090",
+    "method": "현재 서비스와 2026-10-27 배포 전 롤백 보존본의 worker 및 runner 소스를 읽기 전용으로 가져와 diff했다. 서버 설정·실행 파일은 바꾸지 않았다.",
+    "observed_changes": "worker 변경은 열기/인쇄 대화상자 감시 분리와 문서 열기 종료 인계 대기, runner 변경은 감시 프로세스 종료·인계 마커와 인쇄 감시다. 비교한 두 소스 diff에 글꼴 선택 로직의 직접 변경은 없다.",
+    "qualification": "이 보존본이 #8188 job에서 실제 실행된 정확한 바이너리라는 사실은 확인하지 못했다. 감시 순서가 HFT 로딩에 영향을 주는지도 실험하지 않았으므로 출력 변화의 원인으로 단정하지 않는다."
   }
 }
