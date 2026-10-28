@@ -1,4 +1,4 @@
-//! 검사 유형: 관계형.
+//! 검사 유형: 관계형·고정형.
 //! 2026-10-28 측정 raw(96dpi, PDFium):
 //! trim_n0_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.
 //! trim_n0_h6630_F02.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 전2쪽 최저 100.00000% / 100.00000%.
@@ -9,6 +9,8 @@
 //! issue1937_rowbreak_footnote_overpagination.hwp: 32쪽 Native 99.99238% / fresh WASM 99.99242%; 33쪽 Native 99.95598% / fresh WASM 99.94937%; 44쪽 Native 99.86042% / fresh WASM 99.85697%; 45쪽 Native 99.99757% / fresh WASM 99.98557%; 전50쪽 최저 97.93136% / 97.80027%.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 2쪽 이어지는 표 경계의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/trim-continuation-pdf-boundaries.json.
+//! 실물 32·33쪽 표 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue1937-table-pdf-coordinates.json.
 //!
 //! [#7732] 쪽 나눔(RowBreak) 표의 쪽 끝 행 — 각주 경계와 빈 잔여.
 //!
@@ -46,6 +48,11 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use serde_json::Value;
+
+fn core(sample: &str) -> DocumentCore {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
+    DocumentCore::from_bytes(&std::fs::read(path).expect("read")).expect("parse")
+}
 
 /// 문서의 첫 쪽 나눔 표 조각들: (쪽, 시작 행, 끝 행, 시작 컷 있음, 끝 컷 있음).
 fn fragments(sample: &str, para: Option<u64>) -> Vec<(usize, u64, u64, bool, bool)> {
@@ -128,6 +135,39 @@ fn rowbreak_table_without_own_notes_fills_to_known_footnote_boundary() {
 }
 
 #[test]
+fn continuation_frames_keep_independent_print_boundaries() {
+    fn table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(_)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(table)
+    }
+    for (sample, print_bottom) in [
+        ("samples/issue1937/trim_n0_F02.hwpx", 334.03),
+        ("samples/issue1937/trim_n0_h6630_F02.hwpx", 447.51),
+        ("samples/issue1937/trim_n0_h6660_F02.hwpx", 468.93),
+        ("samples/issue1937/trim_n0_l1_big_h6500_F01.hwpx", 460.30),
+        ("samples/issue1937/trim_n1_F01.hwpx", 356.73),
+        ("samples/issue1937/trim_n1_F04.hwpx", 413.95),
+    ] {
+        let tree = core(sample)
+            .build_page_render_tree(1)
+            .expect("독립 Print 2쪽");
+        let frame = table(&tree.root).expect("이어지는 표 조각");
+        let top = frame.bbox.y;
+        let bottom = top + frame.bbox.height;
+        assert!(
+            (top - 94.30).abs() <= 2.0,
+            "{sample}: 독립 Print 표 윗변 {top:.2}px"
+        );
+        assert!(
+            (bottom - print_bottom).abs() <= 2.0,
+            "{sample}: 독립 Print 표 아랫변 {bottom:.2}px, 기준 {print_bottom:.2}px"
+        );
+    }
+}
+
+#[test]
 fn issue1937_page32_table_keeps_trimmed_row_four_and_page33_starts_at_row_five() {
     let frags = fragments(
         "samples/issue1937_rowbreak_footnote_overpagination.hwp",
@@ -146,6 +186,28 @@ fn issue1937_page32_table_keeps_trimmed_row_four_and_page33_starts_at_row_five()
         (5, false),
         "33쪽은 행 5 부터(행 4 의 빈 잔여 9.1px 는 이어받지 않음) — {frags:?}"
     );
+}
+
+#[test]
+fn issue1937_table_fragment_origins_match_independent_print() {
+    fn table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(t) if t.para_index == Some(300)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(table)
+    }
+    let core = core("samples/issue1937_rowbreak_footnote_overpagination.hwp");
+    for (page, print_top) in [(31, 463.65), (32, 117.15)] {
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("독립 Print 대응 쪽");
+        let top = table(&tree.root).expect("원본 표 조각").bbox.y;
+        assert!(
+            (top - print_top).abs() <= 2.0,
+            "{}쪽 표 윗변 {top:.2}px, 독립 Print {print_top:.2}px",
+            page + 1
+        );
+    }
 }
 
 fn text(node: &RenderNode) -> String {

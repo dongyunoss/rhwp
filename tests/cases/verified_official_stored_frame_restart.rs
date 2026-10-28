@@ -1,3 +1,12 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! pr8036-seoul-official.hwpx: 11쪽 Native 99.99015% / fresh WASM 99.96975%;
+//! 12쪽 Native 98.07866% / fresh WASM 98.10975%; 전13쪽 최저 95.97864% / 96.05079%.
+//! pr8057-official.hwpx: 15쪽 Native 99.16179% / fresh WASM 99.14062%; 전37쪽 최저 95.46028% / 95.38098%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/floatfix-native-matrix.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/floatfix-wasm-matrix.json.
+//! pr8036 독립 Print 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pr8036-pdf-boundaries.json.
+//!
 //! 독립 한컴 Print에서 확인한 연속 표의 쪽 소유와 후속 순서를 보호한다.
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -52,6 +61,21 @@ fn complete_inline_frame_and_successor_tables_keep_their_print_pages() {
     assert!(
         successor[0].1 + successor[0].2 <= heading[0].1,
         "표 다음에 제목이 겹치지 않고 이어짐"
+    );
+    let prior_bottom = prior[0].1 + prior[0].2;
+    let heading_top = heading[0].1;
+    let heading_bottom = heading_top + heading[0].2;
+    assert!(
+        (prior_bottom - 1021.28).abs() <= 2.0,
+        "독립 Print 11쪽 앞 표 아랫변: {prior_bottom:.2}px"
+    );
+    assert!(
+        (heading_top - 203.94).abs() <= 2.0,
+        "독립 Print 12쪽 제목 표 윗변: {heading_top:.2}px"
+    );
+    assert!(
+        (heading_bottom - 244.53).abs() <= 2.0,
+        "독립 Print 12쪽 제목 표 아랫변: {heading_bottom:.2}px"
     );
 }
 

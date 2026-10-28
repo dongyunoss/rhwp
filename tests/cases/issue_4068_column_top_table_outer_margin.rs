@@ -1,3 +1,13 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! pic-in-table-with-toggle.hwp: 1쪽 Native·fresh WASM 각 100.00000%; 전1쪽 최저 각 100.00000%.
+//! 정책연구용역사업 중간진도보고서 HWP: 24쪽 Native 96.57615% / fresh WASM 96.62165%; 전215쪽 최저 59.29844% / 58.93395%.
+//! 2912695_civil_petition_form.hwp: 2쪽 Native·fresh WASM 각 100.00000%; 전2쪽 최저 각 100.00000%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 독립 Print 표 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/outer-margin-pdf-boundaries.json.
+//!
 //! [Issue #4068] 단 맨 위에 선 문단 기준 자리차지 표는 테두리를 바깥 여백
 //! (`outMargin.top`) 아래에 그린다.
 //!
@@ -122,6 +132,16 @@ fn issue_4068_section_first_anchor_table_frame_sits_below_outer_margin() {
         .into_iter()
         .next()
         .expect("1쪽 자리차지 표");
+    assert!(
+        (table.y - 136.01).abs() <= 2.0,
+        "독립 Print 1쪽 표 윗변: {:.2}px",
+        table.y
+    );
+    assert!(
+        (table.y + table.h - 652.57).abs() <= 2.0,
+        "독립 Print 1쪽 표 아랫변: {:.2}px",
+        table.y + table.h
+    );
     let om = hu_to_px(f64::from(source_table(&doc, 0).outer_margin_top));
 
     assert!(
@@ -193,6 +213,21 @@ fn issue_4068_column_top_margin_edit_advances_the_following_table_once() {
     let tables = top_level_tables(&tree);
     assert_eq!(tables.len(), 2, "2쪽 표 두 개: {tables:?}");
     let (first, second) = (&tables[0], &tables[1]);
+    assert!(
+        (first.y - 110.28).abs() <= 2.0,
+        "독립 Print 2쪽 첫 표 윗변: {:.2}px",
+        first.y
+    );
+    assert!(
+        (first.y + first.h - 876.16).abs() <= 2.0,
+        "독립 Print 2쪽 첫 표 아랫변: {:.2}px",
+        first.y + first.h
+    );
+    assert!(
+        (second.y - 887.99).abs() <= 2.0,
+        "독립 Print 2쪽 다음 표 윗변: {:.2}px",
+        second.y
+    );
 
     let om = hu_to_px(f64::from(source_table(&doc, 3).outer_margin_top));
     assert!(

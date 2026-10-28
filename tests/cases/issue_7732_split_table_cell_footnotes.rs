@@ -1,4 +1,4 @@
-//! 검사 유형: 관계형.
+//! 검사 유형: 관계형·고정형.
 //! 2026-10-28 측정 raw(96dpi, PDFium):
 //! cellnotes_plain_N2_L7.hwpx: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 11쪽 Native 98.43063% / fresh WASM 98.60333%; 전11쪽 최저 98.43063% / 98.60333%.
 //! cellnotes_span_N2.hwpx: 1쪽 Native 96.95701% / fresh WASM 96.92720%; 2쪽 Native 98.80823% / fresh WASM 98.96267%; 전2쪽 최저 96.95701% / 96.92720%.
@@ -6,6 +6,8 @@
 //! issue1937_rowbreak_footnote_overpagination.hwp: 35쪽 Native 99.99617% / fresh WASM 99.99621%; 41쪽 Native 99.99919% / fresh WASM 99.99595%; 42쪽 Native 100.00000% / fresh WASM 100.00000%; 전50쪽 최저 97.93136% / 97.80027%.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 표 조각의 독립 Print 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/cellnotes-pdf-boundaries.json.
+//! 실물 35쪽 표 경계: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue1937-table-pdf-coordinates.json.
 //!
 //! [#7732] 여러 쪽에 걸친 쪽 나눔 표의 칸 각주 — 행을 줄이지 않는다.
 //!
@@ -36,6 +38,46 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 fn core(sample: &str) -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
     DocumentCore::from_bytes(&std::fs::read(&path).expect("read")).expect("parse")
+}
+
+#[test]
+fn cell_note_table_frames_keep_independent_print_boundaries() {
+    fn table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(_)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(table)
+    }
+    for (sample, page, print_top, print_bottom) in [
+        (
+            "samples/issue1937/cellnotes_plain_N2_L7.hwpx",
+            0,
+            115.55,
+            1023.68,
+        ),
+        ("samples/issue1937/cellnotes_span_N2.hwpx", 1, 94.30, 593.75),
+        (
+            "samples/issue1937/r110_cellnotes_span_N2.hwpx",
+            2,
+            94.30,
+            473.88,
+        ),
+    ] {
+        let tree = core(sample)
+            .build_page_render_tree(page)
+            .expect("독립 Print 대응 쪽");
+        let frame = table(&tree.root).expect("표 조각");
+        let top = frame.bbox.y;
+        let bottom = top + frame.bbox.height;
+        assert!(
+            (top - print_top).abs() <= 2.0,
+            "{sample}: 독립 Print 표 윗변 {top:.2}px, 기준 {print_top:.2}px"
+        );
+        assert!(
+            (bottom - print_bottom).abs() <= 2.0,
+            "{sample}: 독립 Print 표 아랫변 {bottom:.2}px, 기준 {print_bottom:.2}px"
+        );
+    }
 }
 
 /// 쪽마다 표 조각의 (쪽, 시작 행, 끝 행).
@@ -190,6 +232,18 @@ fn split_row_with_cell_note_keeps_line_that_fits_without_trailing_spacing() {
 #[test]
 fn issue1937_page35_fills_rows_without_reserving_cell_notes() {
     let core = core("samples/issue1937_rowbreak_footnote_overpagination.hwp");
+    fn table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(t) if t.para_index == Some(306)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(table)
+    }
+    let tree = core.build_page_render_tree(34).expect("독립 Print 35쪽");
+    let top = table(&tree.root).expect("실물 표 첫 조각").bbox.y;
+    assert!(
+        (top - 385.02).abs() <= 2.0,
+        "독립 Print 35쪽 표 윗변: {top:.2}px"
+    );
     let rows = table_rows(&core, 306);
     assert!(rows.len() >= 2, "표 pi=306 조각 — {rows:?}");
     assert_eq!(

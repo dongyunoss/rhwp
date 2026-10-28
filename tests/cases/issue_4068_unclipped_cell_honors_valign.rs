@@ -1,3 +1,12 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium):
+//! hwpx_sample2.hwp: 19쪽 Native 99.91241% / fresh WASM 99.94545%; 전29쪽 최저 96.12298% / 95.97915%.
+//! issue2007_nested_cell_pagination_42065.hwp: 11쪽 Native 98.82265% / fresh WASM 98.87353%; 전17쪽 최저 94.47057% / 94.39749%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-ted3-visual-evidence.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 19쪽 독립 Print 글줄 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/sample2-p19-pdf-coordinates.json.
+//!
 //! [Issue #4068] **안 잘린 중첩 칸이 선언된 세로 정렬을 잃는다.**
 //!
 //! `table_layout.rs` 의 `effective_valign` 은 네 가지 잘림 조건에서 `Top` 으로 수렴한다.
@@ -422,6 +431,18 @@ fn source_row_metrics() -> (f64, f64, f64) {
 #[test]
 fn an_unclipped_nested_cell_keeps_its_declared_center_alignment() {
     let (picture_cell, text_cell, page_bottom) = nested_row();
+
+    // 같은 원본의 한컴 Print 19쪽 텍스트 글줄 상·하단(96dpi, ±2px).
+    assert!(
+        (text_cell.first_line_y - 971.49).abs() <= 2.0,
+        "독립 Print 첫 글줄 윗변: {:.2}px",
+        text_cell.first_line_y
+    );
+    assert!(
+        (text_cell.last_line_bottom - 1068.02).abs() <= 2.0,
+        "독립 Print 마지막 글줄 아랫변: {:.2}px",
+        text_cell.last_line_bottom
+    );
 
     // 전제: 두 칸 모두 페이지 안에 **온전히** 들어간다 — 이 수정이 보는 바로 그 조건.
     for cell in [picture_cell, text_cell] {

@@ -1,8 +1,9 @@
-//! 검사 유형: 관계형.
+//! 검사 유형: 관계형·고정형.
 //! 2026-10-28 측정 raw(96dpi, PDFium):
 //! rowspan-band-fit.hwp: 1쪽 Native 100.00000% / fresh WASM 100.00000%; 2쪽 Native 100.00000% / fresh WASM 100.00000%; 9쪽 Native 100.00000% / fresh WASM 100.00000%; 전9쪽 최저 97.84306% / 97.50188%.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 9쪽 표 경계의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/rowspan-pdf-boundaries.json.
 //!
 //! RowBreak 표에서 앞 행의 병합 칸이 덮는 행이 쪽 끝에 걸릴 때, 그 행의 글줄과 안 여백이
 //! 남은 높이에 다 들어가면 한/글은 그 행을 이 쪽에 남은 높이로 끝내고 다음 쪽은 다음 행에서
@@ -15,6 +16,8 @@
 
 #![cfg(not(target_arch = "wasm32"))]
 
+use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use serde_json::Value;
 use std::path::Path;
 use std::process::Command;
@@ -89,4 +92,26 @@ fn covered_row_that_fits_its_content_ends_on_the_current_page() {
             "para {para} continuation must not resume a cut: {mine:?}"
         );
     }
+}
+
+#[test]
+fn final_continuation_frame_matches_the_independent_print_page() {
+    let input =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/rowspan-band-fit/rowspan-band-fit.hwp");
+    let core = DocumentCore::from_bytes(&std::fs::read(input).expect("read")).expect("parse");
+    let tree = core.build_page_render_tree(8).expect("독립 Print 9쪽");
+    fn table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(t) if t.para_index == Some(4)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(table)
+    }
+    let frame = table(&tree.root).expect("네 번째 표의 마지막 조각");
+    let top = frame.bbox.y;
+    let bottom = top + frame.bbox.height;
+    assert!((top - 94.30).abs() <= 2.0, "독립 Print 표 윗변: {top:.2}px");
+    assert!(
+        (bottom - 212.57).abs() <= 2.0,
+        "독립 Print 표 아랫변: {bottom:.2}px"
+    );
 }

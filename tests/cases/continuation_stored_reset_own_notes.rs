@@ -1,10 +1,11 @@
-//! 검사 유형: 관계형.
+//! 검사 유형: 관계형·고정형.
 //! 2026-10-28 측정 raw(96dpi, PDFium):
 //! cont_reset_F20_L70_N0.hwp: 2쪽 Native 100.00000% / fresh WASM 100.00000%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 100.00000% / 100.00000%.
 //! cont_reset_F20_L70_N4.hwp: 2쪽 Native 99.99600% / fresh WASM 99.99287%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 99.99600% / 99.99287%.
 //! cont_reset_F20_L70_N6.hwp: 2쪽 Native 100.00000% / fresh WASM 99.99127%; 3쪽 Native 100.00000% / fresh WASM 100.00000%; 전3쪽 최저 100.00000% / 99.99127%.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 2쪽 마지막 본문 글줄의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/continuation-pdf-coordinates.json.
 //!
 //! 한 문단이 세 쪽에 걸칠 때 둘째 쪽(이어지는 조각)의 저장 쪽 reset — 자기 각주가 있는 경우.
 //!
@@ -72,9 +73,17 @@ fn lowest_body_line(node: &RenderNode) -> f64 {
 
 #[test]
 fn continuation_page_honors_next_stored_reset_with_own_notes() {
-    for (sample, second_reset) in [
-        ("samples/continuation_reset/cont_reset_F20_L70_N4.hwp", 59),
-        ("samples/continuation_reset/cont_reset_F20_L70_N6.hwp", 56),
+    for (sample, second_reset, print_bottom) in [
+        (
+            "samples/continuation_reset/cont_reset_F20_L70_N4.hwp",
+            59,
+            853.80,
+        ),
+        (
+            "samples/continuation_reset/cont_reset_F20_L70_N6.hwp",
+            56,
+            789.87,
+        ),
     ] {
         let core = core(sample);
         assert_eq!(
@@ -84,10 +93,15 @@ fn continuation_page_honors_next_stored_reset_with_own_notes() {
         );
         let tree = core.build_page_render_tree(1).expect("page 2");
         let notes = footnote_area(&tree.root).expect("둘째 쪽 각주 영역");
+        let bottom = lowest_body_line(&tree.root);
         assert!(
-            lowest_body_line(&tree.root) <= notes.bbox.y + 0.5,
+            bottom <= notes.bbox.y + 0.5,
             "{sample}: 둘째 쪽 본문 글줄이 각주 영역(위 {:.1})과 겹치지 않는다",
             notes.bbox.y
+        );
+        assert!(
+            (bottom - print_bottom).abs() <= 2.0,
+            "{sample}: 둘째 쪽 마지막 본문 글줄 하단 {bottom:.2}px, 독립 Print {print_bottom:.2}px"
         );
     }
 }
@@ -96,4 +110,10 @@ fn continuation_page_honors_next_stored_reset_with_own_notes() {
 fn continuation_without_second_reset_is_unchanged() {
     let core = core("samples/continuation_reset/cont_reset_F20_L70_N0.hwp");
     assert_eq!(fragments(&core), vec![(0, 0, 23), (1, 23, 67)]);
+    let tree = core.build_page_render_tree(1).expect("page 2");
+    let bottom = lowest_body_line(&tree.root);
+    assert!(
+        (bottom - 1024.18).abs() <= 2.0,
+        "각주 없는 대조군의 둘째 쪽 마지막 본문 글줄 하단 {bottom:.2}px, 독립 Print 1024.18px"
+    );
 }
