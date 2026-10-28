@@ -525,5 +525,23 @@
       "raw100": true
     }
   ],
-  "raw100_pages": 2
+  "raw100_pages": 2,
+  "page22_same_v2_policy_radius4_check": {
+    "date": "2026-10-29",
+    "page": 22,
+    "dpi": 96,
+    "raster_policy": "pdfium_smooth_rgb_exact_dpi_v2",
+    "image_size": [
+      794,
+      1122
+    ],
+    "old_pdf_png_sha256": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f",
+    "new_pdf_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+    "content_mask": "RGB 최소 채널 <232; Visual Sweep과 동일",
+    "distance": "4px 사각 이웃, 이전 PDF·새 PDF 상호 대조",
+    "old_content_without_new_within4": 203,
+    "new_content_without_old_within4": 177,
+    "implication": "동일한 렌더 PNG와 동일한 2px 사각 이웃으로 두 PDF를 각각 raw 100%에 맞출 수 없다. 어느 한쪽의 내용 화소에 대응하는 렌더 화소는 다른 PDF에서 2px 이내일 수 없기 때문이다.",
+    "limitations": "22쪽·동일 출력·동일 글꼴 및 래스터 조건의 두 기준을 동시에 만족하는 경우에만 적용한다. 새 MCP 기준만의 해결 가능성이나 다른 출력 환경의 결과를 부정하지 않는다."
+  }
 }

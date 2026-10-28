@@ -1034,3 +1034,5 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 - 시스템 글꼴 비의존 원칙을 AGENTS.md·CLAUDE.md와 회귀 검증 지침에 반영했다. 문서 전용 경로의 CI 영향 분류 45개, fast-pass 관련 검사 25개, 신뢰된 검토 연결 검사 83개가 로컬에서 통과했다. 통합 브랜치 전체가 문서 전용이거나 원격 CI가 끝났다는 뜻은 아니다. [명령·로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/fontless-guidance-ci-checks.json).
 
 - 개별 PR 20건의 review·구현 문서 40개를 최근 증거 링크 반영 후 다시 검사했다. 인식한 상대 파일 링크 863개에 누락·미추적 파일·임시 output 경로가 없다. 외부 링크·앵커 및 증거 내용 적합성을 이 검사로 판정하지 않는다. [문서별 해시와 결과](assets/review_integration_20261026/validation/post-rebase-8328/individual-review-local-links-20261029.json).
+
+- #7723의 기존 PDF와 새 MCP PDF 22쪽을 동일 PDFium 설정으로 재래스터화해 내용 마스크를 직접 비교했다. 4px 사각 이웃에도 대응하지 않는 화소가 기존 203개·새 PDF 177개다. 같은 렌더 PNG가 두 PDF에 각각 2px raw 100%를 동시에 만족할 수 없다는 뜻이며, 새 MCP 기준만의 해결 가능성을 부정하지 않는다. [조건·래스터 해시·대조](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/old-vs-new-pdf-page-comparison.json).
