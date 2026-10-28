@@ -21,6 +21,9 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 
 2026-10-29 현재 원 PR 20건의 head와 본문은 기존 검토 시점과 같다. 개별 리뷰 40개는
 링크 검사 뒤 변경되지 않았다. [원 PR·리뷰 대조](assets/review_integration_20261026/validation/post-rebase-8328/source-pr-head-body-20261029.json).
+이후 원 PR 20건의 현재 상태·head·본문을 다시 조회했으며 모두 OPEN이고 위 대조와 head·본문이 같다.
+[재조회 결과와 시각](assets/review_integration_20261026/validation/post-rebase-8328/source-pr-head-live-recheck.json).
+개별 리뷰는 이후 수정했으므로 위의 리뷰 파일 불변 기록은 해당 대조 시점에만 적용한다.
 
 ## 제출 전 검증 기록 — 미완료
 
