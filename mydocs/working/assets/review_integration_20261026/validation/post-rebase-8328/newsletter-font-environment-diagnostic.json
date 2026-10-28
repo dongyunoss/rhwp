@@ -7,7 +7,7 @@
     "prior_before_font_refresh": {
       "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
       "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
-      "rhwp_binary_sha256": "5a8c2ef8a95330e685ab61073cdf149d256f253310fd946005ff63010fe84f2e",
+      "rhwp_binary_sha256": "4be33bcbd8321197d0aea218321c6af3177479eedeada751f5ad8659a9e6b321",
       "tsv_sha256": "78c4560d30d88c122a09b040a52f8083de4db5354f3bb098b32b018272b72748",
       "pages": [
         {
@@ -99,5 +99,6 @@
     "isolated_process_pdf_png_sha256": "c49d968abcee5289047c87bb2325204bfa752ec3e2e16a8fc926f02d54c20ab3",
     "isolated_process_raw_percent": 92.14437,
     "note": "같은 PDF 파일도 Fontconfig 차이로 PDFium 래스터가 달라질 수 있어 기존 PDF PNG를 고정하여 원래 점수를 검증했다. 설치된 글꼴이나 전역 설정을 변경하지 않았다. 원 점수 기준 미달은 유지한다."
-  }
+  },
+  "prior_before_binary_correction": "실제 원본 실행 manifest는 4be33b… 바이너리를 기록한다. 종전 5a8c2e…는 현재 글꼴 대조에 사용한 다른 이전 바이너리였으므로 정정했다."
 }
