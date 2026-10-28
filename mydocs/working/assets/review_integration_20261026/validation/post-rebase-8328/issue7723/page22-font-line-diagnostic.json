@@ -79,5 +79,16 @@
     },
     "paragraph_446_first_line_next_start": "위치",
     "interpretation": "새 PDF와 다른 줄 나눔이 유지되고 선택 쪽의 일치율이 하락해 채택하지 않았다."
+  },
+  "poppy_gulim_replacement_without_ttf_certification_trial": {
+    "date": "2026-10-29",
+    "scope": "HCI Poppy→Gulim 대체, Gulim TrueType 인증 없이 휴먼명조만 인증",
+    "pages": {
+      "1": 99.2802,
+      "4": 99.39002,
+      "22": 98.28053,
+      "38": 99.25589
+    },
+    "interpretation": "선택 쪽 모두 100%가 아니며 4쪽과 22쪽이 기존보다 낮아 채택하지 않았다."
   }
 }
