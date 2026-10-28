@@ -57,3 +57,7 @@
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.
+
+## 2026-10-28 기존 패치의 최신 원 PR 대조
+
+기존 3개 patch-id 차이는 주로 주변 코드와 새 기반의 호출 인자에서 발생한다. 통합 후보에서 아래 캡션 높이 소비, 빈 host 표 첫 조각 예약의 진입·예산 소비, 다음 저장 줄을 이용한 단 원점 계산을 각각 확인했다. 후속 체리픽의 앵커 충돌 보존과 전쪽 시각 검증은 별개로 추적한다. [커밋별 대조](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
