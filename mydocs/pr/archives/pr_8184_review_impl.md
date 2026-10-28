@@ -1,5 +1,11 @@
 # PR #8184 적용·보정 실행 기록
 
+## 2026-10-28 원 PR 추가 커밋 반영 중
+
+재조회 head `cc6d06077013daf6090021ab317c347dbd05b236`에는 이전 체리픽 후 커밋 세 개가 추가됐다. `6fe6d9fdb01c`의 `first + 1` 호출은 기존 통합 보정 `7fd587fc52`에 이미 있다. `ffbf463e0081`은 `58063983b6`으로 체리픽했고, 충돌한 첫 조각 앵커 부분은 HWPX 저장 행 경계를 보호하는 현재 브랜치의 조건을 유지했다. 따라서 `58063983b6`의 원 커밋 메시지가 언급하는 앵커 대안 제거는 **적용하지 않았다**. 다른 두 파일의 간격 흡수·저장 원점 조건은 적용했다. `cc6d06077013`은 `6506bd2aee`로 적용했다.
+
+이 세부 충돌 해소와 새 보정은 아직 Native·fresh WASM 전쪽 및 기존 사례 하락 검증 전이다. 최종 수용으로 판정하지 않는다. [원 PR head·patch 비교](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-patch-refresh-20261028.json).
+
 - 원 head: `567ff9d18ac1f7e702e94042eb38a03a44f95943`
 - 통합 branch: `review/integration-20261026-document-updates`
 - base: `faa885e8b54ffc7cdf4196cd43a3103f362499a2`
