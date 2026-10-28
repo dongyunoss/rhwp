@@ -883,6 +883,14 @@ SHA-256 `6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab`의
 미대응 증거를 `post-rebase-8328/issue7723/`에 보존했다. 새 PDF 기준 미달이
 남은 동안 #7723 이슈 완료·#7445 취소선을 적용하지 않는다.
 
+2026-10-29 추가 대조: 원 PR #8188은 저장 줄이 없는 22쪽의 끝 자간과 원본
+HCI Poppy 폭을 함께 반영했다. 현재 폭 구현은 원 PR 커밋과 동일하며, 원 PR의 HWPX
+기준 PDF와 #7723 기존 PDF는 `응용프` 뒤에서 줄을 나눈다. 새 MCP PDF는 `응용프로`
+뒤에서 나눈다. 별도 진단에서 물리 구간의 4 HWPUNIT 초과를 허용하면 새 PDF의
+22쪽은 98.24607%에서 99.90314%로 오르지만 기존 PDF는 100%에서 98.26082%로
+떨어져 채택하지 않았다. 1·4·22·38쪽 비교, 동일 래스터 해시와 조건은
+[`page22-font-line-diagnostic.json`](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json)에 기록했다.
+
 기존 전체 회귀는 보정 전 두 실패로 종료했으므로 수정 후 전체 회귀를 새로
 실행한다. 공유 `target/pr-review`의 Cargo/WASM 빌드와 겹치지 않게 순차 실행하고,
 #7723 별칭의 내용·쪽 경계 검사 및 최종 종료 코드를 확인한다.

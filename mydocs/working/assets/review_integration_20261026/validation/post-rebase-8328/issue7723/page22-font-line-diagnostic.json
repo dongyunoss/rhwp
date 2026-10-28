@@ -616,5 +616,133 @@
     "original_hwpx_pdf_page22_second_line_ends": "응용프",
     "issue7723_new_pdf_page22_second_line_ends": "응용프로",
     "qualification": "#8188은 세 저장본 각각의 새 MCP 기준을 검증했으며 #7723 2010 이름 별칭은 별도의 원본이다. 서로 다른 PDF 출력은 각각 비교하며, 이 근거만으로 새 출력의 글꼴 대체 원인이나 새 기준 100%를 확정하지 않는다."
+  },
+  "physical_four_hwpunit_tolerance_trial": {
+    "date": "2026-10-29",
+    "backend": "Native Skia",
+    "pages": [
+      1,
+      4,
+      22,
+      38
+    ],
+    "dpi": 96,
+    "method": "visual_sweep.py silhouette-only, 동일 rhwp 실행 파일·원래 글꼴 환경·입력과 비교별 동일 PDF 래스터. 실험군만 임시 환경 변수로 물리 구간 판정에 4 HWPUNIT을 허용했다.",
+    "font_environment": "#8188 동등 검증에 사용한 strict8188-diagnostic-font-env-2024.json과 같은 217개 원본 글꼴 프로그램. 글꼴과 임시 진단 코드는 커밋하지 않는다.",
+    "old_pdf_sha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381",
+    "new_pdf_sha256": "4b03e8f1325654b423f4e2975890309c44b70cf3a1b1083879097aff2ad09c6a",
+    "same_pdf_raster_between_control_and_trial": true,
+    "same_render_raster_between_pdf_targets": true,
+    "runs": {
+      "control-new": {
+        "metrics": {
+          "1": 99.2802,
+          "4": 99.33339,
+          "22": 98.24607,
+          "38": 99.21033
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2"
+          },
+          "22": {
+            "rhwp": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+            "pdf": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1"
+          }
+        },
+        "manifest_sha256": "fe005b00eb4267b9228635118dba0e97af0d8b275a3c0107a2d584f86b39d67a"
+      },
+      "trial-new": {
+        "metrics": {
+          "1": 99.2802,
+          "4": 99.33339,
+          "22": 99.90314,
+          "38": 99.21033
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "86908c655e179d707d60eac4b67e66e15b2a3fabcaf5ec9153b95fb477dfb98b"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "233b1cc2439e272bbd99c632af3e2f2c48650ac55310dd9c665400afb01f19d2"
+          },
+          "22": {
+            "rhwp": "1776c811072bf7c95b3f5e9dda17d212ac1b8237a09973927c699c30f0541848",
+            "pdf": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "264421c6701c63294b9194a5944e12375ca0d3518f9a9de837b7624ca96617b1"
+          }
+        },
+        "manifest_sha256": "71c2f7692d326a5621a5fc2168c6223e6d5e5af04350ba3954caa8db8a771073"
+      },
+      "control-old": {
+        "metrics": {
+          "1": 99.9826,
+          "4": 100.0,
+          "22": 100.0,
+          "38": 100.0
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "95a3f45819abbc33b4ca64d400c96f685a754dd34fcb583ca0afc25d78dcb50e"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "f26ba83f7d950d6c5211aa9d06293e96a7332a6576301ff783d0b7f0949fe68e"
+          },
+          "22": {
+            "rhwp": "86e56961a02737a7d59da7ede4749975cf36e1f6388b9805bb004ebdc7719ce9",
+            "pdf": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "9a53285dc7918fda9e979cdc5ff7c935b6fceb6463e47a2ab008cec84663e898"
+          }
+        },
+        "manifest_sha256": "496f5b32d7fc9a3d4bf214e14186c6324dec8091ded76d1ed30460c8be6e22b8"
+      },
+      "trial-old": {
+        "metrics": {
+          "1": 99.9826,
+          "4": 100.0,
+          "22": 98.26082,
+          "38": 100.0
+        },
+        "rasters": {
+          "1": {
+            "rhwp": "b2ec2c1f9fd090534904f72e5949c5e250da1c727a1feb1fb268b1bb19435144",
+            "pdf": "95a3f45819abbc33b4ca64d400c96f685a754dd34fcb583ca0afc25d78dcb50e"
+          },
+          "4": {
+            "rhwp": "e586ae5d492367b1eff5617c4562a4172e23a87c5417af3f19979833945b63bb",
+            "pdf": "f26ba83f7d950d6c5211aa9d06293e96a7332a6576301ff783d0b7f0949fe68e"
+          },
+          "22": {
+            "rhwp": "1776c811072bf7c95b3f5e9dda17d212ac1b8237a09973927c699c30f0541848",
+            "pdf": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f"
+          },
+          "38": {
+            "rhwp": "af0c80c5b8ac6cf42ce7b7a931b208839d972435b448017e030aa0e9432e475a",
+            "pdf": "9a53285dc7918fda9e979cdc5ff7c935b6fceb6463e47a2ab008cec84663e898"
+          }
+        },
+        "manifest_sha256": "c56e71b074bc306deb47a672266a86288cbcc74ff3809144338bc4f1dc4457e9"
+      }
+    },
+    "interpretation": "22쪽 새 기준은 98.24607%에서 99.90314%로 개선하지만 기존 기준은 100%에서 98.26082%로 1.73918%p 하락하고 새 기준도 100%에 미달한다. 기존 #8188 보존 요구와 충돌하므로 이 허용값은 채택하지 않는다. 현재 래스터 정책의 기존 PDF 1쪽은 99.98260%이며 과거 정책의 100%와 구분한다."
   }
 }

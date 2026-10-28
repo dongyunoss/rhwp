@@ -36,8 +36,8 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - #7723의 2010 저장본은 과거 PDF 기준과 새 MCP PDF 기준의 결과가 다르다.
   새 기준의 64쪽 중 2쪽만 100%여서 `Closes #7723`을 넣거나 #7445를 완료
   처리할 수 없다. 원인 조사와 확인 결과는 [통합 계획](review_integration_20261026_document_updates_plan.md)에 기록한다.
-- 기존 WASM TSV 일부는 원래 실행 환경을 아직 재현하지 못한다. 동일 현재 환경의
-  과거 바이너리와 후보 비교도 병행하며 전체 기준을 완료로 판정하지 않는다.
+- 과거 WASM TSV 일부의 원래 실행 환경은 재현하지 못했다. 대신 아래 #8319 보존 비교는
+  동일한 기존 PDF 래스터와 전쪽 렌더 PNG 해시를 경로별로 대조한 결과다.
 - 리베이스 시 두 #8149 후속 체리픽을 기존 묶음 뒤로 이동했다. 충돌은 없었고 리베이스 전후 최종 트리는 동일했다. [순서와 원 PR 대조](assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md). 이후 문서만 추가 커밋했다.
 - 새 #8184 보정 이후 sample16 세 문서는 Native와 fresh WASM 각각 64쪽 모두 기존의 동일 PDF 래스터와 raw 100%다. 현재 방식으로 PDF를 다시 래스터화하면 일부 99.98%로 측정되어 두 결과를 별도 TSV로 보존한다. [입력·PDF·쪽별 해시 및 TSV](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/evidence.json).
 - 새 #8184 보정 이후 36개 표 조각 입력의 Native·fresh WASM 각 64쪽은 모두 raw 100%다. [입력·PDF 및 쪽별 결과](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-float-fragments/evidence.json). 공식 사양서 71쪽도 같은 기존 PDF 래스터 기준 두 경로 모두 보정 전과 전쪽 수치가 같으며 0.1%p 이상 하락이 없다. [전쪽 비교](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json).
