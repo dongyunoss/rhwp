@@ -42,7 +42,7 @@
 [전체 로컬 실행·명령·exit·검증 SHA](<../../../mydocs/working/assets/review_integration_20261026/validation/final-rust-validation.json>)에 fmt·세 Clippy·workspace build·고정 base 정책·전체 nextest·Native 실행 결과를 보존한다.
 Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우저와 fresh 최적화 WASM도 실행했다. [production source 동일성](<../../../mydocs/working/assets/review_integration_20261026/validation/production-source-continuity.json>)과 [WASM 빌드 출처](<../../../mydocs/working/assets/review_integration_20261026/validation/final-wasm-build.json>)로 검증 head를 구분한다.
 
-이 PR의 직접 검사는 `samples/hwp3-sample10.hwp`의 연결 그림 id 순서와 HWP5 재열기 후 외부 경로 보존이다. 해당 입력의 독립 원본 Print 측정은 이 항목에서 확인되지 않았으며 다른 문서의 쪽별 수치로 대신하지 않는다.
+이 PR의 직접 검사는 `samples/hwp3-sample10.hwp`의 연결 그림 id 순서와 HWP5 재열기 후 외부 경로 보존이다. 해당 입력은 MCP 2020 Print가 763쪽으로 완료됐다. 다만 1쪽 Print에서 Native 출력의 그림 여러 개가 빠졌고 Native raw는 27.15694%였으며 WASM은 그림 디코드 오류로 중단됐다. 원격 연결 자원 공급 차이 가능성은 아직 확인되지 않았다. [입력·출력 SHA와 첫 쪽 대조](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8219-hwp3-mcp-print.json>)를 기록하되 PDF가 유효한 시각 기준인지 확인하기 전에는 이 수치를 PR 조판 통과나 실패로 판정하지 않는다.
 
 ## 조판 원칙 준수 판정
 
