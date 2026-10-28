@@ -44,5 +44,76 @@
       "font_loaded_sha256": "adb0346c72368434530c38348d9dcf05a989d755f9a1e698463724f0ee34dbf9"
     }
   },
-  "qualification": "두 글꼴 환경에서 같은 PDF 래스터를 사용했다. 보정 전후 바이너리끼리는 새 환경에서 PNG가 같았다. 이전 환경과 글꼴 공급 조건이 다르므로 차이의 유일한 원인을 단정하지 않는다. WASM 새 실행에는 해당 글꼴 경로를 명시했다. 1쪽은 양쪽 모두 90% 미만이며 사용자 결정에 따라 별도 보정하지 않는다."
+  "qualification": "두 글꼴 환경에서 같은 PDF 래스터를 사용했다. 보정 전후 바이너리끼리는 새 환경에서 PNG가 같았다. 이전 환경과 글꼴 공급 조건이 다르므로 차이의 유일한 원인을 단정하지 않는다. WASM 새 실행에는 해당 글꼴 경로를 명시했다. 1쪽은 양쪽 모두 90% 미만이며 사용자 결정에 따라 별도 보정하지 않는다.",
+  "spacing_diagnostic": {
+    "scope": "1쪽 제목 문단의 서로 연속된 한글 9쌍",
+    "source_parser_style": {
+      "bold": true,
+      "spacing_percent": 0,
+      "ratio_percent": 100,
+      "size_points": 20
+    },
+    "pdf_font_size_points": 20.02363,
+    "font_units_per_em": 1000,
+    "pdf_origin_units": "pymupdf PDF 좌표; 원점을 글자 크기로 나눔",
+    "values": [
+      {
+        "characters": "리눅",
+        "pdf_advance_em": 0.80862,
+        "font_advance_em": 0.759,
+        "difference_em": 0.04962
+      },
+      {
+        "characters": "눅스",
+        "pdf_advance_em": 0.65288,
+        "font_advance_em": 0.6,
+        "difference_em": 0.05288
+      },
+      {
+        "characters": "어셈",
+        "pdf_advance_em": 0.84453,
+        "font_advance_em": 0.798,
+        "difference_em": 0.04653
+      },
+      {
+        "characters": "셈블",
+        "pdf_advance_em": 0.97037,
+        "font_advance_em": 0.92,
+        "difference_em": 0.05037
+      },
+      {
+        "characters": "블리",
+        "pdf_advance_em": 0.64688,
+        "font_advance_em": 0.598,
+        "difference_em": 0.04888
+      },
+      {
+        "characters": "프로",
+        "pdf_advance_em": 0.64688,
+        "font_advance_em": 0.598,
+        "difference_em": 0.04888
+      },
+      {
+        "characters": "로그",
+        "pdf_advance_em": 0.64688,
+        "font_advance_em": 0.593,
+        "difference_em": 0.05388
+      },
+      {
+        "characters": "그래",
+        "pdf_advance_em": 0.60497,
+        "font_advance_em": 0.556,
+        "difference_em": 0.04897
+      },
+      {
+        "characters": "래밍",
+        "pdf_advance_em": 0.95236,
+        "font_advance_em": 0.903,
+        "difference_em": 0.04936
+      }
+    ],
+    "pdf_text_ink_bbox_width_px": 266.35,
+    "rhwp_text_run_layout_bbox_width_px": 346.7,
+    "interpretation": "PDF의 연속 한글 원점 간격은 공급 글꼴별 자연 전진폭보다 대략 0.05em 크다. 한글 구간의 PDF 글자 bounding box와 rhwp 레이아웃 run box는 서로 다른 경계 종류이므로 수치 차이는 진단용이다. 글꼴 윤곽 일치 및 차이의 유일한 원인을 확정하지 않는다."
+  }
 }
