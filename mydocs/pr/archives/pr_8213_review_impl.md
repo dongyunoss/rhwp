@@ -47,4 +47,4 @@
 
 ## 2026-10-28 최신 원 PR 대조
 
-최신 원 PR과 후보의 저장 첫 행 프레임 fallback 순서는 다르지만 전체 행과 첫 행 프레임의 길이 조건상 선택 높이는 같다. 글꼴 접미사 fallback의 최근 이름 캐시 사용은 확인했으며 별칭 결과와 캐시 수명에 대한 비교는 진행 중이다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
+최신 원 PR과 후보의 저장 첫 행 프레임 fallback 순서는 다르지만 전체 행과 첫 행 프레임의 길이 조건상 선택 높이는 같다. 글꼴 접미사 fallback은 동일한 별칭·색인 조회를 소유 문자열 키로 캐시하며 굵기 선택도 같음을 소스에서 확인했다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
