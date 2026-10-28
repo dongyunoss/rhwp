@@ -93,3 +93,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR이 직접 판독한 2020 PDF 3쪽
+
+원 PR은 2020 시험지 PDF 3쪽의 보기 영역을 직접 비교했다. 기여자의 고정 커밋과 동일한 Git blob인 [Native 3쪽 이미지](../assets/issue_8220/png/2020_native_review_p003.png)와 [WASM 3쪽 이미지](../assets/issue_8220/png/2020_wasm_review_p003.png)를 연결한다. 별도의 2026-10-27 통합 후보 측정에서 같은 PDF의 fidelity 3쪽은 Native 99.45318% / WASM 98.88718%, editable은 99.44626% / 98.88209%다. 이 값은 원 PR 이미지의 점수나 후속 표 보정 뒤 새 측정이 아니다. [입력·이미지·TSV 해시와 쪽별 기록](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8221-source-page3.json).
