@@ -214,5 +214,19 @@
       "base_tsv": "mydocs/pr/assets/issue8219/sample4/base-wasm.tsv",
       "base_tsv_sha256": "f6fd0b33170c9f8e59abb587be0fa899c81fc3f77367e1895721e0ded9d4de08"
     }
+  },
+  "page1_font_substitution_experiment": {
+    "date": "2026-10-28",
+    "source_face": "중간공한",
+    "candidate": "Dongle Regular",
+    "candidate_source": "https://github.com/yangheeryu/Dongle",
+    "candidate_license": "SIL OFL 1.1",
+    "candidate_sha256": "2966e7a9d312a868e2b5477bf9a3e59b8ce16beb76e7e52305ab5897d1ce9741",
+    "render": "native-skia; explicit font environment substitution and font-path; 96dpi; PDFium; silhouette raw, radius 2px",
+    "baseline_percent": 64.32418,
+    "candidate_percent": 41.54053,
+    "baseline_png_sha256": "820a718ab5bc5e2b907e681d6d9139e059347e2acbbbf979d5d1297e92d864a4",
+    "candidate_png_sha256": "0dcb3d58c0e3da1a5a8df3a4a30d0f03a7117e897df125570906c514e430ddb2",
+    "decision": "사용자가 글꼴 제약으로 추가 보정 없이 진행하도록 지시했다. 동글을 적용하지 않는다. 기존 1쪽 미달은 유지한다."
   }
 }
