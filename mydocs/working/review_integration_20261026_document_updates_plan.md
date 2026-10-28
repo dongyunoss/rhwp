@@ -911,3 +911,16 @@ skip으로 종료했다. 실패한 `source_owned_float_fragment_frames` 검사�
 해시·순서를 대조해 준비했다. 원래 경로에서 누락된 굴림은 사용자 지정
 `rhwp-local-verification/issue8160`의 동일 해시 원본을 찾아 시스템에 등록했다.
 이는 보정 후 전쪽이 100%라는 뜻은 아니며 새 실행 결과를 확인해야 한다.
+
+표 뒤 문단 보정 `81f2428cf8`의 네이티브 출력으로 기존 36개 입력의 독립 Print
+대조를 다시 실행해 총 64쪽 모두 raw 100%를 확인했다. sample16 HWPX·2024 HWP·
+2022 HWP도 각각 Native와 fresh WASM의 64쪽 모두 raw 100%이며, 여섯 실행의
+실제 PNG 384쪽을 독립 Print와 양방향 반경 2px로 재비교해 미대응 0을 확인했다.
+정식 TSV는 `post-rebase-8328/sample16-floatfix-native/`와
+`post-rebase-8328/sample16-floatfix-wasm/`에, 페이지별 PNG 해시와 픽셀 결과는
+[픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8328/sample16-floatfix-wasm/combined-pixel-contract.json)에
+기록한다. Native 실행 파일 SHA-256은
+`2a4915dfda39a74efbc903297d51e85a3d71634127ec01c47f65124624beedb0`, WASM은
+`05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7`이다.
+이후 추가한 회귀 지침 커밋은 문서만 변경했다. 표 이어짐 WASM, 나머지 입력 비교,
+전체 Rust 회귀와 #7723의 새 MCP 기준 100% 검증은 아직 완료되지 않았다.
