@@ -837,5 +837,21 @@
       "실제 인쇄 시 폰트 선택과 두 호스트의 전체 실행 환경 일치를 증명하지 않는다.",
       "서버나 호스트의 파일과 설정은 변경하지 않았다."
     ]
+  },
+  "alternate_mcp_service_preflight": {
+    "date": "2026-10-29",
+    "host": "win10-ted",
+    "service": "HwpConvert2024Mcp",
+    "service_status": "Running",
+    "service_account": "LocalSystem",
+    "runner_source_sha256": "b2c22c761d7f07542a894c5657586d189c8776eddaa4255e1031a2a2d14dadda",
+    "worker_source_sha256": "2f6a1213b4fe3937ecc10aac6bc21954a577801aca93c43cc421f794128aa467",
+    "worker_binary_sha256": "7a61f1d4891028673f760bc37f387cc67719edc00598e4c2d7f2e0e95c52bdf7",
+    "worker_modified": "2026-10-20 01:18:37",
+    "primary_host": "win10-hwp-convert-2024",
+    "primary_runner_source_sha256": "6e711630e37ad7d0252462f61dc0a759796dc0dd790ced5d844ec740402f4090",
+    "primary_worker_sha256": "8b8ac0ebf6deb5b18c1496b4c6d5211165215e973de741fd2c6cb6ea25cfefa5",
+    "client_files": "두 호스트의 기존 클라이언트 설정이 같은 MCP 주소를 가리키는 것만 확인했다. 인증 값과 주소는 기록하지 않았다.",
+    "interpretation": "이전 시점 서비스가 별도 호스트에 있으나 기존 클라이언트 설정으로 그 서비스를 직접 쓰는지는 확인되지 않았다. 별도 주소를 사용한 변환 실험은 실행하지 않았고 대상 서버나 설정을 수정하지 않았다."
   }
 }
