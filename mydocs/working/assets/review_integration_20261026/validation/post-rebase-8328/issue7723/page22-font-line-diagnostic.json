@@ -251,5 +251,17 @@
       "meaning": "문단 끝"
     }
   ],
-  "raw_before_problem_word": "구성을 뒤 공백 3개 다음에 스위치가 이어짐; 중간 강제 줄바꿈 없음"
+  "raw_before_problem_word": "구성을 뒤 공백 3개 다음에 스위치가 이어짐; 중간 강제 줄바꿈 없음",
+  "hancom_2024_resave_probe": {
+    "date": "2026-10-29",
+    "job_id": "f2112ff1-0d56-4125-88d8-24c8da2a26da",
+    "result_sha256": "8961c8677e859e0d8dbc716056c4c650d321114293cfa8a06c097679dbb99221",
+    "result_bytes": 3048960,
+    "engine": "2024",
+    "source_paragraph": 446,
+    "source_line_segment_records": 0,
+    "resaved_paragraph": 446,
+    "resaved_line_segment_records": 0,
+    "scope": "한컴 2024 HWP 재저장본을 원시 레코드로 확인했다. 저장된 줄이 없어 인쇄 시 조판 줄 구성을 이 자료만으로 추출할 수 없다. 임시 저장본은 근거 파일로 커밋하지 않는다."
+  }
 }
