@@ -193,7 +193,7 @@ def cached_font_faces(vs, directory: Path, source: Path, digest: str):
 
 
 def font_source_files(directory: Path):
-    """등록된 디렉터리 링크를 따라가되 같은 물리 디렉터리를 반복하지 않는다."""
+    """파일·등록 디렉터리 링크를 읽고 같은 물리 디렉터리를 반복하지 않는다."""
     pending = [directory]
     visited = set()
     while pending:
@@ -204,6 +204,10 @@ def font_source_files(directory: Path):
             if identity in visited:
                 continue
             visited.add(identity)
+            if current.is_file():
+                if current.suffix.lower() in {'.ttf', '.otf', '.ttc', '.woff', '.woff2'}:
+                    yield current
+                continue
             entries = sorted(current.iterdir())
         except OSError:
             continue
@@ -459,12 +463,14 @@ def repair_terminal_cmap(data: bytes, glyph_count: int) -> bytes | None:
     return bytes(repaired) if changed else None
 
 
-def export_wasm_png(vs, root, hwp, package, base, selected, font_paths, environment, compat, dpi, workers):
+def export_wasm_png(vs, root, hwp, package, base, selected, font_paths, environment, compat, dpi, workers,
+                    observed_font_receipt=None):
     import sys
     catalogue = font_catalog(vs, root, font_paths, base)
     options = base / 'canvas-options.json'
     vs.write_json_atomic(options, {'pages': selected, 'workers': workers, 'scale': dpi / 96.0,
                                   'compat': compat, 'fontEnvironment': str(environment) if environment else None,
+                                  'observedFontReceipt': str(observed_font_receipt) if observed_font_receipt else None,
                                   'pythonExecutable': sys.executable})
     vs.run(['node', str(root / 'scripts/export-wasm-png-for-sweep.mjs'), '--pkg', str(package),
             '--input', str(hwp), '--out', str(base), '--fonts', str(catalogue), '--options', str(options)],

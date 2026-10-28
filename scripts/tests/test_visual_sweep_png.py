@@ -237,6 +237,18 @@ class PngExportTests(unittest.TestCase):
 
 
 class RasterDispatchTests(unittest.TestCase):
+    def test_png_inventory_records_explicit_program_file_and_rejects_missing_source(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            source = root / 'font.ttf'
+            source.write_bytes(b'font program inventory')
+            args, proof = sweep.svg_font_export_options(root, 'full', [source], allow_files=True)
+            self.assertEqual(args[-2:], ['--font-path', str(source)])
+            self.assertEqual(proof['files'], [{'path': str(source),
+                              'sha256': hashlib.sha256(source.read_bytes()).hexdigest()}])
+            with self.assertRaises(SystemExit):
+                sweep.svg_font_export_options(root, 'full', [root / 'missing.ttf'], allow_files=True)
+
     def test_legacy_svg_dispatch_yields_captures(self):
         records = [(1, Path('page.svg'), Path('tree.json'), Path('pdf.png'))]
         with patch('scripts.visual_sweep_raster.rasterized_sources', return_value=iter(records)):
@@ -320,6 +332,13 @@ class EmbeddedFontCatalogueTests(unittest.TestCase):
             catalogue = json.loads(png.font_catalog(adapter, root, [system], output).read_text())
             self.assertEqual(len(catalogue['faces']), 2, '등록된 원본 컬렉션의 두 face가 모두 필요하다')
             self.assertEqual({face['source'] for face in catalogue['faces']}, {str(source.resolve())})
+            # 실제 Native 선택 프로그램을 파일로 우선 지정해도 같은 두 face를 공급해야 한다.
+            direct = json.loads(png.font_catalog(adapter, root, [source], output).read_text())
+            self.assertEqual(len(direct['faces']), 2, '단일 파일 경로를 디렉터리처럼 처리해 누락하면 안 된다')
+            self.assertEqual({face['sourceSha256'] for face in direct['faces']},
+                             {hashlib.sha256(source.read_bytes()).hexdigest()})
+            repeated = json.loads(png.font_catalog(adapter, root, [source, system, source], output).read_text())
+            self.assertEqual(repeated, direct, '파일과 등록 디렉터리가 같은 프로그램을 중복 공급하지 않는다')
 
     def test_collection_cache_reuses_exact_programs_and_repairs_corruption(self):
         with tempfile.TemporaryDirectory() as folder:

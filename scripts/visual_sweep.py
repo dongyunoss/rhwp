@@ -573,6 +573,8 @@ def wasm_package_provenance(root: Path, package: Path, rasterizer: str = "svg") 
     return {
         "files": [{"path": str(path.resolve()), "sha256": sha256_file(path)} for path in files],
         "exporter_sha256": sha256_file(exporter),
+        "font_registration_sha256": (sha256_file(root / "scripts/visual-sweep-font-registration.mjs")
+                                     if rasterizer == "png" else None),
         "comparison_profile": "print",
         "font_policy": ("document embedded glyph resources; requested Canvas families supplied once per worker"
                         if rasterizer == "png" else "same-input native export-svg --font-style --profile print; font-face CSS only"),
@@ -643,7 +645,7 @@ def default_sweep_font_paths() -> list[Path]:
     return []
 
 
-def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> tuple[list[str], dict[str, object]]:
+def svg_font_export_options(root: Path, mode: str | None, paths: list[Path], *, allow_files: bool = False) -> tuple[list[str], dict[str, object]]:
     """검증에 공급할 글꼴과 해시를 고정한다. 글꼴 파일은 진단용 SVG에만 포함한다."""
     if mode == "subset":
         raise SystemExit(
@@ -661,10 +663,14 @@ def svg_font_export_options(root: Path, mode: str | None, paths: list[Path]) -> 
     files = []
     for directory in paths:
         directory = resolve_input_path(root, directory)
-        if not directory.is_dir():
+        if allow_files and directory.is_file():
+            candidates = [directory]
+        elif directory.is_dir():
+            candidates = sorted(directory.rglob("*"))
+        else:
             raise SystemExit(f"폰트 디렉터리가 없습니다: {directory}")
         args.extend(["--font-path", str(directory)])
-        for path in sorted(directory.rglob("*")):
+        for path in candidates:
             if path.is_file() and path.suffix.lower() in {".ttf", ".otf", ".ttc", ".woff", ".woff2"}:
                 files.append({"path": str(path), "sha256": sha256_file(path)})
     if mode == "full" and paths and not files:
@@ -1515,6 +1521,7 @@ def render_target(
     svg_rasterizer: str,
     wasm_pkg: Path | None = None,
     font_environment: Path | None = None,
+    observed_font_receipt: Path | None = None,
     embed_fonts: str | None = None,
     font_paths: list[Path] | None = None,
     font_mismatch_evidence: Path | None = None,
@@ -1578,12 +1585,21 @@ def render_target(
             "path": str(font_environment),
             "sha256": hashlib.sha256(font_environment.read_bytes()).hexdigest(),
         }
+    if observed_font_receipt is not None:
+        if wasm_pkg is None or rasterizer != "png":
+            raise SystemExit("실제 글꼴 관측은 WASM 직접 PNG 경로에만 적용할 수 있습니다.")
+        observed_font_receipt = resolve_input_path(root, observed_font_receipt)
+        provenance["observed_font_receipt"] = {
+            "path": str(observed_font_receipt),
+            "sha256": sha256_file(observed_font_receipt),
+        }
     if wasm_pkg is not None:
         provenance["wasm"] = wasm_package_provenance(root, wasm_pkg, rasterizer)
     if png_module is not None and not font_paths:
         font_paths = default_sweep_font_paths()
     font_args, font_supply = svg_font_export_options(
-        root, "full" if png_module and font_paths else embed_fonts, font_paths or []
+        root, "full" if png_module and font_paths else embed_fonts, font_paths or [],
+        allow_files=png_module is not None,
     )
     if png_module is not None:
         font_supply["mode"] = "direct-font-programs"
@@ -1612,7 +1628,7 @@ def render_target(
                 if wasm_pkg is not None:
                     png_module.export_wasm_png(sys.modules[__name__], root, hwp, wasm_pkg, base,
                                               selected_pages, font_paths or [], font_environment, compat,
-                                              dpi, page_workers)
+                                              dpi, page_workers, observed_font_receipt)
                 else:
                     png_module.export_native_png(sys.modules[__name__], root, hwp, rhwp_bin, base,
                                                 selected_pages, font_paths or [], environment_args,
@@ -5295,14 +5311,9 @@ def review_comment_line(metrics: dict[str, object] | None) -> str:
     raw = metrics.get("silhouette_raw_match_percent")
     if not isinstance(raw, (int, float)):
         return "코멘트: raw 실루엣 판정값 = 확인 불가."
-    notes = [f"코멘트: 판정값 raw 실루엣(2px 이웃) = {raw:.2f}%."]
-    adjusted = metrics.get("tolerant_content_match_percent")
-    if isinstance(adjusted, (int, float)):
-        notes.append(f"색상 경계 보정값(진단용) {adjusted:.2f}%.")
-    strict = metrics.get("visual_accuracy_proxy_percent")
-    if isinstance(strict, (int, float)):
-        notes.append(f"엄격 내용 픽셀 {strict:.2f}%.")
-    return " ".join(notes)
+    # overlay의 유일한 일치율은 TSV의 raw 열과 동일하게 표시한다.
+    # 나머지 진단 지표는 metrics/manifest에 보존한다.
+    return f"코멘트: 판정값 raw 실루엣(2px 이웃) = {raw:.2f}%."
 
 
 def make_review_panels(
@@ -5441,8 +5452,8 @@ def write_silhouette_tsv(
         for page, details, inputs_for_page in ordered_page_map(silhouette_pair_metrics, pairs, workers):
             value = details["tolerant_content_match_percent"]
             metrics.append({"page": page, **details})
-            stream.write(f"{page}\t{value:.5f}\t{int(details['silhouette_raw_match_percent'] < PR_REVIEW_MIN_RAW_MATCH_PERCENT)}"
-                         f"\t{details['silhouette_raw_match_percent']:.5f}"
+            stream.write(f"{page}\t{value:.2f}\t{int(details['silhouette_raw_match_percent'] < PR_REVIEW_MIN_RAW_MATCH_PERCENT)}"
+                         f"\t{details['silhouette_raw_match_percent']:.2f}"
                          f"\t{details['silhouette_boundary_reconciled_pixels']}\n")
             inputs.append(inputs_for_page)
     gate = pr_review_gate(metrics, font_mismatch_evidence=None, document_page_counts=document_counts)
@@ -5550,6 +5561,7 @@ def main() -> None:
     parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
+    parser.add_argument("--observed-font-receipt", type=Path, help="같은 입력·사용자 환경의 Native export-png JSON에 기록된 실제 대체 글꼴 관측 (WASM PNG 전용)")
     parser.add_argument(
         "--font-mismatch-evidence",
         type=Path,
@@ -5667,6 +5679,7 @@ def main() -> None:
             svg_rasterizer=args.svg_rasterizer,
             wasm_pkg=args.wasm_pkg,
             font_environment=args.font_environment,
+            observed_font_receipt=args.observed_font_receipt,
             embed_fonts=args.embed_fonts,
             font_paths=args.font_path,
             font_mismatch_evidence=args.font_mismatch_evidence,
