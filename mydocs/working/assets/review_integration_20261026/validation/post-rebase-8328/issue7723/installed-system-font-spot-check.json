@@ -85,5 +85,21 @@
     "이전 대조군과 글꼴 공급 조건이 달라 수치 차이를 코드 회귀로 해석하지 않는다.",
     "네 쪽만 진단했으며 전쪽 또는 WASM의 현재 시스템 글꼴 결과는 확인하지 않았다.",
     "시스템 글꼴에 의존하는 회귀 검사를 새로 추가하지 않았다."
-  ]
+  ],
+  "page22_layout_font_trace": {
+    "date": "2026-10-29",
+    "command": "rhwp-q font-trace samples/hwp3-sample16-hwp5-2010.hwp --page 21 --max-characters 4096 --json",
+    "query_binary_sha256": "7c69385e8c2275e2db92b4cf7d0f7e3fb86119ef3efe7b3649e4f00efc0b93ef",
+    "records": 1346,
+    "layout_hash": "28878a7f1e9c5f4a15fb11813e2642d120beb87b5c3ff059a3d18dddfb3ac12c",
+    "normalized_hash": "870272cad1456251170218a473a4b2f6e56a41549660acd8ccbccc9d99ed369d",
+    "matches_prior_trace": true,
+    "native_backend_observation": {
+      "reasons": [
+        "nativeRendererSnapshotRequired"
+      ],
+      "status": "unsupported"
+    },
+    "interpretation": "이전과 현재 조회의 조판 trace 해시는 같지만 native renderer snapshot이 없어 실제 Skia 글리프 선택이나 시각 일치율을 증명하지 않는다. 이전 조회 바이너리 해시가 기록되지 않아 이 결과만으로 글꼴 설치 외 환경이 모두 같았다고 주장하지 않는다."
+  }
 }
