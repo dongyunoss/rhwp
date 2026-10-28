@@ -1012,3 +1012,5 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 - 후속 표 보정에 직접 연결되는 `issue_8149_empty_host_float_page_bottom`, `source_owned_float_fragment_frames`, `issue_8160_saved_page_boundaries` 세 묶음의 선택 nextest는 종료 코드 0, 24개 통과다. 필터에서 제외된 794개는 실행하지 않았고 전체 회귀도 다시 실행하지 않았다. [명령·검사명·로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json).
 - #8319 보존 대상 197개 입력도 후속 보정 전후 Native·fresh WASM으로 실행 중이다. WASM 임시 집계에는 이전 패키지 SHA가 잘못 들어갔으므로 각 실행 manifest의 실제 사용 패키지 SHA를 확인한 뒤 정식 원장을 작성한다.
 - #7723 공백 설정 통제 인쇄에서는 변환 HWPX의 charPr 55 `useFontSpace`만 0에서 1로 바꾸면 문제 문단의 첫 줄이 원래 인쇄 결과보다 길어졌다. 원본 속성은 0이므로 임의 변경하지 않는다. [인쇄 대조와 원본 글꼴 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json).
+
+- 회귀 근거 정리 시작점 이후 변경된 Rust 검사 26개 파일을 다시 대조했다. 첫 줄의 유형과 합성 ZIP 검사 외 날짜·raw 96dpi·Native/WASM·전쪽 최저 표기, 첫 주석의 정식 근거 29개 경로의 존재와 Git 추적을 확인했다. 이 기계 검사는 수치의 의미나 98% 기준의 적합성을 대신 판정하지 않는다. [파일별 주석·해시 목록](assets/review_integration_20261026/validation/post-rebase-8328/regression-26-header-inventory.json).
