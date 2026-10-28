@@ -1058,3 +1058,15 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 - #7723의 기존 PDF와 새 MCP PDF 22쪽을 동일 PDFium 설정으로 재래스터화해 내용 마스크를 직접 비교했다. 4px 사각 이웃에도 대응하지 않는 화소가 기존 203개·새 PDF 177개다. 같은 렌더 PNG가 두 PDF에 각각 2px raw 100%를 동시에 만족할 수 없다는 뜻이며, 새 MCP 기준만의 해결 가능성을 부정하지 않는다. [조건·래스터 해시·대조](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/old-vs-new-pdf-page-comparison.json).
 
 - 2026-10-29 upstream/devel을 다시 fetch한 결과 `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`로 기존 기준과 같았다. 확인 시 로컬 HEAD `b15fa728e853bcca51b60327b2cab5cbb4372382`이며 원격에만 있는 커밋은 0개라 추가 리베이스는 필요하지 않았다. fetch 로그 SHA-256 `5df049c409ba55f303db1c87c1704adc35971902ab9f2be478362df2a03b2373`. 제출 전에는 다시 확인한다.
+
+### 최신 작업 지시와 제출 상태
+
+- 이후 변환은 기존 MCP의 한컴 2024 경로만 사용한다. 별도 호스트 MCP는 사용하지 않는다.
+- 전체 회귀는 다시 실행하지 않는다. 완료한 Rust 정적 검사와 Studio 선택·브라우저 검증은
+  [PR 본문 준비안](review_integration_20261026_pr_body_draft.md)의 실행 근거를 따른다.
+- 작업지시자는 필수 검증 완료 뒤 PR 생성과 CI 완료 후 머지·후속 처리를 승인했다. CI 변경을
+  포함하므로 PR review와 오늘할일은 옵션 2의 별도 후속 기록 PR로 처리한다. PR 생성 전 최신
+  base·원 PR·로컬 검증을 다시 확인하고, 머지 전 정확한 head의 필수 CI를 확인한다.
+- #7723의 새 MCP 기준 100%는 아직 충족하지 못했다. 기존·새 22쪽 PDF는 같은 렌더 PNG가 두
+  기준에서 동시에 반경 2px raw 100%를 만족할 수 없으므로 기존 기준을 새 기준의 통과로 쓰지
+  않는다. 이 항목을 완료로 표시하거나 이슈를 닫지 않은 채 원인을 계속 분석한다.
