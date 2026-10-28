@@ -55,5 +55,57 @@
       "normal_candidate": 93.7303,
       "additional_pdf_matched_fonts": 93.7303
     }
-  ]
+  ],
+  "additional_probe": {
+    "platform_log_sha256": "2dd90f5d9cee59cbbac6ee6ca15cb7d59f571ca6a0e2cdf482edba1c5c28276f",
+    "kopub_requested_probes": [
+      {
+        "font": "13.333px \"KoPubWorld돋움체_Pro Medium\", KoPubWorld돋움체_Pro, 한컴바탕, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+        "count": 14,
+        "platform": [
+          {
+            "familyName": "Haansoft Batang",
+            "postScriptName": "Haansoft Batang",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      }
+    ],
+    "pdf_text_font_counts": [
+      {
+        "page": 19,
+        "extracted_text_characters_by_font": {
+          "Haansoft Batang": 8,
+          "KoPubWorldDotumBold": 2
+        }
+      },
+      {
+        "page": 26,
+        "extracted_text_characters_by_font": {
+          "Haansoft Batang": 61,
+          "KoPubWorldDotumBold": 2,
+          "BMDoHyeon": 13,
+          "KoPubWorldBatangLight": 2
+        }
+      },
+      {
+        "page": 33,
+        "extracted_text_characters_by_font": {
+          "Haansoft Batang": 8,
+          "KoPubWorldDotumBold": 2
+        }
+      },
+      {
+        "page": 38,
+        "extracted_text_characters_by_font": {
+          "Haansoft Batang": 48,
+          "KoPubWorldDotumBold": 2,
+          "BMDoHyeon": 13,
+          "KoPubWorldBatangLight": 2
+        }
+      }
+    ],
+    "note": "표본 글자 탐색과 PDF 텍스트 추출에 한정하며 모든 글리프 및 그림/Type3 표시를 대표하지 않는다."
+  }
 }
