@@ -709,6 +709,12 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 [선택 쪽별 세 수치와 입력·PDF·바이너리 해시](assets/review_integration_20261026/validation/post-rebase-8328/historical-wasm-spot-comparison.json)를
 기록했다. 이는 원래 TSV의 실행 환경이 복원됐다는 증거가 아니며 전체 WASM 범위의
 0.1%p 기준 통과를 뜻하지 않는다. 환경 차이와 나머지 쪽의 비교는 계속한다.
+진행 중인 WASM 비교 임시 원장의 `binary_sha256`은 WASM이 아니라 `--rhwp-bin`으로
+함께 지정된 Native 보조 파일의 해시다. 최종 근거를 만들 때는 실제 `--wasm-pkg`의
+`rhwp_bg.wasm` 해시를 따로 계산해야 한다. 위 선택 비교 기록의 잘못된 WASM 해시는
+실제 패키지 해시로 정정하고 Native 해시도 별도 필드에 보존했다. base와 후보의
+WASM 해시는 각각 `266dc44808d31a7fb49eb025be0b4b052f77fe7e114edeaa52fd8534d34c4322`,
+`3faf7e1bca135d57bf70049d3ee63290c4892cea5be30c2ca6fdf2f772faa01a`다.
 
 #8328 기준과 리베이스 후보의 Native 동일 조건 비교는 55개 입력의 329쪽을
 완료했다. 쪽 수 불일치나 실행 오류는 없으나 #8057 공식 대체 입력의 15쪽이
