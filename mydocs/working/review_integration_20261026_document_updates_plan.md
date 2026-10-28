@@ -729,6 +729,11 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 98.57262%를 98.57264%로 재현했지만 나머지 선택 7쪽의 미달은 해소하지 못했다.
 [글꼴 공급 선택 쪽 진단](assets/review_integration_20261026/validation/post-rebase-8328/historical-hcr-spot-diagnostic.json)은
 최종 후보 검증이 아니며 단일 글꼴 추가로 전쪽 환경이 복원됐다는 근거가 아니다.
+이후 실제 과거 WASM과 최종 후보 WASM 양쪽에 동일한 한컴 HCR 글꼴을 공급해 중첩 표
+1쪽을 재검증했다. 과거 WASM PNG의 SHA-256이 보존된 과거 PNG와 완전히 같고 과거
+98.57262%, 후보 98.57264%로 0.1%p 하락이 없다. [정확한 과거 이미지 재현과
+후보 비교](assets/review_integration_20261026/validation/post-rebase-8328/historical-exact-hcr-cell.json)는
+이 한 쪽의 근거이며 나머지 열한 쪽의 과거 조건 재현까지 의미하지 않는다.
 미달이 있는 중첩 표·온세미로 HWP·뉴스레터·9월 미주 문서의 기존과 현재
 명시적 글꼴 공급 목록은 각각 51개 파일의 해시와 순서가 모두 같다.
 [글꼴 공급 비교](assets/review_integration_20261026/validation/post-rebase-8328/wasm-font-supply-comparison.json)는
