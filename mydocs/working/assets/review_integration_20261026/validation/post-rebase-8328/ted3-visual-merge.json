@@ -30,5 +30,10 @@
     "log_sha256": "4f6ebf35767250b2a0d6b815968dbb2d77bc9f407a4e61e4f0500aef42ffdb2a",
     "manifest_sha256": "85b6da1a83c7f9a0dd8230ebd3f846c5a92eca5b39511398d9ec69128946b730",
     "observed_receipt": "not requested"
+  },
+  "dpi_raw_tests": {
+    "summary": "4 passed",
+    "log_sha256": "ab6318e1330a7adcb5e9824c1215ecec8a71d27a6f60ece6f2da5f53d1eaa653",
+    "note": "first invocation failed to import sibling modules; retry set PYTHONPATH=scripts/tests"
   }
 }
