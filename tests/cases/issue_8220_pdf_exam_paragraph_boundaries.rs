@@ -1,6 +1,16 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-27 측정 raw(96dpi, PDFium, PDF fidelity 가져오기): 21_언어_기출_편집가능본-2010.pdf 7쪽 Native 99.83396% / fresh WASM 99.77416%; 전16쪽 최저 98.80885% / 98.69530%.
+//! 21_언어_기출_편집가능본-2020.pdf 7쪽 99.59383% / 99.19060%; 전15쪽 최저 99.22374% / 98.69112%.
+//! 21_언어_기출_편집가능본.pdf 7쪽 99.77490% / 99.73443%; 전15쪽 최저 98.52190% / 98.44719%.
+//! 각 수치 쌍은 Native / fresh WASM 순서이며 현재 head의 새 측정이 아닌 당시 측정이다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/visual-validation.json,
+//! mydocs/working/assets/review_integration_20261026/validation/tsv/native/pdf-2010-fidelity.tsv,
+//! mydocs/working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2010-fidelity.tsv.
+//! 2010 PDF 7쪽 원본 글줄 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json.
+//!
 //! #8220: untagged exam PDFs printed from one HWP. Imported body paragraphs
 //! follow the author's paragraph boundaries. The independent expectation is the source
-//! HWP's own paragraph text, not a recognition preview or a pixel position.
+//! HWP's own paragraph text; the additional coordinate comes from the source PDF.
 //!
 //! Boundaries exercised here, each on real Hancom output:
 //! - a short last line followed by an indented or flush next line,
@@ -11,6 +21,7 @@
 //! - columns whose baselines are offset from each other.
 #![cfg(feature = "pdf-import")]
 
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::{
     model::{control::Control, paragraph::Paragraph, style::PARA_ATTR2_LINE_WRAP_MASK},
     parser::pdf::PdfImportOptions,
@@ -218,5 +229,36 @@ fn offset_column_baselines_still_separate_the_columns() {
         owners.values().sum::<usize>(),
         1,
         "one body paragraph owns the left-column paragraph"
+    );
+
+    fn text(node: &RenderNode) -> String {
+        let mut result = match &node.node_type {
+            RenderNodeType::TextRun(run) => run.text.clone(),
+            _ => String::new(),
+        };
+        for child in &node.children {
+            result.push_str(&text(child));
+        }
+        result
+    }
+    fn target(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::TextLine(_))
+            && norm(&text(node)).starts_with("결국르포르는권력이제어할수있는")
+        {
+            return Some(node);
+        }
+        node.children.iter().find_map(target)
+    }
+    let tree = core.build_page_render_tree(6).expect("source PDF page 7");
+    let line = target(&tree.root).expect("source paragraph first line");
+    assert!(
+        (line.bbox.x - 603.98).abs() <= 2.0,
+        "source PDF line x: {}",
+        line.bbox.x
+    );
+    assert!(
+        (line.bbox.y - 388.54).abs() <= 2.0,
+        "source PDF line y: {}",
+        line.bbox.y
     );
 }
