@@ -1,7 +1,6 @@
 # 통합 PR 본문 준비안
 
-> 작성 중: 아래 검증 항목이 끝나기 전에는 PR 제출용 본문으로 확정하지 않는다.
-> 작업지시자는 모든 필수 검증 완료 후 원격 PR과 후속 처리를 승인했다.
+> 로컬 검증과 개별 리뷰를 기록한 제출용 준비안이다. 원격 CI·머지 결과는 별도로 확인한다.
 
 ## 제목안
 
@@ -19,21 +18,23 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 #8283. 원 head와 최초 적용은 [기존 체리픽 원장](assets/review_integration_20261026/cherry_pick_ledger.json), 리베이스 후 현재 적용 SHA는 [대응 원장](assets/review_integration_20261026/cherry_pick_current_ledger_20261028.json)에 기록한다.
 #8268과 #8161은 이 통합 대상이 아니다.
 
+Closes #7723
+
 2026-10-29 현재 원 PR 20건의 head와 본문은 기존 검토 시점과 같다. 개별 리뷰 40개는
 링크 검사 뒤 변경되지 않았다. [원 PR·리뷰 대조](assets/review_integration_20261026/validation/post-rebase-8328/source-pr-head-body-20261029.json).
 이후 원 PR 20건의 현재 상태·head·본문을 다시 조회했으며 모두 OPEN이고 위 대조와 head·본문이 같다.
 [재조회 결과와 시각](assets/review_integration_20261026/validation/post-rebase-8328/source-pr-head-live-recheck.json).
 개별 리뷰는 이후 수정했으므로 위의 리뷰 파일 불변 기록은 해당 대조 시점에만 적용한다.
 
-## 제출 전 검증 기록 — 미완료
+## 제출 전 검증 기록
 
-- 최신 기준 `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`(#8328) 반영 후
-  변경의 Native·fresh WASM 전쪽을 검사 중이다. 최종 결과와 근거 링크는
-  검증 종료 후 기입한다. 페이지별 하락 기준은 0.1%p다.
+- 기준 `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`(#8328) 반영 후
+  변경 범위와 새 기준의 Native·fresh WASM 결과를 아래와 같이 대조했다.
+  페이지별 하락 기준은 0.1%p다.
 - #8319 반영 범위 Native는 197개 입력·256쪽에서 실행 오류, 0.1%p 이상 하락과
   90% 미만이 없었다. [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/incoming-native-comparison.json).
 - #8328 기준 대비 fresh WASM은 55개 입력·329쪽에서 0.1%p 이상 하락이 없었다.
-  기준에서도 90% 미만인 여섯 쪽은 기존 예외로 별도 기록한다.
+  기준에서도 90% 미만인 여섯 쪽은 기준과 후보의 동일 결과로 별도 기록한다.
   [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/fixed-wasm-matrix.json).
 - 표 뒤 문단 보정 당시 전체 Rust 회귀검사는 11,898개 통과·45개 skip으로 종료했다. 이후 원 PR 추가 체리픽과 회귀 assertion 변경이 있으므로 이 실행을 최종 head의 전체 회귀 결과로 표기하지 않는다. 작업지시자 지시에 따라 전체 회귀는 다시 실행하지 않으며 필요한 남은 개별 검사를 진행한다.
 - 후속 보정 후 관련 선택 회귀 24개가 모두 통과했다(필터에서 제외된 794개는 재실행하지 않음). [검사명·명령과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json).
@@ -59,7 +60,10 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - 새 #8184 보정 이후 sample16 세 문서는 Native와 fresh WASM 각각 64쪽 모두 기존의 동일 PDF 래스터와 raw 100%다. 현재 방식으로 PDF를 다시 래스터화하면 일부 99.98%로 측정되어 두 결과를 별도 TSV로 보존한다. [입력·PDF·쪽별 해시 및 TSV](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/evidence.json).
 - 새 #8184 보정 이후 36개 표 조각 입력의 Native·fresh WASM 각 64쪽은 모두 raw 100%다. [입력·PDF 및 쪽별 결과](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-float-fragments/evidence.json). 공식 사양서 71쪽도 같은 기존 PDF 래스터 기준 두 경로 모두 보정 전과 전쪽 수치가 같으며 0.1%p 이상 하락이 없다. [전쪽 비교](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json).
 - 후속 체리픽 뒤 기존 통합 범위 67개 입력·956쪽은 Native·fresh WASM의 전쪽 렌더 PNG가 보정 전과 각각 동일하다. 같은 기존 PDF 래스터를 기준으로 두 경로 모두 0.1%p 이상 하락은 없고 90% 미만도 없다. [Native 66건](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-native-png-comparison.json), [WASM 66건](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-wasm-png-comparison.json), [공식 사양서 71쪽](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json). 동일 PNG에 관한 수치는 기존 래스터에서 추론한 것으로, 새 래스터의 직접 측정과 구분한다.
-- 리뷰 문서의 기존 결과는 해당 시점의 기록이다. 최종 검증이 완료되면 20건의 리뷰 문서에 최신 결과와 해당 PR이 주장한 페이지의 근거를 반영한다.
+- 20건의 개별 리뷰에는 원 PR의 해당 입력·쪽과 과거 실행 시점을 구분해 기록했다.
+- #8219의 사용자 지정 `hwp3-sample4.hwp`는 기존 base와 후보 PNG가 양 경로에서 전쪽 같지만,
+  1쪽은 90% 미만이다. 작업지시자는 글꼴 제약을 확인한 뒤 이 쪽의 추가 보정 없이 진행하도록 했다.
+  [해당 리뷰](../pr/archives/pr_8219_review.md).
 
 제출 직전 최신 `upstream/devel`, 변경된 head와 필수 검사 결과를 다시 확인한다.
 원격 CI와 머지는 아직 수행하지 않았다.
