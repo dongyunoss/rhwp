@@ -796,3 +796,11 @@ SHA-256 `6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab`의
 기존 전체 회귀는 보정 전 두 실패로 종료했으므로 수정 후 전체 회귀를 새로
 실행한다. 공유 `target/pr-review`의 Cargo/WASM 빌드와 겹치지 않게 순차 실행하고,
 #7723 별칭의 내용·쪽 경계 검사 및 최종 종료 코드를 확인한다.
+
+sample16 세 문서의 #8328 리베이스 후 fresh WASM 전쪽 검증을 완료했다.
+HWPX·2024 HWP·2022 HWP는 각각 64쪽 TSV 모두 raw 100%이며 Native와 WASM의
+총 384쪽 실제 PNG에서 양방향 반경 2px 미대응 픽셀은 모두 0이다. 새 WASM의
+SHA-256은 `3faf7e1bca135d57bf70049d3ee63290c4892cea5be30c2ca6fdf2f772faa01a`다.
+[WASM 전쪽 TSV와 통합 픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8328/sample16-fixed-wasm/combined-pixel-contract.json)에
+각 페이지의 이미지 해시와 미대응 수를 보존한다. 이는 위 #7723의 다른 새 MCP PDF
+기준 미달을 해결했다는 뜻은 아니다. 전체 Rust와 나머지 WASM 검사는 계속 진행한다.
