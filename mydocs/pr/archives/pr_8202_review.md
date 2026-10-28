@@ -95,3 +95,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR이 주장한 문서의 18쪽
+
+원 PR이 제시한 `samples/HWP5-nopassword-123456.hwpx` 18쪽을 대응 한컴 2024 Print PDF와 비교한 이전 전체 쪽 측정은 Native 99.95316%, fresh WASM 99.94989%다. 각각 24쪽이며 입력·PDF SHA와 전체 쪽 값은 [Native 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json), [WASM 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json)의 `tac-shape-source`에 있다. 이는 #8184 후속 보정 전 수치다. 해당 보정 후 측정은 별도로 확인한다.
