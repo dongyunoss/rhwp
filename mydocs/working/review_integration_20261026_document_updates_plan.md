@@ -1009,6 +1009,6 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 
 ### 2026-10-29 후속 검증 진행
 
-- 후속 표 보정에 직접 연결되는 `issue_8149_empty_host_float_page_bottom`, `source_owned_float_fragment_frames`, `issue_8160_saved_page_boundaries` 세 묶음만 선택한 nextest가 진행 중이다. 이전 전체 회귀를 다시 실행하지 않았다. 종료 코드·실제 실행 수와 실패 여부를 확인하기 전에는 통과로 기록하지 않는다.
+- 후속 표 보정에 직접 연결되는 `issue_8149_empty_host_float_page_bottom`, `source_owned_float_fragment_frames`, `issue_8160_saved_page_boundaries` 세 묶음의 선택 nextest는 종료 코드 0, 24개 통과다. 필터에서 제외된 794개는 실행하지 않았고 전체 회귀도 다시 실행하지 않았다. [명령·검사명·로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json).
 - #8319 보존 대상 197개 입력도 후속 보정 전후 Native·fresh WASM으로 실행 중이다. WASM 임시 집계에는 이전 패키지 SHA가 잘못 들어갔으므로 각 실행 manifest의 실제 사용 패키지 SHA를 확인한 뒤 정식 원장을 작성한다.
 - #7723 공백 설정 통제 인쇄에서는 변환 HWPX의 charPr 55 `useFontSpace`만 0에서 1로 바꾸면 문제 문단의 첫 줄이 원래 인쇄 결과보다 길어졌다. 원본 속성은 0이므로 임의 변경하지 않는다. [인쇄 대조와 원본 글꼴 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json).
