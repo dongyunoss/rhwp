@@ -781,5 +781,15 @@
     "new_line_end": "응용프로",
     "new_page_fonts": "CID TrueType resources 12,30,57; old PDF includes Type3 resources",
     "interpretation": "같은 원 PR HWPX를 같은 한컴 버전과 Print 방식으로 현재 MCP에서 재출력해도 22쪽의 줄 구성과 글꼴 자원이 이전 원 PR PDF와 다르다. 새 HWPX PDF 22쪽 래스터는 새 HWP #7723 PDF와 일치하고 기존 두 PDF의 22쪽 래스터도 서로 일치한다. 문서 형식만의 차이는 아니다. 이 관측은 서버 출력 상태가 바뀐 구체적 원인을 입증하지 않는다. 전쪽 비교는 수행하지 않았다. 새 PDF는 임시 진단 산출물이다."
+  },
+  "mcp_font_scope_semantics": {
+    "date": "2026-10-29",
+    "host": "win10-hwp-convert-2024",
+    "worker_source": "C:\\ProgramData\\HwpConvert2024\\service\\app\\tools\\hwp-direct-host\\HwpDirectHostWorker.cs",
+    "worker_source_sha256": "ae6381676e64b8feae103729f45788677cfbc4e45e20ade128887328f473a2a4",
+    "method": "서비스 호스트의 worker 소스를 읽기 전용으로 확인했다. 인증 설정과 토큰 값은 읽어 기록하지 않았다.",
+    "registration": "session 0에서 private font map의 대상 글꼴을 AddFontResourceEx로 등록한다.",
+    "visibility": "InspectFontVisibility는 GDI EnumFontFamiliesEx로 한컴바탕과 한컴돋움 두 계열을 확인하고, 별도 자식 프로세스도 동일한 표시 여부를 확인한다.",
+    "conclusion": "font_scope verified는 한컴바탕·한컴돋움의 해당 가시성 검증을 의미하며 문서별 HCI Poppy HFT의 실제 선택이나 포함을 증명하지 않는다. 현재 Poppy 출력이 대체된 직접 원인을 확정하지 않는다."
   }
 }
