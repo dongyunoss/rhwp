@@ -35,6 +35,8 @@
 
 보호 검사: [nested_table_height_cache_contract.rs](<../../../tests/cases/nested_table_height_cache_contract.rs>). 전체 nextest 또는 해당 Native/Studio 실행의 실제 결과에 포함된다.
 
+추가로 검사와 같은 중첩 셀 편집을 저장·재열기한 입력에 대해 한컴 2020 MCP Print와 18쪽을 비교했다. 2쪽 Native 58.54219% / fresh WASM 91.73536%, 3쪽 26.59257% / 26.64294%, 4쪽 46.02103% / 46.09464%이며 전쪽 최저는 3쪽이다. 편집 저장본 비교와 검사 자체의 메모리 내 SVG 캐시 동등성은 구분한다. 이 입력은 98% 미만이므로 해당 검사는 관계형을 유지한다. [편집본 출력·전쪽 수치](<../../../mydocs/pr/assets/pr8213-nested-cache-edit/evidence.json>).
+
 추가 보정: `db096cb48ae1b113cbe9c0d3c6dce7986ac3e9df`, `dceccce7947325cb28f02501dabc9a46b2005cb6`, `1785fc69eb278c2aaba82a62a958af62c949e3f8`, `4816eda4121b317d6ade8a9bec1520518795a54f`, `358e256f92354a1a9686867a38f478a36adde734`, `607c578e3b2cf1bca5c58a0ca0e679be97f23582`, `8fd43e0cadc07674f2a7ad0d4489592381c7bdb1`, `eaa4918972d0d7354641c72b0bc8bf38d5954bed`, `92f41d036fe4cd9f04348a97e36d5e07b7d3cf0c`. 기여자의 원 변경과 구분하며 일반성·독립 근거·수정 전후는 통합 계획에 기록했다.
 
 성능 판정은 반복 판정의 이동·캐시 무효화·저장 바이트와 출력 무회귀에 한정한다. 기여자의 장비별 가속률이나 비공개 편람의 수치를 재현했다고 주장하지 않는다.

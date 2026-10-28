@@ -1,8 +1,11 @@
 //! 검사 유형: 관계형.
 //! 2026-10-28 측정 raw(96dpi, PDFium):
 //! issue2007_nested_cell_pagination_42065.hwp: 1쪽 Native 94.47057% / fresh WASM 94.39749%; 17쪽 Native 98.45890% / fresh WASM 98.06580%; 전17쪽 최저 94.47057% / 94.39749%.
+//! 같은 편집을 저장·재열기한 별도 입력: 2쪽 Native 58.54219% / fresh WASM 91.73536%,
+//! 3쪽 Native 26.59257% / fresh WASM 26.64294%, 4쪽 Native 46.02103% / fresh WASM 46.09464%; 전18쪽 최저 26.59257% / 26.64294%.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
 //! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 편집 저장본 근거: mydocs/pr/assets/pr8213-nested-cache-edit/evidence.json. 메모리 내 편집 결과의 직접 측정은 아니다.
 //!
 #![cfg(not(target_arch = "wasm32"))]
 
