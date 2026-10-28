@@ -715,6 +715,10 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/original-wasm-comparison.json)에
 입력·PDF·WASM 해시와 전쪽 수치를 보존한다. 선택 쪽의 동일 환경 비교만으로 이
 미달을 통과로 대체하지 않으며 원래 환경 차이를 계속 조사한다.
+선행 보정 WASM에서 한컴 HCR 글꼴을 추가 공급한 진단은 중첩 표 1쪽의 과거
+98.57262%를 98.57264%로 재현했지만 나머지 선택 7쪽의 미달은 해소하지 못했다.
+[글꼴 공급 선택 쪽 진단](assets/review_integration_20261026/validation/post-rebase-8328/historical-hcr-spot-diagnostic.json)은
+최종 후보 검증이 아니며 단일 글꼴 추가로 전쪽 환경이 복원됐다는 근거가 아니다.
 
 #8319 반영 범위 Native 재검증은 197개 입력·256쪽을 완료했다. 실제 입력·PDF와
 TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했으며 실행 오류,
