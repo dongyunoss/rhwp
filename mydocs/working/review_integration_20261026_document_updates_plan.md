@@ -1056,6 +1056,7 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 - 개별 PR 20건의 review·구현 문서 40개를 최근 증거 링크 반영 후 다시 검사했다. 인식한 상대 파일 링크 863개에 누락·미추적 파일·임시 output 경로가 없다. 외부 링크·앵커 및 증거 내용 적합성을 이 검사로 판정하지 않는다. [문서별 해시와 결과](assets/review_integration_20261026/validation/post-rebase-8328/individual-review-local-links-20261029.json).
 
 - #7723의 기존 PDF와 새 MCP PDF 22쪽을 동일 PDFium 설정으로 재래스터화해 내용 마스크를 직접 비교했다. 4px 사각 이웃에도 대응하지 않는 화소가 기존 203개·새 PDF 177개다. 같은 렌더 PNG가 두 PDF에 각각 2px raw 100%를 동시에 만족할 수 없다는 뜻이며, 새 MCP 기준만의 해결 가능성을 부정하지 않는다. [조건·래스터 해시·대조](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/old-vs-new-pdf-page-comparison.json).
+- Poppler의 1쪽 `물` 글자 추출 bbox 상단은 두 PDF에서 약 15.38pt 다르지만 같은 글자 영역의 96dpi 잉크 행은 모두 248~262px다. PDF 텍스트 bbox 상단만으로 실제 잉크 위치나 글줄 이동을 단정하지 않는다. 이는 선택 영역의 진단이며 새 기준의 100% 해결을 뜻하지 않는다. [좌표·래스터 해시](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/poppler-bbox-ink-check.json).
 
 - 2026-10-29 upstream/devel을 다시 fetch한 결과 `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`로 기존 기준과 같았다. 확인 시 로컬 HEAD `b15fa728e853bcca51b60327b2cab5cbb4372382`이며 원격에만 있는 커밋은 0개라 추가 리베이스는 필요하지 않았다. fetch 로그 SHA-256 `5df049c409ba55f303db1c87c1704adc35971902ab9f2be478362df2a03b2373`. 제출 전에는 다시 확인한다.
 
