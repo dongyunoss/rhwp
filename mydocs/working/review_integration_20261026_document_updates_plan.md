@@ -727,6 +727,10 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 해당 경로를 제외하는 조사 설정에서는 0개다. 두 설정의 `fc-match` 결과는 한양신명조와
 함초롬돋움에서 달라진다. [설정·선택 결과](assets/review_integration_20261026/validation/post-rebase-8328/fontconfig-selection-diagnostic.json)를
 기록하되, 이는 Chromium의 실제 글꼴 사용이나 과거 환경 전체의 복원을 입증하지 않는다.
+미달 문서 네 건의 선행 Chromium 글꼴 진단에서 관찰된 family 8종을 두 설정에서
+`fc-match`로 조회하면 모두 같은 파일이 선택됐다. [관찰·조회 결과](assets/review_integration_20261026/validation/post-rebase-8328/wasm-platform-font-diagnostic.json)는
+두 설정에서 Chromium 전체를 실행한 비교나 과거 선택의 증거는 아니다. 이전에 확인한
+일부 이름의 시스템 선택 차이만으로는 열두 쪽의 차이를 설명할 수 없다.
 
 #8319 반영 범위 Native 재검증은 197개 입력·256쪽을 완료했다. 실제 입력·PDF와
 TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했으며 실행 오류,
