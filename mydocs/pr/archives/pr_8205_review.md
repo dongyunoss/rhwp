@@ -58,7 +58,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 ## 2026-10-28 해당 PR 쪽별 재검증
 
-수식 캐시의 `equation-lim.hwp` 1쪽은 Native 99.88926% / fresh WASM 100.00000%, 전1쪽이다. 미주 수식 입력 `3-11월_실전_통합_2022.hwp` 21쪽은 90.80955% / 90.84255%, 전21쪽 최저도 같다. 이 수치는 편집 전 원본의 측정이며 수식 편집본의 독립 인쇄 측정으로 취급하지 않는다.
+수식 캐시의 `equation-lim.hwp` 1쪽은 Native 99.88926% / fresh WASM 100.00000%, 전1쪽이다. 미주 수식 입력 `3-11월_실전_통합_2022.hwp` 21쪽은 90.80955% / 90.84255%, 전21쪽 최저도 같다. 수식 `+ 1` 편집·저장본은 별도로 한컴 2020 Print와 대조했고 1쪽 Native 99.89669% / fresh WASM 100.00000%다. 원본과 편집본을 구분하며, 편집된 수식의 시작 좌표는 독립 Print로 고정 검사했다. [편집 방법·입력 SHA·Print 결과](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/equation-edited-print-evidence.json>), [검사 3개 통과](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/equation-edited-coordinate-test.json>).
 
 측정 입력·기준 PDF SHA 및 전쪽 수치는 [Native 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json>)과 [fresh WASM 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json>)에서 각각 확인한다.
 

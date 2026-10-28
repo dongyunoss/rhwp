@@ -464,13 +464,14 @@ def repair_terminal_cmap(data: bytes, glyph_count: int) -> bytes | None:
 
 
 def export_wasm_png(vs, root, hwp, package, base, selected, font_paths, environment, compat, dpi, workers,
-                    observed_font_receipt=None):
+                    observed_font_receipt=None, *, linked_images=None):
     import sys
     catalogue = font_catalog(vs, root, font_paths, base)
     options = base / 'canvas-options.json'
     vs.write_json_atomic(options, {'pages': selected, 'workers': workers, 'scale': dpi / 96.0,
                                   'compat': compat, 'fontEnvironment': str(environment) if environment else None,
                                   'observedFontReceipt': str(observed_font_receipt) if observed_font_receipt else None,
+                                  'linkedImages': linked_images or [],
                                   'pythonExecutable': sys.executable})
     vs.run(['node', str(root / 'scripts/export-wasm-png-for-sweep.mjs'), '--pkg', str(package),
             '--input', str(hwp), '--out', str(base), '--fonts', str(catalogue), '--options', str(options)],

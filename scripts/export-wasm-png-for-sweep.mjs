@@ -147,6 +147,16 @@ async function main() {
     ['/sweep-font-environment.js', ['application/javascript', readFileSync(join(root, 'scripts/visual-sweep-font-environment.mjs'))]],
     ['/rhwp-studio/src/core/canvas-intrinsic-font.mjs', ['application/javascript', readFileSync(join(root, 'rhwp-studio/src/core/canvas-intrinsic-font.mjs'))]],
   ]);
+  const linkedImages = (settings.linkedImages || []).map((asset, index) => {
+    if (typeof asset.name !== 'string' || !asset.name || /[\\/]/.test(asset.name)) {
+      throw Error('연결 그림 이름은 basename이어야 합니다.');
+    }
+    const bytes = readFileSync(asset.path);
+    if (sha(bytes) !== asset.sha256) throw Error(`연결 그림 해시 불일치: ${asset.name}`);
+    const url = `/linked-image/${index}`;
+    files.set(url, ['application/octet-stream', bytes]);
+    return {name: asset.name, url, sha256: asset.sha256};
+  });
   // 실제 공급 목록만 HTTP로 읽을 수 있다. 요청 URL을 파일시스템 경로로 변환하지 않는다.
   const fonts = catalogue.faces.map((face, index) => ({...face, url: `/font/${index}`}));
   const fontByUrl = new Map(fonts.map(face => [face.url, face]));
@@ -177,12 +187,25 @@ async function main() {
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
         const canvasContext = await page.$eval('#page', preparePrintReadbackCanvas);
-        const info = await page.evaluate(async ({compat, environmentJson, fonts, observedFontFallbacks}) => {
+        const info = await page.evaluate(async ({compat, environmentJson, fonts, observedFontFallbacks, linkedImages}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
           const doc = new module.HwpDocument(new Uint8Array(await (await fetch('/source')).arrayBuffer()));
           if (typeof doc.renderPageToCanvasFilteredWithProfile !== 'function') throw Error('Print Canvas API가 없는 이전 WASM입니다.');
           doc.setHangul2024Compat(compat === '2024');
+          if (linkedImages.length) {
+            if (typeof doc.getExternalImageBasenames !== 'function' || typeof doc.injectExternalImage !== 'function') {
+              throw Error('연결 그림 주입 API가 없는 WASM입니다.');
+            }
+            const wanted = JSON.parse(doc.getExternalImageBasenames());
+            for (const asset of linkedImages) {
+              if (!wanted.includes(asset.name)) throw Error(`원본에서 요청하지 않은 연결 그림: ${asset.name}`);
+              const response = await fetch(asset.url);
+              if (!response.ok) throw Error(`연결 그림을 읽지 못했습니다: ${asset.name}`);
+              const injected = doc.injectExternalImage(asset.name, new Uint8Array(await response.arrayBuffer()), '');
+              if (!(injected > 0)) throw Error(`연결 그림을 주입하지 못했습니다: ${asset.name}`);
+            }
+          }
           const {applySweepFontEnvironment, loadSweepFontPrograms} = await import('/sweep-font-environment.js');
           // 실제 프로그램을 준비하고 공통 선택을 적용한 다음에 첫 pageCount를 계산한다.
           const fontEnvironment = await applySweepFontEnvironment(doc, environmentJson,
@@ -221,7 +244,7 @@ async function main() {
           const observedFonts = await prepareObservedFontFallbacks(doc, fonts, observedFontFallbacks, loadBytes);
           const nativePuaFonts = await prepareNativePuaFonts(doc, fonts, loadBytes);
           return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, observedFonts, fontEnvironment};
-        }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks});
+        }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks, linkedImages});
         const signature = JSON.stringify(info.fontEnvironment);
         if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
         environmentSignature = signature;

@@ -17,8 +17,8 @@
   "native_raw_percent": 27.15694,
   "native_page_sha256": "1df43e6c551daa2f6b5ea15df3746e230d4dc576b678052d28dc021bca00ec71",
   "print_page_sha256": "e48a30eeecc605355cb3dc66712ef7491f7baf29787781704692c82b5dc2ee79",
-  "wasm_status": "Canvas 그림 decode 실패; raw not measured",
-  "interpretation": "HWP3에는 D:\\\\Work\\\\Gwjang\\\\temp\\\\images 아래의 외부 그림 3개가 연결돼 있고 같은 파일명의 후보가 로컬 samples에 있다. MCP 입력은 HWP만 전송했으며 Print 1쪽에는 해당 그림이 없다. 원격 자원 접근 여부는 직접 확인되지 않았으므로 원인은 확정하지 않는다. PDF 적합성과 전쪽 최소값 미확인; PR 시각 기준으로 사용하지 않는다.",
+  "wasm_status": "원본 연결 그림을 로컬 후보로 주입한 뒤 디코드 완료",
+  "interpretation": "원본 HWP3는 서버에 전달되지 않은 외부 파일을 참조한다. 사용자 지시에 따라 그림 컨트롤 상자를 양쪽 비교에서 제외한다. 첫 쪽 제외 비교는 Native 65.65028%, fresh WASM 64.31181%로 모두 90% 미만이며 별도 전쪽 비교 진행 중이다. 제외 상자와 겹친 다른 내용은 검증하지 않는다.",
   "source_linked_pictures": [
     {
       "external_path": "D:\\Work\\Gwjang\\temp\\images\\oracle.gif",
@@ -35,5 +35,6 @@
       "local_candidate": "samples/s1.jpg",
       "local_candidate_sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
     }
-  ]
+  ],
+  "masked_comparison": "mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/issue8219-linked-p1-comparison.json"
 }
