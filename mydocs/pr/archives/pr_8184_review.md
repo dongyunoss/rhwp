@@ -98,3 +98,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR이 제시한 공식 사양서 쪽 재측정
+
+후속 체리픽 뒤 원 PR이 제시한 공식 사양서 33·43·47쪽을 같은 글꼴 공급과 기존 PDF 래스터 기준으로 측정했다. 세 쪽 모두 Native·fresh WASM 각각 raw 100%다. 동일 PDF를 현재 방식으로 다시 래스터화한 측정은 양쪽 모두 33·43쪽 100%, 47쪽 99.98%다. 입력과 PDF SHA, 각 쪽의 출력·기준 래스터 SHA 및 두 결과를 [검증 증거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-claims/evidence.json)에 기록했다. 세 쪽 결과만으로 전 71쪽을 재검증했다고 주장하지 않는다.
