@@ -38,7 +38,8 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - 기존 WASM TSV 일부는 원래 실행 환경을 아직 재현하지 못한다. 동일 현재 환경의
   과거 바이너리와 후보 비교도 병행하며 전체 기준을 완료로 판정하지 않는다.
 - 리베이스 시 두 #8149 후속 체리픽을 기존 묶음 뒤로 이동했다. 충돌은 없었고 리베이스 전후 최종 트리는 동일했다. [순서와 원 PR 대조](assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md). 이후 문서만 추가 커밋했다.
-- 새 #8184 보정 이후 36개 표 조각 입력의 Native 64쪽은 모두 raw 100%다. fresh WASM 빌드 및 해당 검증은 미완료다. 진행 기록은 최종 검증 후 정식 경로에 반영한다.
+- 새 #8184 보정 이후 sample16 세 문서는 Native와 fresh WASM 각각 64쪽 모두 기존의 동일 PDF 래스터와 raw 100%다. 현재 방식으로 PDF를 다시 래스터화하면 일부 99.98%로 측정되어 두 결과를 별도 TSV로 보존한다. [입력·PDF·쪽별 해시 및 TSV](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-sample16/evidence.json).
+- 새 #8184 보정 이후 36개 표 조각 입력의 Native 64쪽은 모두 raw 100%다. fresh WASM 검증은 진행 중이다. 완료된 전쪽 결과는 정식 경로에 반영한다.
 - 리뷰 문서의 기존 결과는 해당 시점의 기록이다. 최종 검증이 완료되면 20건의 리뷰 문서에 최신 결과와 해당 PR이 주장한 페이지의 근거를 반영한다.
 
 제출 직전 최신 `upstream/devel`, 변경된 head와 필수 검사 결과를 다시 확인한다.
