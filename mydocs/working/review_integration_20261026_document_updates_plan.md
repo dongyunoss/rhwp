@@ -750,3 +750,10 @@ HWP 유래 HWPX의 표 뒤 간격 보정 `db79f8d2c7`과 인라인 noAdjust 병�
 Native 세 문서 192쪽은 실제 PNG와 독립 Print를 양방향 반경 2px로 다시 비교해
 미대응 0이며 정식 증거는 `post-rebase-8328/sample16-fixed-native/`에 있다.
 fresh WASM과 다른 입력의 전쪽 비교는 별도로 진행 중이다.
+
+사용자 추가 요청 #7723: `samples/hwp3-sample16-hwp5-2010.hwp`는 기본 이름
+HWP와 SHA-256이 같은 별칭이며, 실제 한컴 2024 PDF를 기준으로 수정 후 Native
+전 64쪽 미대응 0을 확인했다. 근거는 `post-rebase-8328/issue7723/`에 보존했다.
+fresh WASM 전쪽과 기존 별칭 검사 재검증을 완료한 뒤 PR에 `Closes #7723`을
+포함하고, 통합 후 대표 #7445의 #7723 행을 취소선 및 근거로 갱신한다. 미검증
+상태에서 이슈를 닫거나 대표 이슈 행을 완료로 바꾸지 않는다.
