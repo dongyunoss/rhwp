@@ -89,3 +89,9 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR이 직접 판독한 8·9쪽
+
+원 PR은 병합 셀이 끝나는 8쪽과 이어지는 9쪽을 직접 비교했다. 기여자 고정 커밋과 동일한 [8쪽 Native review](../../report/rowspan-band-fit/rowspan_band_fit_p008_head_review.png), [8쪽 overlay](../../report/rowspan-band-fit/rowspan_band_fit_p008_head_overlay.png), [9쪽 수정 전](../../report/rowspan-band-fit/rowspan_band_fit_p009_base_review.png), [9쪽 Native](../../report/rowspan-band-fit/rowspan_band_fit_p009_head_review.png), [9쪽 WASM](../../report/rowspan-band-fit/rowspan_band_fit_p009_wasm_review.png)을 연결한다.
+
+별도 통합 후보의 기존 PDF 래스터 기준 8쪽은 Native 97.84306% / WASM 97.50188%, 9쪽은 양쪽 100.00000%다. 후속 표 보정 전후 두 쪽의 렌더 PNG는 각 경로에서 같았다. [원본·기준·이미지와 쪽별 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8142-source-pages8-9.json). 원 PR 이미지 실행과 통합 후보 측정은 구분한다.
