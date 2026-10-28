@@ -63,7 +63,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 ## 2026-10-28 해당 PR 쪽별 재검증
 
-원 PR의 쪽 끝 표·칸 각주를 다룬 `issue1937_rowbreak_footnote_overpagination.hwp`의 32쪽은 Native 99.99238% / fresh WASM 99.99242%, 33쪽 99.95598% / 99.94937%, 35쪽 99.99617% / 99.99621%다. 전50쪽 최저는 97.93136% / 97.80027%다. 같은 PR의 합성 trim·cellnotes 입력도 각 회귀 파일 첫머리에 원본별·쪽별로 기록했다. 32·33·35쪽과 2쪽 이어받기 조각의 좌표는 각각 독립 Print에서 읽었다.
+원 PR의 쪽 끝 표·칸 각주를 다룬 `issue1937_rowbreak_footnote_overpagination.hwp`의 32쪽은 Native 99.99238% / fresh WASM 99.99242%, 33쪽 99.95598% / 99.94937%, 35쪽 99.99617% / 99.99621%다. 전50쪽 최저는 97.93136% / 97.80027%다. 같은 PR의 합성 trim·cellnotes 입력도 각 회귀 파일 첫머리에 원본별·쪽별로 기록했다. 32·33·35쪽과 2쪽 이어받기 조각의 좌표는 각각 독립 Print에서 읽었다. 원 PR이 앵커 줄의 자기 각주로 제시한 44쪽은 같은 이전 측정에서 Native 99.86042% / fresh WASM 99.85697%다. [Native 전쪽 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json)과 [WASM 전쪽 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json)의 `issue1937`에 근거한다. 이 측정은 #8184 후속 보정 전이다.
 
 측정 원본과 기준 PDF의 SHA 및 모든 쪽 수치는 [Native 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json>)과 [fresh WASM 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json>)에 있다. [변경 검사 정상 실행 기록](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/targeted-coordinate-tests.json>)은 전체 회귀 재실행이 아니다.
 
