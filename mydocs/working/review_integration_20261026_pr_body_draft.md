@@ -63,3 +63,6 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - 2026-10-29 Rust 형식 검사, Native·WASM·workspace 전체 대상 Clippy, workspace 빌드,
   테스트 모음과 단위 테스트 정책 검사가 통과했다. 전체 회귀는 지시에 따라 재실행하지 않았다.
   [명령과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/pr-local-rust-gates-20261029.json).
+- Studio TypeScript 검사와 AI 제공자·PDF 배치·CanvasKit 변환 관련 선택 검사 41개가 통과했다.
+  [대상과 로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/studio-targeted-20261029.json).
+  이는 전체 Studio 검사나 최신 WASM 브라우저 검사 전체의 대체 결과가 아니다.
