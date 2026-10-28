@@ -54,3 +54,37 @@ fn complete_inline_frame_and_successor_tables_keep_their_print_pages() {
         "표 다음에 제목이 겹치지 않고 이어짐"
     );
 }
+
+#[test]
+fn inline_no_adjust_rowspan_table_keeps_printed_row_boundaries() {
+    let input = include_bytes!(
+        "../../mydocs/pr/assets/pr8319_evidence_alignment_20261027/official-inputs/pr8057-official.hwpx"
+    );
+    let core = DocumentCore::from_bytes(input).expect("공식 HWPX");
+    let page = core.build_page_render_tree(14).expect("독립 Print 15쪽");
+    fn table(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(&node.node_type, RenderNodeType::Table(t)
+            if t.section_index == Some(0) && t.para_index == Some(178)
+                && t.control_index == Some(0) && t.cell_context.is_none())
+        {
+            return Some(node);
+        }
+        node.children.iter().find_map(table)
+    }
+    let table = table(&page.root).expect("15쪽 글자처럼 취급 표");
+    for (row, expected_y) in [(13, 755.49), (19, 912.60)] {
+        let cell = table.children.iter().find(|node| {
+            matches!(&node.node_type, RenderNodeType::TableCell(c) if c.row == row && c.col == 3)
+        }).expect("행의 대표 셀");
+        assert!(
+            (cell.bbox.y - expected_y).abs() <= 2.0,
+            "행 {row}의 독립 Print 경계: {} vs {expected_y}",
+            cell.bbox.y
+        );
+        assert!(
+            (cell.bbox.height - 26.2).abs() <= 0.2,
+            "행 {row}의 저장 높이: {}",
+            cell.bbox.height
+        );
+    }
+}
