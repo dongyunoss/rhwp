@@ -5593,5 +5593,14 @@
         }
       ]
     }
-  ]
+  ],
+  "fontconfig_condition": {
+    "base": "/etc/fonts/fonts.conf",
+    "rejected_paths": [
+      "/home/tsjang/.local/share/fonts/rhwp-hancom-fallback/seguiemj.ttf",
+      "/home/tsjang/.local/share/fonts/rhwp-validation/malgunbd.ttf",
+      "/home/tsjang/.local/share/fonts/rhwp-legacy-equation/RHWP-Hancom-Legacy-Equation.otf"
+    ],
+    "scope": "해당 검증 프로세스만 적용; 전역 설정 변경 없음"
+  }
 }
