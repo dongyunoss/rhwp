@@ -39,3 +39,7 @@
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.
+
+## 2026-10-28 최신 원 PR 대조
+
+가는 획 Skia 보정과 기존 회귀 검사는 유지된다. 통합 후보는 선언 굵기로 raster 계획을 세우는 후속 보정과 실측 쪽 테두리 검사를 추가했다. CI의 차이는 Visual Sweep Brotli 의존성 추가이며 classifier와 해당 검사는 최신 원 PR과 같다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
