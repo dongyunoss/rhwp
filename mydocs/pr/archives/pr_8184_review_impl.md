@@ -49,8 +49,8 @@
 
 1. 고정 원 head 적용과 예상 tree·중복을 원장으로 확인했다.
 2. 승인된 기존 미달 페이지를 공통 로직에서 보정하고 단계별 일반 커밋으로 고정했다.
-3. 관련 전쪽 Native/fresh WASM 선행 검증·직접 판독 뒤 정식 소유 회귀를 보강하고, 최종 최적화 WASM 전쪽·기준 대비 하락 기준을 검증했다.
-4. 전체 필수 로컬 검증을 실제 완료한 뒤 원 PR별 이 기록을 작성했다.
+3. 관련 전쪽 Native/fresh WASM 선행 검증과 직접 판독 뒤 정식 소유 회귀를 보강했다. 후속 보정 뒤 기존 통합 67개 입력과 표 조각 36개 입력의 비교는 확인했고 #8319 보존 대상 197개 입력의 재비교는 진행 중이다.
+4. 이전 전체 회귀와 후속 보정의 선택 회귀를 구분해 기록했다. 작업지시자 지시에 따라 전체 회귀는 재실행하지 않는다. 현재 남은 전쪽 비교와 미해결 기준을 모두 마치기 전에는 제출 전 전체 검증 완료로 판정하지 않는다.
 5. 최종 로컬 커밋·본문을 준비하고 작업지시자 승인 후 원격 push·통합 PR 제출을 진행한다. 이후 CI·머지·원 PR 종료는 별도 후속 조건이다.
 
 보정 SHA: `a30b10d0967e98771dd8e90d6ad6748b2f14a52e`, `80e3cb7490e05294283dd45a545e41293bdfb4de`, `607c578e3b2cf1bca5c58a0ca0e679be97f23582`.
@@ -69,3 +69,7 @@
 ## 2026-10-28 후속 보정 대표 쪽 전후 비교
 
 같은 원본·독립 PDF·환경의 4쪽에서 0.1%p 이상 하락은 없다. `hcar-001.hwpx` 1쪽은 Native 74.87266% → 94.24519%, fresh WASM 75.42285% → 94.72286%다. `rowbreak-problem-pages.hwpx` 11쪽은 Native 95.74925% / WASM 95.75079%로 보정 전후 같고, 정책연구 보고서 174·175쪽도 두 경로의 수치가 각각 같다. [입력·PDF·PNG SHA와 전후 수치](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-representative/evidence.json). 기존 hcar의 90% 미달은 보정 전 관측이며 보정 후에도 100%라고 주장하지 않는다.
+
+## 2026-10-29 후속 선택 회귀
+
+후속 표 보정과 관련된 `issue_8149_empty_host_float_page_bottom`, `source_owned_float_fragment_frames`, `issue_8160_saved_page_boundaries` 검사만 선택해 실행했으며 24개 통과, 종료 코드 0이다. 필터에서 제외된 794개는 이 실행에서 검사하지 않았다. [실행 명령·검사명·로그 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json).

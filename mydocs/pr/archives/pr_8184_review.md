@@ -73,7 +73,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 | 항목 | 판정과 근거 |
 | --- | --- |
-| 제출 전 로컬 검증 | 충족 — [전체 로컬 실행·명령·exit·검증 SHA](<../../../mydocs/working/assets/review_integration_20261026/validation/final-rust-validation.json>). 원격 CI·머지는 완료로 세지 않음 |
+| 제출 전 로컬 검증 | 진행 중 — [이전 실행](<../../../mydocs/working/assets/review_integration_20261026/validation/final-rust-validation.json>)과 [후속 선택 회귀 24개](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-after-targeted-nextest.json)를 구분한다. #8319 전쪽 재비교와 남은 기준 확인은 진행 중이며, 전체 회귀는 재실행하지 않는다. |
 | 기존 해결의 선행 분석 | 충족 — [통합 계획·실패별 선행 분석·실제 소비 경로](<../../../mydocs/working/review_integration_20261026_document_updates_plan.md>); 원 이슈·원 해결·보정 SHA를 실패별로 추적 |
 | 구현 근거와 일반성 | 충족 — 위 실제 소비 경로와 독립 기대값. 문서 ID 보정·출력 은폐 없이 공통 결과 사용 |
 | 측정·배치 일관성 | 충족 — 공통 계산·저장 줄·프레임 결과의 실제 소비와 전쪽 Native/WASM 출력 대조 |
