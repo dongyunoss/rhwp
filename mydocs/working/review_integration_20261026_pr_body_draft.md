@@ -46,3 +46,5 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 
 제출 직전 최신 `upstream/devel`, 변경된 head와 필수 검사 결과를 다시 확인한다.
 원격 CI와 머지는 아직 수행하지 않았다.
+
+- #8319 보존 대상 197개 입력·256쪽은 Native 렌더 PNG가 후속 보정 전과 전쪽 동일했다. 기존 PDF 래스터 기준 최저 93.22230%, 0.1%p 이상 하락과 90% 미만이 없다. WASM은 진행 중이며 새 PDF 래스터의 직접 측정과 구분한다. [Native 전쪽 원장](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-native-same-raster-comparison.json).
