@@ -91,3 +91,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR에 제시된 두 미주 문서
+
+후속 #8184 보정 전 전쪽 측정에서 `3-11월_실전_통합_2022.hwp`는 21쪽이며 최저 21쪽 Native 90.80955% / fresh WASM 90.84255%, `3-09월_교육_통합_2022.hwp`는 23쪽이며 최저 20쪽 Native 95.06161% / fresh WASM 95.32108%다. 각 원본과 대응 한컴 2020 Print PDF의 SHA 및 전쪽 수치는 [Native 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json)과 [WASM 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json)에 기록했다. 이는 후속 보정 후의 새 측정을 뜻하지 않는다.
