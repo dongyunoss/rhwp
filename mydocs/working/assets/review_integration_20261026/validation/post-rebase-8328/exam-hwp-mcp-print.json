@@ -29,5 +29,16 @@
     "parent_visibility": "verified",
     "child_visibility": "verified"
   },
-  "note": "원본 용지 설정으로 새 MCP Print PDF를 산출해 종전 A4 PDF를 교체했다."
+  "note": "원본 용지 설정으로 새 MCP Print PDF를 산출해 종전 A4 PDF를 교체했다.",
+  "additional_overwrite": {
+    "path": "samples/2010-exam_kor.pdf",
+    "prior_sha256": "92d1219ea53fd0505332b9bd0e10952a37b0c84f30edcbbde7ed2e9a73b24804",
+    "prior_page_count": 31,
+    "prior_page_size": "A4",
+    "actual_product": "Hancom 2020",
+    "pdf_sha256": "882312f04a7edd5e70eeaaf4ccc5f41cac72251dc81ce8b7667fa1fc4e9d2232",
+    "pages": 20,
+    "page_size": "A3",
+    "authorization": "explicit user instruction to overwrite historical 2010 reference with 2020 output"
+  }
 }

@@ -1067,11 +1067,14 @@
     {
       "input": "samples/exam_kor.hwp",
       "pdf": "samples/2010-exam_kor.pdf",
-      "pages": 31,
-      "page_size": "A4",
-      "status": "not reproduced: historic Hancom 2010 PDF; available MCP engines are 2020 and 2024",
-      "pdf_sha256": "92d1219ea53fd0505332b9bd0e10952a37b0c84f30edcbbde7ed2e9a73b24804",
-      "evidence": "mydocs/pr/archives/pr_443_report.md"
+      "pages": 20,
+      "page_size": "A3",
+      "status": "user authorized overwrite with Hancom 2020 MCP A3 Print; historical 2010 PDF no longer present in this path",
+      "pdf_sha256": "882312f04a7edd5e70eeaaf4ccc5f41cac72251dc81ce8b7667fa1fc4e9d2232",
+      "evidence": "exam-hwp-mcp-print.json",
+      "prior_pdf_sha256": "92d1219ea53fd0505332b9bd0e10952a37b0c84f30edcbbde7ed2e9a73b24804",
+      "prior_pages": 31,
+      "prior_page_size": "A4"
     }
   ]
 }
