@@ -2,8 +2,8 @@
 
 [원 head·patch-id 원장](source-pr-patch-refresh-20261028.json)에서 같은 제목의 이전·현재 커밋 13쌍을 `git range-diff <old>^! <new>^!`로 비교했다. [명령 결과](source-pr-paired-range-diff-20261028.json)는 각 전체 SHA와 출력을 보존한다. 명령은 모두 성공했다. 이 비교의 `!`는 수정된 patch를 뜻하며 구현 동등성이나 검증 통과를 단독으로 증명하지 않는다.
 
-- #8202: 현재 브랜치의 도형 삽입은 `reflow_body_inline_object_change`를 호출한다. 원 PR 최신 커밋에서 독립 inline 재조판 블록이 빠진 차이를 공용 호출과 비교해야 한다. 재조판 보유 여부를 확인했으나 전 동작 동등성 판정은 남았다.
-- #8205: 수식 캐시 키의 `legacy_source_frame_seal`과 `document_script::parse` 사용은 현재 브랜치에 있다. 입력 seal 변경과 캐시 무효화의 테스트 범위는 별도로 확인한다.
-- #8210·#8213: 새 기반의 저장 첫 행 프레임 fallback이 patch에 포함된 것을 확인했다. 현재 `table_layout.rs`에도 `stored_opening_row_frame` 사용이 있으나 각 호출 경로의 의미 비교는 남았다. #8213 글꼴 접미사 fallback은 현재 최근 이름 캐시를 거치는 구현으로 존재한다. 캐시 수명과 별칭 결과를 비교해야 한다.
+- #8202: 현재 브랜치의 도형 삽입은 `reflow_body_inline_object_change`를 호출한다. 최신 원 PR 커밋 `163a24ce99`과 현재 후보의 `shape.rs`, `common.rs`는 바이트 단위로 같다. 공용 호출은 문단 재조판과 후속 문단 위치 갱신을 차례로 수행한다. 원 PR 적용 확인과 시각 수용 판정은 별개다.
+- #8205: 수식 캐시 키의 `legacy_source_frame_seal`과 `document_script::parse` 사용은 현재 브랜치에 있다. 원본 단위 검사는 후속 `c28d998091`에서 공개 API 검사 `tests/cases/equation_render_cache_contract.rs`로 옮겨졌다. 공개 API 검사는 script·fontSize·color·baseline을 다루며 모든 키 필드의 검사를 의미하지는 않는다.
+- #8210·#8213: 새 기반의 저장 첫 행 프레임 fallback이 patch에 포함된 것을 확인했다. 현재 `table_layout.rs`의 대상 행은 우선 캐시 행에서 해당 행을 찾고 없으면 저장 첫 행 프레임에서 찾는다. 최신 원 PR은 먼저 행 배열을 선택한 뒤 해당 행을 찾는다. 이 순서 차이의 영향은 별도 확인이 필요하다. #8213 글꼴 접미사 fallback은 현재 최근 이름 캐시를 거치는 구현으로 존재한다. 캐시 수명과 별칭 결과를 비교해야 한다.
 - #8128, #8133, #8184의 기존 3개 패치와 #8283은 range-diff에 주변 코드·수집 경로 차이가 나타난다. 각 원 PR의 최신 기반과 현재 구현의 실제 호출·검사 결과를 대조하기 전에는 일괄 동등으로 판정하지 않는다.
 - #8184의 추가 세 커밋 중 두 체리픽과 충돌 보존 범위는 [별도 구현 검토](../../../../../pr/archives/pr_8184_review_impl.md)에 기록한다. 이 기록은 전쪽 시각 검증을 대체하지 않는다.
