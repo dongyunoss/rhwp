@@ -243,5 +243,13 @@
       }
     ],
     "scope": "선택 18글자의 전진폭 비교이며 해당 글꼴의 모든 윤곽이나 줄 구성 동등성을 뜻하지 않는다."
-  }
+  },
+  "raw_para_text_control_characters": [
+    {
+      "offset_utf16": 196,
+      "value": "0x000D",
+      "meaning": "문단 끝"
+    }
+  ],
+  "raw_before_problem_word": "구성을 뒤 공백 3개 다음에 스위치가 이어짐; 중간 강제 줄바꿈 없음"
 }
