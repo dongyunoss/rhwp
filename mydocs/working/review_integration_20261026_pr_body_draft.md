@@ -39,6 +39,9 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
   기존·새 PDF의 래스터와 글꼴 자원 비교는 [22쪽 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json)에 기록한다.
 - 과거 WASM TSV 일부의 원래 실행 환경은 재현하지 못했다. 대신 아래 #8319 보존 비교는
   동일한 기존 PDF 래스터와 전쪽 렌더 PNG 해시를 경로별로 대조한 결과다.
+- 과거 TSV와 차이가 난 12쪽은 과거와 SHA가 동일한 WASM과 최신 후보를 같은 현재 글꼴·PDF
+  래스터 조건으로 직접 비교했다. 최대 하락은 0.02042%p이며 0.1%p 이상 하락은 없다.
+  이는 과거 TSV 점수 자체를 복원한 결과는 아니다. [12쪽 대조](assets/review_integration_20261026/validation/post-rebase-8328/historical-wasm-exact-to-current-12pages.json).
 - 가정통신문 Native 두 쪽은 과거 글꼴 조건을 프로세스 단위로 복원하고 기존 PDF 래스터를
   고정했을 때 과거와 현재 렌더 PNG 및 점수가 같다. 현재 시스템 글꼴 조건의 점수는 별도로
   기록한다. [동일 조건 대조](assets/review_integration_20261026/validation/post-rebase-8328/newsletter-historical-font-recovery.json).
