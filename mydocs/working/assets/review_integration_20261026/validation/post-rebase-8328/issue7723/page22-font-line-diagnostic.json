@@ -755,5 +755,31 @@
     "method": "SSH 읽기 전용 Get-ChildItem, Get-FileHash와 Get-Service. 파일을 복사하거나 서버 설정을 변경하지 않았다.",
     "interpretation": "서비스 데이터에서 해당 job 식별자가 확인되고 설치본은 원 PR에 기록한 HCI Poppy 원본과 일치한다. 다만 파일 존재와 job 기록만으로 해당 worker가 그 글꼴을 실제 선택했는지 증명하지 않는다.",
     "job_id_search": "서비스 데이터 디렉터리의 로그·JSON·텍스트 파일에서 #7723 MCP job 식별자가 포함된 파일 1개를 찾았다. 내용은 출력하지 않았다."
+  },
+  "original_8188_hwpx_current_mcp_page22_probe": {
+    "date": "2026-10-29",
+    "input": "samples/hwp3-sample16-hwp5.hwpx",
+    "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+    "original_reference_pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+    "original_reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+    "new_mcp_job_id": "a10e3d2b-2eee-49c0-9ed1-4c4670099526",
+    "new_pdf_sha256": "6074fa7b73146c8ae3f544283630e73823485330174c39285aa8b74357f03c56",
+    "new_pdf_bytes": 2183488,
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "print_mode": "frame_print_to_pdf_ex_one_up",
+    "total_pages": 64,
+    "examined_pages": [
+      22
+    ],
+    "rasterizer": "visual_sweep_pdf.py, pdfium_smooth_rgb_exact_dpi_v2, 96dpi",
+    "original_hwpx_page22_png_sha256": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f",
+    "same_as_issue7723_old_page22": true,
+    "new_hwpx_page22_png_sha256": "b1a584df43e256835e5aeb03877741d22d73886f4ab3484fbf8336e39d879f7e",
+    "same_as_issue7723_new_page22": true,
+    "original_line_end": "응용프",
+    "new_line_end": "응용프로",
+    "new_page_fonts": "CID TrueType resources 12,30,57; old PDF includes Type3 resources",
+    "interpretation": "같은 원 PR HWPX를 같은 한컴 버전과 Print 방식으로 현재 MCP에서 재출력해도 22쪽의 줄 구성과 글꼴 자원이 이전 원 PR PDF와 다르다. 새 HWPX PDF 22쪽 래스터는 새 HWP #7723 PDF와 일치하고 기존 두 PDF의 22쪽 래스터도 서로 일치한다. 문서 형식만의 차이는 아니다. 이 관측은 서버 출력 상태가 바뀐 구체적 원인을 입증하지 않는다. 전쪽 비교는 수행하지 않았다. 새 PDF는 임시 진단 산출물이다."
   }
 }
