@@ -932,3 +932,12 @@ skip으로 종료했다. 실패한 `source_owned_float_fragment_frames` 검사�
 보정 직전 대비 유지와 과거 기준 재현을 구분하며 후자를 통과로 기록하지 않는다.
 [Native 비교](assets/review_integration_20261026/validation/post-rebase-8328/floatfix-native-matrix.json),
 [기존 통합 WASM 비교](assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json).
+
+기존 통합 범위 Native 67개 입력·956쪽은 보정 직전 대비 가정통신문 2쪽 한 곳이
+93.09501%에서 92.81548%로 0.27953%p 하락해 미통과다. 같은 입력·PDF·현재
+시스템 폰트에서 보정 전 실행 파일을 다시 돌리면 보정 후와 두 쪽 PNG 해시 및
+수치가 모두 같다. 새로 추가된 두 폰트 경로를 격리해도 보정 전 과거 수치는
+복원되지 않았다. 시스템 폰트 선택 환경의 변화 가능성을 조사하되 특정 원인으로
+단정하지 않으며, 0.1%p 기준 통과로 처리하지 않는다.
+[Native 비교](assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json),
+[폰트 환경 진단](assets/review_integration_20261026/validation/post-rebase-8328/newsletter-font-environment-diagnostic.json).
