@@ -101,4 +101,4 @@ Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남�
 
 ## 원 PR이 제시한 공식 사양서 쪽 재측정
 
-후속 체리픽 뒤 원 PR이 제시한 공식 사양서 33·43·47쪽을 같은 글꼴 공급과 기존 PDF 래스터 기준으로 측정했다. 세 쪽 모두 Native·fresh WASM 각각 raw 100%다. 동일 PDF를 현재 방식으로 다시 래스터화한 측정은 양쪽 모두 33·43쪽 100%, 47쪽 99.98%다. 입력과 PDF SHA, 각 쪽의 출력·기준 래스터 SHA 및 두 결과를 [검증 증거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-claims/evidence.json)에 기록했다. 세 쪽 결과만으로 전 71쪽을 재검증했다고 주장하지 않는다.
+후속 체리픽 뒤 원 PR이 제시한 공식 사양서 33·43·47쪽을 같은 글꼴 공급과 기존 PDF 래스터 기준으로 측정했다. 세 쪽 모두 Native·fresh WASM 각각 raw 100%다. 동일 PDF를 현재 방식으로 다시 래스터화한 측정은 양쪽 모두 33·43쪽 100%, 47쪽 99.98%다. 입력과 PDF SHA, 각 쪽의 출력·기준 래스터 SHA 및 두 결과를 [검증 증거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-claims/evidence.json)에 기록했다. 추가로 공식 사양서 전 71쪽도 같은 기존 PDF 래스터로 재측정했다. Native·fresh WASM 각각 전쪽 점수가 후속 체리픽 전과 같아 0.1%p 이상 하락은 없으며 최저는 각각 95.31577% / 95.19516%다. [전쪽 비교·TSV](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json).
