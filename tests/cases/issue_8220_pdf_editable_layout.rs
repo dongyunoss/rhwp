@@ -1,9 +1,10 @@
-//! 검사 유형: 관계형.
+//! 검사 유형: 관계형·고정형.
 //! 2026-10-27 측정 raw(96dpi, PDFium, PDF editable 가져오기): 21_언어_기출_편집가능본-2010.pdf 7쪽 Native 99.82145% / fresh WASM 99.77620%; 전16쪽 최저 98.80885% / 98.69835%.
 //! 21_언어_기출_편집가능본-2020.pdf 7쪽 99.58789% / 99.18794%; 전15쪽 최저 99.13134% / 98.69133%.
 //! 21_언어_기출_편집가능본.pdf 7쪽 99.77787% / 99.73748%; 전15쪽 최저 98.51800% / 98.44191%.
 //! 수치 쌍은 Native / fresh WASM이며 당시 head의 편집 전 가져오기 결과다. 편집 후 결과는 별도 문서다.
 //! 근거: mydocs/working/assets/review_integration_20261026/validation/visual-validation.json.
+//! 2010 PDF 7쪽 좌표 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json.
 //!
 //! #8220: the editable PDF layout stores recognized body paragraphs as the
 //! section's own text flow. Independent expectations: the source HWP's
@@ -324,6 +325,44 @@ fn editable_layout_flows_body_paragraphs_through_columns_and_pages() {
             assert_eq!(row_starts(&reopened), rows, "{name}: rows survive saving");
         }
     }
+}
+
+#[test]
+fn editable_page_seven_keeps_independent_pdf_line_position() {
+    fn text(node: &RenderNode) -> String {
+        let mut value = match &node.node_type {
+            RenderNodeType::TextRun(run) => run.text.clone(),
+            _ => String::new(),
+        };
+        for child in &node.children {
+            value.push_str(&text(child));
+        }
+        value
+    }
+    fn target(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::TextLine(_))
+            && norm(&text(node)).starts_with("결국르포르는권력이제어할수있는")
+        {
+            return Some(node);
+        }
+        node.children.iter().find_map(target)
+    }
+    let core = import(
+        "21_언어_기출_편집가능본-2010.pdf",
+        PdfImportLayout::Editable,
+    );
+    let tree = core.build_page_render_tree(6).expect("PDF page 7");
+    let line = target(&tree.root).expect("source paragraph first line");
+    assert!(
+        (line.bbox.x - 603.98).abs() <= 2.0,
+        "PDF line x: {}",
+        line.bbox.x
+    );
+    assert!(
+        (line.bbox.y - 388.54).abs() <= 2.0,
+        "PDF line y: {}",
+        line.bbox.y
+    );
 }
 
 #[test]

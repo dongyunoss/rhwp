@@ -35,6 +35,8 @@ fidelity와 editable을 명시적으로 구분한다. editable에서는 실제 �
 
 보호 검사: [issue_7998_pdf_inferred_gap_tabs.rs](<../../../tests/cases/issue_7998_pdf_inferred_gap_tabs.rs>), [issue_8220_pdf_editable_layout.rs](<../../../tests/cases/issue_8220_pdf_editable_layout.rs>), [issue_8220_pdf_exam_paragraph_boundaries.rs](<../../../tests/cases/issue_8220_pdf_exam_paragraph_boundaries.rs>). 전체 nextest 또는 해당 Native/Studio 실행의 실제 결과에 포함된다.
 
+편집 가능 모드의 2010 PDF 7쪽에서 「결국르포르는…」 첫 글줄 위치를 독립 PDF 좌표 x=603.98px, y=388.54px와 각각 ±2px로 비교하는 고정형 검사를 추가했다. 이전에 측정한 편집 전 7쪽 일치율은 Native 99.82145% / fresh WASM 99.77620%다. 편집 후 문단의 관계 검사는 그대로 유지한다. 해당 파일의 검사 4개가 통과했으며 [좌표 근거](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf2010-exam-p7-coordinates.json>)와 [검사 실행](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/pdf-editable-coordinate-test.json>)을 기록한다.
+
 이 PR에 별도 단독 보정은 추가하지 않았다. 누적 통합에 필요한 컴파일 호환 보정과 다른 PR의 공통 경로 보정은 통합 후보에 포함된다.
 
 ## 검증 입력과 결과
