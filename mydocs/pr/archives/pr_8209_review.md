@@ -58,6 +58,8 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 이 PR의 글꼴 판정·digest 계약은 입력별 순수 판정과 바이트 봉인으로 확인한다. 부수 출력 회귀 대조에 사용한 `3-11월_실전_통합_2022.hwp` 21쪽은 Native 90.80955% / fresh WASM 90.84255%, 전21쪽 최저도 같다. 이것은 출력 대조 수치이며 digest 정확도나 성능 개선율을 측정한 값은 아니다. [Native 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json>)과 [fresh WASM 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json>)에서 원본 및 기준 PDF SHA를 확인한다.
 
+원 PR이 제시한 온새미로 HWP와 2020 PDF는 재조회 head `40174966a35149fbd4dcb5f6dd17ebaafef8e412`와 현재 후보에서 각각 같은 Git blob이다. 이 입력과 PDF의 11쪽은 후속 보정 뒤 Native 96.14455% / fresh WASM 95.77960%다. 같은 입력을 다룬 #8210의 [11쪽 직접 측정·입력과 PDF 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8210-claimed-page11.json)를 사용하며, 이 한 쪽 측정을 원 PR의 성능 측정이나 전46쪽 재검증으로 확대하지 않는다.
+
 ## 조판 원칙 준수 판정
 
 | 항목 | 판정과 근거 |

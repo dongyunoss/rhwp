@@ -87,6 +87,8 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 ## 조판 원칙 준수 판정
 
+원 PR이 기존 실패로 언급한 생물독 205쪽 문서의 `gray_grid_keeps_its_print_coverage_cell_owners_and_pdf_origin`은 현재 통합 후보에서 시스템 글꼴 디렉터리를 가린 선택 회귀에 포함돼 통과했다. [검사명과 실행 조건](../../working/assets/review_integration_20261026/validation/post-rebase-8328/fontless-branch-regression.json). 이는 원 PR이 보고한 base/head SVG 바이트 동일성을 재실행했다는 주장이나 해당 문서 전쪽의 새 시각 측정이 아니다.
+
 | 항목 | 판정과 근거 |
 | --- | --- |
 | 제출 전 로컬 검증 | 진행 중 — [이전 로컬 실행](<../../../mydocs/working/assets/review_integration_20261026/validation/final-rust-validation.json>)과 후속 검증은 실행 당시 후보를 구분한다. 남은 비교와 미해결 기준은 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)에서 추적한다. 전체 회귀는 작업지시자 지시에 따라 재실행하지 않는다. |
