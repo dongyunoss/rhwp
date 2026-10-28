@@ -61,3 +61,7 @@
 ## 2026-10-28 기존 패치의 최신 원 PR 대조
 
 기존 3개 patch-id 차이는 주로 주변 코드와 새 기반의 호출 인자에서 발생한다. 통합 후보에서 아래 캡션 높이 소비, 빈 host 표 첫 조각 예약의 진입·예산 소비, 다음 저장 줄을 이용한 단 원점 계산을 각각 확인했다. 후속 체리픽의 앵커 충돌 보존과 전쪽 시각 검증은 별개로 추적한다. [커밋별 대조](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
+
+## 2026-10-28 후속 보정 뒤 표 조각 전쪽 검증
+
+독립 Print를 가진 36개 입력은 Native와 fresh WASM 각각 총 64쪽 모두 raw 100%다. 원본·PDF SHA, 각 쪽의 렌더 및 PDF 래스터 SHA와 수치는 [검증 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-float-fragments/evidence.json)에 기록했다. 공식 사양서 71쪽도 이전 PDF 래스터 기준 두 경로 전쪽 수치가 보정 전과 같음을 [별도 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json)으로 확인했다. 추가 보정과 관련된 다른 입력·최종 gate는 별도이며 이 결과만으로 일괄 완료하지 않는다.
