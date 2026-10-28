@@ -42,8 +42,10 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - #7723의 2010 이름 원본은 기본 HWP와 바이트가 같고, 기존 2024 MCP PDF 기준 Native
   전 64쪽에서 raw 100%를 확인했다. 이후 재출력한 새 MCP PDF는 같은 결과가 아니며
   원 PR HWPX의 22쪽 재출력에서도 차이가 관찰됐다. 작업지시자는 PR 검증 기준으로 기존
-  MCP PDF를 선택했다. 최종 fresh WASM은 기존 PDF 래스터 기준 64쪽 모두 raw 100%이며,
-  Native는 기존 글꼴 조건으로 전쪽을 확인 중이다. [WASM 전쪽 근거](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/selected-reference-latest-wasm.json).
+  MCP PDF를 선택했다. 최종 Native와 fresh WASM은 기존 PDF 래스터 기준 64쪽 모두 raw 100%다.
+  Native는 기존 글꼴 검색 조건에서 과거 100% PNG와 전쪽 해시가 같다. 현재 방식으로 PDF를
+  재래스터화하면 Native 세 쪽이 99.98~99.99%다. [Native 전쪽 근거](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/selected-reference-latest-native.json),
+  [WASM 전쪽 근거](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/selected-reference-latest-wasm.json).
   새 PDF의 미달은 [22쪽 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json)에 별도로 기록한다.
 - 과거 WASM TSV 일부의 원래 실행 환경은 재현하지 못했다. 대신 아래 #8319 보존 비교는
   동일한 기존 PDF 래스터와 전쪽 렌더 PNG 해시를 경로별로 대조한 결과다.

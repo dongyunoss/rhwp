@@ -1068,6 +1068,12 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 - 작업지시자는 필수 검증 완료 뒤 PR 생성과 CI 완료 후 머지·후속 처리를 승인했다. CI 변경을
   포함하므로 PR review와 오늘할일은 옵션 2의 별도 후속 기록 PR로 처리한다. PR 생성 전 최신
   base·원 PR·로컬 검증을 다시 확인하고, 머지 전 정확한 head의 필수 CI를 확인한다.
-- #7723은 작업지시자가 기존 2024 MCP PDF를 최종 기준으로 선택했다. 새 PDF는 별도의
-  미달 진단으로 남긴다. 선택한 PDF에 대한 최종 후보의 Native·fresh WASM 전쪽과 기존
-  별칭 검사를 확인하기 전에는 이슈를 닫지 않는다.
+- #7723은 작업지시자가 기존 2024 MCP PDF를 최종 기준으로 선택했다. 해당 PDF의 기존
+  래스터 기준으로 최종 Native·fresh WASM 64쪽 모두 raw 100%다. Native는 과거 글꼴
+  검색 조건에서 100%를 측정한 PNG와 전쪽 해시가 같으며, 현재 PDF 재래스터 결과의
+  세 쪽은 99.98~99.99%로 구분한다. 기존 별칭의 내용·소유 검사도 통과했다.
+  [Native](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/selected-reference-latest-native.json),
+  [WASM](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/selected-reference-latest-wasm.json),
+  [별칭 검사](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/existing-alias-regression-status.json).
+  새 PDF는 별도의 미달 진단으로 남긴다. 통합 PR에 `Closes #7723`을 포함하고 머지 후
+  #7445의 해당 행을 갱신한다.
