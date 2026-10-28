@@ -534,5 +534,39 @@
       "trial": "60a94acfec70887b47fe5d5ae946fc01ace1d4b1490c996f5c5a80fcb0f544e8"
     },
     "interpretation": "표시 치환은 22쪽 약 0.034%p 개선하지만 네 쪽 모두 100% 미달. 쪽 전체·WASM 및 다른 입력은 검증하지 않았으므로 적용하지 않았다. 대조군·실험군의 수치는 이전 원본 폭 보존 설정이 달랐던 결과와 혼합하지 않는다."
+  },
+  "second_line_word_origins": {
+    "date": "2026-10-29",
+    "scope": "22쪽 문단 446의 둘째 줄에서 중복 단어는 첫 등장",
+    "method": "동일 두 PDF의 pdftotext -bbox xMin을 96/72로 환산; 현재 Native SVG 텍스트 개별 문자 x 사용",
+    "settings": "원본 폭 보존 true, 임시 PDF 글꼴 치환 없이 엄격 글꼴 공급",
+    "positions": [
+      {
+        "word": "스위치",
+        "old_pdf_x_px": 136.64,
+        "new_pdf_x_px": 136.64,
+        "rhwp_control_x_px": 136.69
+      },
+      {
+        "word": "기반의",
+        "old_pdf_x_px": 186.72,
+        "new_pdf_x_px": 185.12,
+        "rhwp_control_x_px": 186.76
+      },
+      {
+        "word": "Active-Active",
+        "old_pdf_x_px": 236.8,
+        "new_pdf_x_px": 233.76,
+        "rhwp_control_x_px": 236.83
+      },
+      {
+        "word": "부하분산",
+        "old_pdf_x_px": 329.6,
+        "new_pdf_x_px": 325.12,
+        "rhwp_control_x_px": 329.67
+      }
+    ],
+    "interpretation": "첫 단어 시작은 거의 같고 뒤 단어의 원점이 새 PDF에서 점차 왼쪽이다. 기존 PDF와 rhwp는 더 넓은 간격으로 글줄이 끝나지만 새 PDF는 한 글자를 더 배치한다. 양쪽 맞춤 후 결과이므로 이 수치만으로 줄 나눔 이전의 자연 공백폭이나 유일한 원인을 확정하지 않는다.",
+    "current_svg_sha256": "7133640412b1b12bfd6832aed523744d0ef9e1175720c9105ff6a382ceb82c52"
   }
 }
