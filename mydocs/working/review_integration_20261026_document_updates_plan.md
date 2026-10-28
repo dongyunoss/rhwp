@@ -956,3 +956,11 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 현 MCP는 2010을 지원하지 않지만 작업지시자가 2020 출력으로 덮어쓰라고 명시하여 같은
 2020 MCP 출력으로 교체했다. 파일명과 달리 현재 내용은 한컴 2020의 A3·20쪽이며,
 이전과 현재 해시 및 명시적 지시는 위 MCP 증거에 기록한다.
+
+보정 `81f2428cf8`의 전체 `cargo nextest`는 종료 코드 0, 11,898개 통과,
+45개 skip, 52개 slow로 완료됐다. 기존에 실패한
+`source_owned_float_fragment_frames::completed_pages_keep_independent_print_grid_and_body_origins_within_two_pixels`도
+통과했다. 이 실행은 이후 작업지시로 추가한 고정 좌표 assertion을 컴파일하기 전의
+결과다. 새 assertion은 별도 대상 검사로 확인한다. 같은 보정의 기존 표 이어짐
+36개 입력은 Native·WASM 각각 64쪽 모두 raw 100%다.
+[전쪽 기록](assets/review_integration_20261026/validation/post-rebase-8328/float-fixture-raw100.json).
