@@ -948,3 +948,10 @@ skip으로 종료했다. 실패한 `source_owned_float_fragment_frames` 검사�
 덮어썼다. 새 PDF는 A3·20쪽이며 입력·이전 PDF·새 PDF의 해시와 job 정보는
 [MCP 증거](assets/review_integration_20261026/validation/post-rebase-8328/exam-hwpx-mcp-print.json)에
 기록한다. A4 PDF를 기준으로 측정한 낮은 수치는 유효한 비교 결과로 사용하지 않는다.
+시험지 원본 55개를 추가 점검해 모든 구역이 A3인 12개와 대응 PDF의 크기를 확인했다.
+국어 HWP에 대응하는 `samples/2020-exam_kor.pdf`도 A4여서 같은 절차로 A3·20쪽
+MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/validation/post-rebase-8328/exam-paper-audit.json),
+[HWP MCP 증거](assets/review_integration_20261026/validation/post-rebase-8328/exam-hwp-mcp-print.json).
+별도의 `samples/2010-exam_kor.pdf`는 A4·31쪽인 한컴 2010의 역사 자료다. 현 MCP는
+2020/2024만 지원해 같은 제품의 출력으로 재생성할 수 없으므로 2020 출력으로 그 이름의
+자료를 교체할지 작업지시자의 답을 기다린다.
