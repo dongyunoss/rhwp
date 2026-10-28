@@ -71,7 +71,7 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 원 PR의 시험지 PDF 가져오기에서 2010 원본 7쪽 fidelity의 Native/fresh WASM은 99.83396% / 99.77416%, editable은 99.82145% / 99.77620%다. 전16쪽 최저는 각각 98.80885% / 98.69530%, 98.80885% / 98.69835%다. 편집 모드로 가져온 뒤 추가 편집한 상태의 시각 수치는 별도로 확인해야 한다. 위 수치는 2026-10-27 후보의 기록이며 최신 head의 재측정 결과는 아니다. [측정 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/visual-validation.json>)에서 해당 PDF·가져오기 모드와 출처를 확인한다.
 
-## 원 PR이 직접 판독한 1쪽과 3쪽
+## 별도로 확인한 2010 PDF 1쪽과 3쪽
 
 원 PR에서 들여쓰기와 쪽을 넘는 문단 머리를 판독한 2010 시험지 PDF의 편집 가능 모드에 대해, 2026-10-27 측정의 1쪽은 Native 99.69372% / fresh WASM 98.69835%, 3쪽은 Native 99.75461% / fresh WASM 99.66472%다. 해당 입력의 전 16쪽과 실제 PDF·가져오기 경로는 [측정 원장](../../working/assets/review_integration_20261026/validation/visual-validation.json), 쪽별 값은 [Native TSV](../../working/assets/review_integration_20261026/validation/tsv/native/pdf-2010-editable.tsv)와 [WASM TSV](../../working/assets/review_integration_20261026/validation/tsv/wasm/pdf-2010-editable.tsv)에 있다. 이 수치는 후속 #8184 체리픽 전의 결과이며 편집 후 저장·재열기한 별도 입력의 결과가 아니다.
 
@@ -104,3 +104,9 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 현재는 게시·close·merge를 실행하지 않는다. 추후 승인된 통합 머지 뒤 최종 merge SHA·CI URL과
 Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남은 차이를 정중한 한국어로 안내한다.
 본문 파일로 게시하고 API로 실제 내용과 링크를 재확인하는 단계는 별도 후속 지시 대상이다.
+
+## 원 PR의 2020 PDF 1쪽과 3쪽
+
+원 PR은 2020 시험지의 editable 가져오기에서 1쪽 첫 줄 들여쓰기와 3쪽 이어지는 문단 머리를 직접 판독했다. 기여자의 고정 커밋과 Git blob이 같은 [1쪽 Native overlay](../assets/issue_8220_editable/png/2020_native_overlay_p001.png), [1쪽 WASM overlay](../assets/issue_8220_editable/png/2020_wasm_overlay_p001.png), [3쪽 Native review](../assets/issue_8220_editable/png/2020_native_review_p003.png), [3쪽 WASM review](../assets/issue_8220_editable/png/2020_wasm_review_p003.png)를 연결한다.
+
+같은 2020 PDF의 별도 2026-10-27 통합 후보 측정은 1쪽 Native 99.69910% / WASM 98.72790%, 3쪽 99.44626% / 98.88209%다. 이는 원 PR 이미지의 실행 수치나 후속 체리픽 이후의 새 측정이 아니다. [원본 PDF·이미지와 TSV 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8227-source-2020-pages.json).
