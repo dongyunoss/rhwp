@@ -100,3 +100,7 @@ Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남�
 ## 후속 표 보정 이후 출력 보존
 
 후속 표 보정 이후 `issue1937_rowbreak_footnote_overpagination.hwp`의 32·33·44쪽을 포함한 50쪽은 Native와 WASM 각각 보정 전 렌더 PNG와 모두 같다. 같은 이전 PDF 래스터 기준 점수 차이는 0이며 [Native 전쪽 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-native-png-comparison.json), [WASM 전쪽 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-wasm-png-comparison.json)에서 확인한다.
+
+## 원 PR의 해당 쪽 이미지
+
+원 PR의 issue1937 44쪽 [WASM review](../../report/issue1937_footnote_boundary/i1937_p044_wasm_review.png)와 [overlay](../../report/issue1937_footnote_boundary/i1937_p044_wasm_overlay.png)를 연결한다. 기여자의 고정 커밋과 현재 파일의 Git blob이 같으며, 통합 후보 최신 실행 이미지로 취급하지 않는다. [이미지 출처와 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-claimed-images-8115-8133-8202.json).

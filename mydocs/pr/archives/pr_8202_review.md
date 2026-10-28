@@ -99,3 +99,7 @@ Visual Sweep 정본·SHA 고정 raw 이미지·원 기여와 보정 범위·남�
 ## 원 PR이 주장한 문서의 18쪽
 
 원 PR이 제시한 `samples/HWP5-nopassword-123456.hwpx` 18쪽을 대응 한컴 2024 Print PDF와 비교한 이전 전체 쪽 측정은 Native 99.95316%, fresh WASM 99.94989%다. 각각 24쪽이며 입력·PDF SHA와 전체 쪽 값은 [Native 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json), [WASM 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json)의 `tac-shape-source`에 있다. 후속 #8184 보정 뒤에도 Native·WASM 렌더 PNG는 이전과 각각 동일하다. 동일 PDF를 현재 방식으로 다시 래스터화한 점수는 Native 99.90860% / WASM 99.90490%이며, 기존 래스터와의 수치와 구분한다. [전후 출력·PDF 래스터 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8202-page18-after-comparison.json).
+
+## 원 PR의 해당 쪽 이미지
+
+원 PR의 HWPX 18쪽 [Native review](../../report/issue8167_tac_shape_line/nopwx_p18_native_head_review.png)와 [WASM review](../../report/issue8167_tac_shape_line/nopwx_p18_wasm_head_review.png)를 연결한다. 기여자의 고정 커밋과 현재 파일의 Git blob이 같으며, 통합 후보 최신 실행 이미지로 취급하지 않는다. [이미지 출처와 해시](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-claimed-images-8115-8133-8202.json).
