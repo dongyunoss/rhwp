@@ -339,5 +339,13 @@
     "Linux의 지정한 세 시스템 글꼴 경로와 Fontconfig 검색을 격리한 결과다. Windows·macOS 및 이 26개 파일 밖의 검사를 대표하지 않는다.",
     "저장소에 추적된 글꼴은 테스트나 번들 폴백으로 사용할 수 있다.",
     "Visual Sweep의 독립 한컴 PDF 일치율이나 전체 회귀 결과를 뜻하지 않는다."
-  ]
+  ],
+  "source_recheck": {
+    "date": "2026-10-29",
+    "audited_head": "91544e4da02aa2a03f4f3c032fc44245bd6d2049",
+    "test_files_rehashed": 26,
+    "changed_test_files": 0,
+    "changes_in_src_crates_tests_cargo": [],
+    "interpretation": "110개 통과 결과의 대상 테스트 파일과 제품 소스가 현재 검토 head까지 변경되지 않았음을 확인했다. 이전 검사를 다시 실행한 결과는 아니다."
+  }
 }
