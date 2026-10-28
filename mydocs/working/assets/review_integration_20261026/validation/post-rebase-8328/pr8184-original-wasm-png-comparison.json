@@ -4508,7 +4508,7 @@
     },
     {
       "key": "pdf-2010-fidelity",
-      "input": "output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2010-fidelity.hwpx",
+      "input": null,
       "input_sha256": "851144435ef1102cd4727f0635819973915d5718c130812c288cbc3e85fbe2dc",
       "pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
       "pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
@@ -4593,11 +4593,18 @@
           "before_sha256": "bb9edc66658cc3db5c2f104584499b1aad673a405b6289f04f59354ead6f5eac",
           "after_sha256": "bb9edc66658cc3db5c2f104584499b1aad673a405b6289f04f59354ead6f5eac"
         }
-      ]
+      ],
+      "input_origin": {
+        "kind": "PDF 가져오기 중간 HWPX",
+        "source_pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+        "source_pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+        "layout": "fidelity",
+        "reproduction": "rhwp import-pdf <source_pdf> <temporary_hwpx> --layout <layout>"
+      }
     },
     {
       "key": "pdf-2020-fidelity",
-      "input": "output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2020-fidelity.hwpx",
+      "input": null,
       "input_sha256": "621ed0ce5dc918e5246a0e0f4ed853812bfe36009560a4b81fc4a25b64b58d8f",
       "pdf": "samples/21_언어_기출_편집가능본-2020.pdf",
       "pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
@@ -4677,11 +4684,18 @@
           "before_sha256": "3f57a9540ae7e9a39520dff82ab780313bf297894efad24f9e7daa014e5e2fde",
           "after_sha256": "3f57a9540ae7e9a39520dff82ab780313bf297894efad24f9e7daa014e5e2fde"
         }
-      ]
+      ],
+      "input_origin": {
+        "kind": "PDF 가져오기 중간 HWPX",
+        "source_pdf": "samples/21_언어_기출_편집가능본-2020.pdf",
+        "source_pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+        "layout": "fidelity",
+        "reproduction": "rhwp import-pdf <source_pdf> <temporary_hwpx> --layout <layout>"
+      }
     },
     {
       "key": "pdf-mac-fidelity",
-      "input": "output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-mac-fidelity.hwpx",
+      "input": null,
       "input_sha256": "0b24eb722daed8821fd688fa7af1064172572cde0a79e21c729834465ee0929b",
       "pdf": "samples/21_언어_기출_편집가능본.pdf",
       "pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
@@ -4761,11 +4775,18 @@
           "before_sha256": "7e42e941de70dab607043db7384c859829bb2eda355299f951064d1f6797fedc",
           "after_sha256": "7e42e941de70dab607043db7384c859829bb2eda355299f951064d1f6797fedc"
         }
-      ]
+      ],
+      "input_origin": {
+        "kind": "PDF 가져오기 중간 HWPX",
+        "source_pdf": "samples/21_언어_기출_편집가능본.pdf",
+        "source_pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+        "layout": "fidelity",
+        "reproduction": "rhwp import-pdf <source_pdf> <temporary_hwpx> --layout <layout>"
+      }
     },
     {
       "key": "pdf-2010-editable",
-      "input": "output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2010-editable.hwpx",
+      "input": null,
       "input_sha256": "a09263bd2cb6c5e8dfd3be425b888f5708dc34bd4485308868c03894b9f2a0f5",
       "pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
       "pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
@@ -4850,11 +4871,18 @@
           "before_sha256": "13624a8e8170bb2b1a0122f2f65faaaa48ae78b5b73fab2cff21f8ddf4be9245",
           "after_sha256": "13624a8e8170bb2b1a0122f2f65faaaa48ae78b5b73fab2cff21f8ddf4be9245"
         }
-      ]
+      ],
+      "input_origin": {
+        "kind": "PDF 가져오기 중간 HWPX",
+        "source_pdf": "samples/21_언어_기출_편집가능본-2010.pdf",
+        "source_pdf_sha256": "609d56421009ccab5a50cb2a8f4e78af4d0961de2e7ae85d811905e8434ac251",
+        "layout": "editable",
+        "reproduction": "rhwp import-pdf <source_pdf> <temporary_hwpx> --layout <layout>"
+      }
     },
     {
       "key": "pdf-2020-editable",
-      "input": "output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-2020-editable.hwpx",
+      "input": null,
       "input_sha256": "f4261a6c67b4390a74cedd7dfb2c0e1462548a4002f46526b98261ff6aa7000a",
       "pdf": "samples/21_언어_기출_편집가능본-2020.pdf",
       "pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
@@ -4934,11 +4962,18 @@
           "before_sha256": "6391b6d3bec3d97c114a4aaf740eec47f82297a03bbbc719f8ce5b37c83b90a7",
           "after_sha256": "6391b6d3bec3d97c114a4aaf740eec47f82297a03bbbc719f8ce5b37c83b90a7"
         }
-      ]
+      ],
+      "input_origin": {
+        "kind": "PDF 가져오기 중간 HWPX",
+        "source_pdf": "samples/21_언어_기출_편집가능본-2020.pdf",
+        "source_pdf_sha256": "a1a8b0ffd6ae9b23627f7b1bf58bbdfdc0714a369713cc057aa836c75b143f1e",
+        "layout": "editable",
+        "reproduction": "rhwp import-pdf <source_pdf> <temporary_hwpx> --layout <layout>"
+      }
     },
     {
       "key": "pdf-mac-editable",
-      "input": "output/pr-review/planet6897-20261026/rebase-8319/candidate-pdf-import/pdf-mac-editable.hwpx",
+      "input": null,
       "input_sha256": "c10fe5f1b5f5a653a2b9e1d0fccd382a5f0602ca14744c247ea5ec5b73223df1",
       "pdf": "samples/21_언어_기출_편집가능본.pdf",
       "pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
@@ -5018,7 +5053,14 @@
           "before_sha256": "b7e6177f709bbae49db8c30c8d7c074b6ee3ec53d3eb8116a8e77673198d0f3d",
           "after_sha256": "b7e6177f709bbae49db8c30c8d7c074b6ee3ec53d3eb8116a8e77673198d0f3d"
         }
-      ]
+      ],
+      "input_origin": {
+        "kind": "PDF 가져오기 중간 HWPX",
+        "source_pdf": "samples/21_언어_기출_편집가능본.pdf",
+        "source_pdf_sha256": "6bc54661a73af788d437463e000f76652b1325b44607e58443e7391d23e2db83",
+        "layout": "editable",
+        "reproduction": "rhwp import-pdf <source_pdf> <temporary_hwpx> --layout <layout>"
+      }
     }
   ],
   "changed_pages": [],
