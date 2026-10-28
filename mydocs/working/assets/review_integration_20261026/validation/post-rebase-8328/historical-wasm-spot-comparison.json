@@ -1,0 +1,93 @@
+{
+  "status": "diagnostic_only_unresolved",
+  "old_optimized_wasm_sha256": "c5b25dd8b22efce0d4ecb08291069e3ec625345c40957cbe457cc431f69737d8",
+  "candidate_optimized_wasm_sha256": "5a8c2ef8a95330e685ab61073cdf149d256f253310fd946005ff63010fe84f2e",
+  "fontconfig_sha256": "28440f36b4d03be667315cec2dc781a27987c175c1d9e014326f3a3764a4545d",
+  "description": "이전 최적화 WASM과 후보를 같은 현재 글꼴 설정에서 실행한 선택 쪽 비교. 이전 환경을 아직 재현하지 못했으므로 과거 TSV 0.1%p 기준 통과 판정이 아니다. 전체 범위 실행 중.",
+  "pages": [
+    {
+      "key": "rebase8116-cell_nested_table_rows",
+      "page": 1,
+      "input_sha256": "7756e38c49dbccd961393a5e66f22c5660f2dd2653128a73903923044cb782f9",
+      "pdf_sha256": "e19cb10792a2c25558d95c22eaa75794bad52168a2370a2c9e9ffbeafb7d34d7",
+      "historical_tsv_sha256": "f72eb34829d09fdffd3e910f84590866735c5281bd66698f3656c2616bab5379",
+      "old_current_environment_tsv_sha256": "1721d05da09fbe97129fcd231d980f52e27969da6d1865a908e15ee376cc57c8",
+      "candidate_tsv_sha256": "58eb34393240f718c65dca5331b8223bc30d0a137a678c0210c86724cd3a5b58",
+      "historical_percent": 98.57262,
+      "old_current_environment_percent": 98.35047,
+      "candidate_percent": 98.35045,
+      "candidate_drop_from_historical_pp": 0.22217,
+      "candidate_drop_from_old_current_environment_pp": 2e-05
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 19,
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "old_current_environment_tsv_sha256": "3e214fbb7456dfa1ff36bc1dfee13f5c10cb0a9c7001a89190ccac8629441d68",
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "historical_percent": 97.7889,
+      "old_current_environment_percent": 97.67924,
+      "candidate_percent": 97.67924,
+      "candidate_drop_from_historical_pp": 0.10966,
+      "candidate_drop_from_old_current_environment_pp": 0.0
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 26,
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "old_current_environment_tsv_sha256": "3e214fbb7456dfa1ff36bc1dfee13f5c10cb0a9c7001a89190ccac8629441d68",
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "historical_percent": 94.25851,
+      "old_current_environment_percent": 93.85686,
+      "candidate_percent": 93.94558,
+      "candidate_drop_from_historical_pp": 0.31293,
+      "candidate_drop_from_old_current_environment_pp": -0.08872
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 33,
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "old_current_environment_tsv_sha256": "3e214fbb7456dfa1ff36bc1dfee13f5c10cb0a9c7001a89190ccac8629441d68",
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "historical_percent": 97.81353,
+      "old_current_environment_percent": 97.70492,
+      "candidate_percent": 97.70492,
+      "candidate_drop_from_historical_pp": 0.10861,
+      "candidate_drop_from_old_current_environment_pp": 0.0
+    },
+    {
+      "key": "onsemiro-hwp",
+      "page": 38,
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "pdf_sha256": "94f2ae8b745ab043aeca2a0b2a25f62dd3d97ec2fed3e1c1e75c982cc8c6f6c4",
+      "historical_tsv_sha256": "c4c450f1d1c5df453ad1fd1ec6897268c832a84d4685fca98bc1b7a56cbaf7bb",
+      "old_current_environment_tsv_sha256": "3e214fbb7456dfa1ff36bc1dfee13f5c10cb0a9c7001a89190ccac8629441d68",
+      "candidate_tsv_sha256": "1ee8c95b2546243050d92b1229b41cc26ff493480811600f4cec61d4dd601a8c",
+      "historical_percent": 93.89759,
+      "old_current_environment_percent": 93.74377,
+      "candidate_percent": 93.7303,
+      "candidate_drop_from_historical_pp": 0.16729,
+      "candidate_drop_from_old_current_environment_pp": 0.01347
+    },
+    {
+      "key": "newsletter-korean",
+      "page": 1,
+      "input_sha256": "70a6663e75fefedc001b2c249bd20f5b994596954120740252f484b1892e2097",
+      "pdf_sha256": "4c1cbc3a4a08a5682ea4b4561874c1c8cf261cdba1c961d8e439c7e9a10e7a24",
+      "historical_tsv_sha256": "c8eaac97e19aab727f9048f5b7203a1008a7b899231aa0cb172e69a43a1b1b43",
+      "old_current_environment_tsv_sha256": "2490c2380fef60798a694b6eb1577512528b83ddfe334235afe9c986c3d22c7a",
+      "candidate_tsv_sha256": "640d08d2ff2b169eea0da121039f0c56912af0e5310faf9fcdf2e5d89f9f64a8",
+      "historical_percent": 98.00674,
+      "old_current_environment_percent": 97.55441,
+      "candidate_percent": 97.55086,
+      "candidate_drop_from_historical_pp": 0.45588,
+      "candidate_drop_from_old_current_environment_pp": 0.00355
+    }
+  ]
+}
