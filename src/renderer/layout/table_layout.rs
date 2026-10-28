@@ -26884,7 +26884,7 @@ impl LayoutEngine {
         extra
             + recursive_parent_padding.max(0.0)
             + self.atomic_nested_header_reservation(cell, table, styles, lo, hi)
-            + self.stored_nested_cut_outer_margin_extra(cell, &units, lo, hi)
+            + self.stored_nested_cut_outer_margin_extra(cell, table, styles, &units, lo, hi)
     }
 
     /// Physical rows for an ordinary row-cut fragment. Acceptance and paint

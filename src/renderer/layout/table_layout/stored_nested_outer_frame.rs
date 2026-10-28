@@ -5,7 +5,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::table::{Cell, Table};
 use crate::renderer::hwpunit_to_px;
 
-use super::{CellUnit, LayoutEngine};
+use super::{CellUnit, LayoutEngine, ResolvedStyleSet};
 
 impl LayoutEngine {
     pub(crate) fn stored_hwpx_cut_owns_outer_frame(&self, host: &Paragraph, table: &Table) -> bool {
@@ -23,6 +23,8 @@ impl LayoutEngine {
     pub(super) fn stored_nested_cut_outer_margin_extra(
         &self,
         cell: &Cell,
+        table: &Table,
+        styles: &ResolvedStyleSet,
         units: &[CellUnit],
         lo: usize,
         hi: usize,
@@ -59,6 +61,33 @@ impl LayoutEngine {
                     })
                 }) {
                     if self.stored_hwpx_cut_owns_outer_frame(host, child) {
+                        // 저장 자식 프레임의 흐름 높이는 이미 양쪽 바깥 여백을
+                        // 포함한다. 같은 원본 컷에 여백을 다시 예약하지 않는다.
+                        let saved_frame_owns_margin = (start > run_start || end < run_end)
+                            && self
+                                .mixed_nested_split_from_cut(
+                                    cell, table, styles, lo, hi, para_index,
+                                )
+                                .and_then(|split| split.recursive_cut)
+                                .filter(|cut| {
+                                    cut.start_row == 0
+                                        && cut.end_row == 1
+                                        && !cut.is_block_split
+                                        && !cut.start_cut_is_block
+                                })
+                                .and_then(|cut| {
+                                    self.saved_nested_single_cell_frame_height(
+                                        child,
+                                        &cut.start_cut,
+                                        &cut.end_cut,
+                                        styles,
+                                    )
+                                })
+                                .is_some();
+                        if saved_frame_owns_margin {
+                            run_start = run_end;
+                            continue;
+                        }
                         if start > run_start {
                             extra += hwpunit_to_px(child.outer_margin_top as i32, self.dpi);
                         }
