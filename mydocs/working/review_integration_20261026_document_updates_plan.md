@@ -731,6 +731,12 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 `fc-match`로 조회하면 모두 같은 파일이 선택됐다. [관찰·조회 결과](assets/review_integration_20261026/validation/post-rebase-8328/wasm-platform-font-diagnostic.json)는
 두 설정에서 Chromium 전체를 실행한 비교나 과거 선택의 증거는 아니다. 이전에 확인한
 일부 이름의 시스템 선택 차이만으로는 열두 쪽의 차이를 설명할 수 없다.
+온세미로 HWP의 독립 PDF에는 KoPub 계열 세 글꼴이 포함돼 있다. 같은 문서의
+선행 Chromium 표본 글자 탐색에서 `KoPubWorld돋움체_Pro Medium`을 요청한 항목은
+`Haansoft Batang`으로 선택됐으며 명시적 공급 목록에는 KoPub family가 없다.
+[PDF·탐색·목록 근거](assets/review_integration_20261026/validation/post-rebase-8328/onsemiro-kopub-font-diagnostic.json)는
+표본 결과이므로 전체 글자나 과거 실행의 선택을 대신하지 않는다. 실제 원본의
+글꼴 대응을 추적하기 전 임의의 글꼴 매핑으로 수치를 맞추지 않는다.
 
 #8319 반영 범위 Native 재검증은 197개 입력·256쪽을 완료했다. 실제 입력·PDF와
 TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했으며 실행 오류,
