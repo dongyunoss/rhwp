@@ -84,5 +84,20 @@
         }
       ]
     }
+  },
+  "bold_font_isolation_20261028": {
+    "source_face": "맑은 고딕",
+    "excluded_font": "/home/tsjang/.local/share/fonts/rhwp-validation/malgunbd.ttf",
+    "excluded_font_sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+    "method": "Fontconfig isolated process only, reject specified bold face; candidate native binary, 96dpi, page 2",
+    "isolated_rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+    "historical_rhwp_png_sha256": "16bf3c0da18a2d4d9d5b5ada63ca94912bc23b3c2af9429574e149417b2fc57d",
+    "fixed_historical_pdf_png_sha256": "92dac4b45fcf034c3e116ffdc64383285089f2f6c58052496256c46794183ca8",
+    "historical_pair_raw_percent": 93.09501,
+    "current_font_pair_raw_percent": 92.81548,
+    "current_vs_historical_drop_pp": 0.27953,
+    "isolated_process_pdf_png_sha256": "c49d968abcee5289047c87bb2325204bfa752ec3e2e16a8fc926f02d54c20ab3",
+    "isolated_process_raw_percent": 92.14437,
+    "note": "같은 PDF 파일도 Fontconfig 차이로 PDFium 래스터가 달라질 수 있어 기존 PDF PNG를 고정하여 원래 점수를 검증했다. 설치된 글꼴이나 전역 설정을 변경하지 않았다. 원 점수 기준 미달은 유지한다."
   }
 }
