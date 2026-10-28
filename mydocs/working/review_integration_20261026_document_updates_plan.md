@@ -1032,3 +1032,5 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 - #7723은 새 MCP PDF F1 글꼴을 임시로 재구성하고 동일 입력·기준·원본 폭 보존 설정의 대조군과 비교했다. 22쪽은 Native 98.24609% → 98.28007%, 1·4·22·38쪽 모두 100% 미달이다. 임시 표시 치환만으로 해결되지 않았고 전체 쪽·WASM을 확인하지 않아 적용하지 않았다. 글꼴과 임시 스크립트는 회귀에 추가하지 않는다. [대조 조건과 쪽별 수치](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json).
 
 - 시스템 글꼴 비의존 원칙을 AGENTS.md·CLAUDE.md와 회귀 검증 지침에 반영했다. 문서 전용 경로의 CI 영향 분류 45개, fast-pass 관련 검사 25개, 신뢰된 검토 연결 검사 83개가 로컬에서 통과했다. 통합 브랜치 전체가 문서 전용이거나 원격 CI가 끝났다는 뜻은 아니다. [명령·로그 해시](assets/review_integration_20261026/validation/post-rebase-8328/fontless-guidance-ci-checks.json).
+
+- 개별 PR 20건의 review·구현 문서 40개를 최근 증거 링크 반영 후 다시 검사했다. 인식한 상대 파일 링크 863개에 누락·미추적 파일·임시 output 경로가 없다. 외부 링크·앵커 및 증거 내용 적합성을 이 검사로 판정하지 않는다. [문서별 해시와 결과](assets/review_integration_20261026/validation/post-rebase-8328/individual-review-local-links-20261029.json).
