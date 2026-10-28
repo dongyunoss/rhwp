@@ -1006,3 +1006,9 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 ### 2026-10-29 기존 통합 입력 후속 보정 대조
 
 - 공식 사양서 71쪽과 별도 기존 입력 66건·885쪽을 합친 67건·956쪽에서 후속 보정 전후 Native와 fresh WASM 렌더 PNG가 각 경로에서 모두 동일했다. 입력·PDF SHA도 맞췄다. 같은 기존 PDF 래스터 기준 전쪽 raw 차이는 0이고, 두 경로 모두 90% 미만이 없다. 새 방식의 PDF 래스터를 쓴 직접 측정값과 동일하다는 뜻은 아니다. [Native](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-native-png-comparison.json), [WASM](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-original-wasm-png-comparison.json), [사양서](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json). 임시 PDF 가져오기 중간본 6건은 파일을 보존하지 않고 생성 출처와 해시를 남겼다. 행정업무편람은 제외했다.
+
+### 2026-10-29 후속 검증 진행
+
+- 후속 표 보정에 직접 연결되는 `issue_8149_empty_host_float_page_bottom`, `source_owned_float_fragment_frames`, `issue_8160_saved_page_boundaries` 세 묶음만 선택한 nextest가 진행 중이다. 이전 전체 회귀를 다시 실행하지 않았다. 종료 코드·실제 실행 수와 실패 여부를 확인하기 전에는 통과로 기록하지 않는다.
+- #8319 보존 대상 197개 입력도 후속 보정 전후 Native·fresh WASM으로 실행 중이다. WASM 임시 집계에는 이전 패키지 SHA가 잘못 들어갔으므로 각 실행 manifest의 실제 사용 패키지 SHA를 확인한 뒤 정식 원장을 작성한다.
+- #7723 공백 설정 통제 인쇄에서는 변환 HWPX의 charPr 55 `useFontSpace`만 0에서 1로 바꾸면 문제 문단의 첫 줄이 원래 인쇄 결과보다 길어졌다. 원본 속성은 0이므로 임의 변경하지 않는다. [인쇄 대조와 원본 글꼴 진단](assets/review_integration_20261026/validation/post-rebase-8328/issue7723/page22-font-line-diagnostic.json).
