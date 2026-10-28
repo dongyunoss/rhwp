@@ -67,5 +67,17 @@
     "pdftotext -bbox-layout",
     "pypdf ContentStream",
     "기존 렌더 트리와 실험 TSV"
-  ]
+  ],
+  "poppy_gulim_no_human_truetype_trial": {
+    "date": "2026-10-29",
+    "scope": "HCI Poppy를 Gulim으로 대체하고 trueTypeFaces에 휴먼명조를 지정하지 않는 임시 입력",
+    "pages": {
+      "1": 97.9567,
+      "4": 96.27799,
+      "22": 93.17762,
+      "38": 95.46827
+    },
+    "paragraph_446_first_line_next_start": "위치",
+    "interpretation": "새 PDF와 다른 줄 나눔이 유지되고 선택 쪽의 일치율이 하락해 채택하지 않았다."
+  }
 }
