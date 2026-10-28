@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): scenario-a-after.hwp 1쪽 Native 99.92661% / fresh WASM 99.92661%; 전1쪽 최저 각 99.92661%.
+//! 메모리에서 새로 편집한 별도 입력은 위 원본과 동일한 문서가 아니다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+//! 실제 원본 1쪽의 독립 Print 좌표: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/scenario-a-pdf-coordinates.json.
+//!
 //! [#8168] 같은 문단의 위아래(TopAndBottom) 개체가 글자처럼 취급 그림을 줄 밖으로 끌어내리지 않는다.
 //!
 //! 결함: 문단에 글자처럼 취급 그림과 떠 있는 위아래 개체가 함께 있으면, 그림 y 에 그 개체의
@@ -164,6 +171,17 @@ fn para_relative_topandbottom_table_at_para_start_still_puts_picture_below() {
         matches!(n.node_type, RenderNodeType::Table(_))
     })
     .expect("표");
+    for (actual, expected, label) in [
+        (table.y, 136.01, "표 위"),
+        (table.y + table.height, 302.39, "표 아래"),
+        (image.y, 306.23, "그림 위"),
+        (image.y + image.height, 377.19, "그림 아래"),
+    ] {
+        assert!(
+            (actual - expected).abs() <= 2.0,
+            "{label}: {actual:.2}px, Print {expected:.2}px"
+        );
+    }
     assert!(
         image.y >= table.y + table.height - 0.5,
         "그림 위({:.1})가 표 아래({:.1}) 이후",
