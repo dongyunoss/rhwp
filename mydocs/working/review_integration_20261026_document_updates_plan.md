@@ -924,3 +924,11 @@ skip으로 종료했다. 실패한 `source_owned_float_fragment_frames` 검사�
 `05bab1b50e9a17b380582e562e992c7189fc3d2e9c85a01187ef069c24ff56e7`이다.
 이후 추가한 회귀 지침 커밋은 문서만 변경했다. 표 이어짐 WASM, 나머지 입력 비교,
 전체 Rust 회귀와 #7723의 새 MCP 기준 100% 검증은 아직 완료되지 않았다.
+
+같은 보정 후 #8328 관련 Native 55개 입력·329쪽을 보정 직전과 비교한 결과
+0.1%p 이상 하락과 실행 오류는 없다. 기존부터 90% 미만인 여섯 쪽은 그대로
+미달로 표시한다. 기존 통합 범위 WASM 67개 입력·956쪽도 보정 직전 대비
+0.1%p 이상 하락은 없지만, 과거 TSV 대비 12쪽의 차이는 남아 있다. 따라서
+보정 직전 대비 유지와 과거 기준 재현을 구분하며 후자를 통과로 기록하지 않는다.
+[Native 비교](assets/review_integration_20261026/validation/post-rebase-8328/floatfix-native-matrix.json),
+[기존 통합 WASM 비교](assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json).
