@@ -30,3 +30,7 @@
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.
+
+## 2026-10-28 최신 원 PR 대조
+
+최신 원 PR 구현 커밋 `163a24ce99`과 통합 후보의 `shape.rs`, `common.rs`는 동일하다. 글자처럼 취급 도형 삽입은 공용 경로에서 문단 재조판과 후속 문단 위치 갱신을 수행한다. 이는 별도 시각 검증의 결과를 대체하지 않는다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).

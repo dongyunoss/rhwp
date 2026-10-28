@@ -30,3 +30,7 @@
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.
+
+## 2026-10-28 최신 원 PR 대조
+
+최신 원 PR에서 추가된 수식의 `legacy_source_frame_seal` 캐시 키 및 `document_script::parse` 경로가 통합 후보에 있다. 기존 캐시 단위 검사는 후속 체리픽에서 공개 API 검사로 옮겨졌으며 모든 키 필드의 검사를 의미하지 않는다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).

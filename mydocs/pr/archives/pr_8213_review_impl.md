@@ -44,3 +44,7 @@
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.
+
+## 2026-10-28 최신 원 PR 대조
+
+최신 원 PR과 후보의 저장 첫 행 프레임 fallback 순서는 다르지만 전체 행과 첫 행 프레임의 길이 조건상 선택 높이는 같다. 글꼴 접미사 fallback의 최근 이름 캐시 사용은 확인했으며 별칭 결과와 캐시 수명에 대한 비교는 진행 중이다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).

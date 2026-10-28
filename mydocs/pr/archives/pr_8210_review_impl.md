@@ -37,3 +37,7 @@
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.
+
+## 2026-10-28 최신 원 PR 대조
+
+최신 원 PR과 후보는 저장 첫 행 프레임 fallback 평가 순서가 다르다. 전체 행 프레임이 존재하면 행 수는 원본 표의 행 수와 같고 첫 행 프레임은 그 이하이므로 이 차이는 선택 높이를 바꾸지 않는다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
