@@ -1,12 +1,12 @@
 # PR #8229 리뷰 — Studio PDF 가져오기 설정
 
-> **2026-10-28 리베이스 후 검증 진행 중:** 아래 기존 결과는 당시 검증 head의 기록이다. 최신 #8328 기준에서 전체 회귀와 Native·fresh WASM 전쪽 비교가 끝나지 않았으므로 통합 후보의 최종 통과로 해석하지 않는다. 현재 상태와 0.1%p 하락 기준은 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
+> **2026-10-28 통합 후보 검증:** 이전 전체 회귀는 완료됐고 변경 검사와 Native·fresh WASM 비교 결과를 추가했다. 아래 과거 결과는 각 측정 당시 head의 기록이다. 한국어 가정통신문 2쪽의 0.1%p 초과 하락 및 일부 측정 근거는 미해결이므로 통합 후보의 최종 통과로 해석하지 않는다. 현재 상태는 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — Studio PDF 가져오기 설정 통합 범위의 필수 로컬 검증 완료.**
+**통합 후보 최종 판정 보류 — Studio PDF 가져오기 설정의 관련 결과는 아래에 기록했다.**
 원 head의 단독 실행이나 원격 승인을 뜻하지 않는다. 원 변경을 누적 적용한 아래 통합 후보에 대한 판정이며,
-통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자의 PR 생성 승인을 받은 뒤 통합 PR을 제출한다.
+통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자가 승인한 통합 PR은 남은 검사와 미해결 기준을 처리한 뒤 제출한다.
 
 ## 접수와 적용
 
@@ -59,6 +59,10 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 새 editable 3모드는 구 버전에 없으므로 독립 PDF·실제 본문 소유 검사로 별도 검증했다.
 
 [실제 브라우저 PDF import·설정·본문 소유](<../../../mydocs/working/assets/review_integration_20261026/validation/pdf-layout-ui-review.json>)에서 2010 16쪽·2020 15쪽·mac 15쪽의 두 모드를 확인했다. editable 실제 본문 문단은 각각 255·256·267개이며 비 PDF 대조군도 보존했다. WASM 중간본은 실제 브라우저 import로 만들었고 임시 HWPX를 fixture로 커밋하지 않는다.
+
+## 2026-10-28 원 PR 입력과 쪽 확인
+
+원 PR의 실제 Studio UI에서 열린 시험지 PDF 중 2010 원본 7쪽의 당시 fresh WASM raw는 fidelity 99.77416%, editable 99.77620%다. 전16쪽 최저는 각각 98.69530%, 98.69835%다. 모드 전환·설정 저장과 비 PDF 대조군은 브라우저 실행 기록에서 구분한다. 위 수치는 2026-10-27 후보의 기록이며 최신 head의 재측정 결과는 아니다. [측정 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/visual-validation.json>)에서 해당 PDF·가져오기 모드와 출처를 확인한다.
 
 ## 조판 원칙 준수 판정
 

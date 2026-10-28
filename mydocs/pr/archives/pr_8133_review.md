@@ -1,12 +1,12 @@
 # PR #8133 리뷰 — 장치 화소 획 하한
 
-> **2026-10-28 리베이스 후 검증 진행 중:** 아래 기존 결과는 당시 검증 head의 기록이다. 최신 #8328 기준에서 전체 회귀와 Native·fresh WASM 전쪽 비교가 끝나지 않았으므로 통합 후보의 최종 통과로 해석하지 않는다. 현재 상태와 0.1%p 하락 기준은 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
+> **2026-10-28 통합 후보 검증:** 이전 전체 회귀는 완료됐고 변경 검사와 Native·fresh WASM 비교 결과를 추가했다. 아래 과거 결과는 각 측정 당시 head의 기록이다. 한국어 가정통신문 2쪽의 0.1%p 초과 하락 및 일부 측정 근거는 미해결이므로 통합 후보의 최종 통과로 해석하지 않는다. 현재 상태는 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — 장치 화소 획 하한 통합 범위의 필수 로컬 검증 완료.**
+**통합 후보 최종 판정 보류 — 장치 화소 획 하한의 관련 결과는 아래에 기록했다.**
 원 head의 단독 실행이나 원격 승인을 뜻하지 않는다. 원 변경을 누적 적용한 아래 통합 후보에 대한 판정이며,
-통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자의 PR 생성 승인을 받은 뒤 통합 PR을 제출한다.
+통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자가 승인한 통합 PR은 남은 검사와 미해결 기준을 처리한 뒤 제출한다.
 
 ## 접수와 적용
 
@@ -54,11 +54,16 @@ Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우
 
 [동일 조건 base/head 판정](<../../../mydocs/working/assets/review_integration_20261026/validation/base-head-comparison.json>)에서 Native·WASM 각각 64개 조합·910개 기준 쪽을 비교했고 2%p 이상 하락은 0쪽이다. 미세 하락 여부·최대 하락은 원장의 실제 값을 따른다.
 기준의 공식 사양 83쪽/71쪽과 cellnotes 12쪽/11쪽 오류는 기준 실패로 보존하고 모든 기준 쪽을 별도 진단 비교했다.
-새 editable 3모드는 구 버전에 없으므로 독립 PDF·실제 본문 소유 검사로 별도 검증했다.
 
 [현재 Native 확대 판독과 기존 외양 차이](<../../../mydocs/working/assets/review_integration_20261026/validation/v14-native-reading-notes.json>)에서 점수 통과·프레임 보정과 남은 글꼴·작은 표식·도식 빗금 외양 차이를 구분했다. 이를 새 회귀나 해결 완료로 바꾸어 보고하지 않는다.
 
 CanvasKit 전체 sungeo UI는 shaping·작업량 상한에 따른 Canvas2D 전환이다. 전체 문서 CanvasKit 통과로 세지 않는다. calendar 실제 CanvasKit UI와 sungeo 34쪽의 원래 선 계층·clip을 보존한 두 모드 × 두 배율 검사를 구분했다. 기존 gray-grid의 색상 기대값은 기여자가 제시한 직접 한/글 2024 출력의 191±8 근거이며 위치 핀은 유지했다.
+
+## 2026-10-28 해당 PR 쪽별 재검증
+
+원 PR의 실제 입력 `sungeo.hwp` 21쪽은 Native 99.94109% / fresh WASM 99.98302%, 22쪽 99.93511% / 99.97305%, 34쪽 99.97528% / 99.98763%다. 전94쪽 최저는 99.85164% / 99.92219%다. Skia 관련 검사 4개는 시스템 검색을 DejaVu로 제한한 최소 글꼴 환경에서 모두 통과했다. [글꼴별 해시와 실행 기록](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/skia-minimal-font-test.json>)은 테스트에서 직접 지정한 저장소 글꼴도 구분한다.
+
+측정 입력·기준 PDF SHA 및 전쪽 수치는 [Native 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json>)과 [fresh WASM 원장](<../../../mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json>)에서 각각 확인한다.
 
 ## 조판 원칙 준수 판정
 

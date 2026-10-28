@@ -1,12 +1,12 @@
 # PR #8265 리뷰 — AI 제공자와 SSE 청크 경계
 
-> **2026-10-28 리베이스 후 검증 진행 중:** 아래 기존 결과는 당시 검증 head의 기록이다. 최신 #8328 기준에서 전체 회귀와 Native·fresh WASM 전쪽 비교가 끝나지 않았으므로 통합 후보의 최종 통과로 해석하지 않는다. 현재 상태와 0.1%p 하락 기준은 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
+> **2026-10-28 통합 후보 검증:** 이전 전체 회귀는 완료됐고 변경 검사와 Native·fresh WASM 비교 결과를 추가했다. 아래 과거 결과는 각 측정 당시 head의 기록이다. 한국어 가정통신문 2쪽의 0.1%p 초과 하락 및 일부 측정 근거는 미해결이므로 통합 후보의 최종 통과로 해석하지 않는다. 현재 상태는 [통합 계획](../../working/review_integration_20261026_document_updates_plan.md)을 따른다.
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능 — AI 제공자와 SSE 청크 경계 통합 범위의 필수 로컬 검증 완료.**
+**통합 후보 최종 판정 보류 — AI 제공자와 SSE 청크 경계의 관련 결과는 아래에 기록했다.**
 원 head의 단독 실행이나 원격 승인을 뜻하지 않는다. 원 변경을 누적 적용한 아래 통합 후보에 대한 판정이며,
-통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자의 PR 생성 승인을 받은 뒤 통합 PR을 제출한다.
+통합 PR의 최신 head CI·검토와 별도 머지 지시는 이후 조건이다. 작업지시자가 승인한 통합 PR은 남은 검사와 미해결 기준을 처리한 뒤 제출한다.
 
 ## 접수와 적용
 
@@ -42,7 +42,7 @@ OpenAI·Gemini의 모델·동의·도구 왕복·오류·제공자 전환을 실
 [전체 로컬 실행·명령·exit·검증 SHA](<../../../mydocs/working/assets/review_integration_20261026/validation/final-rust-validation.json>)에 fmt·세 Clippy·workspace build·고정 base 정책·전체 nextest·Native 실행 결과를 보존한다.
 Studio 단위 검사는 2,607개 통과·기존 skip 2개이며 실제 브라우저와 fresh 최적화 WASM도 실행했다. [production source 동일성](<../../../mydocs/working/assets/review_integration_20261026/validation/production-source-continuity.json>)과 [WASM 빌드 출처](<../../../mydocs/working/assets/review_integration_20261026/validation/final-wasm-build.json>)로 검증 head를 구분한다.
 
-새 물리 배치·픽셀 golden을 추가하지 않는다. 저장 최적화·연결 그림 순서는 원본 payload·압축 바이트·id·외부 경로의 보존과 교체 반례로 검사하며, AI는 실제 UI·모의 전송과 문서 바이트 보존으로 검사한다.
+제공자·도구 왕복은 실제 Studio UI와 모의 API 응답, 문서 바이트 보존으로 검증한다. 다른 PR의 HWP 저장 검사나 쪽별 시각 수치를 이 PR의 직접 증거로 사용하지 않는다.
 
 [SSE·제공자 focused 검사](<../../../mydocs/working/assets/review_integration_20261026/validation/non-rust-validation.json>), [fresh WASM 실제 제공자 E2E](<../../../mydocs/working/assets/review_integration_20261026/validation/browser-validation.json>), [extension no-AI 빌드](<../../../mydocs/working/assets/review_integration_20261026/validation/extension-no-ai-builds.json>)를 연결한다. 실제 키·외부 API는 사용하지 않았으며 extension의 기존 WASM 빌드는 AI 제외 검증만 입증한다.
 
