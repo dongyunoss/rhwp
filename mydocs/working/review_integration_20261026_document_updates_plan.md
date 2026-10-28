@@ -1024,3 +1024,7 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 ### 2026-10-29 #8319 보존 대상 Native 완료
 
 - 후속 표 보정 뒤 197개 입력·256쪽의 Native 렌더 PNG가 이전과 모두 동일하며, 입력·PDF SHA도 각각 확인했다. 기존 PDF 래스터로 산출한 전쪽 최저는 93.22230%, 90% 미만과 0.1%p 이상 하락은 없다. 새 PDF 래스터의 직접 측정은 아니며 fresh WASM 비교는 별도로 진행한다. [전쪽 원장](assets/review_integration_20261026/validation/post-rebase-8328/pr8184-incoming-native-same-raster-comparison.json).
+
+### 2026-10-29 시스템 글꼴 비의존 검증
+
+- Fontconfig 검색을 빈 디렉터리로 제한해 `fc-list` 결과 0개인 상태에서 Native Skia 소수 원점·가는 선 검사 4개가 통과했다. 검사에 필요한 Noto Sans KR은 시스템 설치본이 아니라 저장소에 추적된 파일을 직접 공급했다. 이는 디렉터리 자체를 숨긴 검사나 26개 파일 전체의 결과는 아니다. [실행·글꼴 해시](assets/review_integration_20261026/validation/post-rebase-8328/fontless-skia-precheck.json). 별도로 시스템 글꼴 디렉터리까지 격리해 26개 파일을 검사 중이다.
