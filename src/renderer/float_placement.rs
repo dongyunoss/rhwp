@@ -3848,6 +3848,7 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
     spacing_before: f64,
     stored_layout: bool,
     hwpx_container: bool,
+    hwp5_origin_hwpx: bool,
     flow_from_body_top: f64,
     dpi: f64,
 ) -> f64 {
@@ -3874,17 +3875,20 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
             if !complete {
                 return 0.0;
             }
-            // HWP5에서 내보낸 HWPX는 HWP 원본의 저장 흐름을 따른다. 여기서
-            // hwpx_container는 그 계보를 제외한 HWPX 컨테이너만 나타낸다.
-            // HWPX에 원본 줄이 없거나 HWP에 구현용 슬롯만 있는 경우에는 바깥 아래
-            // 여백과 다음 문단의 앞 간격을 공유한다는 원본 증거가 없다. HWP의 저장 줄
-            // 없는 제목은 별도로 앞 간격을 흡수하는 기존 계약을 유지한다.
-            // 그 간격은 조각의 흐름이 이미 소유하므로 추측으로 한 번 더 흡수하지 않는다.
+            // 저장 줄이 없는 HWPX 표 호스트와 후속 문단은 여백을 공유한다는
+            // 원본 증거가 없다. HWP5 유래 HWPX라도 호스트 저장 줄이 없는 경우에는
+            // 이 규칙을 적용한다. 호스트 저장 줄이 보존된 HWP5 유래 사양서의
+            // 줄 없는 제목은 원본 HWP의 앞 간격 흡수 계약을 유지한다.
+            let missing_line_needs_spacing = hwpx_container
+                && (!hwp5_origin_hwpx
+                    || paragraphs
+                        .get(*para_index)
+                        .is_none_or(|host| host.line_segs.is_empty()));
             if *is_continuation
                 && paragraphs
                     .get(para_index.saturating_add(1))
                     .and_then(|next| next.line_segs.first())
-                    .map_or(hwpx_container, |line| {
+                    .map_or(missing_line_needs_spacing, |line| {
                         line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                             != 0
                     })
