@@ -90,5 +90,158 @@
       "38": 99.25589
     },
     "interpretation": "선택 쪽 모두 100%가 아니며 4쪽과 22쪽이 기존보다 낮아 채택하지 않았다."
+  },
+  "selected_latin_advances": {
+    "purpose": "22쪽 해당 영문 문자열의 한컴 새 PDF font 12, 사용자 Gulim, 사용자 HCI Poppy 전진폭 비교",
+    "pdf_font_program_sha256": "42ec3998ef39aa7dbd2d78a6a558c8859a5df76ec902bd2db8b7300d8931e73e",
+    "gulim_program_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "poppy_program_sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341",
+    "values": [
+      {
+        "character": " ",
+        "pdf_gulim_poppy_em": [
+          0.333008,
+          0.333008,
+          0.25
+        ]
+      },
+      {
+        "character": "-",
+        "pdf_gulim_poppy_em": [
+          0.625,
+          0.625,
+          0.332
+        ]
+      },
+      {
+        "character": "A",
+        "pdf_gulim_poppy_em": [
+          0.645508,
+          0.645508,
+          0.777
+        ]
+      },
+      {
+        "character": "I",
+        "pdf_gulim_poppy_em": [
+          0.269531,
+          0.269531,
+          0.335
+        ]
+      },
+      {
+        "character": "N",
+        "pdf_gulim_poppy_em": [
+          0.699219,
+          0.699219,
+          0.83
+        ]
+      },
+      {
+        "character": "U",
+        "pdf_gulim_poppy_em": [
+          0.710938,
+          0.710938,
+          0.777
+        ]
+      },
+      {
+        "character": "W",
+        "pdf_gulim_poppy_em": [
+          0.894531,
+          0.894531,
+          0.998
+        ]
+      },
+      {
+        "character": "X",
+        "pdf_gulim_poppy_em": [
+          0.625,
+          0.625,
+          0.667
+        ]
+      },
+      {
+        "character": "c",
+        "pdf_gulim_poppy_em": [
+          0.572266,
+          0.572266,
+          0.443
+        ]
+      },
+      {
+        "character": "d",
+        "pdf_gulim_poppy_em": [
+          0.605469,
+          0.605469,
+          0.609
+        ]
+      },
+      {
+        "character": "e",
+        "pdf_gulim_poppy_em": [
+          0.567383,
+          0.567383,
+          0.478
+        ]
+      },
+      {
+        "character": "i",
+        "pdf_gulim_poppy_em": [
+          0.241211,
+          0.241211,
+          0.291
+        ]
+      },
+      {
+        "character": "n",
+        "pdf_gulim_poppy_em": [
+          0.580078,
+          0.580078,
+          0.582
+        ]
+      },
+      {
+        "character": "o",
+        "pdf_gulim_poppy_em": [
+          0.605469,
+          0.605469,
+          0.546
+        ]
+      },
+      {
+        "character": "s",
+        "pdf_gulim_poppy_em": [
+          0.525391,
+          0.525391,
+          0.423
+        ]
+      },
+      {
+        "character": "t",
+        "pdf_gulim_poppy_em": [
+          0.313477,
+          0.313477,
+          0.324
+        ]
+      },
+      {
+        "character": "v",
+        "pdf_gulim_poppy_em": [
+          0.5,
+          0.5,
+          0.564
+        ]
+      },
+      {
+        "character": "w",
+        "pdf_gulim_poppy_em": [
+          0.75,
+          0.75,
+          0.832
+        ]
+      }
+    ],
+    "scope": "선택 18글자의 전진폭 비교이며 해당 글꼴의 모든 윤곽이나 줄 구성 동등성을 뜻하지 않는다."
   }
 }
