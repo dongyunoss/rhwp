@@ -1062,6 +1062,10 @@ MCP Print로 교체했다. [용지 점검](assets/review_integration_20261026/va
 
 ### 최신 작업 지시와 제출 상태
 
+- 작업지시자가 새로 설치한 글꼴은 내부 검증 전용으로 지정했다. 글꼴 파일을 저장소·패키지·배포물에
+  포함하지 않는다. 2026-10-29 현재 base 대비 변경 파일과 변경된 HWPX·ZIP·EPUB 내부에서
+  글꼴 확장자 파일은 발견되지 않았다. [검사 범위와 고정 head](assets/review_integration_20261026/validation/post-rebase-8328/font-distribution-audit.json).
+  이는 PDF에 포함된 글꼴 자원까지 검사한 결과는 아니다.
 - 이후 변환은 기존 MCP의 한컴 2024 경로만 사용한다. 별도 호스트 MCP는 사용하지 않는다.
 - 전체 회귀는 다시 실행하지 않는다. 완료한 Rust 정적 검사와 Studio 선택·브라우저 검증은
   [PR 본문 준비안](review_integration_20261026_pr_body_draft.md)의 실행 근거를 따른다.
