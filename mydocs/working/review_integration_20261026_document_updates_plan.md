@@ -743,6 +743,10 @@ CID를 통해 각각 82·12·855개 글리프를 현 서버의 대응 글꼴과 
 윤곽 명령과 좌표가 모두 같다. [독립 윤곽 비교](assets/review_integration_20261026/validation/post-rebase-8328/onsemiro-kopub-outline-identity.json)에
 PDF와 글꼴 해시를 기록한다. 글리프 윤곽 동일성만으로 전체 메트릭이나 과거
 Chromium의 선택까지 같다고 판정하지 않는다.
+후보 WASM의 온세미로 HWP 19·26·33·38쪽에 이 세 글꼴을 명시 공급한 진단은
+네 쪽 수치가 기존 후보와 모두 같았다. [공급 진단](assets/review_integration_20261026/validation/post-rebase-8328/onsemiro-kopub-supply-diagnostic.json)에
+글꼴 목록과 입력·PDF·WASM 해시를 기록한다. 폰트 목록에 추가된 것만으로 실제
+글자별 사용 여부나 과거 환경 재현을 주장하지 않는다.
 
 #8319 반영 범위 Native 재검증은 197개 입력·256쪽을 완료했다. 실제 입력·PDF와
 TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했으며 실행 오류,
