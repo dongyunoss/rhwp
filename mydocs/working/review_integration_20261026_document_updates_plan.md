@@ -719,6 +719,10 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 98.57262%를 98.57264%로 재현했지만 나머지 선택 7쪽의 미달은 해소하지 못했다.
 [글꼴 공급 선택 쪽 진단](assets/review_integration_20261026/validation/post-rebase-8328/historical-hcr-spot-diagnostic.json)은
 최종 후보 검증이 아니며 단일 글꼴 추가로 전쪽 환경이 복원됐다는 근거가 아니다.
+미달이 있는 중첩 표·온세미로 HWP·뉴스레터·9월 미주 문서의 기존과 현재
+명시적 글꼴 공급 목록은 각각 51개 파일의 해시와 순서가 모두 같다.
+[글꼴 공급 비교](assets/review_integration_20261026/validation/post-rebase-8328/wasm-font-supply-comparison.json)는
+시스템 글꼴 선택까지 같다는 증거가 아니므로 환경 차이는 계속 조사한다.
 
 #8319 반영 범위 Native 재검증은 197개 입력·256쪽을 완료했다. 실제 입력·PDF와
 TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했으며 실행 오류,
