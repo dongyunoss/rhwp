@@ -601,5 +601,20 @@
     "interpretation": "줄 끝 자간을 제외한 판정폭 44028이 물리 구간 너비 44024보다 4 HWPUNIT 커서 거절된다. 새로운 PDF에서 해당 글자를 포함하지만 이 한 사례만으로 물리 구간의 일반 허용값을 변경할 근거는 되지 않는다. 기존 PDF는 같은 글자 이전에서 줄이 끝난다.",
     "diagnostic_source": "src/renderer/composer/line_breaking.rs",
     "control_settings": "print, compat 2024, 원본 폭 보존 글꼴 환경, 기존 엄격 글꼴 공급"
+  },
+  "original_pr_8188_comparison": {
+    "date": "2026-10-29",
+    "original_pr": "https://github.com/edwardkim/rhwp/pull/8188",
+    "source_commit": "17225375ff975ca45704ab4eb1803f3f9ba15ea9",
+    "original_evidence": "mydocs/working/task_m100_8160_stage2.md",
+    "original_solution": "저장 줄이 없는 HWPX 22쪽 문단 446에서 글자 끝 자간 fit 판정과 HCI Poppy 원본 512 em 폭을 공통 조판에 반영했다. 한컴 독립 표본의 관측을 사용했다.",
+    "metric_file": "src/renderer/font_metric_hci_poppy.rs",
+    "metric_file_sha256_at_source_and_current": "9308e62b1b6e9657144b6ce62e77522dfba5c6f19b1b861b11875cb66c77fa1e",
+    "metric_file_unchanged_since_pr_merge": true,
+    "original_pr_hwpx_pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+    "original_pr_hwpx_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+    "original_hwpx_pdf_page22_second_line_ends": "응용프",
+    "issue7723_new_pdf_page22_second_line_ends": "응용프로",
+    "qualification": "#8188은 세 저장본 각각의 새 MCP 기준을 검증했으며 #7723 2010 이름 별칭은 별도의 원본이다. 서로 다른 PDF 출력은 각각 비교하며, 이 근거만으로 새 출력의 글꼴 대체 원인이나 새 기준 100%를 확정하지 않는다."
   }
 }
