@@ -19,6 +19,9 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 #8283. 원 head와 최초 적용은 [기존 체리픽 원장](assets/review_integration_20261026/cherry_pick_ledger.json), 리베이스 후 현재 적용 SHA는 [대응 원장](assets/review_integration_20261026/cherry_pick_current_ledger_20261028.json)에 기록한다.
 #8268과 #8161은 이 통합 대상이 아니다.
 
+2026-10-29 현재 원 PR 20건의 head와 본문은 기존 검토 시점과 같다. 개별 리뷰 40개는
+링크 검사 뒤 변경되지 않았다. [원 PR·리뷰 대조](assets/review_integration_20261026/validation/post-rebase-8328/source-pr-head-body-20261029.json).
+
 ## 제출 전 검증 기록 — 미완료
 
 - 최신 기준 `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`(#8328) 반영 후
