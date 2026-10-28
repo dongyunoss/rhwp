@@ -369,5 +369,36 @@
     "source_shape_55_attribute": "0x00000000",
     "source_shape_55_use_font_space": false,
     "scope": "원본 DocInfo FACE_NAME 및 CHAR_SHAPE 바이트에서 읽음. 글꼴의 실제 설치 여부를 뜻하지 않는다."
+  },
+  "use_font_space_control": {
+    "date": "2026-10-29",
+    "description": "한컴 변환 HWPX 대조본과 charPr 55의 useFontSpace만 0→1로 바꾼 임시 HWPX를 한컴 2024 Print 0으로 각각 출력",
+    "original_hwpx_sha256": "c9a2a833ed060d926d1a52baf48a7a93d30a03fc05e7e8a55caa1fb6d67ccd0d",
+    "modified_hwpx_sha256": "e53d3ec474e57cdb246e7e753028d55a800fc0e1b72375a6c0ec1a63824c8b07",
+    "changed_zip_entries": [
+      "Contents/header.xml"
+    ],
+    "page": 22,
+    "cases": {
+      "converted": {
+        "job_id": "3b5c6294-5957-4a98-873d-aabef05f815d",
+        "pdf_sha256": "a3aaf7497baefe2dc10983f72042fe2ffd03c5f69ec8a712f3011374bd8abca9",
+        "pdf_pages": 64,
+        "print_method": 0,
+        "first_line_end": "구성을",
+        "second_line_start": "스위치",
+        "second_line_end": "응용프로"
+      },
+      "space55": {
+        "job_id": "38204b47-3202-4b55-b3f4-ca4e10678e1b",
+        "pdf_sha256": "0d416f2cf58d6b47e0e76aecc77e6d458520be76762a568aa9823f66594e8a4d",
+        "pdf_pages": 64,
+        "print_method": 0,
+        "first_line_end": "스위",
+        "second_line_start": "치",
+        "second_line_end": "응용프로그램의"
+      }
+    },
+    "conclusion": "공백 설정을 1로 바꾸면 첫 줄에 스위가 넘어가 원래 새 MCP PDF와 달라진다. 원본 설정은 0이므로 설정을 켜서 맞추는 방법은 채택하지 않는다. 이 비교는 HWPX 실험이며 원본 HWP의 다른 차이 전체를 설명하지 않는다."
   }
 }
