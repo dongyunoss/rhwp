@@ -1,3 +1,8 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): rowbreak-problem-pages.hwpx 2쪽 Native 99.54784% / fresh WASM 99.54876%, 11쪽 95.74925% / 95.75079%, 13쪽 98.81057% / 98.79067%, 16쪽 98.52036% / 98.48140%; 전18쪽 최저 94.05007% / 93.97178%.
+//! rowbreak-problem-pages.hwp 1쪽 Native 99.92080% / fresh WASM 99.92124%, 10쪽 각 100.00000%, 13쪽 98.84461% / 98.83836%; 전18쪽 최저 97.86923% / 97.91713%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json.
+//!
 //! `samples/rowbreak-problem-pages.hwpx`의 표 분할 회귀 검사.
 //!
 //! 2쪽의 첫 도표 형태 TAC 표(`pi=5 ci=0`)는 앞선

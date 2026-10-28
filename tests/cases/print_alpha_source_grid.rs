@@ -1,3 +1,11 @@
+//! 검사 유형: 고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): 한글문서파일형식_5.0_revision1.3.hwp 21쪽 Native 99.59026% / fresh WASM 99.54796%; 전71쪽 최저 95.31577% / 95.19516%.
+//! wide.hwpx 1쪽 Native 98.78322% / fresh WASM 98.78261%; 전1쪽 최저 98.78322% / 98.78261%.
+//! narrow.hwpx 1쪽 Native·fresh WASM 각 100.00000%; 전1쪽 최저 각 100.00000%.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/print-alpha-visual-evidence.json.
+//!
 //! 연속 알파 그림의 원본 줄 소유와 독립 한컴 Print 운반체를 함께 보호한다.
 //! Native/fresh WASM 양쪽 98% 이상과 직접 판독을 마친 두 입력만 사용한다.
 //! 증거: mydocs/pr/assets/pr_8032_print_alpha/README.md

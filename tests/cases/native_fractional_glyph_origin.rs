@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): calendar_year.hwp 1쪽 Native 98.82866% / fresh WASM 98.50891%; 전1쪽 최저 98.82866% / 98.50891%.
+//! sungeo.hwp 34쪽 Native 99.97528% / fresh WASM 99.98763%; 전94쪽 최저 99.85164% / 99.92219%.
+//! 합성 글리프 검사는 독립 원본 문서가 없는 raster 격자 검사다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json.
+
 #![cfg(feature = "native-skia")]
 
 //! 생성 번호의 소수 원점과 일반 본문의 기존 raster 격자를 함께 보호한다.

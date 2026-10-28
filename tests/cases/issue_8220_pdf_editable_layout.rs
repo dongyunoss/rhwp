@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형.
+//! 2026-10-27 측정 raw(96dpi, PDFium, PDF editable 가져오기): 21_언어_기출_편집가능본-2010.pdf 7쪽 Native 99.82145% / fresh WASM 99.77620%; 전16쪽 최저 98.80885% / 98.69835%.
+//! 21_언어_기출_편집가능본-2020.pdf 7쪽 99.58789% / 99.18794%; 전15쪽 최저 99.13134% / 98.69133%.
+//! 21_언어_기출_편집가능본.pdf 7쪽 99.77787% / 99.73748%; 전15쪽 최저 98.51800% / 98.44191%.
+//! 수치 쌍은 Native / fresh WASM이며 당시 head의 편집 전 가져오기 결과다. 편집 후 결과는 별도 문서다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/visual-validation.json.
+//!
 //! #8220: the editable PDF layout stores recognized body paragraphs as the
 //! section's own text flow. Independent expectations: the source HWP's
 //! paragraph text and the PDF's page count. Checks are relational: paragraph

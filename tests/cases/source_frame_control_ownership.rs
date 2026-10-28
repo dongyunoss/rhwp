@@ -1,3 +1,14 @@
+//! 검사 유형: 관계형·고정형.
+//! 2026-10-28 측정 raw(96dpi, PDFium): issue8168의 multiline above·below 및 page-relative HWP, issue8271의 topandbottom·behindtext HWPX는 각각 1쪽 Native·fresh WASM 100.00000%, 전1쪽 최저 각 100.00000%.
+//! issue2007_nested_cell_pagination_42065.hwp: 3쪽 99.84704% / 99.82862%, 11쪽 98.82265% / 98.87353%; 전17쪽 최저 94.47057% / 94.39749%.
+//! sungeo.hwp: 21쪽 99.94109% / 99.98302%, 22쪽 99.93511% / 99.97305%; 전94쪽 최저 99.85164% / 99.92219%.
+//! hwpspec.hwp: 23쪽 99.99389% / 99.79148%, 54쪽 각 99.99765%; 전178쪽 최저 92.45593% / 92.83271%.
+//! 중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp: 1쪽 99.16453% / 99.14176%, 2쪽 93.57998% / 93.34172%; 전2쪽 최저 93.57998% / 93.34172%.
+//! issue3307_outline_number.hwpx: 8쪽 99.98280% / 99.96373%; 전9쪽 최저 97.30996% / 97.15648%.
+//! 각 수치 쌍의 순서는 Native / fresh WASM이다. 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-native-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/original-floatfix-wasm-comparison.json,
+//! mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json.
+//!
 //! 저장 프레임·실제 control 줄·표의 물리 상자 소유를 독립 Print와 대조한 회귀.
 //!
 //! #8133/#8184/#8213/#8206/#8283 통합 보정. 관련 원본의 전쪽 Native/fresh WASM

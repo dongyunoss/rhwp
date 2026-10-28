@@ -1,3 +1,9 @@
+//! 검사 유형: 관계형.
+//! 2026-10-28 원본 측정 raw(96dpi, PDFium): exam_kor.hwp 1쪽 Native 99.69502% / fresh WASM 99.70440%; 전20쪽 최저 96.74140% / 96.66238%.
+//! exam_kor.hwpx 1쪽 Native 99.69179% / fresh WASM 99.70186%; 전20쪽 최저 96.65339% / 96.56449%.
+//! 저장 스트림의 원본·저장본 비교이며 그림 교체본의 시각 측정값은 아니다.
+//! 근거: mydocs/working/assets/review_integration_20261026/validation/post-rebase-8328/header-evidence-ted3-matrix.json.
+
 #![cfg(not(target_arch = "wasm32"))]
 
 //! HWPX 저장은 바뀌지 않은 그림(BinData)을 다시 압축하지 않고 원본 deflate 바이트를
