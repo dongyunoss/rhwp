@@ -31,3 +31,7 @@
 
 원 contributor head를 rewrite하거나 원격 브랜치를 변경하지 않았다. 되돌림은 필요 시 이 원장의 적용 commit과
 관련 공통 보정을 검토해 별도 revert로 처리하며 다른 PR 변경까지 한꺼번에 롤백하지 않는다.
+
+## 2026-10-28 최신 원 PR 대조
+
+최신 원 PR `9c671965c6`과 후보의 그림 호스트 구현을 대조했다. `line_breaking.rs` 차이는 별도 #8167 도형 여백 계산이며 #8271 그림 호스트 분기는 동일하다. 회귀 검사 파일의 수용 범위는 별도로 확인한다. [커밋별 대조 근거](../../working/assets/review_integration_20261026/validation/post-rebase-8328/source-pr-paired-range-diff-review.md).
