@@ -740,6 +740,12 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 한컴바탕·돋움을 명시 공급한 과거 WASM 9월 20쪽은 95.32996%로 과거 96.35945%를
 재현하지 못했다. [PDF 윤곽·글꼴 공급 진단](assets/review_integration_20261026/validation/post-rebase-8328/endnotes-hancom-font-diagnostic.json)은
 추출되지 않은 표시에 대한 판정이나 원인 확정이 아니다.
+한글만 대상으로 하던 Canvas 글꼴 표본 탐색을 수식 문자까지 확장하자 9월 20쪽은
+`HyhwpEQ` 요청이 가장 많았다. PDF 수식 글꼴의 대응 글리프는 두 문서에서 각각
+133개·132개 모두 한컴 2020 설치본 윤곽과 일치했다. 같은 이름의 다른 서버 조사
+글꼴은 일부가 다르거나 빠졌다. 해당 한컴 설치본을 과거 WASM에 명시 공급한 결과
+9월 20쪽 PNG는 기존 현재 환경 출력과 바이트가 같았고 95.30078%로 과거 PNG를
+재현하지 못했다. 위 미주 진단에 근거를 추가했으며 나머지 원인을 계속 확인한다.
 미달이 있는 중첩 표·온세미로 HWP·뉴스레터·9월 미주 문서의 기존과 현재
 명시적 글꼴 공급 목록은 각각 51개 파일의 해시와 순서가 모두 같다.
 [글꼴 공급 비교](assets/review_integration_20261026/validation/post-rebase-8328/wasm-font-supply-comparison.json)는

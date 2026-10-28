@@ -58,5 +58,68 @@
     "historical_raw_percent": 96.35945,
     "past_wasm_normal_supply_raw_percent": 95.30078,
     "past_wasm_explicit_supply_raw_percent": 95.32996
+  },
+  "equation_font_investigation": {
+    "note": "Canvas 표본 글자와 실제 PDF의 글꼴 윤곽을 대조한다. 공급 전후 이미지가 같다는 것은 과거 환경의 전반적인 재현을 뜻하지 않는다.",
+    "official_font_sha256": "a3a3cd992a89ac38e7707b58143ebdb1da9511d3c462f019cda7f92c30467807",
+    "survey_font_sha256": "4195b45272ec1a5904e56790a63f990c3945aa6039c30014afbf94043272ce52",
+    "pdfs": [
+      {
+        "pdf": "pdf/3-09월_교육_통합_2022-hwp-2020.pdf",
+        "pdf_sha256": "748900124e771baf6ce7d90c2ef869b9078b53437c59bc47bdbcc42cba81bb80",
+        "pdf_font_object": 33,
+        "unicode_mappings": 133,
+        "official_matching_outlines": 133,
+        "official_different": 0,
+        "official_missing": 0,
+        "survey_matching_outlines": 98,
+        "survey_different": 7,
+        "survey_missing": 28
+      },
+      {
+        "pdf": "pdf/3-11월_실전_통합_2022-hwp-2020.pdf",
+        "pdf_sha256": "efad255e305326b5b84507481b2158e59941ae2bf4d87dbf97cb5a93b9664a57",
+        "pdf_font_object": 26,
+        "unicode_mappings": 132,
+        "official_matching_outlines": 132,
+        "official_different": 0,
+        "official_missing": 0,
+        "survey_matching_outlines": 93,
+        "survey_different": 7,
+        "survey_missing": 32
+      }
+    ],
+    "probe_log_sha256": "5d8926d1874df2a4e53e480363f6f6d2c0626c5e56e0a502b176b2b4eb65eced",
+    "canvas_probes": [
+      {
+        "font": "12px HyhwpEQ",
+        "count": 1196,
+        "platform": [
+          {
+            "familyName": "HyhwpEQ",
+            "postScriptName": "HyhwpEQ",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      {
+        "font": "8.16px HyhwpEQ",
+        "count": 132,
+        "platform": [
+          {
+            "familyName": "HyhwpEQ",
+            "postScriptName": "HyhwpEQ",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      }
+    ],
+    "explicit_font_catalog_sha256": "8e58bc79bc524e5fd296b4c040fa62cc704160b6938b591771040e2d26ffaddb",
+    "prior_png_sha256": "7035a9f2090ac09c5047df8be2e6d1ed041ffb86a955e331fa182c873034d093",
+    "explicit_png_sha256": "7035a9f2090ac09c5047df8be2e6d1ed041ffb86a955e331fa182c873034d093",
+    "explicit_raw_percent": 95.30078,
+    "historical_raw_percent": 96.35945
   }
 }
