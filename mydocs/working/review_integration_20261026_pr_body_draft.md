@@ -24,10 +24,12 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
 - 최신 기준 `db5cd5bcc60a69e42f419f18a7f57a33b6fb7fdc`(#8328) 반영 후
   변경의 Native·fresh WASM 전쪽을 검사 중이다. 최종 결과와 근거 링크는
   검증 종료 후 기입한다. 페이지별 하락 기준은 0.1%p다.
+- #8319 반영 범위 Native는 197개 입력·256쪽에서 실행 오류, 0.1%p 이상 하락과
+  90% 미만이 없었다. [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/incoming-native-comparison.json).
 - 보정 후 전체 Rust 회귀검사가 실행 중이다. 실제 종료 코드와 통과·실패·제외
   개수를 확인해 기입한다. 이전 보정 전 실행 결과를 최종 결과로 쓰지 않는다.
-- #8188의 세 문서 전쪽 Native 및 fresh WASM의 원시 실루엣과 실제 픽셀 계약을
-  확인 중이다. 전체 완료 결과만 기입한다.
+- #8188의 세 문서 전쪽 Native 및 fresh WASM 총 384쪽은 실제 이미지의 양방향
+  반경 2px 미대응 픽셀이 0이다. [전쪽 픽셀 계약](assets/review_integration_20261026/validation/post-rebase-8328/sample16-fixed-wasm/combined-pixel-contract.json).
 - #7723의 2010 저장본은 과거 PDF 기준과 새 MCP PDF 기준의 결과가 다르다.
   새 기준의 64쪽 중 2쪽만 100%여서 `Closes #7723`을 넣거나 #7445를 완료
   처리할 수 없다. 원인 조사와 확인 결과는 [통합 계획](review_integration_20261026_document_updates_plan.md)에 기록한다.
