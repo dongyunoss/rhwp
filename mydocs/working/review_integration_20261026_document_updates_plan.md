@@ -733,6 +733,13 @@ TSV 해시, 쪽수와 리베이스 전 후보 대비 각 쪽 수치를 대조했
 0.1%p 이상 하락 및 90% 미만이 모두 없다. 결과는
 [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/incoming-native-comparison.json)에
 보존한다. 같은 범위의 fresh WASM 검증과 전체 Rust 검사는 아직 진행 중이다.
+
+#8328 기준과 후보의 fresh WASM은 55개 입력·329쪽을 같은 조건으로 비교했다.
+입력·PDF·WASM 해시, 쪽수와 쪽별 수치를 확인했고 0.1%p 이상 하락과 실행 오류는
+없다. 다만 `claim-8045` 1쪽, `claim-8049` 10·82쪽, `claim-8056` 11쪽,
+`claim-8062` 30·31쪽은 기준에서도 미달인 기존 예외로 90% 미만이다.
+[전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/fixed-wasm-matrix.json)에
+이 여섯 쪽을 표시하고 90% 통과로 세지 않는다.
 진행 중인 WASM 비교 임시 원장의 `binary_sha256`은 WASM이 아니라 `--rhwp-bin`으로
 함께 지정된 Native 보조 파일의 해시다. 최종 근거를 만들 때는 실제 `--wasm-pkg`의
 `rhwp_bg.wasm` 해시를 따로 계산해야 한다. 위 선택 비교 기록의 잘못된 WASM 해시는

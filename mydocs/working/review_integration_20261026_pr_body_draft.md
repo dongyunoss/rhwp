@@ -26,6 +26,9 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
   검증 종료 후 기입한다. 페이지별 하락 기준은 0.1%p다.
 - #8319 반영 범위 Native는 197개 입력·256쪽에서 실행 오류, 0.1%p 이상 하락과
   90% 미만이 없었다. [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/incoming-native-comparison.json).
+- #8328 기준 대비 fresh WASM은 55개 입력·329쪽에서 0.1%p 이상 하락이 없었다.
+  기준에서도 90% 미만인 여섯 쪽은 기존 예외로 별도 기록한다.
+  [전쪽 비교 원장](assets/review_integration_20261026/validation/post-rebase-8328/fixed-wasm-matrix.json).
 - 보정 후 전체 Rust 회귀검사가 실행 중이다. 실제 종료 코드와 통과·실패·제외
   개수를 확인해 기입한다. 이전 보정 전 실행 결과를 최종 결과로 쓰지 않는다.
 - #8188의 세 문서 전쪽 Native 및 fresh WASM 총 384쪽은 실제 이미지의 양방향
