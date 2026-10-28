@@ -746,6 +746,10 @@ Native/fresh WASM으로 대조하고 현재 작업의 개선도 보존해야 한
 글꼴은 일부가 다르거나 빠졌다. 해당 한컴 설치본을 과거 WASM에 명시 공급한 결과
 9월 20쪽 PNG는 기존 현재 환경 출력과 바이트가 같았고 95.30078%로 과거 PNG를
 재현하지 못했다. 위 미주 진단에 근거를 추가했으며 나머지 원인을 계속 확인한다.
+9월 20쪽에서 과거 WASM과 과거 Canvas exporter를 현재 글꼴 조건으로 함께 실행한
+PNG는 현재 exporter로 같은 WASM을 실행한 PNG와 바이트가 같았으며 95.30078%다.
+보존된 과거 PNG·96.35945%는 재현되지 않았다. 위 미주 진단에 두 exporter와 WASM,
+PNG 해시를 기록했으며 exporter 변경만으로 차이를 설명하지 않는다.
 미달이 있는 중첩 표·온세미로 HWP·뉴스레터·9월 미주 문서의 기존과 현재
 명시적 글꼴 공급 목록은 각각 51개 파일의 해시와 순서가 모두 같다.
 [글꼴 공급 비교](assets/review_integration_20261026/validation/post-rebase-8328/wasm-font-supply-comparison.json)는
