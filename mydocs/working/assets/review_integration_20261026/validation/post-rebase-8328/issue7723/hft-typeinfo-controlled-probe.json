@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-29",
+  "scope": "독립 합성 Poppy HFT 문서의 typeInfo 속성 대조. #7723 입력이나 기준 PDF는 바꾸지 않는다.",
+  "source_template": "poppy-complete-alphabet-symbols-typeinfo.hwpx",
+  "shared_body_section_sha256": "62fd5f3b542541c8b3236674fbbc89b82298b9419cd31016e85e3de179eda16b",
+  "different_zip_members": [
+    "Contents/header.xml"
+  ],
+  "change": "14개 HCI Poppy 글꼴 항목의 typeInfo에서 가족 분류와 수치 속성만 고딕·비영값에서 명조·0으로 바꿨다. 한 속성의 단독 효과는 분리하지 않았다.",
+  "conversion": "기존 HWP 2024 MCP start/status/download, 13.0.0.3901, Print 0",
+  "outputs": {
+    "baseline": {
+      "input_sha256": "e465eb826d20eb3c1f45d5c46f262670650bd82e14f1f5fc85cb5675e267fcbc",
+      "mcp_job_id": "b523a7bd-05f8-4fab-8285-fcd33e211501",
+      "engine": "2024",
+      "pdf_sha256": "a24814a63502871be3654fcd6999aeec48afc1fdbff4dc043ab2610dc0cb7657",
+      "pages": 5,
+      "page1_T1_subtype": "/Type3",
+      "page1_T1_widths_first_12": [
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0
+      ]
+    },
+    "zero": {
+      "input_sha256": "3c684146cb7937b00c316460289e2f5a671ded60aed2a29d1ee280fa72030163",
+      "mcp_job_id": "0608ee5e-8062-4b18-bc3e-6c832bff3d9c",
+      "engine": "2024",
+      "pdf_sha256": "5b4ddc6a21a8367be87d9355edbac036821abda6cc52c6c01d81a1932255c627",
+      "pages": 4,
+      "page1_T1_subtype": "/Type3",
+      "page1_T1_widths_first_12": [
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0,
+        747.0
+      ]
+    }
+  },
+  "type3_t1_common_charproc_names": 91,
+  "type3_t1_identical_charproc_streams": 0,
+  "interpretation": "두 입력 모두 Type3 자원을 생성했고 첫 글꼴 자원의 폭·같은 이름의 글리프 스트림과 전체 쪽수가 달랐다. 현재 MCP에서 HFT가 전부 미지원이라고 단정할 수 없고 typeInfo를 바꾸면 글꼴 출력이 바뀔 수 있다. HWPX 원본의 22쪽과 글꼴 대체 원인이 이것 하나 때문이라는 증거는 아니다.",
+  "limitations": [
+    "합성 입력의 본문 및 다른 글꼴 슬롯 구성은 #7723 원본과 다르다.",
+    "familyType 및 여러 속성을 함께 바꿨고 어떤 값이 결과를 일으켰는지 분리하지 않았다.",
+    "Type3 자원만으로 정확한 글꼴 이름을 증명하지 않는다.",
+    "입력과 출력 PDF는 임시 진단 산출물이며 제품 입력·기준 PDF·회귀 검사에 적용하지 않았다."
+  ]
+}
