@@ -65,3 +65,7 @@
 ## 2026-10-28 후속 보정 뒤 표 조각 전쪽 검증
 
 독립 Print를 가진 36개 입력은 Native와 fresh WASM 각각 총 64쪽 모두 raw 100%다. 원본·PDF SHA, 각 쪽의 렌더 및 PDF 래스터 SHA와 수치는 [검증 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-float-fragments/evidence.json)에 기록했다. 공식 사양서 71쪽도 이전 PDF 래스터 기준 두 경로 전쪽 수치가 보정 전과 같음을 [별도 원장](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-spec-all/evidence.json)으로 확인했다. 추가 보정과 관련된 다른 입력·최종 gate는 별도이며 이 결과만으로 일괄 완료하지 않는다.
+
+## 2026-10-28 후속 보정 대표 쪽 전후 비교
+
+같은 원본·독립 PDF·환경의 4쪽에서 0.1%p 이상 하락은 없다. `hcar-001.hwpx` 1쪽은 Native 74.87266% → 94.24519%, fresh WASM 75.42285% → 94.72286%다. `rowbreak-problem-pages.hwpx` 11쪽은 Native 95.74925% / WASM 95.75079%로 보정 전후 같고, 정책연구 보고서 174·175쪽도 두 경로의 수치가 각각 같다. [입력·PDF·PNG SHA와 전후 수치](../../working/assets/review_integration_20261026/validation/post-rebase-8328/pr8184-representative/evidence.json). 기존 hcar의 90% 미달은 보정 전 관측이며 보정 후에도 100%라고 주장하지 않는다.
