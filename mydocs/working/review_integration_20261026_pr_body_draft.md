@@ -68,3 +68,6 @@ planet6897의 문서 조판, 그림 저장, PDF 가져오기 및 성능 개선 P
   이는 전체 Studio 검사나 최신 WASM 브라우저 검사 전체의 대체 결과가 아니다.
 - 최신 WASM을 실제로 받은 격리 브라우저에서 AI 제공자 검사 34개와 2010 시험 PDF의
   기본·편집 배치 및 페이지 수 확인 6개가 통과했다. [바이트 해시·실행 근거](assets/review_integration_20261026/validation/post-rebase-8328/studio-fresh-browser-20261029.json).
+- Fontconfig 검색 결과를 0개로 제한한 환경에서 최신 WASM을 사용한 CanvasKit 점선 네 종류와
+  투명 테두리 검사가 통과했다. 글자 연산은 검사 범위에서 제외했으며 시스템 글꼴 디렉터리를
+  숨긴 실험은 아니다. [실행 근거](assets/review_integration_20261026/validation/post-rebase-8328/studio-fresh-browser-20261029.json).
