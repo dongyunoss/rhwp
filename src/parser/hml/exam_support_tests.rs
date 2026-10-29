@@ -1,0 +1,114 @@
+//! 시험지형 HML(수학비서 등이 HWPML 2.8 로 저장)에서 쓰는 미주·자동 번호·그림·수식 캡션.
+
+use super::parse_hml;
+use crate::model::control::{AutoNumberType, Control};
+
+const EXAM: &str = concat!(
+    r#"<?xml version="1.0" encoding="UTF-8"?>"#,
+    r#"<HWPML Style="embed" SubVersion="8.0.1.0" Version="2.8"><HEAD SecCnt="1"><MAPPINGTABLE>"#,
+    r#"<BINDATALIST Count="1"><BINITEM BinData="1" Format="png" Type="Embedding"/></BINDATALIST>"#,
+    r#"</MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0" Style="0"><TEXT CharShape="0">"#,
+    // 문제 번호 = 미주 번호, 미주 내용 = 정답
+    r#"<ENDNOTE><PARALIST><P ParaShape="0" Style="0"><TEXT CharShape="0">"#,
+    r#"<AUTONUM Number="3" NumberType="Endnote"><AUTONUMFORMAT SuffixChar="." Superscript="false" Type="Digit"/></AUTONUM>"#,
+    r#"<CHAR> [정답] ④</CHAR></TEXT></P></PARALIST></ENDNOTE>"#,
+    r#"<CHAR>가</CHAR>"#,
+    // 수식 개체의 숨은 캡션 문단은 본문으로 새면 안 된다
+    r#"<EQUATION BaseUnit="1000"><SHAPEOBJECT><SIZE Height="100" Width="100"/>"#,
+    r#"<CAPTION><PARALIST><P ParaShape="1" Style="0"><TEXT CharShape="0"><CHAR>qLa0</CHAR></TEXT></P></PARALIST></CAPTION>"#,
+    r#"</SHAPEOBJECT><SCRIPT>x</SCRIPT></EQUATION>"#,
+    r#"<CHAR>나</CHAR>"#,
+    r#"<PICTURE Reverse="false"><SHAPEOBJECT><SIZE Height="2000" Width="3000"/>"#,
+    r#"<POSITION TreatAsChar="true" VertRelTo="Para" HorzRelTo="Column"/>"#,
+    r#"<CAPTION><PARALIST><P ParaShape="1" Style="0"><TEXT CharShape="0"><CHAR>rX7h</CHAR></TEXT></P></PARALIST></CAPTION>"#,
+    r#"</SHAPEOBJECT><IMAGE BinItem="1" Effect="RealPic"/></PICTURE>"#,
+    r#"<CHAR>다</CHAR></TEXT></P></SECTION></BODY>"#,
+    r#"<TAIL><BINDATASTORAGE><BINDATA Encoding="Base64" Id="1" Compress="false">iVBORw0K
+Ggo=</BINDATA></BINDATASTORAGE></TAIL></HWPML>"#,
+);
+
+#[test]
+fn hwpml_2_8_opens() {
+    let result = parse_hml(EXAM.as_bytes()).expect("HWPML 2.8 은 열려야 한다");
+    assert_eq!(result.metadata.hwpml_version.as_deref(), Some("2.8"));
+}
+
+#[test]
+fn note_and_caption_paragraphs_stay_out_of_the_body() {
+    let document = parse_hml(EXAM.as_bytes()).unwrap().document;
+    let paragraphs = &document.sections[0].paragraphs;
+    assert_eq!(paragraphs.len(), 1, "미주·캡션 문단이 본문 문단으로 새면 안 된다");
+    assert_eq!(paragraphs[0].text, "가나다");
+}
+
+#[test]
+fn controls_keep_their_text_positions() {
+    let document = parse_hml(EXAM.as_bytes()).unwrap().document;
+    let paragraph = &document.sections[0].paragraphs[0];
+    let kinds: Vec<&str> = paragraph
+        .controls
+        .iter()
+        .map(|control| match control {
+            Control::Endnote(_) => "endnote",
+            Control::Equation(_) => "equation",
+            Control::Picture(_) => "picture",
+            _ => "other",
+        })
+        .collect();
+    assert_eq!(kinds, ["endnote", "equation", "picture"]);
+    // 미주(0..8) 가(8) 수식(9..17) 나(17) 그림(18..26) 다(26)
+    assert_eq!(paragraph.char_offsets, [8, 17, 26]);
+}
+
+#[test]
+fn endnote_keeps_its_number_and_answer() {
+    let document = parse_hml(EXAM.as_bytes()).unwrap().document;
+    let Control::Endnote(endnote) = &document.sections[0].paragraphs[0].controls[0] else {
+        panic!("첫 컨트롤은 미주여야 한다");
+    };
+    assert_eq!(endnote.number, 3);
+    assert_eq!(endnote.after_decoration_letter, '.' as u16);
+    assert_eq!(endnote.paragraphs.len(), 1);
+    let inner = &endnote.paragraphs[0];
+    assert_eq!(inner.text, " [정답] ④");
+    let Control::AutoNumber(number) = &inner.controls[0] else {
+        panic!("미주 문단은 자동 번호로 시작해야 한다");
+    };
+    assert_eq!(number.number_type, AutoNumberType::Endnote);
+    assert_eq!(number.number, 3);
+    assert_eq!(number.suffix_char, '.');
+}
+
+#[test]
+fn picture_points_at_decoded_bin_data() {
+    let document = parse_hml(EXAM.as_bytes()).unwrap().document;
+    let Control::Picture(picture) = &document.sections[0].paragraphs[0].controls[2] else {
+        panic!("세 번째 컨트롤은 그림이어야 한다");
+    };
+    assert_eq!(picture.image_attr.bin_data_id, 1);
+    assert_eq!((picture.common.width, picture.common.height), (3000, 2000));
+    assert!(picture.common.treat_as_char);
+    assert_eq!(document.bin_data_content.len(), 1);
+    let bytes = document.bin_data_content[0]
+        .data
+        .load_limited(1024)
+        .expect("그림 바이트");
+    assert_eq!(bytes, [0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a]);
+    assert_eq!(document.bin_data_content[0].extension, "png");
+}
+
+#[test]
+fn equation_size_does_not_overwrite_the_enclosing_table() {
+    let xml = concat!(
+        r#"<?xml version="1.0" encoding="UTF-8"?><HWPML Version="2.91"><HEAD SecCnt="1"/><BODY><SECTION Id="0">"#,
+        r#"<P><TEXT><TABLE ColCount="1" RowCount="1"><SHAPEOBJECT><SIZE Height="5000" Width="40000"/></SHAPEOBJECT>"#,
+        r#"<ROW><CELL ColAddr="0" RowAddr="0" Width="40000" Height="5000"><PARALIST><P><TEXT>"#,
+        r#"<EQUATION><SHAPEOBJECT><SIZE Height="100" Width="700"/></SHAPEOBJECT><SCRIPT>x</SCRIPT></EQUATION>"#,
+        r#"</TEXT></P></PARALIST></CELL></ROW></TABLE></TEXT></P></SECTION></BODY></HWPML>"#,
+    );
+    let document = parse_hml(xml.as_bytes()).unwrap().document;
+    let Control::Table(table) = &document.sections[0].paragraphs[0].controls[0] else {
+        panic!("표여야 한다");
+    };
+    assert_eq!(table.common.width, 40000);
+}

@@ -1,6 +1,8 @@
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::Reader;
 
+use crate::model::control::{AutoNumber, AutoNumberType};
+use crate::model::image::{CropInfo, ImageEffect};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageDef};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType};
 use crate::model::shape::{
@@ -86,6 +88,16 @@ pub(crate) struct HmlSource {
     pub tab_defs: Vec<TabDef>,
     pub styles: Vec<Style>,
     pub sections: Vec<HmlSection>,
+    /// `MAPPINGTABLE/BINDATALIST/BINITEM` — 그림이 `BinItem` 으로 가리키는 항목.
+    pub bin_items: Vec<HmlBinItem>,
+}
+
+/// `<BINITEM BinData="1" Format="png" Type="Embedding"/>`
+#[derive(Debug, Default, Clone)]
+pub(crate) struct HmlBinItem {
+    pub id: u16,
+    pub format: String,
+    pub embedded: bool,
 }
 
 #[derive(Debug, Default)]
@@ -105,6 +117,8 @@ pub(crate) struct HmlParagraph {
     pub char_shapes: Vec<CharShapeRef>,
     pub controls: Vec<HmlControl>,
     pub raw_pos: u32,
+    /// 개체 캡션(`CAPTION`) 안의 문단. 본문·셀·주석 어디에도 넣지 않고 버린다.
+    discard: bool,
 }
 
 #[derive(Debug)]
@@ -113,6 +127,55 @@ pub(crate) enum HmlControl {
     Rectangle(HmlRectangle),
     Table(HmlTable),
     ColumnDef(ColumnDef),
+    Note(HmlNote),
+    AutoNumber(AutoNumber),
+    Picture(HmlPicture),
+    /// 읽지 못한 인라인 요소. 글자 흐름의 8 자리를 차지하므로 자리표시 컨트롤을 둬서
+    /// 뒤따르는 컨트롤(수식 등)이 한 칸씩 앞 자리로 밀리지 않게 한다.
+    Unknown,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum HmlNoteKind {
+    Footnote,
+    Endnote,
+}
+
+/// `<FOOTNOTE>`/`<ENDNOTE>` — 본문 문단 안의 주석 컨트롤과 그 안의 문단들.
+#[derive(Debug)]
+pub(crate) struct HmlNote {
+    pub kind: HmlNoteKind,
+    pub number: u16,
+    pub suffix_char: char,
+    pub paragraphs: Vec<HmlParagraph>,
+}
+
+/// `<PICTURE>` — 글자처럼 또는 떠 있는 그림.
+#[derive(Debug, Default)]
+pub(crate) struct HmlPicture {
+    pub width: u32,
+    pub height: u32,
+    pub horizontal_offset: i32,
+    pub vertical_offset: i32,
+    pub treat_as_char: bool,
+    pub flow_with_text: bool,
+    pub allow_overlap: bool,
+    pub vert_rel_to: VertRelTo,
+    pub vert_align: VertAlign,
+    pub horz_rel_to: HorzRelTo,
+    pub horz_align: HorzAlign,
+    pub text_wrap: TextWrap,
+    pub shape_attr: ShapeComponentAttr,
+    pub border_x: [i32; 4],
+    pub border_y: [i32; 4],
+    pub crop: CropInfo,
+    pub padding: Padding,
+    pub img_dim: (u32, u32),
+    pub bin_item: u16,
+    pub brightness: i8,
+    pub contrast: i8,
+    pub effect: ImageEffect,
+    pub alpha: u8,
 }
 
 #[derive(Debug, Default)]
@@ -201,6 +264,9 @@ struct ReadState<'a> {
     rectangles: Vec<HmlRectangle>,
     tables: Vec<HmlTable>,
     cells: Vec<HmlCell>,
+    notes: Vec<HmlNote>,
+    pictures: Vec<HmlPicture>,
+    auto_numbers: Vec<AutoNumber>,
     font_language: Option<usize>,
     current_border_fill: Option<usize>,
     /// 자식 요소(FONTID/RATIO/...)를 귀속할 CHARSHAPE 의 `Id` 위치.
@@ -234,6 +300,9 @@ impl<'a> ReadState<'a> {
             rectangles: Vec::new(),
             tables: Vec::new(),
             cells: Vec::new(),
+            notes: Vec::new(),
+            pictures: Vec::new(),
+            auto_numbers: Vec::new(),
             font_language: None,
             current_border_fill: None,
             current_char_shape: None,
@@ -274,6 +343,7 @@ impl<'a> ReadState<'a> {
         self.note_modeled_child(&name);
         if self.is_unsupported_inline(&name) {
             self.reserve_control_slot()?;
+            self.current_paragraph()?.controls.push(HmlControl::Unknown);
         }
         self.stack.push(name.clone());
         if let Some((parent, xml_path)) = preserve_target {
@@ -307,6 +377,7 @@ impl<'a> ReadState<'a> {
         self.note_modeled_child(&name);
         if self.is_unsupported_inline(&name) {
             self.reserve_control_slot()?;
+            self.current_paragraph()?.controls.push(HmlControl::Unknown);
         }
         self.stack.push(name.clone());
         if let Some((parent, xml_path)) = preserve_target {
@@ -409,6 +480,16 @@ impl<'a> ReadState<'a> {
     }
 
     fn capture_start(&mut self, name: &str, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        // 그림·수식 개체 아래의 크기·위치·여백은 그 개체의 것이다. 바깥 표나 사각형에
+        // 덮어쓰지 않도록 먼저 가른다 (셀 안 수식의 SHAPEOBJECT/SIZE 가 그 표의 너비를,
+        // 그림의 INSIDEMARGIN 이 표 안쪽 여백을 덮어쓰던 문제).
+        if is_object_attribute(name) {
+            match self.nearest_object() {
+                Some("PICTURE") => return self.capture_picture_attribute(name, element),
+                Some("EQUATION") => return Ok(()),
+                _ => {}
+            }
+        }
         match name {
             "HWPML" => self.capture_root(element),
             "HEAD" if self.stack.len() == 2 => {
@@ -445,6 +526,11 @@ impl<'a> ReadState<'a> {
             "EQUATION" if self.stack.iter().rev().nth(1).map(String::as_str) == Some("TEXT") => {
                 self.start_equation(element)
             }
+            "FOOTNOTE" | "ENDNOTE" if self.parent_is_text() => self.start_note(name),
+            "AUTONUM" if self.parent_is_text() => self.start_auto_number(element),
+            "AUTONUMFORMAT" => self.capture_auto_number_format(element),
+            "PICTURE" if self.parent_is_text() => self.start_picture(),
+            "BINITEM" => self.capture_bin_item(element),
             "SCRIPT" => self.start_equation_script(element),
             "RECTANGLE" => self.start_rectangle(element),
             "COLDEF" => self.capture_col_def(element),
@@ -479,6 +565,9 @@ impl<'a> ReadState<'a> {
                 self.finish_equation()?
             }
             "SCRIPT" => self.finish_equation_script(),
+            "FOOTNOTE" | "ENDNOTE" if self.parent_is_text() => self.finish_note()?,
+            "AUTONUM" if self.parent_is_text() => self.finish_auto_number()?,
+            "PICTURE" if self.parent_is_text() => self.finish_picture()?,
             "RECTANGLE" => self.finish_rectangle()?,
             "CELL" => self.finish_cell()?,
             "TABLE" => self.finish_table()?,
@@ -498,7 +587,9 @@ impl<'a> ReadState<'a> {
         // 않는다.** 여기서 검사한 뒤 `source.version` 에 담아 `doc_info.hwpml_version`
         // 메타데이터로 흘려보낼 뿐이고(`adapter.rs:29`), 요소 처리는 전부 태그 이름으로
         // 간다. 그래서 2.1 을 통과시키는 것은 같은 태그 기반 경로로 보내는 것뿐이다.
-        if !matches!(version.as_str(), "2.1" | "2.9" | "2.91") {
+        //
+        // 같은 이유로 한/글 2010 계열이 저장한 2.8 등 다른 2.x 도 받는다.
+        if !is_hwpml_2x(&version) {
             return Err(HmlError::UnsupportedVersion(version));
         }
         self.source.version = version;
@@ -793,6 +884,7 @@ impl<'a> ReadState<'a> {
             style_id: parse_attribute(element, b"Style")?.unwrap_or(0),
             column_type,
             raw_break_type,
+            discard: self.stack.iter().any(|name| name == "CAPTION"),
             ..Default::default()
         });
         Ok(())
@@ -1171,6 +1263,238 @@ impl<'a> ReadState<'a> {
         Ok(())
     }
 
+    fn parent_is_text(&self) -> bool {
+        self.stack.iter().rev().nth(1).map(String::as_str) == Some("TEXT")
+    }
+
+    /// 크기·위치·여백을 받을 가장 안쪽 개체.
+    fn nearest_object(&self) -> Option<&str> {
+        self.stack
+            .iter()
+            .rev()
+            .map(String::as_str)
+            .find(|name| matches!(*name, "TABLE" | "RECTANGLE" | "PICTURE" | "EQUATION"))
+    }
+
+    /// 닫히는 P 가 셀·글상자보다 안쪽의 각주/미주에 속하는가.
+    fn nearest_paragraph_owner_is_note(&self) -> bool {
+        let owner = self
+            .stack
+            .iter()
+            .rev()
+            .map(String::as_str)
+            .find(|name| matches!(*name, "CELL" | "DRAWTEXT" | "FOOTNOTE" | "ENDNOTE"));
+        matches!(owner, Some("FOOTNOTE" | "ENDNOTE"))
+    }
+
+    fn start_note(&mut self, name: &str) -> Result<(), HmlError> {
+        self.reserve_control_slot()?;
+        let kind = if name == "FOOTNOTE" {
+            HmlNoteKind::Footnote
+        } else {
+            HmlNoteKind::Endnote
+        };
+        self.notes.push(HmlNote {
+            kind,
+            number: 0,
+            suffix_char: ')',
+            paragraphs: Vec::new(),
+        });
+        Ok(())
+    }
+
+    fn finish_note(&mut self) -> Result<(), HmlError> {
+        let note = self
+            .notes
+            .pop()
+            .ok_or_else(|| HmlError::InvalidXml("unexpected note end".to_string()))?;
+        self.current_paragraph()?
+            .controls
+            .push(HmlControl::Note(note));
+        Ok(())
+    }
+
+    fn start_auto_number(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        self.reserve_control_slot()?;
+        let number_type = match attribute(element, b"NumberType")?.as_deref() {
+            Some("Footnote") => AutoNumberType::Footnote,
+            Some("Endnote") => AutoNumberType::Endnote,
+            Some("Figure") | Some("Picture") => AutoNumberType::Picture,
+            Some("Table") => AutoNumberType::Table,
+            Some("Equation") => AutoNumberType::Equation,
+            Some("TotalPage") => AutoNumberType::TotalPage,
+            _ => AutoNumberType::Page,
+        };
+        let number = parse_attribute(element, b"Number")?.unwrap_or(0);
+        self.auto_numbers.push(AutoNumber {
+            number_type,
+            number,
+            assigned_number: number,
+            ..Default::default()
+        });
+        Ok(())
+    }
+
+    fn capture_auto_number_format(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        if self.stack.iter().rev().nth(1).map(String::as_str) != Some("AUTONUM") {
+            return Ok(());
+        }
+        let superscript = parse_bool_attribute(element, b"Superscript")?;
+        let prefix_char = first_char(attribute(element, b"PrefixChar")?);
+        let suffix_char = first_char(attribute(element, b"SuffixChar")?);
+        let user_symbol = first_char(attribute(element, b"UserChar")?);
+        if let Some(auto_number) = self.auto_numbers.last_mut() {
+            auto_number.superscript = superscript;
+            auto_number.prefix_char = prefix_char;
+            auto_number.suffix_char = suffix_char;
+            auto_number.user_symbol = user_symbol;
+        }
+        Ok(())
+    }
+
+    fn finish_auto_number(&mut self) -> Result<(), HmlError> {
+        let auto_number = self
+            .auto_numbers
+            .pop()
+            .ok_or_else(|| HmlError::InvalidXml("unexpected AUTONUM end".to_string()))?;
+        // 주석 안의 번호가 그 주석의 번호다.
+        if let Some(note) = self.notes.last_mut() {
+            let same_kind = matches!(
+                (note.kind, auto_number.number_type),
+                (HmlNoteKind::Footnote, AutoNumberType::Footnote)
+                    | (HmlNoteKind::Endnote, AutoNumberType::Endnote)
+            );
+            if same_kind && note.number == 0 {
+                note.number = auto_number.number;
+                if auto_number.suffix_char != '\0' {
+                    note.suffix_char = auto_number.suffix_char;
+                }
+            }
+        }
+        self.current_paragraph()?
+            .controls
+            .push(HmlControl::AutoNumber(auto_number));
+        Ok(())
+    }
+
+    fn start_picture(&mut self) -> Result<(), HmlError> {
+        self.reserve_control_slot()?;
+        self.pictures.push(HmlPicture::default());
+        Ok(())
+    }
+
+    fn finish_picture(&mut self) -> Result<(), HmlError> {
+        let picture = self
+            .pictures
+            .pop()
+            .ok_or_else(|| HmlError::InvalidXml("unexpected PICTURE end".to_string()))?;
+        self.current_paragraph()?
+            .controls
+            .push(HmlControl::Picture(picture));
+        Ok(())
+    }
+
+    fn capture_bin_item(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        let Some(id) = parse_attribute::<u16>(element, b"BinData")? else {
+            return Ok(());
+        };
+        let format = attribute(element, b"Format")?
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+        let embedded = attribute(element, b"Type")?.as_deref() != Some("Link");
+        self.source.bin_items.push(HmlBinItem {
+            id,
+            format,
+            embedded,
+        });
+        Ok(())
+    }
+
+    fn capture_picture_attribute(
+        &mut self,
+        name: &str,
+        element: &BytesStart<'_>,
+    ) -> Result<(), HmlError> {
+        let Some(picture) = self.pictures.last_mut() else {
+            return Ok(());
+        };
+        match name {
+            "SIZE" => {
+                picture.width = parse_attribute(element, b"Width")?.unwrap_or(0);
+                picture.height = parse_attribute(element, b"Height")?.unwrap_or(0);
+            }
+            "POSITION" => {
+                picture.horizontal_offset =
+                    parse_attribute(element, b"HorzOffset")?.unwrap_or(0);
+                picture.vertical_offset = parse_attribute(element, b"VertOffset")?.unwrap_or(0);
+                picture.treat_as_char = parse_bool_attribute(element, b"TreatAsChar")?;
+                picture.flow_with_text = parse_bool_attribute(element, b"FlowWithText")?;
+                picture.allow_overlap = parse_bool_attribute(element, b"AllowOverlap")?;
+                picture.horz_rel_to =
+                    parse_horz_rel_to(attribute(element, b"HorzRelTo")?.as_deref());
+                picture.vert_rel_to =
+                    parse_vert_rel_to(attribute(element, b"VertRelTo")?.as_deref());
+                picture.horz_align =
+                    parse_horz_align(attribute(element, b"HorzAlign")?.as_deref());
+                picture.vert_align =
+                    parse_vert_align(attribute(element, b"VertAlign")?.as_deref());
+            }
+            "SHAPEOBJECT" => {
+                picture.text_wrap = parse_text_wrap(attribute(element, b"TextWrap")?.as_deref());
+            }
+            "SHAPECOMPONENT" => {
+                let attr = &mut picture.shape_attr;
+                attr.offset_x = parse_attribute(element, b"XPos")?.unwrap_or(0);
+                attr.offset_y = parse_attribute(element, b"YPos")?.unwrap_or(0);
+                attr.original_width = parse_attribute(element, b"OriWidth")?.unwrap_or(0);
+                attr.original_height = parse_attribute(element, b"OriHeight")?.unwrap_or(0);
+                attr.current_width = parse_attribute(element, b"CurWidth")?
+                    .filter(|value| *value > 0)
+                    .unwrap_or(attr.original_width);
+                attr.current_height = parse_attribute(element, b"CurHeight")?
+                    .filter(|value| *value > 0)
+                    .unwrap_or(attr.original_height);
+            }
+            "IMAGERECT" => {
+                for (index, key) in [b"X0", b"X1", b"X2", b"X3"].iter().enumerate() {
+                    picture.border_x[index] = parse_attribute(element, *key)?.unwrap_or(0);
+                }
+                for (index, key) in [b"Y0", b"Y1", b"Y2", b"Y3"].iter().enumerate() {
+                    picture.border_y[index] = parse_attribute(element, *key)?.unwrap_or(0);
+                }
+            }
+            "IMAGECLIP" => {
+                picture.crop = CropInfo {
+                    left: parse_attribute(element, b"Left")?.unwrap_or(0),
+                    top: parse_attribute(element, b"Top")?.unwrap_or(0),
+                    right: parse_attribute(element, b"Right")?.unwrap_or(0),
+                    bottom: parse_attribute(element, b"Bottom")?.unwrap_or(0),
+                };
+            }
+            "INSIDEMARGIN" => picture.padding = parse_padding(element)?,
+            "IMAGEDIM" => {
+                picture.img_dim = (
+                    parse_attribute(element, b"Width")?.unwrap_or(0),
+                    parse_attribute(element, b"Height")?.unwrap_or(0),
+                );
+            }
+            "IMAGE" => {
+                picture.bin_item = parse_attribute(element, b"BinItem")?.unwrap_or(0);
+                picture.brightness = parse_attribute(element, b"Bright")?.unwrap_or(0);
+                picture.contrast = parse_attribute(element, b"Contrast")?.unwrap_or(0);
+                picture.alpha = parse_attribute(element, b"Alpha")?.unwrap_or(0);
+                picture.effect = match attribute(element, b"Effect")?.as_deref() {
+                    Some("GrayScale") => ImageEffect::GrayScale,
+                    Some("BlackWhite") => ImageEffect::BlackWhite,
+                    Some("Pattern8x8") => ImageEffect::Pattern8x8,
+                    _ => ImageEffect::RealPic,
+                };
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
     fn reserve_control_slot(&mut self) -> Result<(), HmlError> {
         self.current_paragraph()?.raw_pos += 8;
         Ok(())
@@ -1181,6 +1505,17 @@ impl<'a> ReadState<'a> {
             .paragraphs
             .pop()
             .ok_or_else(|| HmlError::InvalidXml("unexpected P end".to_string()))?;
+        if paragraph.discard {
+            return Ok(());
+        }
+        if self.nearest_paragraph_owner_is_note() {
+            self.notes
+                .last_mut()
+                .ok_or_else(|| HmlError::InvalidXml("P outside note".to_string()))?
+                .paragraphs
+                .push(paragraph);
+            return Ok(());
+        }
         // [#2723] 종전엔 종류 우선순위(셀 먼저)로 골라, CELL 안 사각형의 DRAWTEXT
         // 문단이 셀로 흘러들어 글상자는 비고(adapter 가 None 으로 접음) 셀에는 이물
         // 문단이 남았다. 글상자가 스택상 더 안쪽일 때만 글상자를 고르고, 나머지는
@@ -1330,7 +1665,9 @@ impl<'a> ReadState<'a> {
         let unsupported_control = self.is_unsupported_inline(name);
         let unsupported_equation_child = self.stack.iter().any(|item| item == "EQUATION")
             && !(parent == Some("EQUATION") && name == "SCRIPT");
-        let explicitly_unsupported = matches!(name, "PICTURE" | "BINDATA");
+        // TEXT 직계 PICTURE 는 그림 컨트롤로 읽는다. 묶음 개체 안 그림 등은 아직 미지원.
+        let explicitly_unsupported =
+            (name == "PICTURE" && parent != Some("TEXT")) || name == "BINDATA";
         if unknown_document_child
             || name == "SCRIPTCODE"
             || unsupported_control
@@ -1381,7 +1718,16 @@ impl<'a> ReadState<'a> {
         self.stack.last().map(String::as_str) == Some("TEXT")
             && !matches!(
                 name,
-                "CHAR" | "SECDEF" | "COLDEF" | "EQUATION" | "RECTANGLE" | "TABLE"
+                "CHAR"
+                    | "SECDEF"
+                    | "COLDEF"
+                    | "EQUATION"
+                    | "RECTANGLE"
+                    | "TABLE"
+                    | "FOOTNOTE"
+                    | "ENDNOTE"
+                    | "AUTONUM"
+                    | "PICTURE"
             )
     }
 
@@ -1844,6 +2190,36 @@ fn parse_text_wrap(value: Option<&str>) -> TextWrap {
 /// 이면 240,000,000,120 바이트를 요구하다 `handle_alloc_error` → abort 로 프로세스가
 /// 죽었다. 상한을 넘으면 **아무것도 할당하지 않고** `false` 를 반환한다 — 호출부는
 /// 경고를 남기고 그 리소스만 건너뛴다(정상 파일은 상한에 닿지 않아 동작 불변).
+/// HWPML 2.x 버전 표기인가 (2.1, 2.8, 2.9, 2.91 …).
+fn is_hwpml_2x(version: &str) -> bool {
+    version
+        .strip_prefix("2.")
+        .is_some_and(|minor| !minor.is_empty() && minor.bytes().all(|byte| byte.is_ascii_digit()))
+}
+
+/// 개체(표·사각형·그림·수식) 자신이 갖는 속성 요소.
+fn is_object_attribute(name: &str) -> bool {
+    matches!(
+        name,
+        "SIZE"
+            | "POSITION"
+            | "SHAPEOBJECT"
+            | "SHAPECOMPONENT"
+            | "LINESHAPE"
+            | "WINDOWBRUSH"
+            | "TEXTMARGIN"
+            | "INSIDEMARGIN"
+            | "IMAGERECT"
+            | "IMAGECLIP"
+            | "IMAGEDIM"
+            | "IMAGE"
+    )
+}
+
+fn first_char(value: Option<String>) -> char {
+    value.and_then(|text| text.chars().next()).unwrap_or('\0')
+}
+
 fn set_indexed<T: Default>(values: &mut Vec<T>, index: usize, value: T, max_index: usize) -> bool {
     if index > max_index {
         return false;

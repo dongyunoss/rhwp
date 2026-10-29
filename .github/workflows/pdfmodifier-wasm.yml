@@ -1,0 +1,90 @@
+# pdfmodifier.app 이 쓰는 rhwp WebAssembly 패키지를 이 fork 에서 빌드한다.
+# hml-* 브랜치에 push 하면 HML 테스트 → wasm-pack 빌드 → @rhwp/core 와 같은 모양의
+# npm tarball 을 GitHub Release 로 올린다. pdf_modifier 의 package.json 이 그 URL 을 가리킨다.
+name: pdfmodifier wasm
+
+on:
+  push:
+    branches: ['hml-*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pdfmodifier-wasm-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.93.1
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-pdfm-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pdfm-
+
+      - name: HML unit tests
+        run: cargo test --locked --lib parser::hml
+
+      - name: Install wasm-pack
+        run: |
+          set -euo pipefail
+          v=0.15.0
+          curl -sSfL --retry 5 -o /tmp/wp.tgz \
+            "https://github.com/rustwasm/wasm-pack/releases/download/v${v}/wasm-pack-v${v}-x86_64-unknown-linux-musl.tar.gz"
+          tar -xzf /tmp/wp.tgz -C /tmp
+          install /tmp/wasm-pack-v${v}-x86_64-unknown-linux-musl/wasm-pack ~/.cargo/bin/wasm-pack
+
+      - name: Build WASM
+        run: wasm-pack build --target web --release
+
+      - name: Pack @rhwp/core
+        id: pack
+        run: |
+          set -euo pipefail
+          base=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          version="${base}-pdfm.${GITHUB_RUN_NUMBER}"
+          node -e '
+            const fs = require("fs");
+            fs.writeFileSync("pkg/package.json", JSON.stringify({
+              name: "@rhwp/core",
+              version: process.argv[1],
+              description: "rhwp (MIT) with HML exam fixes, built for pdfmodifier.app",
+              type: "module",
+              main: "rhwp.js",
+              types: "rhwp.d.ts",
+              files: ["rhwp_bg.wasm", "rhwp.js", "rhwp.d.ts", "rhwp_bg.wasm.d.ts", "LICENSE"],
+              repository: { type: "git", url: "git+https://github.com/" + process.env.GITHUB_REPOSITORY + ".git" },
+              license: "MIT",
+              sideEffects: ["./snippets/*"],
+            }, null, 2) + "\n");
+          ' "$version"
+          cp LICENSE pkg/LICENSE
+          (cd pkg && npm pack)
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tarball=$(ls pkg/*.tgz)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="core-v${{ steps.pack.outputs.version }}"
+          gh release create "$tag" "${{ steps.pack.outputs.tarball }}" \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "$tag" --notes "Built from ${GITHUB_SHA} on ${GITHUB_REF_NAME}."

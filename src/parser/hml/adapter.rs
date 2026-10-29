@@ -1,4 +1,7 @@
-use crate::model::control::{Control, Equation};
+use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+use crate::model::control::{Control, Equation, UnknownControl};
+use crate::model::footnote::{Endnote, Footnote};
+use crate::model::image::{ImageAttr, Picture};
 use crate::model::document::{Document, FileHeader, HwpVersion, Section, SectionDef};
 use crate::model::paragraph::{CharShapeRef, Paragraph};
 use crate::model::shape::{CommonObjAttr, DrawingObjAttr, RectangleShape, ShapeObject, TextBox};
@@ -6,7 +9,10 @@ use crate::model::style::{BorderFill, CharShape, Font, LineSpacingType, ParaShap
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
 use super::error::HmlError;
-use super::reader::{HmlControl, HmlEquation, HmlParagraph, HmlRectangle, HmlSource, HmlTable};
+use super::reader::{
+    HmlControl, HmlEquation, HmlNote, HmlNoteKind, HmlParagraph, HmlPicture, HmlRectangle,
+    HmlSource, HmlTable,
+};
 
 pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError> {
     let mut document = Document {
@@ -29,6 +35,7 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
     };
     document.doc_info.hwpml_version = Some(source.version.clone());
     move_resources(&mut source, &mut document);
+    move_bin_data(&source, &mut document);
     for source_section in source.sections {
         let section_def = SectionDef {
             page_def: source_section
@@ -72,6 +79,100 @@ fn move_resources(source: &mut HmlSource, document: &mut Document) {
     if !source.styles.is_empty() {
         document.doc_info.styles = std::mem::take(&mut source.styles);
     }
+}
+
+/// `BINITEM` 목록과 `TAIL/BINDATASTORAGE` 의 Base64 본문을 그림 데이터로 옮긴다.
+///
+/// 렌더러는 `bin_data_content` 를 `BinItem` 번호의 1-기반 순번으로 찾으므로
+/// (`find_bin_data_index`), 번호 1..=최댓값 자리를 빠짐없이 채운다. 본문이 없거나
+/// 풀지 못한 항목은 빈 바이트로 남겨 "그림 없음"으로 그려지게 한다.
+fn move_bin_data(source: &HmlSource, document: &mut Document) {
+    let Some(max_id) = source.bin_items.iter().map(|item| item.id).max() else {
+        return;
+    };
+    let storage = source
+        .preserved_fragments
+        .iter()
+        .filter(|fragment| fragment.xml_path == "/HWPML/TAIL/BINDATASTORAGE")
+        .flat_map(|fragment| read_bin_data_storage(&fragment.raw_xml))
+        .collect::<std::collections::HashMap<_, _>>();
+    for id in 1..=max_id {
+        let item = source.bin_items.iter().find(|item| item.id == id);
+        let extension = item
+            .map(|item| item.format.clone())
+            .filter(|format| !format.is_empty())
+            .unwrap_or_else(|| "bin".to_string());
+        document.doc_info.bin_data_list.push(BinData {
+            data_type: if item.is_none_or(|item| item.embedded) {
+                BinDataType::Embedding
+            } else {
+                BinDataType::Link
+            },
+            storage_id: id,
+            extension: Some(extension.clone()),
+            ..Default::default()
+        });
+        document.bin_data_content.push(BinDataContent {
+            id,
+            data: storage.get(&id).cloned().unwrap_or_default().into(),
+            extension,
+        });
+    }
+}
+
+/// `<BINDATASTORAGE><BINDATA Id="1" Encoding="Base64" Compress="true">…</BINDATA>…`
+fn read_bin_data_storage(xml: &str) -> Vec<(u16, Vec<u8>)> {
+    use base64::Engine;
+    use quick_xml::events::Event;
+
+    let mut reader = quick_xml::Reader::from_str(xml);
+    let mut items = Vec::new();
+    let mut current: Option<(u16, bool, String)> = None;
+    loop {
+        match reader.read_event() {
+            Ok(Event::Start(element)) if element.name().as_ref().as_bytes() == b"BINDATA" => {
+                let mut id = 0u16;
+                let mut compressed = false;
+                for attr in element.attributes().flatten() {
+                    let value = String::from_utf8_lossy(attr.value.as_ref().as_bytes()).into_owned();
+                    match attr.key.as_ref().as_bytes() {
+                        b"Id" => id = value.trim().parse().unwrap_or(0),
+                        b"Compress" => compressed = value == "true",
+                        _ => {}
+                    }
+                }
+                current = Some((id, compressed, String::new()));
+            }
+            Ok(Event::Text(text)) => {
+                if let Some((_, _, body)) = current.as_mut() {
+                    body.push_str(text.as_ref());
+                }
+            }
+            Ok(Event::End(element)) if element.name().as_ref().as_bytes() == b"BINDATA" => {
+                if let Some((id, compressed, body)) = current.take() {
+                    let packed: String = body.chars().filter(|c| !c.is_whitespace()).collect();
+                    let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(packed) else {
+                        continue;
+                    };
+                    let bytes = if compressed {
+                        crate::parser::cfb_reader::decompress_stream_limited(
+                            &bytes,
+                            crate::model::bin_data::MAX_BIN_DATA_BYTES,
+                        )
+                        .unwrap_or_default()
+                    } else {
+                        bytes
+                    };
+                    if id != 0 {
+                        items.push((id, bytes));
+                    }
+                }
+            }
+            Ok(Event::Eof) | Err(_) => break,
+            _ => {}
+        }
+    }
+    items
 }
 
 fn add_default_resources(document: &mut Document) {
@@ -133,7 +234,72 @@ fn into_control(source: HmlControl) -> Result<Control, HmlError> {
         HmlControl::Rectangle(rectangle) => into_rectangle(rectangle),
         HmlControl::Table(table) => into_table(table),
         HmlControl::ColumnDef(column_def) => Ok(Control::ColumnDef(column_def)),
+        HmlControl::Note(note) => into_note(note),
+        HmlControl::AutoNumber(auto_number) => Ok(Control::AutoNumber(auto_number)),
+        HmlControl::Picture(picture) => Ok(into_picture(picture)),
+        HmlControl::Unknown => Ok(Control::Unknown(UnknownControl::default())),
     }
+}
+
+fn into_note(source: HmlNote) -> Result<Control, HmlError> {
+    let paragraphs = source
+        .paragraphs
+        .into_iter()
+        .map(into_paragraph)
+        .collect::<Result<Vec<_>, _>>()?;
+    let after_decoration_letter = source.suffix_char as u16;
+    Ok(match source.kind {
+        HmlNoteKind::Footnote => Control::Footnote(Box::new(Footnote {
+            number: source.number,
+            paragraphs,
+            after_decoration_letter,
+            ..Default::default()
+        })),
+        HmlNoteKind::Endnote => Control::Endnote(Box::new(Endnote {
+            number: source.number,
+            paragraphs,
+            after_decoration_letter,
+            ..Default::default()
+        })),
+    })
+}
+
+fn into_picture(source: HmlPicture) -> Control {
+    let common = CommonObjAttr {
+        ctrl_id: crate::parser::tags::CTRL_GEN_SHAPE,
+        width: source.width,
+        height: source.height,
+        horizontal_offset: source.horizontal_offset as u32,
+        vertical_offset: source.vertical_offset as u32,
+        treat_as_char: source.treat_as_char,
+        flow_with_text: source.flow_with_text,
+        allow_overlap: source.allow_overlap,
+        vert_rel_to: source.vert_rel_to,
+        vert_align: source.vert_align,
+        horz_rel_to: source.horz_rel_to,
+        horz_align: source.horz_align,
+        text_wrap: source.text_wrap,
+        ..Default::default()
+    };
+    Control::Picture(Box::new(Picture {
+        common,
+        shape_attr: source.shape_attr,
+        border_x: source.border_x,
+        border_y: source.border_y,
+        crop: source.crop,
+        padding: source.padding,
+        img_dim: source.img_dim,
+        image_attr: ImageAttr {
+            brightness: source.brightness,
+            contrast: source.contrast,
+            effect: source.effect,
+            bin_data_id: source.bin_item,
+            // HML Alpha 는 0~255 불투명도 반전값이고, IR 은 0~100 투명도다.
+            transparency: ((source.alpha as u32 * 100 + 127) / 255) as u8,
+            external_path: None,
+        },
+        ..Default::default()
+    }))
 }
 
 fn into_equation(source: HmlEquation) -> Control {

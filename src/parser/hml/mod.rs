@@ -5,6 +5,9 @@ pub mod error;
 mod reader;
 mod warnings;
 
+#[cfg(test)]
+mod exam_support_tests;
+
 use crate::model::document::Document;
 
 pub use encoding::HmlEncoding;
