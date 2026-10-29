@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-pdfm-
 
       - name: HML unit tests
-        run: cargo test --locked --lib parser::hml
+        run: cargo test --locked --lib hml
 
       - name: Install wasm-pack
         run: |

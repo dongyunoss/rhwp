@@ -10,7 +10,8 @@ use crate::model::shape::{
 };
 use crate::model::style::{
     border_width_index, Alignment, BorderFill, BorderLineType, CharShape, Fill, FillType, Font,
-    LineSpacingType, ParaShape, ShapeBorderLine, SolidFill, Style, TabDef,
+    HeadType, LineSpacingType, Numbering, NumberingHead, ParaShape, ShapeBorderLine, SolidFill,
+    Style, TabDef,
 };
 use crate::model::table::VerticalAlign;
 use crate::model::Padding;
@@ -90,6 +91,8 @@ pub(crate) struct HmlSource {
     pub sections: Vec<HmlSection>,
     /// `MAPPINGTABLE/BINDATALIST/BINITEM` — 그림이 `BinItem` 으로 가리키는 항목.
     pub bin_items: Vec<HmlBinItem>,
+    /// `MAPPINGTABLE/NUMBERINGLIST/NUMBERING` — `Id` 1 이 0 번 자리 (문단 모양의 `Heading` 은 1-기반).
+    pub numberings: Vec<Numbering>,
 }
 
 /// `<BINITEM BinData="1" Format="png" Type="Embedding"/>`
@@ -267,6 +270,9 @@ struct ReadState<'a> {
     notes: Vec<HmlNote>,
     pictures: Vec<HmlPicture>,
     auto_numbers: Vec<AutoNumber>,
+    /// 자식 PARAHEAD 를 귀속할 NUMBERING 의 자리와, 글자(형식 문자열)를 받을 수준.
+    current_numbering: Option<usize>,
+    current_para_head: Option<usize>,
     font_language: Option<usize>,
     current_border_fill: Option<usize>,
     /// 자식 요소(FONTID/RATIO/...)를 귀속할 CHARSHAPE 의 `Id` 위치.
@@ -303,6 +309,8 @@ impl<'a> ReadState<'a> {
             notes: Vec::new(),
             pictures: Vec::new(),
             auto_numbers: Vec::new(),
+            current_numbering: None,
+            current_para_head: None,
             font_language: None,
             current_border_fill: None,
             current_char_shape: None,
@@ -531,6 +539,8 @@ impl<'a> ReadState<'a> {
             "AUTONUMFORMAT" => self.capture_auto_number_format(element),
             "PICTURE" if self.parent_is_text() => self.start_picture(),
             "BINITEM" => self.capture_bin_item(element),
+            "NUMBERING" => self.start_numbering(element),
+            "PARAHEAD" => self.start_para_head(element),
             "SCRIPT" => self.start_equation_script(element),
             "RECTANGLE" => self.start_rectangle(element),
             "COLDEF" => self.capture_col_def(element),
@@ -560,6 +570,8 @@ impl<'a> ReadState<'a> {
             "BORDERFILL" => self.current_border_fill = None,
             "CHARSHAPE" => self.current_char_shape = None,
             "PARASHAPE" => self.current_para_shape = None,
+            "NUMBERING" => self.current_numbering = None,
+            "PARAHEAD" => self.current_para_head = None,
             "P" => self.finish_paragraph()?,
             "EQUATION" if self.stack.iter().rev().nth(1).map(String::as_str) == Some("TEXT") => {
                 self.finish_equation()?
@@ -752,6 +764,12 @@ impl<'a> ReadState<'a> {
             alignment: parse_alignment(attribute(element, b"Align")?.as_deref()),
             tab_def_id: parse_attribute(element, b"TabDef")?.unwrap_or(0),
             para_level: parse_attribute(element, b"Level")?.unwrap_or(0),
+            // 글머리표 정의는 아직 읽지 않으므로 번호 문단만 살린다.
+            head_type: match attribute(element, b"HeadingType")?.as_deref() {
+                Some("Number") => HeadType::Number,
+                _ => HeadType::None,
+            },
+            numbering_id: parse_attribute(element, b"Heading")?.unwrap_or(0),
             // `<PARAMARGIN>` 이 없는 PARASHAPE 도 "미지정 = 160%" 계약을 따른다.
             // 160 기본값이 capture_para_margin() 안에만 있어 PARAMARGIN 없는 문단이
             // line_spacing 0 으로 남았는데, 0 을 실값(advance 0)으로 존중하게 바꾼 뒤로는
@@ -1263,6 +1281,74 @@ impl<'a> ReadState<'a> {
         Ok(())
     }
 
+    fn start_numbering(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        self.current_numbering = None;
+        let id = parse_attribute::<usize>(element, b"Id")?.unwrap_or(0);
+        if id == 0 {
+            return Ok(());
+        }
+        let numbering = Numbering {
+            start_number: parse_attribute(element, b"Start")?.unwrap_or(0),
+            ..Default::default()
+        };
+        if !set_indexed(
+            &mut self.source.numberings,
+            id - 1,
+            numbering,
+            self.max_resource_id,
+        ) {
+            self.warn_resource_id_out_of_range("NUMBERING", id);
+            return Ok(());
+        }
+        self.current_numbering = Some(id - 1);
+        Ok(())
+    }
+
+    /// `<PARAHEAD Level="1" NumFormat="Digit" Start="1" ...>^1.</PARAHEAD>`
+    fn start_para_head(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        self.current_para_head = None;
+        let Some(index) = self.current_numbering else {
+            return Ok(());
+        };
+        let level = parse_attribute::<usize>(element, b"Level")?.unwrap_or(0);
+        if !(1..=7).contains(&level) {
+            return Ok(());
+        }
+        let number_format = numbering_format_code(attribute(element, b"NumFormat")?.as_deref());
+        let mut attr = match attribute(element, b"Alignment")?.as_deref() {
+            Some("Center") => 1,
+            Some("Right") => 2,
+            _ => 0,
+        };
+        if parse_bool_attribute(element, b"UseInstWidth")? {
+            attr |= 1 << 2;
+        }
+        if parse_bool_attribute(element, b"AutoIndent")? {
+            attr |= 1 << 3;
+        }
+        if attribute(element, b"TextOffsetType")?.as_deref() == Some("hwpunit") {
+            attr |= 1 << 4;
+        }
+        attr |= (number_format as u32) << 5;
+        let head = NumberingHead {
+            attr,
+            width_adjust: parse_attribute(element, b"WidthAdjust")?.unwrap_or(0),
+            text_distance: parse_attribute(element, b"TextOffset")?.unwrap_or(0),
+            char_shape_id: parse_attribute(element, b"CharShape")?.unwrap_or(u32::MAX),
+            number_format,
+        };
+        let start = parse_attribute::<u32>(element, b"Start")?;
+        if let Some(numbering) = self.source.numberings.get_mut(index) {
+            numbering.heads[level - 1] = head;
+            numbering.level_formats[level - 1].clear();
+            if let Some(start) = start {
+                numbering.level_start_numbers[level - 1] = start;
+            }
+            self.current_para_head = Some(level - 1);
+        }
+        Ok(())
+    }
+
     fn parent_is_text(&self) -> bool {
         self.stack.iter().rev().nth(1).map(String::as_str) == Some("TEXT")
     }
@@ -1599,6 +1685,15 @@ impl<'a> ReadState<'a> {
         let inside_equation = self.stack.iter().any(|item| item == "EQUATION");
         if inside_equation && !text.trim().is_empty() {
             self.append_unsupported_equation_text(text);
+            return Ok(());
+        }
+        if self.stack.last().map(String::as_str) == Some("PARAHEAD") {
+            if let (Some(numbering), Some(level)) = (self.current_numbering, self.current_para_head)
+            {
+                if let Some(numbering) = self.source.numberings.get_mut(numbering) {
+                    numbering.level_formats[level].push_str(text);
+                }
+            }
             return Ok(());
         }
         if self.stack.last().map(String::as_str) != Some("CHAR") {
@@ -2214,6 +2309,27 @@ fn is_object_attribute(name: &str) -> bool {
             | "IMAGEDIM"
             | "IMAGE"
     )
+}
+
+/// HML `NumFormat` → 문단 번호 형식 코드(한글 5.0 표 41, HWPX `numFormat` 과 같은 순서).
+fn numbering_format_code(value: Option<&str>) -> u8 {
+    match value {
+        Some("CircledDigit") => 1,
+        Some("RomanCapital") => 2,
+        Some("RomanSmall") => 3,
+        Some("LatinCapital") => 4,
+        Some("LatinSmall") => 5,
+        Some("CircledLatinCapital") => 6,
+        Some("CircledLatinSmall") => 7,
+        Some("HangulSyllable") => 8,
+        Some("CircledHangulSyllable") => 9,
+        Some("HangulJamo") => 10,
+        Some("CircledHangulJamo") => 11,
+        Some("HangulPhonetic") => 12,
+        Some("Ideograph") => 13,
+        Some("CircledIdeograph") => 14,
+        _ => 0,
+    }
 }
 
 fn first_char(value: Option<String>) -> char {

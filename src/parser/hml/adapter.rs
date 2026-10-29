@@ -79,6 +79,9 @@ fn move_resources(source: &mut HmlSource, document: &mut Document) {
     if !source.styles.is_empty() {
         document.doc_info.styles = std::mem::take(&mut source.styles);
     }
+    if !source.numberings.is_empty() {
+        document.doc_info.numberings = std::mem::take(&mut source.numberings);
+    }
 }
 
 /// `BINITEM` 목록과 `TAIL/BINDATASTORAGE` 의 Base64 본문을 그림 데이터로 옮긴다.

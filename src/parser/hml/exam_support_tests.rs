@@ -112,3 +112,26 @@ fn equation_size_does_not_overwrite_the_enclosing_table() {
     };
     assert_eq!(table.common.width, 40000);
 }
+
+#[test]
+fn numbered_paragraph_shape_reads_its_numbering() {
+    let xml = concat!(
+        r#"<?xml version="1.0" encoding="UTF-8"?><HWPML Version="2.8"><HEAD SecCnt="1"><MAPPINGTABLE>"#,
+        r#"<NUMBERINGLIST Count="1"><NUMBERING Id="1" Start="0">"#,
+        r#"<PARAHEAD Alignment="Left" AutoIndent="true" Level="1" NumFormat="Digit" Start="1" TextOffset="50" TextOffsetType="percent" UseInstWidth="true" WidthAdjust="0" CharShape="0">^1.</PARAHEAD>"#,
+        r#"<PARAHEAD Level="2" NumFormat="CircledDigit" Start="1">^2</PARAHEAD>"#,
+        r#"</NUMBERING></NUMBERINGLIST>"#,
+        r#"<PARASHAPELIST Count="1"><PARASHAPE Id="0" HeadingType="Number" Heading="1" Level="0"/></PARASHAPELIST>"#,
+        r#"</MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0"><TEXT><CHAR>문제</CHAR></TEXT></P></SECTION></BODY></HWPML>"#,
+    );
+    let document = parse_hml(xml.as_bytes()).unwrap().document;
+    let shape = &document.doc_info.para_shapes[0];
+    assert_eq!(shape.head_type, crate::model::style::HeadType::Number);
+    assert_eq!(shape.numbering_id, 1);
+    let numbering = &document.doc_info.numberings[0];
+    assert_eq!(numbering.level_formats[0], "^1.");
+    assert_eq!(numbering.level_formats[1], "^2");
+    assert_eq!(numbering.level_start_numbers[0], 1);
+    assert_eq!(numbering.heads[1].number_format, 1);
+    assert_eq!(numbering.heads[0].attr & 0b1100, 0b1100, "UseInstWidth·AutoIndent");
+}
