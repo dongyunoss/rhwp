@@ -71,7 +71,8 @@ fn endnote_keeps_its_number_and_answer() {
     assert_eq!(endnote.after_decoration_letter, '.' as u16);
     assert_eq!(endnote.paragraphs.len(), 1);
     let inner = &endnote.paragraphs[0];
-    assert_eq!(inner.text, " [정답] ④");
+    // 자동 번호 자리표시 공백 + 본문
+    assert_eq!(inner.text, "  [정답] ④");
     let Control::AutoNumber(number) = &inner.controls[0] else {
         panic!("미주 문단은 자동 번호로 시작해야 한다");
     };
@@ -173,4 +174,20 @@ fn master_page_and_footer_stay_out_of_the_body() {
     assert_eq!(footers.len(), 1);
     assert_eq!(footers[0].apply_to, HeaderFooterApply::Both);
     assert_eq!(footers[0].paragraphs[0].text, "꼬리");
+}
+
+#[test]
+fn page_number_gets_a_placeholder_for_the_renderer() {
+    let xml = concat!(
+        r#"<?xml version="1.0" encoding="UTF-8"?><HWPML Version="2.8"><HEAD SecCnt="1"/><BODY><SECTION Id="0">"#,
+        r#"<P><TEXT><CHAR>- </CHAR><AUTONUM Number="1" NumberType="Page"><AUTONUMFORMAT Type="Digit"/></AUTONUM>"#,
+        r#"<CHAR> / </CHAR><AUTONUM Number="1" NumberType="TotalPage"><AUTONUMFORMAT Type="Digit"/></AUTONUM><CHAR></CHAR>"#,
+        r#"</TEXT></P></SECTION></BODY></HWPML>"#,
+    );
+    let document = parse_hml(xml.as_bytes()).unwrap().document;
+    let paragraph = &document.sections[0].paragraphs[0];
+    // HWP5 와 같다: 번호 자리는 공백 한 글자, 그 뒤 글자는 8 칸 뒤.
+    assert_eq!(paragraph.text, "-   /  ");
+    assert_eq!(paragraph.char_offsets, [0, 1, 2, 10, 11, 12, 13]);
+    assert_eq!(paragraph.controls.len(), 2);
 }

@@ -1538,7 +1538,12 @@ impl<'a> ReadState<'a> {
     }
 
     fn start_auto_number(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
-        self.reserve_control_slot()?;
+        // HWP5 PARA_TEXT 의 0x12 와 같이 자리표시 공백 한 글자를 둔다. 렌더러가 이 공백에
+        // 번호를 넣으므로, 없으면 쪽 번호·총 쪽수가 빈칸으로 그려진다(body_text.rs 참고).
+        let paragraph = self.current_paragraph()?;
+        paragraph.char_offsets.push(paragraph.raw_pos);
+        paragraph.text.push(' ');
+        paragraph.raw_pos += 8;
         let number_type = match attribute(element, b"NumberType")?.as_deref() {
             Some("Footnote") => AutoNumberType::Footnote,
             Some("Endnote") => AutoNumberType::Endnote,
