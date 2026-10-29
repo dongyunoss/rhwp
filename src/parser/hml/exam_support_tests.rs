@@ -2,6 +2,7 @@
 
 use super::parse_hml;
 use crate::model::control::{AutoNumberType, Control};
+use crate::model::header_footer::HeaderFooterApply;
 
 const EXAM: &str = concat!(
     r#"<?xml version="1.0" encoding="UTF-8"?>"#,
@@ -134,4 +135,42 @@ fn numbered_paragraph_shape_reads_its_numbering() {
     assert_eq!(numbering.level_start_numbers[0], 1);
     assert_eq!(numbering.heads[1].number_format, 1);
     assert_eq!(numbering.heads[0].attr & 0b1100, 0b1100, "UseInstWidth·AutoIndent");
+}
+
+#[test]
+fn master_page_and_footer_stay_out_of_the_body() {
+    let xml = concat!(
+        r#"<?xml version="1.0" encoding="UTF-8"?><HWPML Version="2.8"><HEAD SecCnt="1"/><BODY><SECTION Id="0">"#,
+        r#"<P><TEXT><SECDEF><HIDE Header="false" Footer="false" MasterPage="true" Border="false" Fill="false" EmptyLine="false"/>"#,
+        r#"<MASTERPAGE Type="Even"><PARALIST TextWidth="62648" TextHeight="85890"><P><TEXT><CHAR>짝</CHAR></TEXT></P></PARALIST></MASTERPAGE>"#,
+        r#"<MASTERPAGE Type="Odd"><PARALIST TextWidth="62648" TextHeight="85890"><P><TEXT><CHAR>홀</CHAR></TEXT></P></PARALIST></MASTERPAGE>"#,
+        r#"</SECDEF><FOOTER ApplyPageType="Both"><PARALIST TextWidth="62648" TextHeight="3685"><P><TEXT><CHAR>꼬리</CHAR></TEXT></P></PARALIST></FOOTER>"#,
+        r#"<CHAR>본문</CHAR></TEXT></P></SECTION></BODY></HWPML>"#,
+    );
+    let document = parse_hml(xml.as_bytes()).unwrap().document;
+    let section = &document.sections[0];
+    assert_eq!(section.paragraphs.len(), 1, "바탕쪽·꼬리말 문단이 본문으로 새면 안 된다");
+    assert_eq!(section.paragraphs[0].text, "본문");
+    assert!(section.section_def.hide_master_page);
+    assert!(!section.section_def.hide_footer);
+
+    let master_pages = &section.section_def.master_pages;
+    assert_eq!(master_pages.len(), 2);
+    assert_eq!(master_pages[0].apply_to, HeaderFooterApply::Even);
+    assert_eq!(master_pages[0].paragraphs[0].text, "짝");
+    assert_eq!(master_pages[1].apply_to, HeaderFooterApply::Odd);
+    assert_eq!(master_pages[1].paragraphs[0].text, "홀");
+    assert_eq!((master_pages[1].text_width, master_pages[1].text_height), (62648, 85890));
+
+    let footers: Vec<_> = section.paragraphs[0]
+        .controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Footer(footer) => Some(footer),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(footers.len(), 1);
+    assert_eq!(footers[0].apply_to, HeaderFooterApply::Both);
+    assert_eq!(footers[0].paragraphs[0].text, "꼬리");
 }

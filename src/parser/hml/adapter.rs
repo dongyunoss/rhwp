@@ -1,6 +1,7 @@
 use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
 use crate::model::control::{Control, Equation, UnknownControl};
 use crate::model::footnote::{Endnote, Footnote};
+use crate::model::header_footer::{Footer, Header, MasterPage};
 use crate::model::image::{ImageAttr, Picture};
 use crate::model::document::{Document, FileHeader, HwpVersion, Section, SectionDef};
 use crate::model::paragraph::{CharShapeRef, Paragraph};
@@ -11,7 +12,7 @@ use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use super::error::HmlError;
 use super::reader::{
     HmlControl, HmlEquation, HmlNote, HmlNoteKind, HmlParagraph, HmlPicture, HmlRectangle,
-    HmlSource, HmlTable,
+    HmlSource, HmlSubList, HmlSubListKind, HmlTable,
 };
 
 pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError> {
@@ -37,10 +38,23 @@ pub(crate) fn into_document(mut source: HmlSource) -> Result<Document, HmlError>
     move_resources(&mut source, &mut document);
     move_bin_data(&source, &mut document);
     for source_section in source.sections {
+        let hide = source_section.first_page_hide;
+        let master_pages = source_section
+            .master_pages
+            .into_iter()
+            .map(into_master_page)
+            .collect::<Result<Vec<_>, _>>()?;
         let section_def = SectionDef {
             page_def: source_section
                 .page_def
                 .unwrap_or_else(crate::model::page::PageDef::a4_default),
+            hide_header: hide.header,
+            hide_footer: hide.footer,
+            hide_master_page: hide.master_page,
+            hide_border: hide.border,
+            hide_fill: hide.fill,
+            hide_empty_line: hide.empty_line,
+            master_pages,
             ..Default::default()
         };
         let paragraphs = source_section
@@ -240,8 +254,44 @@ fn into_control(source: HmlControl) -> Result<Control, HmlError> {
         HmlControl::Note(note) => into_note(note),
         HmlControl::AutoNumber(auto_number) => Ok(Control::AutoNumber(auto_number)),
         HmlControl::Picture(picture) => Ok(into_picture(picture)),
+        HmlControl::HeaderFooter(sub_list) => into_header_footer(sub_list),
         HmlControl::Unknown => Ok(Control::Unknown(UnknownControl::default())),
     }
+}
+
+fn into_master_page(source: HmlSubList) -> Result<MasterPage, HmlError> {
+    Ok(MasterPage {
+        apply_to: source.apply_to,
+        text_width: source.text_width,
+        text_height: source.text_height,
+        paragraphs: into_paragraphs(source.paragraphs)?,
+        ..Default::default()
+    })
+}
+
+fn into_header_footer(source: HmlSubList) -> Result<Control, HmlError> {
+    let paragraphs = into_paragraphs(source.paragraphs)?;
+    Ok(if source.kind == HmlSubListKind::Header {
+        Control::Header(Box::new(Header {
+            apply_to: source.apply_to,
+            text_width: source.text_width,
+            text_height: source.text_height,
+            paragraphs,
+            ..Default::default()
+        }))
+    } else {
+        Control::Footer(Box::new(Footer {
+            apply_to: source.apply_to,
+            text_width: source.text_width,
+            text_height: source.text_height,
+            paragraphs,
+            ..Default::default()
+        }))
+    })
+}
+
+fn into_paragraphs(source: Vec<HmlParagraph>) -> Result<Vec<Paragraph>, HmlError> {
+    source.into_iter().map(into_paragraph).collect()
 }
 
 fn into_note(source: HmlNote) -> Result<Control, HmlError> {

@@ -2,6 +2,7 @@ use quick_xml::events::{BytesStart, Event};
 use quick_xml::Reader;
 
 use crate::model::control::{AutoNumber, AutoNumberType};
+use crate::model::header_footer::HeaderFooterApply;
 use crate::model::image::{CropInfo, ImageEffect};
 use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageDef};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType};
@@ -107,6 +108,38 @@ pub(crate) struct HmlBinItem {
 pub(crate) struct HmlSection {
     pub page_def: Option<PageDef>,
     pub paragraphs: Vec<HmlParagraph>,
+    /// `SECDEF/MASTERPAGE` — 본문이 아니라 쪽마다 깔리는 바탕쪽.
+    pub master_pages: Vec<HmlSubList>,
+    /// `SECDEF/HIDE` — 구역 첫 쪽에서 감출 요소.
+    pub first_page_hide: HmlPageHide,
+}
+
+/// `SECDEF/HIDE` 속성. 한글 「감추기」 중 구역 첫 쪽에 적용되는 설정이다.
+#[derive(Debug, Default, Clone, Copy)]
+pub(crate) struct HmlPageHide {
+    pub header: bool,
+    pub footer: bool,
+    pub master_page: bool,
+    pub border: bool,
+    pub fill: bool,
+    pub empty_line: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum HmlSubListKind {
+    MasterPage,
+    Header,
+    Footer,
+}
+
+/// `<MASTERPAGE>`·`<HEADER>`·`<FOOTER>` — 쪽마다 되풀이해 그리는 문단 목록.
+#[derive(Debug)]
+pub(crate) struct HmlSubList {
+    pub kind: HmlSubListKind,
+    pub apply_to: HeaderFooterApply,
+    pub text_width: u32,
+    pub text_height: u32,
+    pub paragraphs: Vec<HmlParagraph>,
 }
 
 #[derive(Debug, Default)]
@@ -133,6 +166,8 @@ pub(crate) enum HmlControl {
     Note(HmlNote),
     AutoNumber(AutoNumber),
     Picture(HmlPicture),
+    /// 머리말·꼬리말 (`kind` 는 Header 또는 Footer)
+    HeaderFooter(HmlSubList),
     /// 읽지 못한 인라인 요소. 글자 흐름의 8 자리를 차지하므로 자리표시 컨트롤을 둬서
     /// 뒤따르는 컨트롤(수식 등)이 한 칸씩 앞 자리로 밀리지 않게 한다.
     Unknown,
@@ -268,6 +303,7 @@ struct ReadState<'a> {
     tables: Vec<HmlTable>,
     cells: Vec<HmlCell>,
     notes: Vec<HmlNote>,
+    sub_lists: Vec<HmlSubList>,
     pictures: Vec<HmlPicture>,
     auto_numbers: Vec<AutoNumber>,
     /// 자식 PARAHEAD 를 귀속할 NUMBERING 의 자리와, 글자(형식 문자열)를 받을 수준.
@@ -307,6 +343,7 @@ impl<'a> ReadState<'a> {
             tables: Vec::new(),
             cells: Vec::new(),
             notes: Vec::new(),
+            sub_lists: Vec::new(),
             pictures: Vec::new(),
             auto_numbers: Vec::new(),
             current_numbering: None,
@@ -535,6 +572,19 @@ impl<'a> ReadState<'a> {
                 self.start_equation(element)
             }
             "FOOTNOTE" | "ENDNOTE" if self.parent_is_text() => self.start_note(name),
+            "MASTERPAGE" if self.parent_is("SECDEF") => {
+                self.start_sub_list(HmlSubListKind::MasterPage, element, b"Type")
+            }
+            "HEADER" | "FOOTER" if self.parent_is_text() => {
+                self.reserve_control_slot()?;
+                let kind = if name == "HEADER" {
+                    HmlSubListKind::Header
+                } else {
+                    HmlSubListKind::Footer
+                };
+                self.start_sub_list(kind, element, b"ApplyPageType")
+            }
+            "HIDE" if self.parent_is("SECDEF") => self.capture_first_page_hide(element),
             "AUTONUM" if self.parent_is_text() => self.start_auto_number(element),
             "AUTONUMFORMAT" => self.capture_auto_number_format(element),
             "PICTURE" if self.parent_is_text() => self.start_picture(),
@@ -578,6 +628,8 @@ impl<'a> ReadState<'a> {
             }
             "SCRIPT" => self.finish_equation_script(),
             "FOOTNOTE" | "ENDNOTE" if self.parent_is_text() => self.finish_note()?,
+            "MASTERPAGE" if self.parent_is("SECDEF") => self.finish_master_page()?,
+            "HEADER" | "FOOTER" if self.parent_is_text() => self.finish_header_footer()?,
             "AUTONUM" if self.parent_is_text() => self.finish_auto_number()?,
             "PICTURE" if self.parent_is_text() => self.finish_picture()?,
             "RECTANGLE" => self.finish_rectangle()?,
@@ -1080,6 +1132,15 @@ impl<'a> ReadState<'a> {
     /// PARALIST 가 바깥 셀 값을 덮어쓰지 않도록 문단 귀속과 같은
     /// `nearest_paragraph_owner_is_cell` 판정을 재사용한다(#2723 과 동일한 규칙).
     fn capture_paralist(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        if matches!(self.parent_name(), Some("MASTERPAGE" | "HEADER" | "FOOTER")) {
+            let text_width = parse_attribute(element, b"TextWidth")?.unwrap_or(0);
+            let text_height = parse_attribute(element, b"TextHeight")?.unwrap_or(0);
+            if let Some(sub_list) = self.sub_lists.last_mut() {
+                sub_list.text_width = text_width;
+                sub_list.text_height = text_height;
+            }
+            return Ok(());
+        }
         if !self.nearest_paragraph_owner_is_cell() {
             return Ok(());
         }
@@ -1350,7 +1411,89 @@ impl<'a> ReadState<'a> {
     }
 
     fn parent_is_text(&self) -> bool {
-        self.stack.iter().rev().nth(1).map(String::as_str) == Some("TEXT")
+        self.parent_is("TEXT")
+    }
+
+    /// 지금 열린 요소(스택 맨 위)의 부모 이름.
+    fn parent_name(&self) -> Option<&str> {
+        self.stack.iter().rev().nth(1).map(String::as_str)
+    }
+
+    fn parent_is(&self, name: &str) -> bool {
+        self.parent_name() == Some(name)
+    }
+
+    /// 닫히는 P 를 받을 가장 안쪽 문단 목록 요소.
+    fn nearest_paragraph_owner(&self) -> Option<&str> {
+        self.stack.iter().rev().map(String::as_str).find(|name| {
+            matches!(
+                *name,
+                "CELL" | "DRAWTEXT" | "FOOTNOTE" | "ENDNOTE" | "MASTERPAGE" | "HEADER" | "FOOTER"
+            )
+        })
+    }
+
+    fn start_sub_list(
+        &mut self,
+        kind: HmlSubListKind,
+        element: &BytesStart<'_>,
+        apply_attribute: &[u8],
+    ) -> Result<(), HmlError> {
+        let apply_to = match attribute(element, apply_attribute)?.as_deref() {
+            Some("Even") => HeaderFooterApply::Even,
+            Some("Odd") => HeaderFooterApply::Odd,
+            _ => HeaderFooterApply::Both,
+        };
+        self.sub_lists.push(HmlSubList {
+            kind,
+            apply_to,
+            text_width: 0,
+            text_height: 0,
+            paragraphs: Vec::new(),
+        });
+        Ok(())
+    }
+
+    fn pop_sub_list(&mut self) -> Result<HmlSubList, HmlError> {
+        self.sub_lists.pop().ok_or_else(|| {
+            HmlError::InvalidXml("unexpected MASTERPAGE/HEADER/FOOTER end".to_string())
+        })
+    }
+
+    fn finish_master_page(&mut self) -> Result<(), HmlError> {
+        let master_page = self.pop_sub_list()?;
+        self.source
+            .sections
+            .last_mut()
+            .ok_or_else(|| HmlError::InvalidXml("MASTERPAGE outside SECTION".to_string()))?
+            .master_pages
+            .push(master_page);
+        Ok(())
+    }
+
+    fn finish_header_footer(&mut self) -> Result<(), HmlError> {
+        let sub_list = self.pop_sub_list()?;
+        self.current_paragraph()?
+            .controls
+            .push(HmlControl::HeaderFooter(sub_list));
+        Ok(())
+    }
+
+    fn capture_first_page_hide(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        let hide = HmlPageHide {
+            header: parse_bool_attribute(element, b"Header")?,
+            footer: parse_bool_attribute(element, b"Footer")?,
+            master_page: parse_bool_attribute(element, b"MasterPage")?,
+            border: parse_bool_attribute(element, b"Border")?,
+            fill: parse_bool_attribute(element, b"Fill")?,
+            empty_line: parse_bool_attribute(element, b"EmptyLine")?,
+        };
+        self.source
+            .sections
+            .last_mut()
+            .ok_or_else(|| HmlError::InvalidXml("HIDE outside SECTION".to_string()))?
+            .first_page_hide = hide;
+        Ok(())
     }
 
     /// 크기·위치·여백을 받을 가장 안쪽 개체.
@@ -1364,13 +1507,7 @@ impl<'a> ReadState<'a> {
 
     /// 닫히는 P 가 셀·글상자보다 안쪽의 각주/미주에 속하는가.
     fn nearest_paragraph_owner_is_note(&self) -> bool {
-        let owner = self
-            .stack
-            .iter()
-            .rev()
-            .map(String::as_str)
-            .find(|name| matches!(*name, "CELL" | "DRAWTEXT" | "FOOTNOTE" | "ENDNOTE"));
-        matches!(owner, Some("FOOTNOTE" | "ENDNOTE"))
+        matches!(self.nearest_paragraph_owner(), Some("FOOTNOTE" | "ENDNOTE"))
     }
 
     fn start_note(&mut self, name: &str) -> Result<(), HmlError> {
@@ -1602,6 +1739,18 @@ impl<'a> ReadState<'a> {
                 .push(paragraph);
             return Ok(());
         }
+        // 바탕쪽·머리말·꼬리말 문단이 본문으로 새면 1쪽 위에 겹쳐 그려진다.
+        if matches!(
+            self.nearest_paragraph_owner(),
+            Some("MASTERPAGE" | "HEADER" | "FOOTER")
+        ) {
+            self.sub_lists
+                .last_mut()
+                .ok_or_else(|| HmlError::InvalidXml("P outside MASTERPAGE".to_string()))?
+                .paragraphs
+                .push(paragraph);
+            return Ok(());
+        }
         // [#2723] 종전엔 종류 우선순위(셀 먼저)로 골라, CELL 안 사각형의 DRAWTEXT
         // 문단이 셀로 흘러들어 글상자는 비고(adapter 가 None 으로 접음) 셀에는 이물
         // 문단이 남았다. 글상자가 스택상 더 안쪽일 때만 글상자를 고르고, 나머지는
@@ -1823,6 +1972,8 @@ impl<'a> ReadState<'a> {
                     | "ENDNOTE"
                     | "AUTONUM"
                     | "PICTURE"
+                    | "HEADER"
+                    | "FOOTER"
             )
     }
 
