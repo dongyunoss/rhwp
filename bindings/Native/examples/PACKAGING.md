@@ -7,11 +7,12 @@
 
 ## 빌드와 패키징
 
-저장소 루트에서 실행한다. Cargo target은 물리 워크트리별로 다른 경로를 사용한다.
-아래 경로는 이 체크아웃만 사용하는 예시이며, 다른 체크아웃과 공유하지 않는다.
+저장소 루트에서 실행한다. 로컬 검토에서는 기본 작업공간의 `target/pr-review`를
+공유한다. 별도 worktree에서도 같은 절대 경로를 사용하며 Cargo 빌드는 순차 실행한다.
+아래 첫 명령은 기본 작업공간에서 실행한다.
 
 ```sh
-export CARGO_TARGET_DIR="$PWD/target/native-host-package"
+export CARGO_TARGET_DIR="$PWD/target/pr-review"
 cargo build --locked --release -p rhwp-native-ffi --features native-skia
 
 python3 scripts/package-native-host.py \
