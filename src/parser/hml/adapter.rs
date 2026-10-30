@@ -5,7 +5,9 @@ use crate::model::header_footer::{Footer, Header, MasterPage};
 use crate::model::image::{ImageAttr, Picture};
 use crate::model::document::{Document, FileHeader, HwpVersion, Section, SectionDef};
 use crate::model::paragraph::{CharShapeRef, Paragraph};
-use crate::model::shape::{CommonObjAttr, DrawingObjAttr, RectangleShape, ShapeObject, TextBox};
+use crate::model::shape::{
+    CommonObjAttr, DrawingObjAttr, LineShape, RectangleShape, ShapeObject, TextBox,
+};
 use crate::model::style::{BorderFill, CharShape, Font, LineSpacingType, ParaShape, Style, TabDef};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 
@@ -419,6 +421,20 @@ fn into_rectangle(source: HmlRectangle) -> Result<Control, HmlError> {
         text_box,
         ..Default::default()
     };
+    if let Some(line) = source.line {
+        let point = |(x, y): (i32, i32)| crate::model::Point { x, y };
+        return Ok(Control::Shape(Box::new(ShapeObject::Line(LineShape {
+            common: CommonObjAttr {
+                ctrl_id: 0x246c_696e, // '$lin'
+                ..common
+            },
+            drawing,
+            start: point(line.start),
+            end: point(line.end),
+            started_right_or_bottom: line.reversed,
+            ..Default::default()
+        }))));
+    }
     let x_coords = resolved_coords(source.x_coords, source.width as i32);
     let y_coords = resolved_coords(source.y_coords, source.height as i32);
     Ok(Control::Shape(Box::new(ShapeObject::Rectangle(

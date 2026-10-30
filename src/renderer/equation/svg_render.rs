@@ -407,6 +407,15 @@ fn render_box(
             let mid_x = x + body.x + body.width / 2.0;
             draw_decoration(svg, *kind, mid_x, deco_y, body.width, color, fs);
         }
+        LayoutKind::Boxed { body } => {
+            render_box(svg, body, x, y, color, fs, italic, bold);
+            let stroke_w = fs * 0.03;
+            svg.push_str(&format!(
+                "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>
+",
+                x + stroke_w / 2.0, y + stroke_w / 2.0, lb.width - stroke_w, lb.height - stroke_w, color, stroke_w,
+            ));
+        }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
                 FontStyleKind::Roman | FontStyleKind::SansSerif | FontStyleKind::Monospace => {
@@ -742,6 +751,14 @@ mod tests {
         let svg = render_eq("abc");
         assert!(svg.contains("<text"));
         assert!(svg.contains("abc"));
+    }
+
+    #[test]
+    fn test_box_svg_draws_rect_not_text() {
+        let svg = render_eq("BOX{~(ㄱ)~}");
+        assert!(svg.contains("<rect"), "{svg}");
+        assert!(!svg.contains(">BOX<") && !svg.contains(">B<"), "{svg}");
+        assert!(svg.contains("ㄱ"), "{svg}");
     }
 
     #[test]

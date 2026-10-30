@@ -248,6 +248,15 @@ pub(crate) struct HmlRectangle {
     pub fill: Fill,
     pub text_margin: Padding,
     pub text_box: Vec<HmlParagraph>,
+    /// `LINE`(직선)이면 시작·끝점. 크기·위치·선 모양은 사각형과 같은 요소로 온다.
+    pub line: Option<HmlLine>,
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+pub(crate) struct HmlLine {
+    pub start: (i32, i32),
+    pub end: (i32, i32),
+    pub reversed: bool,
 }
 
 #[derive(Debug, Default)]
@@ -593,6 +602,7 @@ impl<'a> ReadState<'a> {
             "PARAHEAD" => self.start_para_head(element),
             "SCRIPT" => self.start_equation_script(element),
             "RECTANGLE" => self.start_rectangle(element),
+            "LINE" if self.parent_is_text() => self.start_line(element),
             "COLDEF" => self.capture_col_def(element),
             "SHAPEOBJECT" => self.capture_shape_object(element),
             "SHAPECOMPONENT" => self.capture_shape_component(element),
@@ -633,6 +643,7 @@ impl<'a> ReadState<'a> {
             "AUTONUM" if self.parent_is_text() => self.finish_auto_number()?,
             "PICTURE" if self.parent_is_text() => self.finish_picture()?,
             "RECTANGLE" => self.finish_rectangle()?,
+            "LINE" if self.parent_is_text() => self.finish_rectangle()?,
             "CELL" => self.finish_cell()?,
             "TABLE" => self.finish_table()?,
             _ => {}
@@ -1071,6 +1082,24 @@ impl<'a> ReadState<'a> {
         Ok(())
     }
 
+    /// TEXT 직계 `LINE`(직선). 바탕쪽의 가운데 세로줄 등. SHAPEOBJECT·SHAPECOMPONENT·LINESHAPE
+    /// 는 사각형과 같으므로 같은 자리(`rectangles`)에 모으고, 어댑터가 직선으로 바꾼다.
+    fn start_line(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        self.reserve_control_slot()?;
+        let point = |x: &[u8], y: &[u8]| -> Result<(i32, i32), HmlError> {
+            Ok((parse_attribute(element, x)?.unwrap_or(0), parse_attribute(element, y)?.unwrap_or(0)))
+        };
+        self.rectangles.push(HmlRectangle {
+            line: Some(HmlLine {
+                start: point(b"StartX", b"StartY")?,
+                end: point(b"EndX", b"EndY")?,
+                reversed: parse_bool_attribute(element, b"IsReverseHV")?,
+            }),
+            ..Default::default()
+        });
+        Ok(())
+    }
+
     /// [#4386] `TEXT` 직계 `COLDEF`(다단 정의) → `Control::ColumnDef`.
     ///
     /// `COLDEF`는 `RECTANGLE`/`TABLE`/`EQUATION`과 달리 자식 요소가 없는 빈 태그라
@@ -1199,7 +1228,7 @@ impl<'a> ReadState<'a> {
     }
 
     fn nearest_object_is_table(&self) -> bool {
-        let rectangle = self.stack.iter().rposition(|name| name == "RECTANGLE");
+        let rectangle = self.stack.iter().rposition(|name| name == "RECTANGLE" || name == "LINE");
         let table = self.stack.iter().rposition(|name| name == "TABLE");
         table.is_some_and(|table_index| rectangle.is_none_or(|rect_index| table_index > rect_index))
     }
@@ -1502,7 +1531,7 @@ impl<'a> ReadState<'a> {
             .iter()
             .rev()
             .map(String::as_str)
-            .find(|name| matches!(*name, "TABLE" | "RECTANGLE" | "PICTURE" | "EQUATION"))
+            .find(|name| matches!(*name, "TABLE" | "RECTANGLE" | "LINE" | "PICTURE" | "EQUATION"))
     }
 
     /// 닫히는 P 가 셀·글상자보다 안쪽의 각주/미주에 속하는가.
@@ -1972,6 +2001,7 @@ impl<'a> ReadState<'a> {
                     | "COLDEF"
                     | "EQUATION"
                     | "RECTANGLE"
+                    | "LINE"
                     | "TABLE"
                     | "FOOTNOTE"
                     | "ENDNOTE"

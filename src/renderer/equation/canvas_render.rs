@@ -289,6 +289,13 @@ fn render_box(
             let mid_x = x + body.x + body.width / 2.0;
             draw_decoration(ctx, *kind, mid_x, deco_y, body.width, color, fs);
         }
+        LayoutKind::Boxed { body } => {
+            render_box(ctx, body, x, y, color, fs, italic, bold);
+            let stroke_w = fs * 0.03;
+            ctx.set_stroke_style_str(color);
+            ctx.set_line_width(stroke_w);
+            ctx.stroke_rect(x + stroke_w / 2.0, y + stroke_w / 2.0, lb.width - stroke_w, lb.height - stroke_w);
+        }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {
                 FontStyleKind::Roman | FontStyleKind::SansSerif | FontStyleKind::Monospace => {

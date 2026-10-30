@@ -2988,6 +2988,11 @@ fn write_equation_layout_kind(buf: &mut String, kind: &LayoutKind) {
             write_equation_layout_box(buf, body);
             buf.push('}');
         }
+        LayoutKind::Boxed { body } => {
+            buf.push_str("{\"type\":\"box\",\"body\":");
+            write_equation_layout_box(buf, body);
+            buf.push('}');
+        }
         LayoutKind::FontStyle { style, body } => {
             let _ = write!(
                 buf,

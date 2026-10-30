@@ -105,6 +105,8 @@ pub enum LayoutKind {
         kind: super::symbols::DecoKind,
         body: Box<LayoutBox>,
     },
+    /// 상자 (BOX) — body 둘레의 네모
+    Boxed { body: Box<LayoutBox> },
     /// 글꼴 스타일
     FontStyle {
         style: super::symbols::FontStyleKind,
@@ -132,6 +134,7 @@ const FRAC_LINE_PAD: f64 = 0.2; // 분수선 상하 여백 (font_size 비율)
 const FRAC_LINE_THICK: f64 = 0.04; // 분수선 두께 (font_size 비율)
 const SQRT_PAD: f64 = 0.1; // 제곱근 내부 상단 여백
 const PAREN_PAD: f64 = 0.08; // 괄호 내부 좌우 여백
+const BOX_PAD: f64 = 0.15; // BOX 네모와 내용 사이 여백
 pub(crate) const BIG_OP_SCALE: f64 = 1.5; // 큰 연산자(∑/∏) 크기 비율
 /// 적분(∫/∮ 등) 전용 크기 비율 — Task #1313.
 /// 적분 글리프는 ∑/∏ 보다 세로로 길게 그려져야 정답(한글 2022)과 정합한다. BIG_OP_SCALE
@@ -243,6 +246,7 @@ impl EqLayout {
             EqNode::Pile { rows, align } => self.layout_pile(rows, *align, fs),
             EqNode::Paren { left, right, body } => self.layout_paren(left, right, body, fs),
             EqNode::Decoration { kind, body } => self.layout_decoration(*kind, body, fs),
+            EqNode::Boxed { body } => self.layout_boxed(body, fs),
             EqNode::FontStyle { style, body } => self.layout_font_style(*style, body, fs),
             EqNode::Color { body, .. } => self.layout_node(body, fs),
             EqNode::Space(kind) => self.layout_space(*kind, fs),
@@ -1196,6 +1200,23 @@ impl EqLayout {
             baseline: body_box.y + body_box.baseline,
             kind: LayoutKind::Decoration {
                 kind,
+                body: Box::new(body_box),
+            },
+        }
+    }
+
+    fn layout_boxed(&self, body: &EqNode, fs: f64) -> LayoutBox {
+        let pad = fs * BOX_PAD;
+        let mut body_box = self.layout_node(body, fs);
+        body_box.x = pad;
+        body_box.y = pad;
+        LayoutBox {
+            x: 0.0,
+            y: 0.0,
+            width: body_box.width + pad * 2.0,
+            height: body_box.height + pad * 2.0,
+            baseline: pad + body_box.baseline,
+            kind: LayoutKind::Boxed {
                 body: Box::new(body_box),
             },
         }

@@ -1,4 +1,4 @@
-use skia_safe::{font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder};
+use skia_safe::{font, paint, Canvas, Color, Font, FontMgr, FontStyle, Paint, PathBuilder, Rect};
 
 use super::font_lookup::{
     legacy_typeface_for_style, match_system_family_style, SystemFontFamilies,
@@ -676,6 +676,30 @@ fn render_box(
             let deco_y = y + fs * 0.05;
             let mid_x = x + body.x + body.width / 2.0;
             draw_decoration(canvas, *kind, mid_x, deco_y, body.width, color, fs);
+        }
+        LayoutKind::Boxed { body } => {
+            render_box(
+                canvas,
+                font_mgr,
+                system_families,
+                body,
+                x,
+                y,
+                color,
+                fs,
+                italic,
+                bold,
+            );
+            let stroke_w = fs * 0.03;
+            canvas.draw_rect(
+                Rect::from_xywh(
+                    (x + stroke_w / 2.0) as f32,
+                    (y + stroke_w / 2.0) as f32,
+                    (lb.width - stroke_w) as f32,
+                    (lb.height - stroke_w) as f32,
+                ),
+                &stroke_paint(color, stroke_w),
+            );
         }
         LayoutKind::FontStyle { style, body } => {
             let (new_italic, new_bold) = match style {

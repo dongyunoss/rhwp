@@ -1925,6 +1925,8 @@ fn canvaskit_equation_layout_is_supported(layout: &LayoutBox) -> bool {
                     FontStyleKind::Roman | FontStyleKind::Italic | FontStyleKind::Bold
                 ) && child(body, remaining_nodes)
             }
+            // CanvasKit 경로는 BOX 네모를 그리지 않으므로 다른 경로로 넘긴다.
+            LayoutKind::Boxed { .. } => false,
             LayoutKind::Space(width) => width.is_finite(),
             LayoutKind::Newline | LayoutKind::Empty => true,
         }

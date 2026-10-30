@@ -471,6 +471,13 @@ impl EqParser {
         // 1차 lookup 실패 시 소문자 fallback (`RM`/`BAR` 등 대문자 변형이 leak 되지 않도록).
         let cmd_lower = cmd.to_ascii_lowercase();
 
+        if cmd_lower == "box" {
+            let body = self.parse_single_or_group();
+            return EqNode::Boxed {
+                body: Box::new(body),
+            };
+        }
+
         if let Some(&deco) = DECORATIONS
             .get(cmd)
             .or_else(|| DECORATIONS.get(cmd_lower.as_str()))
@@ -2242,6 +2249,15 @@ mod latex_compat_tests {
     }
 
     #[test]
+    fn test_box_wraps_its_group() {
+        // 시험지의 빈칸 표시 `BOX{~(ㄱ)~}` — "BOX" 를 글자로 찍지 않고 상자로 읽는다.
+        for script in ["BOX{~(ㄱ)~}", "box{x}"] {
+            let ast = parse(script);
+            assert!(matches!(&ast, EqNode::Boxed { .. }), "{script}: {ast:?}");
+        }
+    }
+
+    #[test]
     fn test_latex_underline_lowercase() {
         let ast = parse(r"\underline{x}");
         assert!(
@@ -2894,6 +2910,7 @@ mod latex_compat_tests {
             EqNode::SubSup { base, sub, sup } => vec![base, sub, sup],
             EqNode::Paren { body, .. } => vec![body],
             EqNode::Decoration { body, .. } => vec![body],
+            EqNode::Boxed { body } => vec![body],
             EqNode::FontStyle { body, .. } => vec![body],
             EqNode::Color { body, .. } => vec![body],
             EqNode::Rel { over, under, .. } => {

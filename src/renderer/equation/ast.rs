@@ -121,6 +121,9 @@ pub enum EqNode {
     /// 글자 장식: hat, bar, vec, etc.
     Decoration { kind: DecoKind, body: Box<EqNode> },
 
+    /// 상자: BOX{body} — body 둘레에 네모를 그린다 (시험지 빈칸 표시 등)
+    Boxed { body: Box<EqNode> },
+
     /// 글꼴 스타일: rm, it, bold
     FontStyle {
         style: FontStyleKind,
